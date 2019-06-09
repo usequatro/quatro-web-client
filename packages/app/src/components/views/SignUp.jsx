@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Heading, Text } from 'rebass';
 import { Link } from 'react-router-dom';
 import InputGroup from '../ui/InputGroup';
-import Input from '../ui/Input';
+import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import Main from '../ui/Main';
 
@@ -54,10 +54,10 @@ export default () => (
     <Main>
       <SignUpFormView>
         <InputGroup>
-          <Input placeholder="Full Name" />
-          <Input placeholder="Email Address" />
-          <Input placeholder="Password" />
-          <Input placeholder="Confirm Password" />
+          <InputField placeholder="Full Name" />
+          <InputField placeholder="Email Address" />
+          <InputField placeholder="Password" />
+          <InputField placeholder="Confirm Password" />
         </InputGroup>
         <Button variant="primary">Sign Up</Button>
         <Text color="textSecondary">

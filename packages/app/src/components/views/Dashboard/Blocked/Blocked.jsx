@@ -1,16 +1,32 @@
 import React from 'react';
-import TasksView from '../TasksView';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-const sections = [
-  {
-    title: 'Blocked',
-    count: 0,
-    tasks: [],
-  },
-];
+import { getBlockedTasks } from '../../../../modules/tasks';
 
-export default () => (
-  <TasksView
-    sections={sections}
-  />
+import Task from '../Task';
+import SearchTaskInput from '../SearchTaskInput';
+import TaskListHeadline from '../TaskListHeadline';
+import BlockingTaskList from './BlockingTaskList';
+
+const Blocked = ({ tasks }) => (
+  <React.Fragment>
+    <SearchTaskInput />
+    <TaskListHeadline title="Blocked" count={tasks.length} />
+    {tasks.map(task => (
+      <React.Fragment key={task.id}>
+        <Task {...task} />
+        <BlockingTaskList blockedTaskId={task.id} />
+      </React.Fragment>
+    ))}
+  </React.Fragment>
 );
+Blocked.propTypes = {
+  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+const mapStateToProps = state => ({
+  tasks: getBlockedTasks(state),
+});
+
+export default connect(mapStateToProps)(Blocked);

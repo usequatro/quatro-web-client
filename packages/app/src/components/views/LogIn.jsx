@@ -2,7 +2,7 @@ import React from 'react';
 import { Text } from 'rebass';
 import { Link } from 'react-router-dom';
 import InputGroup from '../ui/InputGroup';
-import Input from '../ui/Input';
+import InputField from '../ui/InputField';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
 import {
@@ -19,8 +19,8 @@ export default () => (
     <Main>
       <SignUpFormView>
         <InputGroup>
-          <Input placeholder="Email Address" />
-          <Input placeholder="Password" />
+          <InputField placeholder="Email Address" />
+          <InputField placeholder="Password" />
         </InputGroup>
         <Button variant="primary">Log In</Button>
         <Text color="textSecondary">

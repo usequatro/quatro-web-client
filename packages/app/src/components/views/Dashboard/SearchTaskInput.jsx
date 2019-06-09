@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import Input from '../../ui/Input';
+import InputField from '../../ui/InputField';
 
-export default styled(Input).attrs({
+export default styled(InputField).attrs({
   fullWidth: true,
   placeholder: 'Search for a task',
 })`

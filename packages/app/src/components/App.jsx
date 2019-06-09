@@ -7,6 +7,8 @@ import AppStylesWrapper from './AppStylesWrapper';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
 import Dashboard from './views/Dashboard/Dashboard';
+import NewTask from './views/NewTask';
+import * as paths from '../constants/paths';
 
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
@@ -22,10 +24,11 @@ export default () => (
     <AppBackground>
       <BrowserRouter>
         <Switch>
-          <Redirect exact from="/" to="/signup" />
-          <Route path="/signup" component={SignUp} />
-          <Route path="/login" component={LogIn} />
-          <Route path="/dashboard" component={Dashboard} />
+          <Redirect exact from="/" to={paths.SIGN_UP} />
+          <Route path={paths.SIGN_UP} component={SignUp} />
+          <Route path={paths.LOG_IN} component={LogIn} />
+          <Route path={paths.NEW_TASK} component={NewTask} />
+          <Route path={paths.DASHBOARD} component={Dashboard} />
           <Route>404</Route>
         </Switch>
       </BrowserRouter>

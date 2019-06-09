@@ -9,9 +9,9 @@ const TaskContainer = styled(Box).attrs({ mb: 3, p: 3 })`
 `;
 
 const TaskTitle = props => <Heading {...props} as="h4" fontSize={2} mb={2} />;
-const TaskSubtitle = props => <Text {...props} fontSize={2} />;
+const TaskSubtitle = props => <Text {...props} fontSize={2} mb={1} />;
 
-const Task = ({ title, score }) => (
+const Task = ({ title, score, start }) => (
   <TaskContainer>
     <TaskTitle>{title}</TaskTitle>
     <TaskSubtitle>
@@ -19,12 +19,24 @@ const Task = ({ title, score }) => (
       {' '}
       {score}
     </TaskSubtitle>
+    {start && (
+      <TaskSubtitle>
+        Scheduled start:
+        {' '}
+        {new Date(start).toLocaleString()}
+      </TaskSubtitle>
+    )}
   </TaskContainer>
 );
 
 Task.propTypes = {
   title: PropTypes.string.isRequired,
   score: PropTypes.number.isRequired,
+  start: PropTypes.number,
+};
+
+Task.defaultProps = {
+  start: undefined,
 };
 
 export default Task;

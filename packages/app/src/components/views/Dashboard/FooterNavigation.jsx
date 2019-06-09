@@ -27,9 +27,10 @@ const Icon = styled.div`
 
 export default () => (
   <FooterContainer>
-    <Link to="/dashboard/important"><Icon>I</Icon></Link>
-    <Link to="/dashboard/scheduled"><Icon>S</Icon></Link>
-    <Link to="/dashboard/blocked"><Icon>B</Icon></Link>
-    <Link to="/dashboard/completed"><Icon>C</Icon></Link>
+    <Link to="/dashboard/scheduled"><Icon>Sc</Icon></Link>
+    <Link to="/dashboard/blocked"><Icon>Bl</Icon></Link>
+    <Link to="/dashboard/important"><Icon>Im</Icon></Link>
+    <Link to="/dashboard/backlog"><Icon>Ba</Icon></Link>
+    <Link to="/dashboard/completed"><Icon>Co</Icon></Link>
   </FooterContainer>
 );

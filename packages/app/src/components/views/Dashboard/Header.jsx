@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Heading, Box } from 'rebass';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import * as paths from '../../../constants/paths';
 
 const HeaderContainer = styled(Box).attrs({
   px: 3,
@@ -36,12 +37,23 @@ const NewTaskButton = styled.div`
   width: 3rem;
 `;
 
-export default () => (
+const titles = {
+  [paths.SCHEDULED]: 'Scheduled',
+  [paths.BLOCKED]: 'Blocked',
+  [paths.IMPORTANT]: 'Important',
+  [paths.BACKLOG]: 'Backlog',
+  [paths.COMPLETED]: 'Completed',
+  default: 'Tasket',
+};
+
+export default withRouter(({ location }) => (
   <HeaderContainer>
-    <Link to="/profile">
+    <Link to={paths.ACCOUNT}>
       <ProfilePicture />
     </Link>
-    <DashboardTitle>Important</DashboardTitle>
-    <NewTaskButton />
+    <DashboardTitle>{titles[location.pathname] || titles.default}</DashboardTitle>
+    <Link to={paths.NEW_TASK}>
+      <NewTaskButton />
+    </Link>
   </HeaderContainer>
-);
+));

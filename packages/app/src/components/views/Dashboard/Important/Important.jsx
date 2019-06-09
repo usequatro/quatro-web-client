@@ -1,26 +1,26 @@
 import React from 'react';
-import TasksView from '../TasksView';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-const sections = [
-  {
-    title: 'Top Priority',
-    count: 1,
-    tasks: [
-      { title: 'Tasket Wires', score: 180 },
-    ],
-  },
-  {
-    title: 'Next',
-    count: 2,
-    tasks: [
-      { title: 'Reach out to Bruce Wayne', score: 101 },
-      { title: 'Check email', score: 97 },
-    ],
-  },
-];
+import { getImportantTasks } from '../../../../modules/tasks';
 
-export default () => (
-  <TasksView
-    sections={sections}
-  />
+import Task from '../Task';
+import SearchTaskInput from '../SearchTaskInput';
+import TaskListHeadline from '../TaskListHeadline';
+
+const Important = ({ tasks }) => (
+  <React.Fragment>
+    <SearchTaskInput />
+    <TaskListHeadline title="Important" count={tasks.length} />
+    {tasks.map(task => <Task key={task.id} {...task} />)}
+  </React.Fragment>
 );
+Important.propTypes = {
+  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+const mapStateToProps = state => ({
+  tasks: getImportantTasks(state),
+});
+
+export default connect(mapStateToProps)(Important);

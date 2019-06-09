@@ -2,25 +2,25 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { getScheduledTasks } from '../../../../modules/tasks';
+import { getBacklogTasks } from '../../../../modules/tasks';
 
 import Task from '../Task';
 import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 
-const Scheduled = ({ tasks }) => (
+const Backlog = ({ tasks }) => (
   <React.Fragment>
     <SearchTaskInput />
-    <TaskListHeadline title="Scheduled" count={tasks.length} />
+    <TaskListHeadline title="Backlog" count={tasks.length} />
     {tasks.map(task => <Task key={task.id} {...task} />)}
   </React.Fragment>
 );
-Scheduled.propTypes = {
+Backlog.propTypes = {
   tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 const mapStateToProps = state => ({
-  tasks: getScheduledTasks(state),
+  tasks: getBacklogTasks(state),
 });
 
-export default connect(mapStateToProps)(Scheduled);
+export default connect(mapStateToProps)(Backlog);

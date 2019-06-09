@@ -1,16 +1,26 @@
 import React from 'react';
-import TasksView from '../TasksView';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-const sections = [
-  {
-    title: 'Completed',
-    count: 0,
-    tasks: [],
-  },
-];
+import { getCompletedTasks } from '../../../../modules/tasks';
 
-export default () => (
-  <TasksView
-    sections={sections}
-  />
+import Task from '../Task';
+import SearchTaskInput from '../SearchTaskInput';
+import TaskListHeadline from '../TaskListHeadline';
+
+const Completed = ({ tasks }) => (
+  <React.Fragment>
+    <SearchTaskInput />
+    <TaskListHeadline title="Completed" count={tasks.length} />
+    {tasks.map(task => <Task key={task.id} {...task} />)}
+  </React.Fragment>
 );
+Completed.propTypes = {
+  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+const mapStateToProps = state => ({
+  tasks: getCompletedTasks(state),
+});
+
+export default connect(mapStateToProps)(Completed);

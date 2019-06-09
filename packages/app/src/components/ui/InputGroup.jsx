@@ -1,16 +1,17 @@
 // import React from 'react';
 import styled from 'styled-components';
-import Input from './Input';
+import { Box } from 'rebass';
+import InputField from './InputField';
 
-export default styled.div`
+export default styled(Box)`
     display: flex;
     flex-direction: column;
     width: 100%;
 
-    ${Input} {
+    ${InputField} {
         width: 100%;
     }
-    ${Input}:not(:last-child) {
+    ${InputField}:not(:last-child) {
         margin-bottom: 1rem;
     }
 `;
