@@ -8,6 +8,7 @@ export const tasks = [
     completed: null,
     start: null,
     blockers: [],
+    description: '',
   },
   {
     id: '123',
@@ -17,6 +18,7 @@ export const tasks = [
     completed: null,
     start: null,
     blockers: [],
+    description: '',
   },
   {
     id: '432',
@@ -26,6 +28,7 @@ export const tasks = [
     completed: null,
     start: null,
     blockers: [],
+    description: '',
   },
   {
     id: '433',
@@ -44,6 +47,7 @@ export const tasks = [
     completed: null,
     start: null,
     blockers: [],
+    description: '',
   },
   {
     id: '434',
@@ -53,6 +57,7 @@ export const tasks = [
     completed: null,
     start: 1547415400000,
     blockers: [],
+    description: '',
   },
   {
     id: '4385',
@@ -62,6 +67,7 @@ export const tasks = [
     completed: null,
     start: 1547510410000,
     blockers: [],
+    description: '',
   },
   {
     id: '237',
@@ -71,5 +77,6 @@ export const tasks = [
     completed: 1547540400000,
     start: null,
     blockers: [],
+    description: '',
   },
 ];

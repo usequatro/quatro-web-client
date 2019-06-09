@@ -17,16 +17,18 @@ const NewTask = ({ addTask, close }) => {
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
+  const [description, setDescription] = useState('');
 
   const createTask = () => {
     addTask({
-      title, impact, effort, start: null,
+      title, impact, effort, description, start: null,
     });
     close();
   };
   const onTitleChange = event => setTitle(event.target.value);
   const onImpactChange = event => setImpact(event.target.value);
   const onEffortChange = event => setEffort(event.target.value);
+  const onDecriptionChange = event => setDescription(event.target.value);
 
   return (
     <Paper>
@@ -41,7 +43,7 @@ const NewTask = ({ addTask, close }) => {
           <InputField fullWidth label="What do you have to do?*" onChange={onTitleChange} />
           <InputField fullWidth label="How important is this task?*" onChange={onImpactChange} />
           <InputField fullWidth label="How much effort will it require?*" onChange={onEffortChange} />
-          <InputField fullWidth label="Notes" textarea />
+          <InputField fullWidth label="Notes" textarea onChange={onDecriptionChange} />
         </InputGroup>
 
         <Button variant="primary" onClick={createTask}>Create task</Button>
@@ -57,7 +59,7 @@ NewTask.propTypes = {
 
 const mapDispatchToProps = (dispatch, props) => ({
   close: () => props.history.goBack(),
-  addTask: addTaskAction,
+  addTask: task => dispatch(addTaskAction(task)),
 });
 
 export default withRouter(connect(null, mapDispatchToProps)(NewTask));

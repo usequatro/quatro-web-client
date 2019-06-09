@@ -47,13 +47,16 @@ export const addTask = ({
   effort = isRequired(),
   impact = isRequired(),
   start = isRequired(),
+  description = isRequired(),
 }) => {
   const task = {
+    id: Math.round(Math.random() * 100000), // @TODO, change this.
     title,
     effort,
     impact,
     start,
-    completed: false,
+    description,
+    completed: null,
     blockers: [],
     score: calculateScore(impact, effort),
   };
@@ -66,15 +69,22 @@ export const addTask = ({
 // Reducers
 
 const INITIAL_STATE = {
+  loading: true,
+  loaded: false,
   result: [],
   entities: {},
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
   [SET_TASKS]: (state, action) => ({
-    ...action.payload.tasks,
+    ...state,
+    loading: false,
+    loaded: true,
+    result: [...action.payload.tasks.result],
+    entities: { ...action.payload.tasks.entities },
   }),
   [ADD_TASK]: (state, action) => ({
+    ...state,
     result: [...state.result, action.payload.task.id],
     entities: {
       ...state.entities,
@@ -93,6 +103,8 @@ const getNonCompletedTasks = state => (
     .filter(task => task.completed === null)
 );
 
+export const getLoading = state => state[NAMESPACE].loading;
+export const getLoaded = state => state[NAMESPACE].loaded;
 export const getTask = (state, id) => state[NAMESPACE].entities[id];
 export const getImportantTasks = (state) => {
   const tasks = getNonCompletedTasks(state)

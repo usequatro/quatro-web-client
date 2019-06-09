@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { setTasks } from '../../../modules/tasks';
+import { setTasks, getLoaded } from '../../../modules/tasks';
 import { tasks } from '../../../fixtures';
 import * as paths from '../../../constants/paths';
 
@@ -19,8 +19,10 @@ import Completed from './Completed';
 
 const Dashboard = (props) => {
   useEffect(() => {
-    props.setTasks(tasks);
-  }, [props]);
+    if (!props.loaded) {
+      props.setTasks(tasks);
+    }
+  });
   return (
     <React.Fragment>
       <Header />
@@ -43,10 +45,14 @@ const Dashboard = (props) => {
 };
 Dashboard.propTypes = {
   setTasks: PropTypes.func.isRequired,
+  loaded: PropTypes.bool.isRequired,
 };
 
 const mapDispatchToProps = {
   setTasks,
 };
+const mapStateToProps = state => ({
+  loaded: getLoaded(state),
+});
 
-export default connect(null, mapDispatchToProps)(Dashboard);
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
