@@ -7,4 +7,5 @@ export default styled.main`
   flex-direction: column;
   width: 100%;
   align-items: center;
+  overflow-y: auto;
 `;

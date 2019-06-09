@@ -6,11 +6,12 @@ import {
 import AppStylesWrapper from './AppStylesWrapper';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
+import Dashboard from './views/Dashboard/Dashboard';
 
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
   min-width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,10 +22,10 @@ export default () => (
     <AppBackground>
       <BrowserRouter>
         <Switch>
-          {/* <Route exact path="/" component={Home} /> */}
           <Redirect exact from="/" to="/signup" />
           <Route path="/signup" component={SignUp} />
           <Route path="/login" component={LogIn} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route>404</Route>
         </Switch>
       </BrowserRouter>
