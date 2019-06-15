@@ -12,13 +12,15 @@ import Button from '../ui/Button';
 import {
   SignUpHeading, SignUpFooter, SignUpFormView,
 } from './SignUp';
+import InvisibleForm from '../ui/InvisibleForm';
 
 const LogIn = ({ history }) => {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const onLogIn = () => {
+  const onLogIn = (event) => {
+    event.preventDefault();
     firebase.auth().signInWithEmailAndPassword(emailAddress, password)
       .then(() => {
         console.log('[LogIn] User authenticated, redirecting.');
@@ -39,23 +41,29 @@ const LogIn = ({ history }) => {
       </header>
       <Main>
         <SignUpFormView>
-          <InputGroup>
-            <InputField
-              placeholder="Email Address"
-              value={emailAddress}
-              onChange={event => setEmailAddress(event.target.value)}
-            />
-            <InputField
-              placeholder="Password"
-              value={password}
-              onChange={event => setPassword(event.target.value)}
-            />
-          </InputGroup>
-          {errorMessage && (
-            <p>{errorMessage}</p>
-          )}
-          <Button variant="primary" onClick={onLogIn}>Log In</Button>
-          <Text color="textSecondary">
+          <InvisibleForm onSubmit={onLogIn}>
+            <InputGroup mb={4}>
+              <InputField
+                placeholder="Email Address"
+                value={emailAddress}
+                required
+                type="email"
+                onChange={event => setEmailAddress(event.target.value)}
+              />
+              <InputField
+                placeholder="Password"
+                value={password}
+                required
+                type="password"
+                onChange={event => setPassword(event.target.value)}
+              />
+            </InputGroup>
+            {errorMessage && (
+              <p>{errorMessage}</p>
+            )}
+            <Button variant="primary" type="submit">Log In</Button>
+          </InvisibleForm>
+          <Text color="textSecondary" mt={4}>
             {"Don't have an account yet? "}
             <Link to="/signup">Sign up</Link>
           </Text>

@@ -25,7 +25,8 @@ const NewTask = ({ addTask, close }) => {
   const [effort, setEffort] = useState('');
   const [description, setDescription] = useState('');
 
-  const createTask = () => {
+  const createTask = (event) => {
+    event.preventDefault();
     addTask({
       title, impact, effort, description,
     });
@@ -49,7 +50,6 @@ const NewTask = ({ addTask, close }) => {
           <InputGroup mb={4}>
             <InputField
               required
-              fullWidth
               label="What do you have to do?*"
               onChange={onTitleChange}
             />
@@ -58,7 +58,6 @@ const NewTask = ({ addTask, close }) => {
               type="number"
               min={0}
               max={7}
-              fullWidth
               label="How important is this task?*"
               onChange={onImpactChange}
             />
@@ -67,13 +66,11 @@ const NewTask = ({ addTask, close }) => {
               type="number"
               min={0}
               max={7}
-              fullWidth
               label="How much effort will it require?*"
               onChange={onEffortChange}
             />
             <InputField
               textarea
-              fullWidth
               label="Notes"
               onChange={onDecriptionChange}
             />

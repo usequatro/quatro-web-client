@@ -5,7 +5,7 @@ import { Box } from 'rebass';
 const Input = styled.input`
   font-size: inherit;
   padding: 1rem;
-  ${props => (props.fullWidth ? 'width: 100%;' : '')}
+  width: 100%;
   border: solid 1px ${props => props.theme.colors.border};
   outline-color: ${props => props.theme.colors.textHighlight};
 

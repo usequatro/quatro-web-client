@@ -9,6 +9,7 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import Main from '../ui/Main';
+import InvisibleForm from '../ui/InvisibleForm';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
   color: 'textHighlight',
@@ -24,10 +25,6 @@ export const SignUpFormView = styled.div`
   justify-content: space-around;
   width: 80%;
   max-width: 30rem;
-
-  > * {
-    margin-bottom: 3rem;
-  }
 `;
 
 const SignUpFooterLinks = props => <Text color="textSecondary" {...props} />;
@@ -37,7 +34,7 @@ const SignUpFooterContainer = styled.footer`
   flex-direction: row;
   justify-content: space-around;
   width: 100%;
-  margin: 4vh 0 8vh 0;
+  margin: 1rem 0 2rem 0;
 `;
 
 export const SignUpFooter = () => (
@@ -53,7 +50,8 @@ const SignUp = ({ history }) => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const onSignUp = () => {
+  const onSignUp = (event) => {
+    event.preventDefault();
     // https://firebase.google.com/docs/reference/js/firebase.auth.Auth.html?authuser=0#create-user-with-email-and-password
     firebase.auth().createUserWithEmailAndPassword(emailAddress, password)
       .then(() => {
@@ -89,31 +87,40 @@ const SignUp = ({ history }) => {
       </header>
       <Main>
         <SignUpFormView>
-          <InputGroup>
-            <InputField
-              placeholder="Full Name"
-              value={fullName}
-              onChange={event => setFullName(event.target.value)}
-            />
-            <InputField
-              placeholder="Email Address"
-              value={emailAddress}
-              onChange={event => setEmailAddress(event.target.value)}
-            />
-            <InputField
-              placeholder="Password"
-              value={password}
-              onChange={event => setPassword(event.target.value)}
-            />
-            <InputField
-              placeholder="Confirm Password"
-            />
-          </InputGroup>
-          {errorMessage && (
-            <p>{errorMessage}</p>
-          )}
-          <Button variant="primary" onClick={onSignUp}>Sign Up</Button>
-          <Text color="textSecondary">
+          <InvisibleForm onSubmit={onSignUp}>
+            <InputGroup mb={4}>
+              <InputField
+                placeholder="Full Name"
+                required
+                value={fullName}
+                onChange={event => setFullName(event.target.value)}
+              />
+              <InputField
+                placeholder="Email Address"
+                required
+                type="email"
+                value={emailAddress}
+                onChange={event => setEmailAddress(event.target.value)}
+              />
+              <InputField
+                placeholder="Password"
+                required
+                type="password"
+                value={password}
+                onChange={event => setPassword(event.target.value)}
+              />
+              <InputField
+                placeholder="Confirm Password"
+                required
+                type="password"
+              />
+            </InputGroup>
+            {errorMessage && (
+              <p>{errorMessage}</p>
+            )}
+            <Button variant="primary" type="submit">Sign Up</Button>
+          </InvisibleForm>
+          <Text color="textSecondary" mt={4}>
             Already have an account?
             {' '}
             <Link to="/login">Log in</Link>
