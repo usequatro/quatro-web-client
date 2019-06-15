@@ -58,10 +58,15 @@ const Defaults = createGlobalStyle`
   * { box-sizing: border-box; }
 `;
 
+const RootStyles = createGlobalStyle`
+  #root { display: flex; justify-content: center }
+`;
+
 const AppStylesWrapper = ({ children }) => (
   <React.Fragment>
     <Reset />
     <Defaults />
+    <RootStyles />
     <ThemeProvider theme={theme}>
       {children}
     </ThemeProvider>

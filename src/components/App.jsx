@@ -14,11 +14,16 @@ import * as paths from '../constants/paths';
 
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
-  min-width: 100vw;
+  width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: solid 1px ${props => props.theme.colors.border};
+
+  /* mobile only for now */
+  max-width: 416px;
+  max-height: 736px;
 `;
 
 const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);

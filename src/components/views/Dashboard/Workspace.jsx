@@ -8,5 +8,5 @@ export default styled(Box).attrs({
   py: 3,
   bg: 'appForeground',
 })`
-    width: calc(100vw - 2rem);
+    width: calc(100% - 2rem);
 `;

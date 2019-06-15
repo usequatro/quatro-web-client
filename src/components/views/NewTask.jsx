@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Heading } from 'rebass';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
 
 import { addTask as addTaskAction } from '../../modules/tasks';
 
@@ -12,6 +13,12 @@ import CloseButton from '../ui/CloseButton';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
 
+const Form = styled.form`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
 const NewTask = ({ addTask, close }) => {
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
@@ -20,7 +27,7 @@ const NewTask = ({ addTask, close }) => {
 
   const createTask = () => {
     addTask({
-      title, impact, effort, description, scheduledStart: null,
+      title, impact, effort, description,
     });
     close();
   };
@@ -38,14 +45,42 @@ const NewTask = ({ addTask, close }) => {
         </Heading>
       </Box>
       <Main>
-        <InputGroup mb={4}>
-          <InputField fullWidth label="What do you have to do?*" onChange={onTitleChange} />
-          <InputField fullWidth label="How important is this task?*" onChange={onImpactChange} />
-          <InputField fullWidth label="How much effort will it require?*" onChange={onEffortChange} />
-          <InputField fullWidth label="Notes" textarea onChange={onDecriptionChange} />
-        </InputGroup>
+        <Form onSubmit={createTask}>
+          <InputGroup mb={4}>
+            <InputField
+              required
+              fullWidth
+              label="What do you have to do?*"
+              onChange={onTitleChange}
+            />
+            <InputField
+              required
+              type="number"
+              min={0}
+              max={7}
+              fullWidth
+              label="How important is this task?*"
+              onChange={onImpactChange}
+            />
+            <InputField
+              required
+              type="number"
+              min={0}
+              max={7}
+              fullWidth
+              label="How much effort will it require?*"
+              onChange={onEffortChange}
+            />
+            <InputField
+              textarea
+              fullWidth
+              label="Notes"
+              onChange={onDecriptionChange}
+            />
+          </InputGroup>
 
-        <Button variant="primary" onClick={createTask}>Create task</Button>
+          <Button variant="primary" type="submit">Create task</Button>
+        </Form>
       </Main>
     </Paper>
   );

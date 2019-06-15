@@ -60,14 +60,12 @@ export const addTask = ({
   title = isRequired(),
   effort = isRequired(),
   impact = isRequired(),
-  scheduledStart = isRequired(),
   description = isRequired(),
 }) => (dispatch) => {
   const task = {
     title,
     effort,
     impact,
-    scheduledStart,
     description,
     completed: null,
     blockers: [],
