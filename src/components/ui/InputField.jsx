@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Box } from 'rebass';
 
@@ -36,16 +35,5 @@ const InputField = ({
     <Input as={textarea ? 'textarea' : 'input'} {...props} />
   </Box>
 );
-
-InputField.propTypes = {
-  label: PropTypes.string,
-  textarea: PropTypes.bool,
-  className: PropTypes.string, // for styled component wrapping.
-};
-InputField.defaultProps = {
-  label: undefined,
-  textarea: false,
-  className: undefined,
-};
 
 export default styled(InputField)``;

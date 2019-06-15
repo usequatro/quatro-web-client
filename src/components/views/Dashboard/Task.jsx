@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Heading, Text, Box } from 'rebass';
 
@@ -28,15 +27,5 @@ const Task = ({ title, score, start }) => (
     )}
   </TaskContainer>
 );
-
-Task.propTypes = {
-  title: PropTypes.string.isRequired,
-  score: PropTypes.number.isRequired,
-  start: PropTypes.number,
-};
-
-Task.defaultProps = {
-  start: undefined,
-};
 
 export default Task;

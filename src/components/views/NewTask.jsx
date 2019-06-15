@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Heading } from 'rebass';
-import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -34,7 +33,7 @@ const NewTask = ({ addTask, close }) => {
     <Paper>
       <Box as="header" p={3} mb={4}>
         <Heading color="textHighlight" textAlign="center">
-        Create Task
+          Create Task
           <CloseButton onClick={close} />
         </Heading>
       </Box>
@@ -50,11 +49,6 @@ const NewTask = ({ addTask, close }) => {
       </Main>
     </Paper>
   );
-};
-
-NewTask.propTypes = {
-  addTask: PropTypes.func.isRequired,
-  close: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch, props) => ({

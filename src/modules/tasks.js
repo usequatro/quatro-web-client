@@ -1,5 +1,8 @@
 import sortBy from 'lodash/sortBy';
 import createReducer from '../util/createReducer';
+import {
+  createTask,
+} from './apiClient';
 
 export const NAMESPACE = 'tasks';
 
@@ -7,6 +10,7 @@ export const NAMESPACE = 'tasks';
 
 const SET_TASKS = 'SET_TASKS';
 const ADD_TASK = 'ADD_TASK';
+const DELETE_TASK = 'DELETE_TASK';
 
 // Actions
 
@@ -42,15 +46,19 @@ export const setTasks = (tasks) => {
   };
 };
 
+export const deleteTask = taskId => ({
+  type: DELETE_TASK,
+  payload: { taskId },
+});
+
 export const addTask = ({
   title = isRequired(),
   effort = isRequired(),
   impact = isRequired(),
   start = isRequired(),
   description = isRequired(),
-}) => {
+}) => (dispatch) => {
   const task = {
-    id: Math.round(Math.random() * 100000), // @TODO, change this.
     title,
     effort,
     impact,
@@ -60,10 +68,34 @@ export const addTask = ({
     blockers: [],
     score: calculateScore(impact, effort),
   };
-  return {
+  const tempId = `${Math.round(Math.random() * 100000)}`;
+
+  dispatch({
     type: ADD_TASK,
-    payload: { task },
-  };
+    payload: {
+      task: {
+        ...task,
+        id: tempId,
+      },
+    },
+  });
+
+  createTask(task)
+    .then(({ id }) => {
+      dispatch(deleteTask(tempId));
+      dispatch({
+        type: ADD_TASK,
+        payload: {
+          task: {
+            ...task,
+            id,
+          },
+        },
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 
 // Reducers
@@ -90,6 +122,10 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...state.entities,
       [action.payload.task.id]: action.payload.task,
     },
+  }),
+  [DELETE_TASK]: (state, { payload: { taskId } }) => ({
+    ...state,
+    result: state.result.filter(id => id !== taskId),
   }),
 });
 

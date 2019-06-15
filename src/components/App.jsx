@@ -6,8 +6,10 @@ import {
 import AppStylesWrapper from './AppStylesWrapper';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
+import Account from './views/Account';
 import Dashboard from './views/Dashboard/Dashboard';
 import NewTask from './views/NewTask';
+import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
 
 const AppBackground = styled.div`
@@ -19,16 +21,20 @@ const AppBackground = styled.div`
   align-items: center;
 `;
 
+const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);
+const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
+
 export default () => (
   <AppStylesWrapper>
     <AppBackground>
       <BrowserRouter>
         <Switch>
           <Redirect exact from="/" to={paths.SIGN_UP} />
-          <Route path={paths.SIGN_UP} component={SignUp} />
-          <Route path={paths.LOG_IN} component={LogIn} />
-          <Route path={paths.NEW_TASK} component={NewTask} />
-          <Route path={paths.DASHBOARD} component={Dashboard} />
+          <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
+          <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
+          <RouteLoggedIn path={paths.NEW_TASK} component={NewTask} />
+          <RouteLoggedIn path={paths.DASHBOARD} component={Dashboard} />
+          <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
           <Route>404</Route>
         </Switch>
       </BrowserRouter>

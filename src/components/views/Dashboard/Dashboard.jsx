@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import { setTasks, getLoaded } from '../../../modules/tasks';
@@ -42,10 +41,6 @@ const Dashboard = (props) => {
       <FooterNavigation />
     </React.Fragment>
   );
-};
-Dashboard.propTypes = {
-  setTasks: PropTypes.func.isRequired,
-  loaded: PropTypes.bool.isRequired,
 };
 
 const mapDispatchToProps = {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { Box } from 'rebass';
 
 import { getBlockingTasks } from '../../../../modules/tasks';
@@ -12,9 +11,6 @@ const Blocked = ({ tasks }) => (
     {tasks.map(task => <Task key={task.id} {...task} />)}
   </Box>
 );
-Blocked.propTypes = {
-  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
 
 const mapStateToProps = (state, props) => ({
   tasks: getBlockingTasks(state, props.blockedTaskId),

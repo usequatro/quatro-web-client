@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 const TopRightButton = styled.button.attrs()`
@@ -13,9 +12,5 @@ const TopRightButton = styled.button.attrs()`
 const CloseButton = ({ onClick }) => (
   <TopRightButton type="button" onClick={onClick}>x</TopRightButton>
 );
-
-CloseButton.propTypes = {
-  onClick: PropTypes.func.isRequired,
-};
 
 export default CloseButton;

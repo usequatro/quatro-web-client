@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import { getBlockedTasks } from '../../../../modules/tasks';
 
@@ -21,9 +20,6 @@ const Blocked = ({ tasks }) => (
     ))}
   </React.Fragment>
 );
-Blocked.propTypes = {
-  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
 
 const mapStateToProps = state => ({
   tasks: getBlockedTasks(state),

@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import { getImportantTasks } from '../../../../modules/tasks';
 
@@ -15,9 +14,6 @@ const Important = ({ tasks }) => (
     {tasks.map(task => <Task key={task.id} {...task} />)}
   </React.Fragment>
 );
-Important.propTypes = {
-  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
 
 const mapStateToProps = state => ({
   tasks: getImportantTasks(state),

@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import { getBacklogTasks } from '../../../../modules/tasks';
 
@@ -15,9 +14,6 @@ const Backlog = ({ tasks }) => (
     {tasks.map(task => <Task key={task.id} {...task} />)}
   </React.Fragment>
 );
-Backlog.propTypes = {
-  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
 
 const mapStateToProps = state => ({
   tasks: getBacklogTasks(state),

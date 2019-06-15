@@ -10,5 +10,8 @@ module.exports = {
         },
         "sourceType": "module",
     },
-    "extends": ["eslint:recommended", "react-app", "airbnb"]
+    "extends": ["eslint:recommended", "react-app", "airbnb"],
+    "rules": {
+        "react/prop-types": "off"
+    }
 };

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import theme from '../constants/theme';
 
@@ -68,9 +67,5 @@ const AppStylesWrapper = ({ children }) => (
     </ThemeProvider>
   </React.Fragment>
 );
-
-AppStylesWrapper.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 export default AppStylesWrapper;
