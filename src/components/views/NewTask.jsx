@@ -20,7 +20,7 @@ const NewTask = ({ addTask, close }) => {
 
   const createTask = () => {
     addTask({
-      title, impact, effort, description, start: null,
+      title, impact, effort, description, scheduledStart: null,
     });
     close();
   };

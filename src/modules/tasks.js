@@ -11,6 +11,7 @@ export const NAMESPACE = 'tasks';
 const SET_TASKS = 'SET_TASKS';
 const ADD_TASK = 'ADD_TASK';
 const DELETE_TASK = 'DELETE_TASK';
+const UPDATE_TASK = 'UPDATE_TASK';
 
 // Actions
 
@@ -46,6 +47,10 @@ export const setTasks = (tasks) => {
   };
 };
 
+export const updateTask = (taskId, updates) => ({
+  type: UPDATE_TASK,
+  payload: { taskId, updates },
+});
 export const deleteTask = taskId => ({
   type: DELETE_TASK,
   payload: { taskId },
@@ -55,14 +60,14 @@ export const addTask = ({
   title = isRequired(),
   effort = isRequired(),
   impact = isRequired(),
-  start = isRequired(),
+  scheduledStart = isRequired(),
   description = isRequired(),
 }) => (dispatch) => {
   const task = {
     title,
     effort,
     impact,
-    start,
+    scheduledStart,
     description,
     completed: null,
     blockers: [],
@@ -98,6 +103,9 @@ export const addTask = ({
     });
 };
 
+
+export const completeTask = taskId => updateTask(taskId, { completed: Date.now() });
+
 // Reducers
 
 const INITIAL_STATE = {
@@ -108,6 +116,13 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [UPDATE_TASK]: (state, { payload: { taskId, updates } }) => ({
+    ...state,
+    entities: {
+      ...state.entities,
+      [taskId]: { ...state.entities[taskId], ...updates },
+    },
+  }),
   [SET_TASKS]: (state, action) => ({
     ...state,
     loading: false,
@@ -159,8 +174,8 @@ export const getBlockedTasks = (state) => {
 };
 export const getScheduledTasks = (state) => {
   const tasks = getNonCompletedTasks(state)
-    .filter(task => task.start !== null);
-  return sortBy(tasks, 'start');
+    .filter(task => task.scheduledStart !== null);
+  return sortBy(tasks, 'scheduledStart');
 };
 export const getCompletedTasks = (state) => {
   const tasks = state[NAMESPACE].result
