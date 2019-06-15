@@ -1,8 +1,6 @@
 import sortBy from 'lodash/sortBy';
 import createReducer from '../util/createReducer';
-import {
-  createTask,
-} from './apiClient';
+import * as apiClient from './apiClient';
 
 export const NAMESPACE = 'tasks';
 
@@ -12,6 +10,7 @@ const SET_TASKS = 'SET_TASKS';
 const ADD_TASK = 'ADD_TASK';
 const DELETE_TASK = 'DELETE_TASK';
 const UPDATE_TASK = 'UPDATE_TASK';
+const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
 
 // Actions
 
@@ -35,6 +34,11 @@ const isRequired = (param) => {
   }
 };
 
+const setLoadFlags = ({ loaded, loading }) => ({
+  type: SET_LOAD_FLAGS,
+  payload: { loaded, loading },
+});
+
 export const setTasks = (tasks) => {
   const tasksWithScore = tasks.map(task => ({
     ...task,
@@ -47,10 +51,13 @@ export const setTasks = (tasks) => {
   };
 };
 
-export const updateTask = (taskId, updates) => ({
-  type: UPDATE_TASK,
-  payload: { taskId, updates },
-});
+export const updateTask = (taskId, updates) => {
+  apiClient.updateTask(taskId, updates);
+  return {
+    type: UPDATE_TASK,
+    payload: { taskId, updates },
+  };
+};
 export const deleteTask = taskId => ({
   type: DELETE_TASK,
   payload: { taskId },
@@ -69,8 +76,8 @@ export const addTask = ({
     description,
     completed: null,
     blockers: [],
-    score: calculateScore(impact, effort),
   };
+  const score = calculateScore(impact, effort);
   const tempId = `${Math.round(Math.random() * 100000)}`;
 
   dispatch({
@@ -79,11 +86,12 @@ export const addTask = ({
       task: {
         ...task,
         id: tempId,
+        score,
       },
     },
   });
 
-  createTask(task)
+  apiClient.createTask(task)
     .then(({ id }) => {
       dispatch(deleteTask(tempId));
       dispatch({
@@ -92,6 +100,7 @@ export const addTask = ({
           task: {
             ...task,
             id,
+            score,
           },
         },
       });
@@ -103,6 +112,19 @@ export const addTask = ({
 
 
 export const completeTask = taskId => updateTask(taskId, { completed: Date.now() });
+
+export const loadTasks = () => (dispatch) => {
+  dispatch(setLoadFlags({ loading: true, loaded: false }));
+  apiClient.fetchTasks()
+    .then((tasks) => {
+      dispatch(setTasks(tasks));
+      dispatch(setLoadFlags({ loading: false, loaded: true }));
+    })
+    .catch((error) => {
+      console.error(error);
+      dispatch(setLoadFlags({ loading: false, loaded: false }));
+    });
+};
 
 // Reducers
 
@@ -121,10 +143,13 @@ export const reducer = createReducer(INITIAL_STATE, {
       [taskId]: { ...state.entities[taskId], ...updates },
     },
   }),
+  [SET_LOAD_FLAGS]: (state, { payload: { loading, loaded } }) => ({
+    ...state,
+    loading,
+    loaded,
+  }),
   [SET_TASKS]: (state, action) => ({
     ...state,
-    loading: false,
-    loaded: true,
     result: [...action.payload.tasks.result],
     entities: { ...action.payload.tasks.entities },
   }),
@@ -172,13 +197,13 @@ export const getBlockedTasks = (state) => {
 };
 export const getScheduledTasks = (state) => {
   const tasks = getNonCompletedTasks(state)
-    .filter(task => task.scheduledStart !== null);
+    .filter(task => task.scheduledStart != null);
   return sortBy(tasks, 'scheduledStart');
 };
 export const getCompletedTasks = (state) => {
   const tasks = state[NAMESPACE].result
     .map(id => state[NAMESPACE].entities[id])
-    .filter(task => task.completed !== null);
+    .filter(task => task.completed != null);
   return sortBy(tasks, 'completed');
 };
 export const getBlockingTasks = (state, blockedTaskId) => {

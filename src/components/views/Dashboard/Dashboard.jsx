@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import { setTasks, getLoaded } from '../../../modules/tasks';
-import { tasks } from '../../../fixtures';
+import { loadTasks, getLoaded } from '../../../modules/tasks';
 import * as paths from '../../../constants/paths';
 
 import Header from './Header';
@@ -19,7 +18,7 @@ import Completed from './Completed';
 const Dashboard = (props) => {
   useEffect(() => {
     if (!props.loaded) {
-      props.setTasks(tasks);
+      props.loadTasks();
     }
   });
   return (
@@ -44,7 +43,7 @@ const Dashboard = (props) => {
 };
 
 const mapDispatchToProps = {
-  setTasks,
+  loadTasks,
 };
 const mapStateToProps = state => ({
   loaded: getLoaded(state),
