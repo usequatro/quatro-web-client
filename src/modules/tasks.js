@@ -1,8 +1,22 @@
 import sortBy from 'lodash/sortBy';
+import mapValues from 'lodash/mapValues';
 import createReducer from '../util/createReducer';
 import * as apiClient from './apiClient';
 
 export const NAMESPACE = 'tasks';
+
+const TASK_KEYS = {
+  id: true,
+  title: true,
+  effort: true,
+  impact: true,
+  description: true,
+  due: true,
+  scheduledStart: true,
+  completed: true,
+  blockers: true,
+  score: true,
+};
 
 // Action types
 
@@ -15,6 +29,17 @@ const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
 // Actions
 
 const calculateScore = (impact, effort) => impact * impact * effort;
+
+const filterTaskKeys = (task) => {
+  const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
+    if (!TASK_KEYS[key]) {
+      console.warn(`[tasks] Unknown key ${key} with value ${value}`);
+      return memo;
+    }
+    return { ...memo, [key]: value };
+  }, {});
+  return filteredTask;
+};
 
 const simpleNormalize = (inputs) => {
   const result = [];
@@ -140,7 +165,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     entities: {
       ...state.entities,
-      [taskId]: { ...state.entities[taskId], ...updates },
+      [taskId]: { ...state.entities[taskId], ...filterTaskKeys(updates) },
     },
   }),
   [SET_LOAD_FLAGS]: (state, { payload: { loading, loaded } }) => ({
@@ -151,14 +176,14 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_TASKS]: (state, action) => ({
     ...state,
     result: [...action.payload.tasks.result],
-    entities: { ...action.payload.tasks.entities },
+    entities: { ...mapValues(action.payload.tasks.entities, filterTaskKeys) },
   }),
   [ADD_TASK]: (state, action) => ({
     ...state,
     result: [...state.result, action.payload.task.id],
     entities: {
       ...state.entities,
-      [action.payload.task.id]: action.payload.task,
+      [action.payload.task.id]: filterTaskKeys(action.payload.task),
     },
   }),
   [DELETE_TASK]: (state, { payload: { taskId } }) => ({

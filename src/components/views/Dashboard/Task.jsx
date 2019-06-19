@@ -34,7 +34,7 @@ const TaskDelete = styled(TaskComplete)`
 `;
 
 const Task = ({
-  id, title, score, scheduledStart, completed, completeTask, deleteTask,
+  id, title, score, scheduledStart, dueDate, completed, completeTask, deleteTask,
 }) => (
   <TaskContainer>
     <Box flex={1}>
@@ -49,6 +49,13 @@ const Task = ({
           Scheduled start:
           {' '}
           {new Date(scheduledStart).toLocaleString()}
+        </TaskSubtitle>
+      )}
+      {dueDate && (
+        <TaskSubtitle>
+          Due date:
+          {' '}
+          {new Date(dueDate).toLocaleString()}
         </TaskSubtitle>
       )}
     </Box>
