@@ -9,4 +9,5 @@ export default styled(Box).attrs({
   bg: 'appForeground',
 })`
     width: calc(100% - 2rem);
+    min-height: calc(100% - 32px);
 `;
