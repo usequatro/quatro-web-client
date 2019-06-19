@@ -76,12 +76,12 @@ export const setTasks = (tasks) => {
   };
 };
 
-export const updateTask = (taskId, updates) => {
+export const updateTask = (taskId, updates) => (dispatch) => {
   apiClient.updateTask(taskId, updates);
-  return {
+  dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
-  };
+  });
 };
 export const deleteTask = taskId => ({
   type: DELETE_TASK,

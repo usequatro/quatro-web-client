@@ -10,3 +10,4 @@ export const IMPORTANT = '/dashboard/important';
 export const BACKLOG = '/dashboard/backlog';
 export const COMPLETED = '/dashboard/completed';
 export const NEW_TASK = '/dashboard/new';
+export const EDIT_TASK = '/dashboard/edit/:id';

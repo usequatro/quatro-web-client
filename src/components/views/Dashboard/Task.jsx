@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import { withRouter } from 'react-router-dom';
 import {
   Heading, Text, Box,
 } from 'rebass';
@@ -8,6 +9,7 @@ import {
   deleteTask as deleteTaskAction,
   completeTask as completeTaskAction,
 } from '../../../modules/tasks';
+import { EDIT_TASK } from '../../../constants/paths';
 
 const TaskContainer = styled(Box).attrs({ mb: 3, p: 3 })`
   padding: 1rem;
@@ -34,9 +36,9 @@ const TaskDelete = styled(TaskComplete)`
 `;
 
 const Task = ({
-  id, title, score, scheduledStart, dueDate, completed, completeTask, deleteTask,
+  id, title, score, scheduledStart, dueDate, completed, completeTask, deleteTask, history,
 }) => (
-  <TaskContainer>
+  <TaskContainer onClick={() => history.push(EDIT_TASK.replace(/:id\b/, id))}>
     <Box flex={1}>
       <TaskTitle>{title}</TaskTitle>
       <TaskSubtitle>
@@ -73,4 +75,4 @@ const mapDispatchToProps = {
   completeTask: completeTaskAction,
 };
 
-export default connect(null, mapDispatchToProps)(Task);
+export default withRouter(connect(null, mapDispatchToProps)(Task));

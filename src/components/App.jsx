@@ -9,6 +9,7 @@ import LogIn from './views/LogIn';
 import Account from './views/Account';
 import Dashboard from './views/Dashboard/Dashboard';
 import NewTask from './views/NewTask';
+import EditTask from './views/EditTask';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
 
@@ -37,6 +38,7 @@ export default () => (
           <Redirect exact from="/" to={paths.SIGN_UP} />
           <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
           <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
+          <RouteLoggedIn path={paths.EDIT_TASK} component={EditTask} />
           <RouteLoggedIn path={paths.NEW_TASK} component={NewTask} />
           <RouteLoggedIn path={paths.DASHBOARD} component={Dashboard} />
           <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
