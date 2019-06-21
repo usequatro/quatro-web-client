@@ -18,6 +18,7 @@ const TASK_KEYS = {
   blockers: true,
   score: true,
   trashed: true,
+  userId: true,
 };
 
 // Action types
@@ -27,6 +28,7 @@ const ADD_TASK = 'ADD_TASK';
 const REMOVE_TASK_FROM_ALL_IDS = 'REMOVE_TASK_FROM_ALL_IDS';
 const UPDATE_TASK = 'UPDATE_TASK';
 const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
+const RESET = 'RESET';
 
 // Actions
 
@@ -66,6 +68,8 @@ const setLoadFlags = ({ loaded, loading }) => ({
   payload: { loaded, loading },
 });
 
+export const resetLoadedTasks = () => ({ type: RESET });
+
 export const setTasks = (tasks) => {
   const parsedTasks = tasks.map(task => ({
     ...task,
@@ -104,7 +108,7 @@ export const addTask = ({
   effort = isRequired(),
   impact = isRequired(),
   description = isRequired(),
-}) => (dispatch) => {
+}) => (dispatch, getState, { getLoggedInUserUid }) => {
   const task = {
     title,
     effort,
@@ -113,6 +117,7 @@ export const addTask = ({
     completed: null,
     created: Date.now(),
     blockers: [],
+    userId: getLoggedInUserUid(),
   };
   const score = calculateScore(impact, effort);
   const tempId = `${Math.round(Math.random() * 100000)}`;
@@ -150,9 +155,12 @@ export const addTask = ({
 
 export const completeTask = taskId => updateTask(taskId, { completed: Date.now() });
 
-export const loadTasks = () => (dispatch) => {
+export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
+  const userId = getLoggedInUserUid();
+
   dispatch(setLoadFlags({ loading: true, loaded: false }));
-  apiClient.fetchTasks()
+
+  apiClient.fetchTasks(userId)
     .then((tasks) => {
       dispatch(setTasks(tasks));
       dispatch(setLoadFlags({ loading: false, loaded: true }));
@@ -202,6 +210,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     result: state.result.filter(id => id !== taskId),
   }),
+  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors

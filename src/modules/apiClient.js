@@ -11,7 +11,7 @@ export const createTask = task => db.collection(TASKS).add(excludeId(task));
 
 // export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
 
-export const fetchTasks = () => db.collection(TASKS).get()
+export const fetchTasks = userId => db.collection(TASKS).where('userId', '==', userId).get()
   .then((querySnapshot) => {
     const tasks = querySnapshot.docs.map(doc => ({
       ...doc.data(),
