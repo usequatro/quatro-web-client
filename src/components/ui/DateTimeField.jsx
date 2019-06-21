@@ -18,13 +18,17 @@ const DateTimeField = ({
   value, label, onChange, disabled,
 }) => {
   const propagateChange = (event, newDate, newTime) => {
+    let newValue;
     if (!newDate) {
-      onChange(event, null);
+      newValue = null;
     } else if (newDate && !newTime) {
-      onChange(event, dayjs(newDate).valueOf());
+      newValue = dayjs(newDate).valueOf();
     } else if (newDate && newTime) {
-      onChange(event, dayjs(`${newDate} ${newTime}`).valueOf());
+      newValue = dayjs(`${newDate} ${newTime}`).valueOf();
     }
+
+    console.log('DateTimeField', newValue);
+    onChange(event, newValue);
   };
 
   const date = value ? dayjs(value).format('YYYY-MM-DD') : '';
@@ -42,10 +46,10 @@ const DateTimeField = ({
       <FieldLabel>{label}</FieldLabel>
       <Container>
         <FieldContainer>
-          <InputField type="date" onChange={onDateChange} value={date} disabled={disabled} />
+          <InputField type="date" onBlur={onDateChange} defaultValue={date} disabled={disabled} />
         </FieldContainer>
         <FieldContainer>
-          <InputField type="time" onChange={onTimeChange} value={time} disabled={disabled} />
+          <InputField type="time" onBlur={onTimeChange} defaultValue={time} disabled={disabled} />
         </FieldContainer>
       </Container>
     </React.Fragment>

@@ -32,7 +32,7 @@ const TaskComplete = styled.button`
 `;
 
 const Task = ({
-  id, title, score, scheduledStart, dueDate, completed, completeTask, history,
+  id, title, score, scheduledStart, due, completed, completeTask, history,
 }) => {
   const onComplete = (event) => {
     event.stopPropagation();
@@ -48,17 +48,17 @@ const Task = ({
           {score}
         </TaskSubtitle>
         {scheduledStart && (
-          <TaskSubtitle>
+          <TaskSubtitle mt={1}>
             Scheduled start:
             {' '}
             {new Date(scheduledStart).toLocaleString()}
           </TaskSubtitle>
         )}
-        {dueDate && (
-          <TaskSubtitle>
+        {due && (
+          <TaskSubtitle mt={1}>
             Due date:
             {' '}
-            {new Date(dueDate).toLocaleString()}
+            {new Date(due).toLocaleString()}
           </TaskSubtitle>
         )}
       </Box>

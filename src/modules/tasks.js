@@ -11,6 +11,7 @@ const TASK_KEYS = {
   effort: true,
   impact: true,
   description: true,
+  created: true,
   due: true,
   scheduledStart: true,
   completed: true,
@@ -23,7 +24,7 @@ const TASK_KEYS = {
 
 const SET_TASKS = 'SET_TASKS';
 const ADD_TASK = 'ADD_TASK';
-const TRASH_TASK = 'TRASH_TASK';
+const REMOVE_TASK_FROM_ALL_IDS = 'REMOVE_TASK_FROM_ALL_IDS';
 const UPDATE_TASK = 'UPDATE_TASK';
 const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
 
@@ -34,7 +35,7 @@ const calculateScore = (impact, effort) => impact * impact * effort;
 const filterTaskKeys = (task) => {
   const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
     if (!TASK_KEYS[key]) {
-      console.warn(`[tasks] Unknown key ${key} with value ${value}`);
+      console.warn(`[tasks] Unknown key "${key}" with value "${value}" in task ${task.id}`);
       return memo;
     }
     return { ...memo, [key]: value };
@@ -88,10 +89,15 @@ export const updateTask = (taskId, updates) => (dispatch) => {
 export const moveToTrashTask = taskId => (dispatch) => {
   dispatch(updateTask(taskId, { trashed: Date.now() }));
   dispatch({
-    type: TRASH_TASK,
+    type: REMOVE_TASK_FROM_ALL_IDS,
     payload: { taskId },
   });
 };
+
+export const removeTaskFromAllIds = taskId => ({
+  type: REMOVE_TASK_FROM_ALL_IDS,
+  payload: { taskId },
+});
 
 export const addTask = ({
   title = isRequired(),
@@ -105,6 +111,7 @@ export const addTask = ({
     impact,
     description,
     completed: null,
+    created: Date.now(),
     blockers: [],
   };
   const score = calculateScore(impact, effort);
@@ -123,7 +130,7 @@ export const addTask = ({
 
   apiClient.createTask(filterTaskKeys(task))
     .then(({ id }) => {
-      dispatch(moveToTrashTask(tempId));
+      dispatch(removeTaskFromAllIds(tempId));
       dispatch({
         type: ADD_TASK,
         payload: {
@@ -191,7 +198,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       [action.payload.task.id]: filterTaskKeys(action.payload.task),
     },
   }),
-  [TRASH_TASK]: (state, { payload: { taskId } }) => ({
+  [REMOVE_TASK_FROM_ALL_IDS]: (state, { payload: { taskId } }) => ({
     ...state,
     result: state.result.filter(id => id !== taskId),
   }),
@@ -207,6 +214,12 @@ const isToday = (timestamp) => {
   return now.getFullYear() === date.getFullYear()
     && now.getMonth() === date.getMonth()
     && now.getDate() === date.getDate();
+};
+const differenceTaskArrays = (tasks1, tasks2) => {
+  const idsInTasks2 = tasks2.reduce((memo, task) => ({
+    ...memo, [task.id]: true,
+  }), {});
+  return tasks1.filter(task => !idsInTasks2[task.id]);
 };
 
 const getNonTrashedTasks = state => (
@@ -230,7 +243,7 @@ export const getImportantTasks = (state) => {
   const tasksSortedByScoreToPick = Math.max(0, IMPORTANT_TASKS_LIMIT - tasksDueToday.length);
   return [
     ...tasksDueToday,
-    ...tasksSortedByScore.slice(0, tasksSortedByScoreToPick),
+    ...differenceTaskArrays(tasksSortedByScore, tasksDueToday).slice(0, tasksSortedByScoreToPick),
   ];
 };
 export const getBacklogTasks = (state) => {
