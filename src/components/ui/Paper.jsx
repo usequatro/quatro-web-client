@@ -2,7 +2,7 @@ import { Box } from 'rebass';
 import styled from 'styled-components';
 
 export default styled(Box).attrs({
-  appForeground: 2,
+  bg: 'appForeground',
   p: 3,
 })`
   width: 100%;

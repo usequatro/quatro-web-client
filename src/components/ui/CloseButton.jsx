@@ -1,18 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Box } from 'rebass';
+import XIcon from '../icons/XIcon';
+import BackIcon from '../icons/BackIcon';
 
-const TopRightButton = styled.button`
+const Container = styled(Box).attrs({ pt: 3 })`
   position: absolute;
   top: 0;
   left: 0;
-  font-size: 2rem;
-  cursor: pointer;
 `;
 
 const CloseButton = ({ onClick, backArrow }) => (
-  <TopRightButton type="button" onClick={onClick}>
-    {backArrow ? '←' : 'x'}
-  </TopRightButton>
+  <Container>
+    {backArrow
+      ? <BackIcon onClick={onClick} size="small" />
+      : <XIcon onClick={onClick} size="small" />
+    }
+  </Container>
 );
 
 export default CloseButton;
