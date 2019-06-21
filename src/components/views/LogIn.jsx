@@ -9,6 +9,7 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
+import TopSpacer from '../ui/TopSpacer';
 import {
   SignUpHeading, SignUpFooter, SignUpFormView,
 } from './SignUp';
@@ -34,6 +35,7 @@ const LogIn = ({ history }) => {
 
   return (
     <React.Fragment>
+      <TopSpacer />
       <header>
         <SignUpHeading>
           Tasket

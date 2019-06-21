@@ -16,13 +16,14 @@ const TASK_KEYS = {
   completed: true,
   blockers: true,
   score: true,
+  trashed: true,
 };
 
 // Action types
 
 const SET_TASKS = 'SET_TASKS';
 const ADD_TASK = 'ADD_TASK';
-const DELETE_TASK = 'DELETE_TASK';
+const TRASH_TASK = 'TRASH_TASK';
 const UPDATE_TASK = 'UPDATE_TASK';
 const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
 
@@ -65,11 +66,12 @@ const setLoadFlags = ({ loaded, loading }) => ({
 });
 
 export const setTasks = (tasks) => {
-  const tasksWithScore = tasks.map(task => ({
+  const parsedTasks = tasks.map(task => ({
     ...task,
     score: calculateScore(task.impact, task.effort),
+    id: `${task.id}`,
   }));
-  const normalizedTasks = simpleNormalize(tasksWithScore);
+  const normalizedTasks = simpleNormalize(parsedTasks);
   return {
     type: SET_TASKS,
     payload: { tasks: normalizedTasks },
@@ -77,16 +79,19 @@ export const setTasks = (tasks) => {
 };
 
 export const updateTask = (taskId, updates) => (dispatch) => {
-  apiClient.updateTask(taskId, updates);
+  apiClient.updateTask(taskId, filterTaskKeys(updates));
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
 };
-export const deleteTask = taskId => ({
-  type: DELETE_TASK,
-  payload: { taskId },
-});
+export const moveToTrashTask = taskId => (dispatch) => {
+  dispatch(updateTask(taskId, { trashed: Date.now() }));
+  dispatch({
+    type: TRASH_TASK,
+    payload: { taskId },
+  });
+};
 
 export const addTask = ({
   title = isRequired(),
@@ -116,9 +121,9 @@ export const addTask = ({
     },
   });
 
-  apiClient.createTask(task)
+  apiClient.createTask(filterTaskKeys(task))
     .then(({ id }) => {
-      dispatch(deleteTask(tempId));
+      dispatch(moveToTrashTask(tempId));
       dispatch({
         type: ADD_TASK,
         payload: {
@@ -186,7 +191,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       [action.payload.task.id]: filterTaskKeys(action.payload.task),
     },
   }),
-  [DELETE_TASK]: (state, { payload: { taskId } }) => ({
+  [TRASH_TASK]: (state, { payload: { taskId } }) => ({
     ...state,
     result: state.result.filter(id => id !== taskId),
   }),
@@ -195,20 +200,38 @@ export const reducer = createReducer(INITIAL_STATE, {
 // Selectors
 
 const BACKLOG_SCORE_THRESHOLD = 50;
+const IMPORTANT_TASKS_LIMIT = 7;
+const isToday = (timestamp) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  return now.getFullYear() === date.getFullYear()
+    && now.getMonth() === date.getMonth()
+    && now.getDate() === date.getDate();
+};
 
-const getNonCompletedTasks = state => (
+const getNonTrashedTasks = state => (
   state[NAMESPACE].result
     .map(id => state[NAMESPACE].entities[id])
-    .filter(task => task.completed === null)
+    .filter(task => task.trashed == null)
+);
+
+const getNonCompletedTasks = state => (
+  getNonTrashedTasks(state)
+    .filter(task => task.completed == null)
 );
 
 export const getLoading = state => state[NAMESPACE].loading;
 export const getLoaded = state => state[NAMESPACE].loaded;
 export const getTask = (state, id) => state[NAMESPACE].entities[id];
 export const getImportantTasks = (state) => {
-  const tasks = getNonCompletedTasks(state)
-    .filter(task => task.score >= BACKLOG_SCORE_THRESHOLD);
-  return sortBy(tasks, 'score').reverse();
+  const tasks = getNonCompletedTasks(state);
+  const tasksSortedByScore = sortBy(tasks, 'score').reverse();
+  const tasksDueToday = tasks.filter(task => task.due && isToday(task.due));
+  const tasksSortedByScoreToPick = Math.max(0, IMPORTANT_TASKS_LIMIT - tasksDueToday.length);
+  return [
+    ...tasksDueToday,
+    ...tasksSortedByScore.slice(0, tasksSortedByScoreToPick),
+  ];
 };
 export const getBacklogTasks = (state) => {
   const tasks = getNonCompletedTasks(state)
@@ -235,4 +258,8 @@ export const getBlockingTasks = (state, blockedTaskId) => {
   const task = getTask(state, blockedTaskId);
   const blockingTasks = task.blockers.map(id => getTask(state, id));
   return sortBy(blockingTasks, 'score').reverse();
+};
+export const getUndeletedTask = (state, id) => {
+  const task = getTask(state, id);
+  return !task || task.trashed ? undefined : task;
 };

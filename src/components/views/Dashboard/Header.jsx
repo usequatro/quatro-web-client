@@ -10,11 +10,11 @@ const HeaderContainer = styled(Box).attrs({
   bg: 'appForeground',
 })`
   display: flex;
-  padding-top: 6vh;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   border-bottom: 1px solid ${props => props.theme.colors.border};
+  font-family: ${props => props.theme.fonts.headline};
 `;
 
 const DashboardTitle = styled(Heading).attrs(() => ({

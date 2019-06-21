@@ -11,6 +11,7 @@ import Workspace from './Workspace';
 import withLoadTasks from '../../hoc/withLoadTasks';
 import Main from '../../ui/Main';
 import Loader from '../../ui/Loader';
+import TopSpacer from '../../ui/TopSpacer';
 import Important from './Important';
 import Backlog from './Backlog';
 import Scheduled from './Scheduled';
@@ -19,6 +20,7 @@ import Completed from './Completed';
 
 const Dashboard = ({ loaded }) => (
   <React.Fragment>
+    <TopSpacer bg="appForeground" />
     <Header />
     <Main>
       <Workspace>

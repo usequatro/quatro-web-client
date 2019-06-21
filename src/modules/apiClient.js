@@ -1,22 +1,25 @@
 import * as firebase from 'firebase';
+import omit from 'lodash/omit';
 
 const TASKS = 'tasks';
 
 const db = firebase.firestore();
 
-export const createTask = task => db.collection(TASKS).add(task);
+const excludeId = entity => omit(entity, ['id']);
 
-export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
+export const createTask = task => db.collection(TASKS).add(excludeId(task));
+
+// export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
 
 export const fetchTasks = () => db.collection(TASKS).get()
   .then((querySnapshot) => {
     const tasks = querySnapshot.docs.map(doc => ({
-      id: doc.id,
       ...doc.data(),
+      id: doc.id,
     }));
     return tasks;
   });
 
 export const updateTask = (taskId, updates) => db.collection(TASKS).doc(taskId).set({
-  ...updates,
+  ...excludeId(updates),
 }, { merge: true });

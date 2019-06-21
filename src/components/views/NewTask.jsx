@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Box, Heading } from 'rebass';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 import { addTask as addTaskAction } from '../../modules/tasks';
 
-import Paper from '../ui/Paper';
-import InputGroup from '../ui/InputGroup';
-import InputField from '../ui/InputField';
+import FullScreenPaper from '../ui/FullScreenPaper';
 import CloseButton from '../ui/CloseButton';
+import { AppHeaderContainer, AppHeader } from '../ui/AppHeader';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
+import TaskForm from './EditTask/TaskForm';
 
 const Form = styled.form`
   width: 100%;
@@ -19,67 +19,60 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
+const getInitialDueDate = () => dayjs()
+  .add(1, 'day')
+  .hour(17)
+  .startOf('hour')
+  .valueOf();
+
 const NewTask = ({ addTask, close }) => {
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
   const [description, setDescription] = useState('');
+  const [hasDue, setHasDue] = useState(false);
+  const [due, setDue] = useState(getInitialDueDate());
 
   const createTask = (event) => {
     event.preventDefault();
     addTask({
-      title, impact, effort, description,
+      title,
+      impact,
+      effort,
+      description,
+      due: hasDue ? due : undefined,
     });
     close();
   };
-  const onTitleChange = event => setTitle(event.target.value);
-  const onImpactChange = event => setImpact(event.target.value);
-  const onEffortChange = event => setEffort(event.target.value);
-  const onDecriptionChange = event => setDescription(event.target.value);
 
   return (
-    <Paper>
-      <Box as="header" p={3} mb={4}>
-        <Heading color="textHighlight" textAlign="center">
+    <FullScreenPaper>
+      <AppHeaderContainer>
+        <AppHeader>
           Create Task
-          <CloseButton onClick={close} />
-        </Heading>
-      </Box>
+        </AppHeader>
+        <CloseButton onClick={close} />
+      </AppHeaderContainer>
       <Main>
         <Form onSubmit={createTask}>
-          <InputGroup mb={4}>
-            <InputField
-              required
-              label="What do you have to do?*"
-              onChange={onTitleChange}
-            />
-            <InputField
-              required
-              type="number"
-              min={0}
-              max={7}
-              label="How important is this task?*"
-              onChange={onImpactChange}
-            />
-            <InputField
-              required
-              type="number"
-              min={0}
-              max={7}
-              label="How much effort will it require?*"
-              onChange={onEffortChange}
-            />
-            <InputField
-              textarea
-              label="Notes"
-              onChange={onDecriptionChange}
-            />
-          </InputGroup>
-
+          <TaskForm
+            title={title}
+            impact={impact}
+            effort={effort}
+            description={description}
+            hasDue={hasDue}
+            due={due}
+            setTitle={setTitle}
+            setImpact={setImpact}
+            setEffort={setEffort}
+            setDescription={setDescription}
+            setHasDue={setHasDue}
+            setDue={setDue}
+          />
           <Button variant="primary" type="submit">Create task</Button>
         </Form>
       </Main>
-    </Paper>
+    </FullScreenPaper>
   );
 };
 

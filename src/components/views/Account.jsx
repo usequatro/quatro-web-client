@@ -1,12 +1,13 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';
-import { Box, Heading, Text } from 'rebass';
+import { Box, Text } from 'rebass';
 
-import Paper from '../ui/Paper';
+import FullScreenPaper from '../ui/FullScreenPaper';
 import CloseButton from '../ui/CloseButton';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
+import { AppHeaderContainer, AppHeader } from '../ui/AppHeader';
 
 import { LOG_IN } from '../../constants/paths';
 
@@ -34,13 +35,13 @@ const Account = ({ history }) => {
   };
   const user = firebase.auth().currentUser;
   return (
-    <Paper>
-      <Box as="header" p={3} mb={4}>
-        <Heading color="textHighlight" textAlign="center">
+    <FullScreenPaper>
+      <AppHeaderContainer>
+        <AppHeader>
           Account
           <CloseButton onClick={onClose} />
-        </Heading>
-      </Box>
+        </AppHeader>
+      </AppHeaderContainer>
       <Main>
         <Box>
           <UserInfo label="Full name">{user.displayName}</UserInfo>
@@ -49,7 +50,7 @@ const Account = ({ history }) => {
         </Box>
         <Button onClick={onSignOut}>Sign out</Button>
       </Main>
-    </Paper>
+    </FullScreenPaper>
   );
 };
 

@@ -6,7 +6,6 @@ import {
   Heading, Text, Box,
 } from 'rebass';
 import {
-  deleteTask as deleteTaskAction,
   completeTask as completeTaskAction,
 } from '../../../modules/tasks';
 import { EDIT_TASK } from '../../../constants/paths';
@@ -26,52 +25,53 @@ const TaskButtons = styled(Box)`
   justify-content: flex-start;
 `;
 const TaskComplete = styled.button`
-  height: 1rem;
-  width: 1rem;
+  height: 1.25rem;
+  width: 1.25rem;
   background-color: green;
   margin-bottom: 0.5rem;
 `;
-const TaskDelete = styled(TaskComplete)`
-  background-color: orange;
-`;
 
 const Task = ({
-  id, title, score, scheduledStart, dueDate, completed, completeTask, deleteTask, history,
-}) => (
-  <TaskContainer onClick={() => history.push(EDIT_TASK.replace(/:id\b/, id))}>
-    <Box flex={1}>
-      <TaskTitle>{title}</TaskTitle>
-      <TaskSubtitle>
+  id, title, score, scheduledStart, dueDate, completed, completeTask, history,
+}) => {
+  const onComplete = (event) => {
+    event.stopPropagation();
+    completeTask(id);
+  };
+  return (
+    <TaskContainer onClick={() => history.push(EDIT_TASK.replace(/:id\b/, id))}>
+      <Box flex={1}>
+        <TaskTitle>{title}</TaskTitle>
+        <TaskSubtitle>
         Tasket score:
-        {' '}
-        {score}
-      </TaskSubtitle>
-      {scheduledStart && (
-        <TaskSubtitle>
-          Scheduled start:
           {' '}
-          {new Date(scheduledStart).toLocaleString()}
+          {score}
         </TaskSubtitle>
-      )}
-      {dueDate && (
-        <TaskSubtitle>
-          Due date:
-          {' '}
-          {new Date(dueDate).toLocaleString()}
-        </TaskSubtitle>
-      )}
-    </Box>
-    <TaskButtons>
-      {!completed && (
-        <TaskComplete onClick={() => completeTask(id)} />
-      )}
-      <TaskDelete onClick={() => deleteTask(id)} />
-    </TaskButtons>
-  </TaskContainer>
-);
+        {scheduledStart && (
+          <TaskSubtitle>
+            Scheduled start:
+            {' '}
+            {new Date(scheduledStart).toLocaleString()}
+          </TaskSubtitle>
+        )}
+        {dueDate && (
+          <TaskSubtitle>
+            Due date:
+            {' '}
+            {new Date(dueDate).toLocaleString()}
+          </TaskSubtitle>
+        )}
+      </Box>
+      <TaskButtons>
+        {!completed && (
+          <TaskComplete onClick={onComplete} />
+        )}
+      </TaskButtons>
+    </TaskContainer>
+  );
+};
 
 const mapDispatchToProps = {
-  deleteTask: deleteTaskAction,
   completeTask: completeTaskAction,
 };
 

@@ -9,6 +9,7 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import Main from '../ui/Main';
+import TopSpacer from '../ui/TopSpacer';
 import InvisibleForm from '../ui/InvisibleForm';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
@@ -80,6 +81,7 @@ const SignUp = ({ history }) => {
 
   return (
     <React.Fragment>
+      <TopSpacer />
       <header>
         <SignUpHeading>
           Tasket

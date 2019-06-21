@@ -56,6 +56,9 @@ const Defaults = createGlobalStyle`
   a { color: inherit; }
   body, html { font-size: 16px; }
   * { box-sizing: border-box; }
+  body {
+    font-family: ${props => props.theme.fonts.body}
+  }
 `;
 
 const RootStyles = createGlobalStyle`
@@ -63,14 +66,14 @@ const RootStyles = createGlobalStyle`
 `;
 
 const AppStylesWrapper = ({ children }) => (
-  <React.Fragment>
-    <Reset />
-    <Defaults />
-    <RootStyles />
-    <ThemeProvider theme={theme}>
+  <ThemeProvider theme={theme}>
+    <React.Fragment>
+      <Reset />
+      <Defaults />
+      <RootStyles />
       {children}
-    </ThemeProvider>
-  </React.Fragment>
+    </React.Fragment>
+  </ThemeProvider>
 );
 
 export default AppStylesWrapper;

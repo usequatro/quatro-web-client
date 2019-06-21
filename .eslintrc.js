@@ -12,6 +12,14 @@ module.exports = {
     },
     "extends": ["eslint:recommended", "react-app", "airbnb"],
     "rules": {
-        "react/prop-types": "off"
+        "react/prop-types": "off",
+        "rules": {
+            "jsx-a11y/label-has-associated-control": [ 2, {
+            //   "labelComponents": ["CustomInputLabel"],
+              "labelAttributes": ["label"],
+              "controlComponents": ["BooleanCheckbox"],
+              "depth": 3,
+            }],
+          }
     }
 };

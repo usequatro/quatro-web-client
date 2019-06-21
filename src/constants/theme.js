@@ -16,6 +16,8 @@ export default {
     textHighlight: colors.SEA_BLUE,
     border: colors.LIGHT_GRAY,
     placeholder: colors.LIGHT_GRAY,
+    inputBackground: colors.WHITE,
+    disabled: colors.SUPER_LIGHT_GRAY,
   },
   // Array of numbers for use as margin and pixel values
   space: [
@@ -23,8 +25,8 @@ export default {
   ],
   // Values for the fontFamily prop
   fonts: {
-    sans: 'system-ui, sans-serif',
-    mono: 'Menlo, monospace',
+    headline: "'Open Sans', sans-serif",
+    body: 'Roboto, sans-serif',
   },
   // Values for fontWeight prop
   fontWeights: {

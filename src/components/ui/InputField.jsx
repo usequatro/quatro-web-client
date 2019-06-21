@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass';
+import FieldLabel from './FieldLabel';
 
 const Input = styled.input`
   font-size: inherit;
@@ -8,6 +9,8 @@ const Input = styled.input`
   width: 100%;
   border: solid 1px ${props => props.theme.colors.border};
   outline-color: ${props => props.theme.colors.textHighlight};
+  background-color: ${props => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'auto')};
 
   ::-webkit-input-placeholder { /* Edge */
     color: ${props => props.theme.colors.placeholder};
@@ -20,17 +23,12 @@ const Input = styled.input`
   }
 `;
 
-const Label = styled(Box).attrs({
-  mb: 2,
-})`
-`;
-
 const InputField = ({
   label, className, textarea, ...props
 }) => (
   <Box as={label ? 'label' : 'div'} className={className}>
     {label && (
-    <Label>{label}</Label>
+      <FieldLabel>{label}</FieldLabel>
     )}
     <Input as={textarea ? 'textarea' : 'input'} {...props} />
   </Box>
