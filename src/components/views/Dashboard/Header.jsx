@@ -7,8 +7,7 @@ import NewTaskIcon from '../../icons/NewTaskIcon';
 import UserIcon from '../../icons/UserIcon';
 
 const HeaderContainer = styled(Box).attrs({
-  px: 3,
-  pb: 3,
+  p: 3,
   bg: 'appForeground',
 })`
   display: flex;
