@@ -8,4 +8,5 @@ export default styled(Box).attrs({
   width: 100%;
   height: 100%;
   position: relative; /* for absolute positioned things inside */
+  overflow-y: hidden;
 `;

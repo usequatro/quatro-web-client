@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { Heading, Box } from 'rebass';
 import { Link, withRouter } from 'react-router-dom';
 import * as paths from '../../../constants/paths';
+import NewTaskIcon from '../../icons/NewTaskIcon';
+import UserIcon from '../../icons/UserIcon';
 
 const HeaderContainer = styled(Box).attrs({
   px: 3,
@@ -24,19 +26,6 @@ const DashboardTitle = styled(Heading).attrs(() => ({
   text-align: center;
 `;
 
-const ProfilePicture = styled.div`
-  background-color: gray;
-  border-radius: 100%;
-  height: 3rem;
-  width: 3rem;
-`;
-
-const NewTaskButton = styled.div`
-  background-color: blue;
-  height: 3rem;
-  width: 3rem;
-`;
-
 const titles = {
   [paths.SCHEDULED]: 'Scheduled',
   [paths.BLOCKED]: 'Blocked',
@@ -49,11 +38,11 @@ const titles = {
 export default withRouter(({ location }) => (
   <HeaderContainer>
     <Link to={paths.ACCOUNT}>
-      <ProfilePicture />
+      <UserIcon />
     </Link>
     <DashboardTitle>{titles[location.pathname] || titles.default}</DashboardTitle>
     <Link to={paths.NEW_TASK}>
-      <NewTaskButton />
+      <NewTaskIcon />
     </Link>
   </HeaderContainer>
 ));

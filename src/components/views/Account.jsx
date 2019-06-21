@@ -13,7 +13,7 @@ import { resetLoadedTasks as resetLoadedTasksAction } from '../../modules/tasks'
 
 import { LOG_IN } from '../../constants/paths';
 
-const UserInfo = ({ label, children, resetLoadedTasks }) => (
+const UserInfo = ({ label, children }) => (
   <Text mb={4} textAlign="left">
     {label}
     :

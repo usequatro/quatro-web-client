@@ -9,6 +9,7 @@ import {
   completeTask as completeTaskAction,
 } from '../../../modules/tasks';
 import { EDIT_TASK } from '../../../constants/paths';
+import CheckIcon from '../../icons/CheckIcon';
 
 const TaskContainer = styled(Box).attrs({ mb: 3, p: 3 })`
   padding: 1rem;
@@ -23,12 +24,6 @@ const TaskButtons = styled(Box)`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-`;
-const TaskComplete = styled.button`
-  height: 1.25rem;
-  width: 1.25rem;
-  background-color: green;
-  margin-bottom: 0.5rem;
 `;
 
 const Task = ({
@@ -64,7 +59,7 @@ const Task = ({
       </Box>
       <TaskButtons>
         {!completed && (
-          <TaskComplete onClick={onComplete} />
+          <CheckIcon onClick={onComplete} size="small" />
         )}
       </TaskButtons>
     </TaskContainer>

@@ -9,7 +9,7 @@ import LogIn from './views/LogIn';
 import Account from './views/Account';
 import Dashboard from './views/Dashboard/Dashboard';
 import NewTask from './views/NewTask';
-import EditTask from './views/EditTask';
+import EditTask from './views/EditTask/EditTask';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
 
