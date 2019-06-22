@@ -13,6 +13,6 @@ const Container = styled.div`
 
 export default Component => ({ size = 'medium', ...props }) => (
   <Container size={size}>
-    <Component height="" width="" {...props} />
+    <Component height="100%" width="100%" {...props} />
   </Container>
 );
