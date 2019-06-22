@@ -31,7 +31,7 @@ const titles = {
   [paths.IMPORTANT]: 'Important',
   [paths.BACKLOG]: 'Backlog',
   [paths.COMPLETED]: 'Completed',
-  default: 'Tasket',
+  default: '',
 };
 
 export default withRouter(({ location }) => (

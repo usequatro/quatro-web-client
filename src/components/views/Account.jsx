@@ -33,26 +33,27 @@ const Account = ({ history, resetLoadedTasks }) => {
         console.error(error);
       });
   };
-  const onClose = () => {
-    history.goBack();
-  };
   const user = firebase.auth().currentUser;
   return (
     <FullScreenPaper>
-      <AppHeaderContainer>
-        <AppHeader>
-          Account
-          <CloseButton onClick={onClose} />
-        </AppHeader>
-      </AppHeaderContainer>
-      <Main>
-        <Box>
-          <UserInfo label="Full name">{user.displayName}</UserInfo>
-          <UserInfo label="Email">{user.email}</UserInfo>
-          <UserInfo label="Email verified">{user.emailVerified ? 'yes' : 'no'}</UserInfo>
-        </Box>
-        <Button onClick={onSignOut}>Sign out</Button>
-      </Main>
+      {onRequestClose => (
+        <React.Fragment>
+          <AppHeaderContainer>
+            <AppHeader>
+              Account
+              <CloseButton onClick={onRequestClose} />
+            </AppHeader>
+          </AppHeaderContainer>
+          <Main>
+            <Box>
+              <UserInfo label="Full name">{user.displayName}</UserInfo>
+              <UserInfo label="Email">{user.email}</UserInfo>
+              <UserInfo label="Email verified">{user.emailVerified ? 'yes' : 'no'}</UserInfo>
+            </Box>
+            <Button onClick={onSignOut}>Sign out</Button>
+          </Main>
+        </React.Fragment>
+      )}
     </FullScreenPaper>
   );
 };

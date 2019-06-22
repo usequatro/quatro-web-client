@@ -7,9 +7,10 @@ import Task from '../Task';
 import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import BlockingTaskList from './BlockingTaskList';
+import Workspace from '../Workspace';
 
 const Blocked = ({ tasks }) => (
-  <React.Fragment>
+  <Workspace>
     <SearchTaskInput />
     <TaskListHeadline title="Blocked" count={tasks.length} />
     {tasks.map(task => (
@@ -18,7 +19,10 @@ const Blocked = ({ tasks }) => (
         <BlockingTaskList blockedTaskId={task.id} />
       </React.Fragment>
     ))}
-  </React.Fragment>
+    {tasks.length === 0 && (
+      <p>No tasks. Good job!</p>
+    )}
+  </Workspace>
 );
 
 const mapStateToProps = state => ({

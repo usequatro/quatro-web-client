@@ -1,9 +1,9 @@
 import React from 'react';
 
-import InputGroup from '../../ui/InputGroup';
-import InputField from '../../ui/InputField';
-import DateTimeField from '../../ui/DateTimeField';
-import BooleanCheckbox from '../../ui/BooleanCheckbox';
+import InputGroup from '../../../ui/InputGroup';
+import InputField from '../../../ui/InputField';
+import DateTimeField from '../../../ui/DateTimeField';
+import BooleanCheckbox from '../../../ui/BooleanCheckbox';
 
 const TaskForm = ({
   title,

@@ -8,10 +8,9 @@ import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
 import Account from './views/Account';
 import Dashboard from './views/Dashboard/Dashboard';
-import NewTask from './views/NewTask';
-import EditTask from './views/EditTask/EditTask';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
+import MAX_WIDTH from '../constants/maxWidth';
 
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
@@ -21,10 +20,9 @@ const AppBackground = styled.div`
   flex-direction: column;
   align-items: center;
   border: solid 1px ${props => props.theme.colors.border};
+  overflow: hidden;
 
-  /* mobile only for now */
-  max-width: 416px;
-  max-height: 736px;
+  max-width: ${MAX_WIDTH}px; /* only mobile width for now */
 `;
 
 const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);
@@ -38,9 +36,7 @@ export default () => (
           <Redirect exact from="/" to={paths.SIGN_UP} />
           <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
           <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
-          <RouteLoggedIn path={paths.EDIT_TASK} component={EditTask} />
-          <RouteLoggedIn path={paths.NEW_TASK} component={NewTask} />
-          <RouteLoggedIn path={paths.DASHBOARD} component={Dashboard} />
+          <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
           <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
           <Route>404</Route>
         </Switch>

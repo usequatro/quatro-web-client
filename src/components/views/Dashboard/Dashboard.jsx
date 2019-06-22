@@ -7,10 +7,11 @@ import * as paths from '../../../constants/paths';
 
 import Header from './Header';
 import FooterNavigation from './FooterNavigation';
-import Workspace from './Workspace';
 import withLoadTasks from '../../hoc/withLoadTasks';
 import Main from '../../ui/Main';
 import Loader from '../../ui/Loader';
+import NewTask from './NewTask/NewTask';
+import EditTask from './EditTask';
 import Important from './Important';
 import Backlog from './Backlog';
 import Scheduled from './Scheduled';
@@ -21,11 +22,10 @@ const Dashboard = ({ loaded }) => (
   <React.Fragment>
     <Header />
     <Main>
-      <Workspace>
-        {!loaded && (
-          <Loader />
-        )}
-        {loaded && (
+      {!loaded && (
+        <Loader />
+      )}
+      {loaded && (
         <Switch>
           <Redirect exact from={paths.DASHBOARD} to={paths.IMPORTANT} />
           <Route path={paths.IMPORTANT} component={Important} />
@@ -33,10 +33,11 @@ const Dashboard = ({ loaded }) => (
           <Route path={paths.SCHEDULED} component={Scheduled} />
           <Route path={paths.BLOCKED} component={Blocked} />
           <Route path={paths.COMPLETED} component={Completed} />
+          <Route path={paths.NEW_TASK} component={NewTask} />
+          <Route path={paths.EDIT_TASK} component={EditTask} />
           <Route>404</Route>
         </Switch>
-        )}
-      </Workspace>
+      )}
     </Main>
     <FooterNavigation />
   </React.Fragment>
