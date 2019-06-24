@@ -5,3 +5,5 @@ export const ALMOST_BLACK = '#181818';
 
 export const DEEP_BLUE = '#042d74';
 export const SEA_BLUE = '#042d74';
+
+export const ERROR_RED = '#cc0000';

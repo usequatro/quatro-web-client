@@ -14,6 +14,7 @@ const INITIAL_STATE = {
   uid: null,
   message: '',
   callbackButton: '',
+  type: '',
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -22,6 +23,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     uid: action.payload.uid,
     message: action.payload.message,
     callbackButton: action.payload.callbackButton,
+    type: action.payload.type,
   }),
   [HIDE]: state => ({
     ...state,
@@ -34,6 +36,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 export const selectUid = state => state[NAMESPACE].uid;
 export const selectMessage = state => state[NAMESPACE].message;
 export const selectCallbackButton = state => state[NAMESPACE].callbackButton;
+export const selectType = state => state[NAMESPACE].type;
 
 // Actions
 const duration = 3000;
@@ -54,24 +57,38 @@ export const hideNotification = (uid = isRequired()) => (dispatch, getState) => 
   }
 };
 
-export const showNotification = (message, { callbackButton, callbackFunction }) => (dispatch) => {
-  const uid = Math.round(Math.random() * 10000);
-  callbacks[uid] = callbackFunction;
+const showNotification = (message, { callbackButton, callbackFunction, type } = {}) => (
+  (dispatch) => {
+    const uid = Math.round(Math.random() * 10000);
+    callbacks[uid] = callbackFunction;
 
-  timeouts[uid] = setTimeout(() => {
-    if (timeouts[uid]) {
-      clearInterval(timeouts[uid]);
-      dispatch(hideNotification(uid));
-    }
-  }, duration);
+    timeouts[uid] = setTimeout(() => {
+      if (timeouts[uid]) {
+        clearInterval(timeouts[uid]);
+        dispatch(hideNotification(uid));
+      }
+    }, duration);
 
-  dispatch({
-    type: SHOW,
-    payload: {
-      uid, message, callbackButton,
-    },
-  });
-};
+    dispatch({
+      type: SHOW,
+      payload: {
+        uid, message, callbackButton, type,
+      },
+    });
+  }
+);
+
+export const showInfoNotification = (message, { callbackButton, callbackFunction } = {}) => (
+  showNotification(message, { callbackButton, callbackFunction, type: 'info' })
+);
+
+const showErrorNotification = (message, { callbackButton, callbackFunction } = {}) => (
+  showNotification(message, { callbackButton, callbackFunction, type: 'error' })
+);
+
+export const showNetworkErrorNotification = () => (
+  showErrorNotification('Error')
+);
 
 export const runNotificationCallback = (uid = isRequired()) => (dispatch) => {
   const callbackFunction = callbacks[uid];

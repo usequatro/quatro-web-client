@@ -8,6 +8,7 @@ import {
   selectUid,
   selectMessage,
   selectCallbackButton,
+  selectType,
   runNotificationCallback as runNotificationCallbackAction,
   hideNotification as hideNotificationAction,
 } from '../../modules/notification';
@@ -37,7 +38,10 @@ const NotificationContainer = styled(Box)`
 const NotificationBox = styled(Box).attrs({ px: 4, py: 4 })`
   width: 90%;
   background-color: ${props => props.theme.colors.appForeground};
-  border: solid 1px ${props => props.theme.colors.border};
+  border-style: solid;
+  border-width: 1px;
+  border-color: ${props => (props.notificationType === 'error' && props.theme.colors.error)
+    || props.theme.colors.border};
   display: flex;
   align-items: center;
 `;
@@ -47,7 +51,7 @@ const NotificationMessage = styled(Text)`
 `;
 
 const Notification = ({
-  uid, message, callbackButton, runNotificationCallback, hideNotification,
+  uid, message, callbackButton, type, runNotificationCallback, hideNotification,
 }) => {
   const [rendered, setRendered] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -83,7 +87,7 @@ const Notification = ({
     <Transition in={visible} timeout={duration} onExited={onExited}>
       {state => (
         <NotificationContainer state={state}>
-          <NotificationBox onClick={onClickNotification}>
+          <NotificationBox onClick={onClickNotification} notificationType={type}>
             <NotificationMessage>{message}</NotificationMessage>
             {callbackButton && (
               <Box>
@@ -103,6 +107,7 @@ const mapStateToProps = state => ({
   uid: selectUid(state),
   message: selectMessage(state),
   callbackButton: selectCallbackButton(state),
+  type: selectType(state),
 });
 
 const mapDispatchToProps = {

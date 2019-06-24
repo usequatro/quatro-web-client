@@ -18,6 +18,7 @@ export default {
     placeholder: colors.LIGHT_GRAY,
     inputBackground: colors.WHITE,
     disabled: colors.SUPER_LIGHT_GRAY,
+    error: colors.ERROR_RED,
   },
   // Array of numbers for use as margin and pixel values
   space: [

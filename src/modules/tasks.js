@@ -3,7 +3,7 @@ import mapValues from 'lodash/mapValues';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
-import { showNotification } from './notification';
+import { showInfoNotification, showNetworkErrorNotification } from './notification';
 
 export const NAMESPACE = 'tasks';
 
@@ -80,18 +80,18 @@ export const setTasks = (tasks) => {
 };
 
 export const updateTask = (taskId, updates) => (dispatch) => {
-  apiClient.updateTask(taskId, filterTaskKeys(updates));
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
+  return apiClient.updateTask(taskId, filterTaskKeys(updates));
 };
 export const moveToTrashTask = taskId => (dispatch) => {
-  dispatch(updateTask(taskId, { trashed: Date.now() }));
   dispatch({
     type: REMOVE_TASK_FROM_ALL_IDS,
     payload: { taskId },
   });
+  return dispatch(updateTask(taskId, { trashed: Date.now() }));
 };
 
 export const removeTaskFromAllIds = taskId => ({
@@ -129,7 +129,7 @@ export const addTask = ({
     },
   });
 
-  apiClient.createTask(filterTaskKeys(task))
+  return apiClient.createTask(filterTaskKeys(task))
     .then(({ id }) => {
       dispatch(removeTaskFromAllIds(tempId));
       dispatch({
@@ -145,24 +145,29 @@ export const addTask = ({
     })
     .catch((error) => {
       console.error(error);
+      dispatch(showNetworkErrorNotification());
+      dispatch(removeTaskFromAllIds(tempId));
     });
 };
 
 export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
-export const completeTask = taskId => (dispatch) => {
-  dispatch(updateTask(taskId, { completed: Date.now() }));
-  dispatch(showNotification('Task completed! 🎉', {
-    callbackButton: 'Undo',
-    callbackFunction: () => undoCompletedTask(taskId),
-  }));
-};
+export const completeTask = taskId => dispatch => (
+  dispatch(updateTask(taskId, { completed: Date.now() }))
+    .then(() => {
+      dispatch(showInfoNotification('Task completed! 🎉', {
+        callbackButton: 'Undo',
+        callbackFunction: () => undoCompletedTask(taskId),
+      }));
+    })
+    .catch(() => dispatch(showNetworkErrorNotification()))
+);
 
 export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
   const userId = getLoggedInUserUid();
 
   dispatch(setLoadFlags({ loading: true, loaded: false }));
 
-  apiClient.fetchTasks(userId)
+  return apiClient.fetchTasks(userId)
     .then((tasks) => {
       dispatch(setTasks(tasks));
       dispatch(setLoadFlags({ loading: false, loaded: true }));
