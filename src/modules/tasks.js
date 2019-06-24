@@ -1,7 +1,9 @@
 import sortBy from 'lodash/sortBy';
 import mapValues from 'lodash/mapValues';
 import createReducer from '../util/createReducer';
+import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
+import { showNotification } from './notification';
 
 export const NAMESPACE = 'tasks';
 
@@ -23,12 +25,12 @@ const TASK_KEYS = {
 
 // Action types
 
-const SET_TASKS = 'SET_TASKS';
-const ADD_TASK = 'ADD_TASK';
-const REMOVE_TASK_FROM_ALL_IDS = 'REMOVE_TASK_FROM_ALL_IDS';
-const UPDATE_TASK = 'UPDATE_TASK';
-const SET_LOAD_FLAGS = 'SET_LOAD_FLAGS';
-const RESET = 'RESET';
+const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
+const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
+const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
+const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
+const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
+const RESET = `${NAMESPACE}/RESET`;
 
 // Actions
 
@@ -55,12 +57,6 @@ const simpleNormalize = (inputs) => {
   });
 
   return { result, entities };
-};
-
-const isRequired = (param) => {
-  if (param === undefined) {
-    throw new Error('missing required parameter');
-  }
 };
 
 const setLoadFlags = ({ loaded, loading }) => ({
@@ -152,8 +148,14 @@ export const addTask = ({
     });
 };
 
-
-export const completeTask = taskId => updateTask(taskId, { completed: Date.now() });
+export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
+export const completeTask = taskId => (dispatch) => {
+  dispatch(updateTask(taskId, { completed: Date.now() }));
+  dispatch(showNotification('Task completed! 🎉', {
+    callbackButton: 'Undo',
+    callbackFunction: () => undoCompletedTask(taskId),
+  }));
+};
 
 export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
   const userId = getLoggedInUserUid();
@@ -274,7 +276,7 @@ export const getCompletedTasks = (state) => {
   const tasks = state[NAMESPACE].result
     .map(id => state[NAMESPACE].entities[id])
     .filter(task => task.completed != null);
-  return sortBy(tasks, 'completed');
+  return sortBy(tasks, 'completed').reverse();
 };
 export const getBlockingTasks = (state, blockedTaskId) => {
   const task = getTask(state, blockedTaskId);

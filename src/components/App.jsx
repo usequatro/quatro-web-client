@@ -11,6 +11,7 @@ import Dashboard from './views/Dashboard/Dashboard';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
 import MAX_WIDTH from '../constants/maxWidth';
+import Notification from './ui/Notification';
 
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
@@ -41,6 +42,7 @@ export default () => (
           <Route>404</Route>
         </Switch>
       </BrowserRouter>
+      <Notification />
     </AppBackground>
   </AppStylesWrapper>
 );
