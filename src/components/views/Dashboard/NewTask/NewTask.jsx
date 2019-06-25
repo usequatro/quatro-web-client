@@ -49,7 +49,7 @@ const NewTask = ({ addTask }) => {
         <React.Fragment>
           <AppHeaderContainer>
             <AppHeader>
-          Create Task
+              Create Task
             </AppHeader>
             <CloseButton onClick={onRequestClose} />
           </AppHeaderContainer>

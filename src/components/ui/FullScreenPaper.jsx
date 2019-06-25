@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
+import { Box } from 'rebass';
 import Paper from './Paper';
 import MAX_WIDTH from '../../constants/maxWidth';
 
@@ -18,14 +19,21 @@ const PaperWithTransitionStyles = styled(Paper)`
   transform: ${props => transitionStyles[props.state].transform};
   transition: transform ${duration}ms ease-out;
 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   position: fixed;
   top: 0;
-  left: calc(50% - ${MAX_WIDTH / 2}px);
+  left: 0;
   bottom: 0;
+  right: 0;
   z-index: 10;
   border: solid 1px ${props => props.theme.colors.border};
+`;
 
-  max-width: ${MAX_WIDTH}px; /* only mobile width for now */
+const WidthContainer = styled(Box)`
+  max-width: ${MAX_WIDTH}px;
 `;
 
 const FullScreenPaper = ({ history, children, ...props }) => {
@@ -44,7 +52,9 @@ const FullScreenPaper = ({ history, children, ...props }) => {
     <Transition in={visible} timeout={duration}>
       {state => (
         <PaperWithTransitionStyles {...props} state={state} pt={0}>
-          {typeof children === 'function' ? children(close) : children}
+          <WidthContainer>
+            {typeof children === 'function' ? children(close) : children}
+          </WidthContainer>
         </PaperWithTransitionStyles>
       )}
     </Transition>
