@@ -4,7 +4,7 @@ import { Box } from 'rebass';
 import XIcon from '../icons/XIcon';
 import BackIcon from '../icons/BackIcon';
 
-const Container = styled(Box).attrs({ pt: 3 })`
+const Container = styled(Box).attrs({ pt: 3, pl: 3 })`
   position: absolute;
   top: 0;
   left: 0;

@@ -22,4 +22,4 @@ export const fetchTasks = userId => db.collection(TASKS).where('userId', '==', u
 
 export const updateTask = (taskId, updates) => db.collection(TASKS).doc(taskId).set({
   ...excludeId(updates),
-}, { merge: true }).then(() => { throw new Error('e'); });
+}, { merge: true });

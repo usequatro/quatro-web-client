@@ -18,6 +18,11 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
+const NewTaskMain = styled(Main).attrs({ p: 3 })`
+  flex-grow: 1;
+  overflow-y: auto;
+`;
+
 const getInitialDueDate = () => dayjs()
   .add(1, 'day')
   .hour(17)
@@ -53,7 +58,7 @@ const NewTask = ({ addTask }) => {
             </AppHeader>
             <CloseButton onClick={onRequestClose} />
           </AppHeaderContainer>
-          <Main>
+          <NewTaskMain>
             <Form onSubmit={createTask}>
               <TaskForm
                 title={title}
@@ -71,7 +76,7 @@ const NewTask = ({ addTask }) => {
               />
               <Button variant="primary" type="submit">Create task</Button>
             </Form>
-          </Main>
+          </NewTaskMain>
         </React.Fragment>
       )}
     </FullScreenPaper>

@@ -75,6 +75,8 @@ const showNotification = (message, { callbackButton, callbackFunction, type } = 
         uid, message, callbackButton, type,
       },
     });
+
+    return uid;
   }
 );
 

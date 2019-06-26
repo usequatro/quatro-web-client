@@ -13,6 +13,7 @@ import {
   hideNotification as hideNotificationAction,
 } from '../../modules/notification';
 import Button from './Button';
+import RootPortal from './RootPortal';
 
 const duration = 125;
 const transitionStyles = {
@@ -84,22 +85,24 @@ const Notification = ({
   }
 
   return (
-    <Transition in={visible} timeout={duration} onExited={onExited}>
-      {state => (
-        <NotificationContainer state={state}>
-          <NotificationBox onClick={onClickNotification} notificationType={type}>
-            <NotificationMessage>{message}</NotificationMessage>
-            {callbackButton && (
-              <Box>
-                <Button variant="outline" onClick={onClickButton}>
-                  {callbackButton}
-                </Button>
-              </Box>
-            )}
-          </NotificationBox>
-        </NotificationContainer>
-      )}
-    </Transition>
+    <RootPortal>
+      <Transition in={visible} timeout={duration} onExited={onExited}>
+        {state => (
+          <NotificationContainer state={state}>
+            <NotificationBox onClick={onClickNotification} notificationType={type}>
+              <NotificationMessage>{message}</NotificationMessage>
+              {callbackButton && (
+                <Box>
+                  <Button variant="outline" onClick={onClickButton}>
+                    {callbackButton}
+                  </Button>
+                </Box>
+              )}
+            </NotificationBox>
+          </NotificationContainer>
+        )}
+      </Transition>
+    </RootPortal>
   );
 };
 

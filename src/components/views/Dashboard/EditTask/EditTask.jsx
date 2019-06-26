@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
 
 import {
   getLoaded,
@@ -18,6 +19,11 @@ import Loader from '../../../ui/Loader';
 import Main from '../../../ui/Main';
 import Button from '../../../ui/Button';
 import withLoadTasks from '../../../hoc/withLoadTasks';
+
+const EditTaskMain = styled(Main).attrs({ p: 3 })`
+  flex-grow: 1;
+  overflow-y: auto;
+`;
 
 const EditTask = ({
   loaded, updateTask, moveToTrashTask, id, title, impact, effort, description, due,
@@ -38,7 +44,7 @@ const EditTask = ({
               <CloseButton backArrow onClick={onRequestClose} />
             </AppHeader>
           </AppHeaderContainer>
-          <Main>
+          <EditTaskMain>
             {!loaded && (
               <Loader />
             )}
@@ -73,7 +79,7 @@ const EditTask = ({
                 </Button>
               </React.Fragment>
             )}
-          </Main>
+          </EditTaskMain>
         </React.Fragment>
       )}
     </FullScreenPaper>

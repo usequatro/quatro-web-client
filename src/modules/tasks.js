@@ -3,7 +3,7 @@ import mapValues from 'lodash/mapValues';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
-import { showInfoNotification, showNetworkErrorNotification } from './notification';
+import { showInfoNotification, showNetworkErrorNotification, hideNotification } from './notification';
 
 export const NAMESPACE = 'tasks';
 
@@ -151,16 +151,18 @@ export const addTask = ({
 };
 
 export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
-export const completeTask = taskId => dispatch => (
-  dispatch(updateTask(taskId, { completed: Date.now() }))
-    .then(() => {
-      dispatch(showInfoNotification('Task completed! 🎉', {
-        callbackButton: 'Undo',
-        callbackFunction: () => undoCompletedTask(taskId),
-      }));
-    })
-    .catch(() => dispatch(showNetworkErrorNotification()))
-);
+export const completeTask = taskId => (dispatch) => {
+  const notificationUid = dispatch(showInfoNotification('Task completed! 🎉', {
+    callbackButton: 'Undo',
+    callbackFunction: () => undoCompletedTask(taskId),
+  }));
+  return dispatch(updateTask(taskId, { completed: Date.now() }))
+    .catch((error) => {
+      console.error(error);
+      dispatch(hideNotification(notificationUid));
+      dispatch(showNetworkErrorNotification());
+    });
+};
 
 export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
   const userId = getLoggedInUserUid();

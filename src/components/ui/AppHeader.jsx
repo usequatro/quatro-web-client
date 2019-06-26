@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 const AppHeaderContainer = styled(Box).attrs({
   p: 3,
-  mb: 4,
+  mb: 3,
   as: 'header',
 })`
   position: relative;

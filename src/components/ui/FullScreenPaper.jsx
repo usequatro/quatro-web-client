@@ -3,8 +3,8 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass';
-import Paper from './Paper';
 import MAX_WIDTH from '../../constants/maxWidth';
+import RootPortal from './RootPortal';
 
 const duration = 125;
 
@@ -15,13 +15,9 @@ const transitionStyles = {
   exited: { transform: 'translateY(100%)' },
 };
 
-const PaperWithTransitionStyles = styled(Paper)`
+const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   transform: ${props => transitionStyles[props.state].transform};
   transition: transform ${duration}ms ease-out;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 
   position: fixed;
   top: 0;
@@ -34,6 +30,12 @@ const PaperWithTransitionStyles = styled(Paper)`
 
 const WidthContainer = styled(Box)`
   max-width: ${MAX_WIDTH}px;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 `;
 
 const FullScreenPaper = ({ history, children, ...props }) => {
@@ -49,15 +51,17 @@ const FullScreenPaper = ({ history, children, ...props }) => {
   };
 
   return (
-    <Transition in={visible} timeout={duration}>
-      {state => (
-        <PaperWithTransitionStyles {...props} state={state} pt={0}>
-          <WidthContainer>
-            {typeof children === 'function' ? children(close) : children}
-          </WidthContainer>
-        </PaperWithTransitionStyles>
-      )}
-    </Transition>
+    <RootPortal>
+      <Transition in={visible} timeout={duration}>
+        {state => (
+          <PaperWithTransitionStyles {...props} state={state} pt={0}>
+            <WidthContainer>
+              {typeof children === 'function' ? children(close) : children}
+            </WidthContainer>
+          </PaperWithTransitionStyles>
+        )}
+      </Transition>
+    </RootPortal>
   );
 };
 

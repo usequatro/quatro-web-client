@@ -11,7 +11,7 @@ const Container = styled(Box)`
 `;
 
 const FieldContainer = styled(Box)`
-  width: calc(50% - 1rem);
+  width: calc(50% - 0.5rem);
 `;
 
 const DateTimeField = ({
