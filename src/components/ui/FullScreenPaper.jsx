@@ -19,6 +19,9 @@ const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   transform: ${props => transitionStyles[props.state].transform};
   transition: transform ${duration}ms ease-out;
 
+  display: flex;
+  justify-content: center;
+
   position: fixed;
   top: 0;
   left: 0;
