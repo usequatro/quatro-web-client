@@ -6,6 +6,7 @@ import FieldLabel from './FieldLabel';
 const Button = styled.button`
   height: 2.5rem;
   flex-grow: 1;
+  width: 100%;
   ${props => props.theme.buttons[props.variant]}
   font-size: 1rem;
 `;
