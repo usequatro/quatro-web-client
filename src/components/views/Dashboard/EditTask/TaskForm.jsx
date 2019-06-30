@@ -1,9 +1,18 @@
 import React from 'react';
+import memoize from 'lodash/memoize';
 
 import InputGroup from '../../../ui/InputGroup';
 import InputField from '../../../ui/InputField';
+import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
 import DateTimeField from '../../../ui/DateTimeField';
 import BooleanCheckbox from '../../../ui/BooleanCheckbox';
+
+const generateConsecutiveOptions = memoize((min, max) => {
+  const array = Array.from(Array(max).keys());
+  return array.map((value, index) => ({
+    value: (min + index),
+  }));
+}, (min, max) => `${min}-${max}`);
 
 const TaskForm = ({
   title,
@@ -26,27 +35,21 @@ const TaskForm = ({
   <InputGroup mb={4}>
     <InputField
       required
-      label="What do you have to do?*"
+      label="What do you have to do? *"
       value={title}
       onChange={event => setTitle(event.target.value)}
     />
-    <InputField
-      required
-      type="number"
-      min={0}
-      max={7}
-      label="How important is this task?*"
-      vaue={impact}
-      onChange={event => setImpact(event.target.value)}
+    <HorizontalSelectorField
+      label="How important is this task?"
+      value={impact}
+      onChange={(event, value) => setImpact(value)}
+      options={generateConsecutiveOptions(1, 7)}
     />
-    <InputField
-      required
-      type="number"
-      min={0}
-      max={7}
-      label="How much effort will it require?*"
+    <HorizontalSelectorField
+      label="How much effort will it require?"
       value={effort}
-      onChange={event => setEffort(event.target.value)}
+      onChange={(event, value) => setEffort(value)}
+      options={generateConsecutiveOptions(1, 7)}
     />
     <InputField
       textarea
