@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import { Box } from 'rebass';
 
 import {
   getLoaded,
@@ -20,9 +21,20 @@ import Main from '../../../ui/Main';
 import Button from '../../../ui/Button';
 import withLoadTasks from '../../../hoc/withLoadTasks';
 
+const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+`;
 const EditTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
+`;
+const ContentContainer = styled(Box)`  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 `;
 
 const EditTask = ({
@@ -37,7 +49,7 @@ const EditTask = ({
   return (
     <FullScreenPaper>
       {onRequestClose => (
-        <React.Fragment>
+        <FlexContainer>
           <AppHeaderContainer>
             <AppHeader>
             Edit Task
@@ -52,7 +64,7 @@ const EditTask = ({
               <Redirect to={paths.DASHBOARD} />
             )}
             {loaded && id && (
-              <React.Fragment>
+              <ContentContainer>
                 <TaskForm
                   title={title}
                   impact={impact}
@@ -77,10 +89,10 @@ const EditTask = ({
                 >
                   Delete task
                 </Button>
-              </React.Fragment>
+              </ContentContainer>
             )}
           </EditTaskMain>
-        </React.Fragment>
+        </FlexContainer>
       )}
     </FullScreenPaper>
   );

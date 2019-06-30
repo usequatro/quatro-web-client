@@ -32,8 +32,8 @@ const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 
 export default () => (
   <AppStylesWrapper>
-    <Div100vh>
-      <AppBackground>
+    <AppBackground>
+      <Div100vh style={{ width: '100%', height: '100rvh' }}>
         <BrowserRouter>
           <Switch>
             <Redirect exact from="/" to={paths.SIGN_UP} />
@@ -45,7 +45,7 @@ export default () => (
           </Switch>
         </BrowserRouter>
         <Notification />
-      </AppBackground>
-    </Div100vh>
+      </Div100vh>
+    </AppBackground>
   </AppStylesWrapper>
 );

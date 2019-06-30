@@ -12,12 +12,18 @@ import Main from '../../../ui/Main';
 import Button from '../../../ui/Button';
 import TaskForm from '../EditTask/TaskForm';
 
+const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+`;
 const Form = styled.form`
   width: 100%;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 `;
-
 const NewTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
@@ -51,7 +57,7 @@ const NewTask = ({ addTask }) => {
   return (
     <FullScreenPaper>
       {onRequestClose => (
-        <React.Fragment>
+        <FlexContainer>
           <AppHeaderContainer>
             <AppHeader>
               Create Task
@@ -77,7 +83,7 @@ const NewTask = ({ addTask }) => {
               <Button variant="primary" type="submit">Create task</Button>
             </Form>
           </NewTaskMain>
-        </React.Fragment>
+        </FlexContainer>
       )}
     </FullScreenPaper>
   );

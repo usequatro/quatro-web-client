@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, Redirect } from 'react-router-dom';
+import styled from 'styled-components';
 
 import { getLoaded } from '../../../modules/tasks';
 import * as paths from '../../../constants/paths';
@@ -18,8 +19,15 @@ import Scheduled from './Scheduled';
 import Blocked from './Blocked';
 import Completed from './Completed';
 
+const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+`;
+
 const Dashboard = ({ loaded }) => (
-  <React.Fragment>
+  <FlexContainer>
     <Header />
     <Main>
       {!loaded && (
@@ -40,7 +48,7 @@ const Dashboard = ({ loaded }) => (
       )}
     </Main>
     <FooterNavigation />
-  </React.Fragment>
+  </FlexContainer>
 );
 
 const mapStateToProps = state => ({

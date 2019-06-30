@@ -3,6 +3,7 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass';
+import Div100vh from 'react-div-100vh';
 import MAX_WIDTH from '../../constants/maxWidth';
 import RootPortal from './RootPortal';
 
@@ -35,10 +36,6 @@ const WidthContainer = styled(Box)`
   max-width: ${MAX_WIDTH}px;
   width: 100%;
   height: 100%;
-
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
 `;
 
 const FullScreenPaper = ({ history, children, ...props }) => {
@@ -59,7 +56,9 @@ const FullScreenPaper = ({ history, children, ...props }) => {
         {state => (
           <PaperWithTransitionStyles {...props} state={state} pt={0}>
             <WidthContainer>
-              {typeof children === 'function' ? children(close) : children}
+              <Div100vh style={{ width: '100%', height: '100rvh' }}>
+                {typeof children === 'function' ? children(close) : children}
+              </Div100vh>
             </WidthContainer>
           </PaperWithTransitionStyles>
         )}

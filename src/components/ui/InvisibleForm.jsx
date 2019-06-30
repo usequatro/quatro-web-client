@@ -6,6 +6,7 @@ export default styled(Box).attrs({ as: 'form' })`
   flex-direction: inherit;
   justify-content: inherit;
   align-items: inherit;
+  flex-shrink: 0;
   width: 100%;
   max-width: 100%;
 `;
