@@ -30,6 +30,7 @@ const FlexContainer = styled.div`
 const EditTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 const ContentContainer = styled(Box)`  width: 100%;
   display: flex;

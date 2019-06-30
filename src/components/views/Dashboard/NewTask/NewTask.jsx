@@ -28,6 +28,7 @@ const Form = styled.form`
 const NewTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const getInitialDueDate = () => dayjs()

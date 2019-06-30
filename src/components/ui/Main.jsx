@@ -9,4 +9,5 @@ export default styled(Box).attrs({ as: 'main' })`
   width: 100%;
   align-items: center;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
