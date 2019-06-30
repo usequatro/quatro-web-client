@@ -15,6 +15,7 @@ const FooterContainer = styled(Box).attrs({
   display: flex;
   justify-content: space-around;
   align-items: center;
+  flex-shrink: 0;
   width: 100%;
   border-top: 1px solid ${props => props.theme.colors.border};
 `;

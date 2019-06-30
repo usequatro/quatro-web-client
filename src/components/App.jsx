@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import {
   BrowserRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
+import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
@@ -16,7 +17,7 @@ import Notification from './ui/Notification';
 const AppBackground = styled.div`
   background-color: ${props => props.theme.colors.appBackground};
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,18 +32,20 @@ const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 
 export default () => (
   <AppStylesWrapper>
-    <AppBackground>
-      <BrowserRouter>
-        <Switch>
-          <Redirect exact from="/" to={paths.SIGN_UP} />
-          <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
-          <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
-          <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
-          <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
-          <Route>404</Route>
-        </Switch>
-      </BrowserRouter>
-      <Notification />
-    </AppBackground>
+    <Div100vh>
+      <AppBackground>
+        <BrowserRouter>
+          <Switch>
+            <Redirect exact from="/" to={paths.SIGN_UP} />
+            <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
+            <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
+            <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
+            <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
+            <Route>404</Route>
+          </Switch>
+        </BrowserRouter>
+        <Notification />
+      </AppBackground>
+    </Div100vh>
   </AppStylesWrapper>
 );

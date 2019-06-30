@@ -13,6 +13,7 @@ const HeaderContainer = styled(Box).attrs({
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   width: 100%;
   border-bottom: 1px solid ${props => props.theme.colors.border};
   font-family: ${props => props.theme.fonts.headline};
