@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
+import { withRouter } from 'react-router-dom';
 
 import { addTask as addTaskAction } from '../../../../modules/tasks';
 
@@ -35,7 +36,7 @@ const getInitialDueDate = () => dayjs()
   .startOf('hour')
   .valueOf();
 
-const NewTask = ({ addTask }) => {
+const NewTask = ({ history, addTask }) => {
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
@@ -52,6 +53,7 @@ const NewTask = ({ addTask }) => {
       description,
       due: hasDue ? due : undefined,
     });
+    history.goBack();
   };
 
   return (
@@ -93,4 +95,4 @@ const mapDispatchToProps = dispatch => ({
   addTask: task => dispatch(addTaskAction(task)),
 });
 
-export default connect(null, mapDispatchToProps)(NewTask);
+export default withRouter(connect(null, mapDispatchToProps)(NewTask));
