@@ -38,9 +38,10 @@ const ContentContainer = styled(Box)`  width: 100%;
 `;
 
 const EditTask = ({
-  loaded, updateTask, moveToTrashTask, id, title, impact, effort, description, due,
+  loaded, updateTask, moveToTrashTask, id, title, impact, effort, description, due, scheduledStart,
 }) => {
   const [hasDue, setHasDue] = useState(due != null);
+  const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
 
   const onUpdate = (key, value) => {
     updateTask(id, { [key]: value });
@@ -72,12 +73,16 @@ const EditTask = ({
                   description={description}
                   hasDue={hasDue}
                   due={due}
+                  hasScheduledStart={hasScheduledStart}
+                  scheduledStart={scheduledStart}
                   setTitle={value => onUpdate('title', value)}
                   setImpact={value => onUpdate('impact', value)}
                   setEffort={value => onUpdate('effort', value)}
                   setDescription={value => onUpdate('description', value)}
                   setHasDue={setHasDue}
                   setDue={value => onUpdate('due', value)}
+                  setHasScheduledStart={setHasScheduledStart}
+                  setScheduledStart={value => onUpdate('scheduledStart', value)}
                 />
 
                 <Button

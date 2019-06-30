@@ -1,17 +1,30 @@
-// import React from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass';
-import InputField from './InputField';
 
-export default styled(Box)`
+const ChildContainer = styled(Box).attrs({ mb: 2 })``;
+
+const GroupContainer = styled(Box)`
     display: flex;
     flex-direction: column;
     width: 100%;
 
-    ${InputField} {
+    ${ChildContainer} {
         width: 100%;
     }
-    ${InputField}:not(:last-child) {
-        margin-bottom: 1rem;
+    ${ChildContainer} {
+        margin-bottom: 1.5rem;
     }
 `;
+
+const InputGroup = ({ children }) => (
+  <GroupContainer>
+    {React.Children.map(children, child => (
+      <ChildContainer>
+        {child}
+      </ChildContainer>
+    ))}
+  </GroupContainer>
+);
+
+export default InputGroup;

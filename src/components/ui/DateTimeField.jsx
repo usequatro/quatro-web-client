@@ -5,11 +5,11 @@ import { Box } from 'rebass';
 import InputField from './InputField';
 import FieldLabel from './FieldLabel';
 
-const Container = styled(Box)`
+const Container = styled(Box).attrs({ mb: 2 })``;
+const FieldsContainer = styled(Box)`
   display: flex;
   justify-content: space-between;
 `;
-
 const FieldContainer = styled(Box)`
   width: calc(50% - 0.5rem);
 `;
@@ -42,17 +42,17 @@ const DateTimeField = ({
   };
 
   return (
-    <React.Fragment>
+    <Container>
       <FieldLabel>{label}</FieldLabel>
-      <Container>
+      <FieldsContainer>
         <FieldContainer>
           <InputField type="date" onBlur={onDateChange} defaultValue={date} disabled={disabled} />
         </FieldContainer>
         <FieldContainer>
           <InputField type="time" onBlur={onTimeChange} defaultValue={time} disabled={disabled} />
         </FieldContainer>
-      </Container>
-    </React.Fragment>
+      </FieldsContainer>
+    </Container>
   );
 };
 

@@ -18,6 +18,10 @@ const TaskForm = ({
   setDue,
   hasDue,
   setHasDue,
+  scheduledStart,
+  setScheduledStart,
+  hasScheduledStart,
+  setHasScheduledStart,
 }) => (
   <InputGroup mb={4}>
     <InputField
@@ -63,10 +67,28 @@ const TaskForm = ({
           />
             Due Date
         </label>
-        )}
+      )}
       onChange={(event, value) => setDue(value)}
       value={due}
       disabled={!hasDue}
+    />
+
+    <DateTimeField
+      label={(
+        <label>
+          <BooleanCheckbox
+            onChange={(event, value) => {
+              setHasScheduledStart(value);
+              setScheduledStart(null);
+            }}
+            value={hasScheduledStart}
+          />
+            Scheduled Start Date
+        </label>
+      )}
+      onChange={(event, value) => setScheduledStart(value)}
+      value={scheduledStart}
+      disabled={!hasScheduledStart}
     />
   </InputGroup>
 );

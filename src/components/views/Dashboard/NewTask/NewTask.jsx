@@ -43,6 +43,8 @@ const NewTask = ({ history, addTask }) => {
   const [description, setDescription] = useState('');
   const [hasDue, setHasDue] = useState(false);
   const [due, setDue] = useState(getInitialDueDate());
+  const [hasScheduledStart, setHasScheduledStart] = useState(false);
+  const [scheduledStart, setScheduledStart] = useState(null);
 
   const createTask = (event) => {
     event.preventDefault();
@@ -51,7 +53,8 @@ const NewTask = ({ history, addTask }) => {
       impact,
       effort,
       description,
-      due: hasDue ? due : undefined,
+      due: hasDue ? due : null,
+      scheduledStart: hasScheduledStart ? scheduledStart : null,
     });
     history.goBack();
   };
@@ -75,12 +78,16 @@ const NewTask = ({ history, addTask }) => {
                 description={description}
                 hasDue={hasDue}
                 due={due}
+                hasScheduledStart={hasScheduledStart}
+                scheduledStart={scheduledStart}
                 setTitle={setTitle}
                 setImpact={setImpact}
                 setEffort={setEffort}
                 setDescription={setDescription}
                 setHasDue={setHasDue}
                 setDue={setDue}
+                setHasScheduledStart={setHasScheduledStart}
+                setScheduledStart={setScheduledStart}
               />
               <Button variant="primary" type="submit">Create task</Button>
             </Form>

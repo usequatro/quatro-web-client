@@ -104,8 +104,10 @@ export const addTask = ({
   effort = isRequired(),
   impact = isRequired(),
   description = isRequired(),
+  ...restAttributes
 }) => (dispatch, getState, { getLoggedInUserUid }) => {
   const task = {
+    ...filterTaskKeys(restAttributes),
     title,
     effort,
     impact,
