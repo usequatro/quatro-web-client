@@ -257,7 +257,9 @@ export const getLoading = state => state[NAMESPACE].loading;
 export const getLoaded = state => state[NAMESPACE].loaded;
 export const getTask = (state, id) => state[NAMESPACE].entities[id];
 export const getImportantTasks = (state) => {
-  const tasks = getNonCompletedTasks(state);
+  const now = Date.now();
+  const tasks = getNonCompletedTasks(state)
+    .filter(task => task.scheduledStart == null || task.scheduledStart <= now);
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
   const tasksDueToday = tasks.filter(task => task.due && isToday(task.due));
   const tasksSortedByScoreToPick = Math.max(0, IMPORTANT_TASKS_LIMIT - tasksDueToday.length);
@@ -267,7 +269,9 @@ export const getImportantTasks = (state) => {
   ];
 };
 export const getBacklogTasks = (state) => {
+  const now = Date.now();
   const tasks = getNonCompletedTasks(state)
+    .filter(task => task.scheduledStart == null || task.scheduledStart <= now)
     .filter(task => task.score < BACKLOG_SCORE_THRESHOLD);
   return sortBy(tasks, 'score').reverse();
 };
@@ -277,8 +281,9 @@ export const getBlockedTasks = (state) => {
   return sortBy(tasks, 'score').reverse();
 };
 export const getScheduledTasks = (state) => {
+  const now = Date.now();
   const tasks = getNonCompletedTasks(state)
-    .filter(task => task.scheduledStart != null);
+    .filter(task => task.scheduledStart != null && task.scheduledStart > now);
   return sortBy(tasks, 'scheduledStart');
 };
 export const getCompletedTasks = (state) => {
