@@ -9,7 +9,10 @@ import {
   getUndeletedTask,
   updateTask as updateTaskAction,
   moveToTrashTask as moveToTrashTaskAction,
-  getTaskDependencies,
+  updateTaskDependency as updateTaskDependencyAction,
+  removeTaskDependency as removeTaskDependencyAction,
+  createTaskDependency as createTaskDependencyAction,
+  getDependenciesForTask,
 } from '../../../../modules/tasks';
 import * as paths from '../../../../constants/paths';
 
@@ -51,6 +54,9 @@ const EditTask = ({
   due,
   scheduledStart,
   dependencies,
+  updateTaskDependency,
+  removeTaskDependency,
+  createTaskDependency,
 }) => {
   const [hasDue, setHasDue] = useState(due != null);
   const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
@@ -79,6 +85,7 @@ const EditTask = ({
             {loaded && id && (
               <ContentContainer>
                 <TaskForm
+                  id={id}
                   title={title}
                   setTitle={value => onUpdate('title', value)}
                   impact={impact}
@@ -96,6 +103,9 @@ const EditTask = ({
                   scheduledStart={scheduledStart}
                   setScheduledStart={value => onUpdate('scheduledStart', value)}
                   dependencies={dependencies}
+                  updateTaskDependency={updateTaskDependency}
+                  removeTaskDependency={removeTaskDependency}
+                  createTaskDependency={createTaskDependency}
                 />
 
                 <Button
@@ -119,12 +129,15 @@ const EditTask = ({
 const mapDispatchToProps = {
   updateTask: updateTaskAction,
   moveToTrashTask: moveToTrashTaskAction,
+  updateTaskDependency: updateTaskDependencyAction,
+  removeTaskDependency: removeTaskDependencyAction,
+  createTaskDependency: createTaskDependencyAction,
 };
 
 const mapStateToProps = (state, ownProps) => ({
   loaded: getLoaded(state),
   ...getUndeletedTask(state, ownProps.match.params.id),
-  dependencies: getTaskDependencies(state, ownProps.match.params.id),
+  dependencies: getDependenciesForTask(state, ownProps.match.params.id),
 });
 
 export default withLoadTasks(connect(mapStateToProps, mapDispatchToProps)(EditTask));

@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Box } from 'rebass';
 
-import { getBlockingTasks } from '../../../../modules/tasks';
+import { getTasksBlockingGivenTask } from '../../../../modules/tasks';
 
 import Task from '../Task';
 
@@ -13,7 +13,7 @@ const Blocked = ({ tasks }) => (
 );
 
 const mapStateToProps = (state, props) => ({
-  tasks: getBlockingTasks(state, props.blockedTaskId),
+  tasks: getTasksBlockingGivenTask(state, props.blockedTaskId),
 });
 
 export default connect(mapStateToProps)(Blocked);

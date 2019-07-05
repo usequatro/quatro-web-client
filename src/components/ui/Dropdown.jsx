@@ -25,7 +25,7 @@ const Dropdown = ({
       onChange={event => onChange(event, event.target.value)}
       value={value === null ? '' : value}
     >
-      <Option value="" disabled />
+      <Option value="" disabled style={{ display: 'none' }} />
       {children}
     </Select>
   </Container>

@@ -1,5 +1,8 @@
 import sortBy from 'lodash/sortBy';
-import mapValues from 'lodash/mapValues';
+import isEqual from 'lodash/isEqual';
+import omit from 'lodash/omit';
+import uniq from 'lodash/uniq';
+import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
@@ -7,7 +10,7 @@ import { showInfoNotification, showNetworkErrorNotification, hideNotification } 
 
 export const NAMESPACE = 'tasks';
 
-const TASK_KEYS = {
+const TASK_KEYS_FOR_REDUX = {
   id: true,
   title: true,
   effort: true,
@@ -17,15 +20,20 @@ const TASK_KEYS = {
   due: true,
   scheduledStart: true,
   completed: true,
-  blockedBy: true,
   score: true,
   trashed: true,
   userId: true,
 };
+const TASK_KEYS_FOR_API = {
+  ...omit(TASK_KEYS_FOR_REDUX, ['id']),
+  blockedBy: true,
+};
 
-const filterTaskKeys = (task) => {
+const generateId = (prefix = '') => `${prefix}${uuid()}`;
+
+const filterTaskKeys = (task, keys = isRequired()) => {
   const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
-    if (!TASK_KEYS[key]) {
+    if (!keys[key]) {
       console.warn(`[tasks] Unknown key "${key}" with value "${value}" in task ${task.id}`);
       return memo;
     }
@@ -42,22 +50,34 @@ const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
 const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
 const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
 const RESET = `${NAMESPACE}/RESET`;
+const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
+const REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS`;
+const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
 
 // Reducers
 
 const INITIAL_STATE = {
   loading: true,
   loaded: false,
-  result: [],
-  entities: {},
+  tasks: {
+    byId: {},
+    allIds: [],
+  },
+  taskDependencies: {
+    byId: {},
+    allIds: [],
+  },
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
   [UPDATE_TASK]: (state, { payload: { taskId, updates } }) => ({
     ...state,
-    entities: {
-      ...state.entities,
-      [taskId]: { ...state.entities[taskId], ...filterTaskKeys(updates) },
+    tasks: {
+      ...state.tasks,
+      byId: {
+        ...state.tasks.byId,
+        [taskId]: { ...state.tasks.byId[taskId], ...filterTaskKeys(updates, TASK_KEYS_FOR_REDUX) },
+      },
     },
   }),
   [SET_LOAD_FLAGS]: (state, { payload: { loading, loaded } }) => ({
@@ -67,22 +87,69 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [SET_TASKS]: (state, action) => ({
     ...state,
-    result: [...action.payload.tasks.result],
-    entities: { ...mapValues(action.payload.tasks.entities, filterTaskKeys) },
+    tasks: {
+      allIds: action.payload.tasks.allIds,
+      byId: action.payload.tasks.byId,
+    },
+    taskDependencies: {
+      allIds: action.payload.taskDependencies.allIds,
+      byId: action.payload.taskDependencies.byId,
+    },
   }),
   [ADD_TASK]: (state, action) => ({
     ...state,
-    result: [...state.result, action.payload.task.id],
-    entities: {
-      ...state.entities,
-      [action.payload.task.id]: filterTaskKeys(action.payload.task),
+    tasks: {
+      allIds: [...state.tasks.allIds, action.payload.task.id],
+      byId: {
+        ...state.tasks.byId,
+        [action.payload.task.id]: filterTaskKeys(action.payload.task, TASK_KEYS_FOR_REDUX),
+      },
     },
   }),
   [REMOVE_TASK_FROM_ALL_IDS]: (state, { payload: { taskId } }) => ({
     ...state,
-    result: state.result.filter(id => id !== taskId),
+    tasks: {
+      ...state.tasks,
+      allIds: state.tasks.allIds.filter(id => id !== taskId),
+    },
   }),
   [RESET]: () => ({ ...INITIAL_STATE }),
+  [UPDATE_TASK_DEPENDENCY]: (state, { payload: { id, blockerId, blockedId } }) => ({
+    ...state,
+    taskDependencies: {
+      ...state.taskDependencies,
+      byId: {
+        ...state.taskDependencies.byId,
+        [id]: {
+          ...state.taskDependencies.byId[id],
+          blockerId,
+          blockedId,
+        },
+      },
+    },
+  }),
+  [REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS]: (state, { payload: { taskDependencyId } }) => ({
+    ...state,
+    taskDependencies: {
+      ...state.taskDependencies,
+      allIds: state.taskDependencies.allIds.filter(id => id !== taskDependencyId),
+    },
+  }),
+  [CREATE_TASK_DEPENDENCY]: (state, { payload: { blockerId, blockedId, id } }) => ({
+    ...state,
+    taskDependencies: {
+      ...state.taskDependencies,
+      allIds: [...state.taskDependencies.allIds, id],
+      byId: {
+        ...state.taskDependencies.byId,
+        [id]: {
+          id,
+          blockerId,
+          blockedId,
+        },
+      },
+    },
+  }),
 });
 
 // Selectors
@@ -104,9 +171,28 @@ const differenceTaskArrays = (tasks1, tasks2) => {
 };
 
 const getNonTrashedTasks = state => (
-  state[NAMESPACE].result
-    .map(id => state[NAMESPACE].entities[id])
+  state[NAMESPACE].tasks.allIds
+    .map(id => state[NAMESPACE].tasks.byId[id])
     .filter(task => task.trashed == null)
+);
+
+const getTaskDependency = (state, id) => state[NAMESPACE].taskDependencies.byId[id];
+
+const getTaskDependencies = state => (
+  state[NAMESPACE].taskDependencies.allIds
+    .map(id => state[NAMESPACE].taskDependencies.byId[id])
+);
+
+const getTaskBlockedByIds = (state, taskId) => (
+  getTaskDependencies(state)
+    .filter(taskDependency => taskDependency.blockedId === taskId)
+    .map(({ blockerId }) => blockerId)
+    .filter(Boolean)
+);
+
+export const getDependenciesForTask = (state, id) => (
+  getTaskDependencies(state)
+    .filter(({ blockedId, blockerId }) => (blockedId === id || blockerId === id))
 );
 
 export const getNonCompletedTasks = state => (
@@ -116,7 +202,7 @@ export const getNonCompletedTasks = state => (
 
 export const getLoading = state => state[NAMESPACE].loading;
 export const getLoaded = state => state[NAMESPACE].loaded;
-export const getTask = (state, id) => state[NAMESPACE].entities[id];
+export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
 export const getImportantTasks = (state) => {
   const now = Date.now();
   const tasks = getNonCompletedTasks(state)
@@ -137,9 +223,11 @@ export const getBacklogTasks = (state) => {
   return sortBy(tasks, 'score').reverse();
 };
 export const getBlockedTasks = (state) => {
-  const tasks = getNonCompletedTasks(state)
-    .filter(task => (task.blockedBy || []).length > 0);
-  return sortBy(tasks, 'score').reverse();
+  const taskDependencies = getTaskDependencies(state);
+  const blockedTaskIds = taskDependencies.map(({ blockedId }) => blockedId);
+  const blockedTasks = blockedTaskIds
+    .map(id => getTask(state, id));
+  return sortBy(blockedTasks, 'score').reverse();
 };
 export const getScheduledTasks = (state) => {
   const now = Date.now();
@@ -148,44 +236,19 @@ export const getScheduledTasks = (state) => {
   return sortBy(tasks, 'scheduledStart');
 };
 export const getCompletedTasks = (state) => {
-  const tasks = state[NAMESPACE].result
-    .map(id => state[NAMESPACE].entities[id])
+  const tasks = state[NAMESPACE].tasks.allIds
+    .map(id => state[NAMESPACE].tasks.byId[id])
     .filter(task => task.completed != null);
   return sortBy(tasks, 'completed').reverse();
 };
-export const getBlockingTasks = (state, blockedTaskId) => {
-  const task = getTask(state, blockedTaskId);
-  const blockingTasks = (task.blockedBy || []).map(id => getTask(state, id));
+export const getTasksBlockingGivenTask = (state, blockedTaskId) => {
+  const blockedByIds = getTaskBlockedByIds(state, blockedTaskId);
+  const blockingTasks = blockedByIds.map(blockerId => getTask(state, blockerId));
   return sortBy(blockingTasks, 'score').reverse();
 };
 export const getUndeletedTask = (state, id) => {
   const task = getTask(state, id);
   return !task || task.trashed ? undefined : task;
-};
-export const getTaskDependencies = (state, id) => {
-  const tasksBeingBlockedByThisOne = getNonCompletedTasks(state)
-    .filter(task => (task.blockedBy || []).includes(id));
-  const tasksBlockingThisOne = (getTask(state, id).blockedBy || [])
-    .map(blockedById => getTask(state, blockedById));
-
-  const allDependencies = [
-    ...tasksBeingBlockedByThisOne.map(task => ({
-      sourceId: id,
-      type: 'blocks',
-      targetId: task ? task.id : null,
-      task,
-    })),
-    ...tasksBlockingThisOne.map(task => ({
-      sourceId: id,
-      type: 'blockedBy',
-      id: task ? task.id : null,
-      task,
-    })),
-  ];
-
-  const sortedDependencies = sortBy(allDependencies, 'created');
-
-  return sortedDependencies.map(({ task, ...dependency }) => dependency);
 };
 export const getTasksForDependencySelection = (state, id) => (
   getNonCompletedTasks(state)
@@ -196,17 +259,44 @@ export const getTasksForDependencySelection = (state, id) => (
 
 const calculateScore = (impact, effort) => impact * impact * effort;
 
-const normalizeTasks = (inputs) => {
-  const result = [];
-  const entities = {};
+const normalizeTasks = (rawTasks) => {
+  const tasks = {
+    byId: {},
+    allIds: [],
+  };
+  const taskDependencies = {
+    byId: {},
+    allIds: [],
+  };
 
-  inputs.forEach((input) => {
-    result.push(input.id);
-    entities[input.id] = input;
+  rawTasks.forEach((task) => {
+    tasks.allIds.push(task.id);
+    tasks.byId[task.id] = {
+      id: task.id,
+      ...task,
+    };
+
+    (task.blockedBy || []).forEach((blockerIds) => {
+      const dependencyId = generateId('_');
+      taskDependencies.allIds.push(dependencyId);
+      taskDependencies.byId[dependencyId] = {
+        id: dependencyId,
+        blockerId: blockerIds,
+        blockedId: task.id,
+      };
+    });
   });
 
-  return { result, entities };
+  return { tasks, taskDependencies };
 };
+
+// const serializeTask = (state, id) => {
+//   const task = {
+//     ...getTask(state, id),
+//     blockedBy: getDependenciesByTarget(state, id).map(({ targetId }) => targetId),
+//   };
+//   return filterTaskKeys(task);
+// };
 
 const setLoadFlags = ({ loaded, loading }) => ({
   type: SET_LOAD_FLAGS,
@@ -222,10 +312,10 @@ export const setTasks = (tasks) => {
     score: calculateScore(task.impact, task.effort),
     id: `${task.id}`,
   }));
-  const normalizedTasks = normalizeTasks(parsedTasks);
+  const normalizedEntities = normalizeTasks(parsedTasks);
   return {
     type: SET_TASKS,
-    payload: { tasks: normalizedTasks },
+    payload: { ...normalizedEntities },
   };
 };
 
@@ -234,7 +324,7 @@ export const updateTask = (taskId, updates) => (dispatch) => {
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
-  return apiClient.updateTask(taskId, filterTaskKeys(updates));
+  return apiClient.updateTask(taskId, filterTaskKeys(updates, TASK_KEYS_FOR_API));
 };
 export const moveToTrashTask = taskId => (dispatch) => {
   dispatch({
@@ -248,59 +338,6 @@ export const removeTaskFromAllIds = taskId => ({
   type: REMOVE_TASK_FROM_ALL_IDS,
   payload: { taskId },
 });
-
-export const addTask = ({
-  title = isRequired(),
-  effort = isRequired(),
-  impact = isRequired(),
-  description = isRequired(),
-  ...restAttributes
-}) => (dispatch, getState, { getLoggedInUserUid }) => {
-  const task = {
-    ...filterTaskKeys(restAttributes),
-    title,
-    effort,
-    impact,
-    description,
-    completed: null,
-    created: Date.now(),
-    blockedBy: [],
-    userId: getLoggedInUserUid(),
-  };
-  const score = calculateScore(impact, effort);
-  const tempId = `${Math.round(Math.random() * 100000)}`;
-
-  dispatch({
-    type: ADD_TASK,
-    payload: {
-      task: {
-        ...task,
-        id: tempId,
-        score,
-      },
-    },
-  });
-
-  return apiClient.createTask(filterTaskKeys(task))
-    .then(({ id }) => {
-      dispatch(removeTaskFromAllIds(tempId));
-      dispatch({
-        type: ADD_TASK,
-        payload: {
-          task: {
-            ...task,
-            id,
-            score,
-          },
-        },
-      });
-    })
-    .catch((error) => {
-      console.error(error);
-      dispatch(showNetworkErrorNotification());
-      dispatch(removeTaskFromAllIds(tempId));
-    });
-};
 
 export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
 export const completeTask = taskId => (dispatch) => {
@@ -329,5 +366,143 @@ export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
     .catch((error) => {
       console.error(error);
       dispatch(setLoadFlags({ loading: false, loaded: false }));
+    });
+};
+
+export const updateTaskDependency = (id, blockerId, blockedId) => (dispatch, getState) => {
+  const oldState = getState();
+
+  dispatch({
+    type: UPDATE_TASK_DEPENDENCY,
+    payload: { id, blockerId, blockedId },
+  });
+
+  const newState = getState();
+
+  const oldDependency = getTaskDependency(oldState, id);
+  const newDependency = getTaskDependency(newState, id);
+
+  const taskIds = uniq([
+    oldDependency.blockerId,
+    oldDependency.blockedId,
+    newDependency.blockerId,
+    newDependency.blockedId,
+  ].filter(taskId => taskId && getTask(newState, taskId)));
+
+  const promises = taskIds.map((taskId) => {
+    const newBlockedByArray = getTaskBlockedByIds(newState, taskId);
+    const oldBlockedByArray = getTaskBlockedByIds(oldState, taskId);
+    if (isEqual(oldBlockedByArray, newBlockedByArray)) {
+      return Promise.resolve();
+    }
+    return apiClient.updateTask(
+      taskId,
+      filterTaskKeys({ blockedBy: newBlockedByArray }, TASK_KEYS_FOR_API),
+    );
+  });
+
+  return Promise.all(promises)
+    .catch((error) => {
+      console.error(error);
+      dispatch(showNetworkErrorNotification());
+    });
+};
+
+export const removeTaskDependency = id => (dispatch, getState) => {
+  const oldState = getState();
+  const dependency = getTaskDependency(oldState, id);
+
+  dispatch({
+    type: REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS,
+    payload: { taskDependencyId: id },
+  });
+
+  // If the dependency didn't have a blockedId, nothing to change (maybe it was just created)
+  if (!dependency.blockedId) {
+    return Promise.resolve();
+  }
+
+  const newState = getState();
+  const newBlockedByArray = getTaskBlockedByIds(newState, dependency.blockedId);
+  return apiClient.updateTask(
+    dependency.blockedId,
+    filterTaskKeys({ blockedBy: newBlockedByArray }, TASK_KEYS_FOR_API),
+  )
+    .catch((error) => {
+      console.error(error);
+      dispatch(showNetworkErrorNotification());
+    });
+};
+
+// create doesn't save to the API at the moment because for adding it needs to be modified
+export const createTaskDependency = (blockerId, blockedId) => ({
+  type: CREATE_TASK_DEPENDENCY,
+  payload: { blockerId, blockedId, id: generateId() },
+});
+
+export const updateIdInAllTaskDependencies = (oldId, newId) => (dispatch, getState) => {
+  const state = getState();
+  const taskDependenciesToUpdate = getTaskDependencies(state)
+    .filter(dependency => dependency.blockerId === oldId || dependency.blockedId === oldId);
+
+  taskDependenciesToUpdate.forEach(({ id, blockerId, blockedId }) => {
+    updateTaskDependency({
+      id,
+      blockerId: blockerId === oldId ? newId : blockerId,
+      blockedId: blockedId === oldId ? newId : blockedId,
+    });
+  });
+};
+
+export const addTask = ({
+  temporaryId = generateId('_'),
+  title = isRequired(),
+  effort = isRequired(),
+  impact = isRequired(),
+  description = isRequired(),
+  ...restAttributes
+}) => (dispatch, getState, { getLoggedInUserUid }) => {
+  const task = {
+    ...filterTaskKeys(restAttributes, TASK_KEYS_FOR_REDUX),
+    title,
+    effort,
+    impact,
+    description,
+    completed: null,
+    created: Date.now(),
+    userId: getLoggedInUserUid(),
+  };
+  const score = calculateScore(impact, effort);
+
+  dispatch({
+    type: ADD_TASK,
+    payload: {
+      task: {
+        ...task,
+        id: temporaryId,
+        score,
+      },
+    },
+  });
+
+  return apiClient.createTask(filterTaskKeys(task, TASK_KEYS_FOR_API))
+    .then(({ id }) => {
+      dispatch(removeTaskFromAllIds(temporaryId));
+      dispatch({
+        type: ADD_TASK,
+        payload: {
+          task: {
+            ...task,
+            id,
+            score,
+          },
+        },
+      });
+      dispatch(updateIdInAllTaskDependencies(temporaryId, id));
+    })
+    .catch((error) => {
+      console.error(error);
+      dispatch(showNetworkErrorNotification());
+      dispatch(removeTaskFromAllIds(temporaryId));
     });
 };

@@ -5,17 +5,19 @@ import Dropdown from '../../../ui/Dropdown';
 import { getTasksForDependencySelection } from '../../../../modules/tasks';
 
 const TaskSelectorField = ({
-  id, tasks, className, onChange,
+  selectedId, tasks, className, onChange,
 }) => (
-  <Dropdown className={className} value={id} onChange={(event, newId) => onChange(newId)}>
+  <Dropdown className={className} value={selectedId} onChange={(event, newId) => onChange(newId)}>
     {tasks.map(task => (
-      <Dropdown.Option value={task.id}>{task.title}</Dropdown.Option>
+      <Dropdown.Option key={task.id} value={task.id}>
+        {task.title}
+      </Dropdown.Option>
     ))}
   </Dropdown>
 );
 
 const mapStateToProps = (state, ownProps) => ({
-  tasks: getTasksForDependencySelection(state, ownProps.id),
+  tasks: getTasksForDependencySelection(state, ownProps.currentId),
 });
 
 export default connect(mapStateToProps)(TaskSelectorField);

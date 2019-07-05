@@ -3,8 +3,12 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 import { withRouter } from 'react-router-dom';
+import uuid from 'uuid/v4';
 
-import { addTask as addTaskAction } from '../../../../modules/tasks';
+import {
+  addTask as addTaskAction,
+  createTaskDependency as createTaskDependencyAction,
+} from '../../../../modules/tasks';
 
 import FullScreenPaper from '../../../ui/FullScreenPaper';
 import CloseButton from '../../../ui/CloseButton';
@@ -37,7 +41,7 @@ const getInitialDueDate = () => dayjs()
   .startOf('hour')
   .valueOf();
 
-const NewTask = ({ history, addTask }) => {
+const NewTask = ({ history, addTask, createTaskDependency }) => {
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
@@ -46,10 +50,14 @@ const NewTask = ({ history, addTask }) => {
   const [due, setDue] = useState(getInitialDueDate());
   const [hasScheduledStart, setHasScheduledStart] = useState(false);
   const [scheduledStart, setScheduledStart] = useState(null);
+  const [dependencies, setDependencies] = useState([]);
+
+  const temporaryId = `_${uuid()}`;
 
   const createTask = (event) => {
     event.preventDefault();
     addTask({
+      temporaryId,
       title,
       impact,
       effort,
@@ -57,7 +65,31 @@ const NewTask = ({ history, addTask }) => {
       due: hasDue ? due : null,
       scheduledStart: hasScheduledStart ? scheduledStart : null,
     });
+    dependencies.forEach(({ blockedId, blockerId }) => {
+      createTaskDependency(blockedId, blockerId);
+    });
     history.goBack();
+  };
+
+  const onUpdateTaskDependency = (id, blockerId, blockedId) => {
+    setDependencies(dependencies.map(dependency => (
+      dependency.id !== id
+        ? dependency
+        : {
+          ...dependency,
+          blockerId,
+          blockedId,
+        }
+    )));
+  };
+  const onRemoveTaskDependency = (idToRemove) => {
+    setDependencies(dependencies.filter(({ id }) => id !== idToRemove));
+  };
+  const onCreateTaskDependency = (blockerId, blockedId) => {
+    setDependencies([
+      ...dependencies,
+      { id: `_${uuid()}`, blockerId, blockedId },
+    ]);
   };
 
   return (
@@ -73,6 +105,7 @@ const NewTask = ({ history, addTask }) => {
           <NewTaskMain>
             <Form onSubmit={createTask}>
               <TaskForm
+                id={temporaryId}
                 title={title}
                 setTitle={setTitle}
                 impact={impact}
@@ -89,8 +122,10 @@ const NewTask = ({ history, addTask }) => {
                 hasScheduledStart={hasScheduledStart}
                 setHasScheduledStart={setHasScheduledStart}
                 setScheduledStart={setScheduledStart}
-                dependencies={[]}
-                setDependencies={() => {}}
+                dependencies={dependencies}
+                updateTaskDependency={onUpdateTaskDependency}
+                removeTaskDependency={onRemoveTaskDependency}
+                createTaskDependency={onCreateTaskDependency}
               />
               <Button variant="primary" type="submit">Create task</Button>
             </Form>
@@ -103,6 +138,7 @@ const NewTask = ({ history, addTask }) => {
 
 const mapDispatchToProps = dispatch => ({
   addTask: task => dispatch(addTaskAction(task)),
+  createTaskDependency: task => dispatch(createTaskDependencyAction(task)),
 });
 
 export default withRouter(connect(null, mapDispatchToProps)(NewTask));

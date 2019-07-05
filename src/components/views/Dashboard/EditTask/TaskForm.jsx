@@ -16,6 +16,7 @@ const generateConsecutiveOptions = memoize((min, max) => {
 }, (min, max) => `${min}-${max}`);
 
 const TaskForm = ({
+  id,
   title,
   setTitle,
   impact,
@@ -33,6 +34,9 @@ const TaskForm = ({
   hasScheduledStart,
   setHasScheduledStart,
   dependencies,
+  updateTaskDependency,
+  removeTaskDependency,
+  createTaskDependency,
 }) => (
   <InputGroup mb={4}>
     <InputField
@@ -97,7 +101,11 @@ const TaskForm = ({
     />
 
     <DependenciesSelector
+      taskId={id}
       dependencies={dependencies}
+      updateTaskDependency={updateTaskDependency}
+      removeTaskDependency={removeTaskDependency}
+      createTaskDependency={createTaskDependency}
     />
   </InputGroup>
 );
