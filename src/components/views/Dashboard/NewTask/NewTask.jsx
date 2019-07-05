@@ -74,21 +74,23 @@ const NewTask = ({ history, addTask }) => {
             <Form onSubmit={createTask}>
               <TaskForm
                 title={title}
-                impact={impact}
-                effort={effort}
-                description={description}
-                hasDue={hasDue}
-                due={due}
-                hasScheduledStart={hasScheduledStart}
-                scheduledStart={scheduledStart}
                 setTitle={setTitle}
+                impact={impact}
                 setImpact={setImpact}
+                effort={effort}
                 setEffort={setEffort}
+                description={description}
                 setDescription={setDescription}
+                due={due}
                 setHasDue={setHasDue}
+                hasDue={hasDue}
                 setDue={setDue}
+                scheduledStart={scheduledStart}
+                hasScheduledStart={hasScheduledStart}
                 setHasScheduledStart={setHasScheduledStart}
                 setScheduledStart={setScheduledStart}
+                dependencies={[]}
+                setDependencies={() => {}}
               />
               <Button variant="primary" type="submit">Create task</Button>
             </Form>

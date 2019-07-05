@@ -17,24 +17,11 @@ const TASK_KEYS = {
   due: true,
   scheduledStart: true,
   completed: true,
-  blockers: true,
+  blockedBy: true,
   score: true,
   trashed: true,
   userId: true,
 };
-
-// Action types
-
-const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
-const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
-const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
-const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
-const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
-const RESET = `${NAMESPACE}/RESET`;
-
-// Actions
-
-const calculateScore = (impact, effort) => impact * impact * effort;
 
 const filterTaskKeys = (task) => {
   const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
@@ -47,140 +34,14 @@ const filterTaskKeys = (task) => {
   return filteredTask;
 };
 
-const simpleNormalize = (inputs) => {
-  const result = [];
-  const entities = {};
+// Action types
 
-  inputs.forEach((input) => {
-    result.push(input.id);
-    entities[input.id] = input;
-  });
-
-  return { result, entities };
-};
-
-const setLoadFlags = ({ loaded, loading }) => ({
-  type: SET_LOAD_FLAGS,
-  payload: { loaded, loading },
-});
-
-export const resetLoadedTasks = () => ({ type: RESET });
-
-export const setTasks = (tasks) => {
-  const parsedTasks = tasks.map(task => ({
-    ...task,
-    score: calculateScore(task.impact, task.effort),
-    id: `${task.id}`,
-  }));
-  const normalizedTasks = simpleNormalize(parsedTasks);
-  return {
-    type: SET_TASKS,
-    payload: { tasks: normalizedTasks },
-  };
-};
-
-export const updateTask = (taskId, updates) => (dispatch) => {
-  dispatch({
-    type: UPDATE_TASK,
-    payload: { taskId, updates },
-  });
-  return apiClient.updateTask(taskId, filterTaskKeys(updates));
-};
-export const moveToTrashTask = taskId => (dispatch) => {
-  dispatch({
-    type: REMOVE_TASK_FROM_ALL_IDS,
-    payload: { taskId },
-  });
-  return dispatch(updateTask(taskId, { trashed: Date.now() }));
-};
-
-export const removeTaskFromAllIds = taskId => ({
-  type: REMOVE_TASK_FROM_ALL_IDS,
-  payload: { taskId },
-});
-
-export const addTask = ({
-  title = isRequired(),
-  effort = isRequired(),
-  impact = isRequired(),
-  description = isRequired(),
-  ...restAttributes
-}) => (dispatch, getState, { getLoggedInUserUid }) => {
-  const task = {
-    ...filterTaskKeys(restAttributes),
-    title,
-    effort,
-    impact,
-    description,
-    completed: null,
-    created: Date.now(),
-    blockers: [],
-    userId: getLoggedInUserUid(),
-  };
-  const score = calculateScore(impact, effort);
-  const tempId = `${Math.round(Math.random() * 100000)}`;
-
-  dispatch({
-    type: ADD_TASK,
-    payload: {
-      task: {
-        ...task,
-        id: tempId,
-        score,
-      },
-    },
-  });
-
-  return apiClient.createTask(filterTaskKeys(task))
-    .then(({ id }) => {
-      dispatch(removeTaskFromAllIds(tempId));
-      dispatch({
-        type: ADD_TASK,
-        payload: {
-          task: {
-            ...task,
-            id,
-            score,
-          },
-        },
-      });
-    })
-    .catch((error) => {
-      console.error(error);
-      dispatch(showNetworkErrorNotification());
-      dispatch(removeTaskFromAllIds(tempId));
-    });
-};
-
-export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
-export const completeTask = taskId => (dispatch) => {
-  const notificationUid = dispatch(showInfoNotification('Task completed! 🎉', {
-    callbackButton: 'Undo',
-    callbackFunction: () => undoCompletedTask(taskId),
-  }));
-  return dispatch(updateTask(taskId, { completed: Date.now() }))
-    .catch((error) => {
-      console.error(error);
-      dispatch(hideNotification(notificationUid));
-      dispatch(showNetworkErrorNotification());
-    });
-};
-
-export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
-  const userId = getLoggedInUserUid();
-
-  dispatch(setLoadFlags({ loading: true, loaded: false }));
-
-  return apiClient.fetchTasks(userId)
-    .then((tasks) => {
-      dispatch(setTasks(tasks));
-      dispatch(setLoadFlags({ loading: false, loaded: true }));
-    })
-    .catch((error) => {
-      console.error(error);
-      dispatch(setLoadFlags({ loading: false, loaded: false }));
-    });
-};
+const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
+const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
+const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
+const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
+const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
+const RESET = `${NAMESPACE}/RESET`;
 
 // Reducers
 
@@ -248,7 +109,7 @@ const getNonTrashedTasks = state => (
     .filter(task => task.trashed == null)
 );
 
-const getNonCompletedTasks = state => (
+export const getNonCompletedTasks = state => (
   getNonTrashedTasks(state)
     .filter(task => task.completed == null)
 );
@@ -277,7 +138,7 @@ export const getBacklogTasks = (state) => {
 };
 export const getBlockedTasks = (state) => {
   const tasks = getNonCompletedTasks(state)
-    .filter(task => task.blockers.length > 0);
+    .filter(task => (task.blockedBy || []).length > 0);
   return sortBy(tasks, 'score').reverse();
 };
 export const getScheduledTasks = (state) => {
@@ -294,10 +155,179 @@ export const getCompletedTasks = (state) => {
 };
 export const getBlockingTasks = (state, blockedTaskId) => {
   const task = getTask(state, blockedTaskId);
-  const blockingTasks = task.blockers.map(id => getTask(state, id));
+  const blockingTasks = (task.blockedBy || []).map(id => getTask(state, id));
   return sortBy(blockingTasks, 'score').reverse();
 };
 export const getUndeletedTask = (state, id) => {
   const task = getTask(state, id);
   return !task || task.trashed ? undefined : task;
+};
+export const getTaskDependencies = (state, id) => {
+  const tasksBeingBlockedByThisOne = getNonCompletedTasks(state)
+    .filter(task => (task.blockedBy || []).includes(id));
+  const tasksBlockingThisOne = (getTask(state, id).blockedBy || [])
+    .map(blockedById => getTask(state, blockedById));
+
+  const allDependencies = [
+    ...tasksBeingBlockedByThisOne.map(task => ({
+      sourceId: id,
+      type: 'blocks',
+      targetId: task ? task.id : null,
+      task,
+    })),
+    ...tasksBlockingThisOne.map(task => ({
+      sourceId: id,
+      type: 'blockedBy',
+      id: task ? task.id : null,
+      task,
+    })),
+  ];
+
+  const sortedDependencies = sortBy(allDependencies, 'created');
+
+  return sortedDependencies.map(({ task, ...dependency }) => dependency);
+};
+export const getTasksForDependencySelection = (state, id) => (
+  getNonCompletedTasks(state)
+    .filter(task => task.id !== id)
+);
+
+// Actions
+
+const calculateScore = (impact, effort) => impact * impact * effort;
+
+const normalizeTasks = (inputs) => {
+  const result = [];
+  const entities = {};
+
+  inputs.forEach((input) => {
+    result.push(input.id);
+    entities[input.id] = input;
+  });
+
+  return { result, entities };
+};
+
+const setLoadFlags = ({ loaded, loading }) => ({
+  type: SET_LOAD_FLAGS,
+  payload: { loaded, loading },
+});
+
+export const resetLoadedTasks = () => ({ type: RESET });
+
+export const setTasks = (tasks) => {
+  const parsedTasks = tasks.map(task => ({
+    ...task,
+    blockedBy: (task.blockedBy || []).filter(Boolean),
+    score: calculateScore(task.impact, task.effort),
+    id: `${task.id}`,
+  }));
+  const normalizedTasks = normalizeTasks(parsedTasks);
+  return {
+    type: SET_TASKS,
+    payload: { tasks: normalizedTasks },
+  };
+};
+
+export const updateTask = (taskId, updates) => (dispatch) => {
+  dispatch({
+    type: UPDATE_TASK,
+    payload: { taskId, updates },
+  });
+  return apiClient.updateTask(taskId, filterTaskKeys(updates));
+};
+export const moveToTrashTask = taskId => (dispatch) => {
+  dispatch({
+    type: REMOVE_TASK_FROM_ALL_IDS,
+    payload: { taskId },
+  });
+  return dispatch(updateTask(taskId, { trashed: Date.now() }));
+};
+
+export const removeTaskFromAllIds = taskId => ({
+  type: REMOVE_TASK_FROM_ALL_IDS,
+  payload: { taskId },
+});
+
+export const addTask = ({
+  title = isRequired(),
+  effort = isRequired(),
+  impact = isRequired(),
+  description = isRequired(),
+  ...restAttributes
+}) => (dispatch, getState, { getLoggedInUserUid }) => {
+  const task = {
+    ...filterTaskKeys(restAttributes),
+    title,
+    effort,
+    impact,
+    description,
+    completed: null,
+    created: Date.now(),
+    blockedBy: [],
+    userId: getLoggedInUserUid(),
+  };
+  const score = calculateScore(impact, effort);
+  const tempId = `${Math.round(Math.random() * 100000)}`;
+
+  dispatch({
+    type: ADD_TASK,
+    payload: {
+      task: {
+        ...task,
+        id: tempId,
+        score,
+      },
+    },
+  });
+
+  return apiClient.createTask(filterTaskKeys(task))
+    .then(({ id }) => {
+      dispatch(removeTaskFromAllIds(tempId));
+      dispatch({
+        type: ADD_TASK,
+        payload: {
+          task: {
+            ...task,
+            id,
+            score,
+          },
+        },
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      dispatch(showNetworkErrorNotification());
+      dispatch(removeTaskFromAllIds(tempId));
+    });
+};
+
+export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
+export const completeTask = taskId => (dispatch) => {
+  const notificationUid = dispatch(showInfoNotification('Task completed! 🎉', {
+    callbackButton: 'Undo',
+    callbackFunction: () => undoCompletedTask(taskId),
+  }));
+  return dispatch(updateTask(taskId, { completed: Date.now() }))
+    .catch((error) => {
+      console.error(error);
+      dispatch(hideNotification(notificationUid));
+      dispatch(showNetworkErrorNotification());
+    });
+};
+
+export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
+  const userId = getLoggedInUserUid();
+
+  dispatch(setLoadFlags({ loading: true, loaded: false }));
+
+  return apiClient.fetchTasks(userId)
+    .then((tasks) => {
+      dispatch(setTasks(tasks));
+      dispatch(setLoadFlags({ loading: false, loaded: true }));
+    })
+    .catch((error) => {
+      console.error(error);
+      dispatch(setLoadFlags({ loading: false, loaded: false }));
+    });
 };

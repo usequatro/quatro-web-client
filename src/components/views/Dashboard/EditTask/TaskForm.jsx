@@ -6,6 +6,7 @@ import InputField from '../../../ui/InputField';
 import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
 import DateTimeField from '../../../ui/DateTimeField';
 import BooleanCheckbox from '../../../ui/BooleanCheckbox';
+import DependenciesSelector from './DependenciesSelector';
 
 const generateConsecutiveOptions = memoize((min, max) => {
   const array = Array.from(Array(max).keys());
@@ -31,6 +32,7 @@ const TaskForm = ({
   setScheduledStart,
   hasScheduledStart,
   setHasScheduledStart,
+  dependencies,
 }) => (
   <InputGroup mb={4}>
     <InputField
@@ -92,6 +94,10 @@ const TaskForm = ({
       onChange={(event, value) => setScheduledStart(value)}
       value={scheduledStart}
       disabled={!hasScheduledStart}
+    />
+
+    <DependenciesSelector
+      dependencies={dependencies}
     />
   </InputGroup>
 );

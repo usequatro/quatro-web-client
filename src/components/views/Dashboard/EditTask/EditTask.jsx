@@ -9,6 +9,7 @@ import {
   getUndeletedTask,
   updateTask as updateTaskAction,
   moveToTrashTask as moveToTrashTaskAction,
+  getTaskDependencies,
 } from '../../../../modules/tasks';
 import * as paths from '../../../../constants/paths';
 
@@ -39,7 +40,17 @@ const ContentContainer = styled(Box)`  width: 100%;
 `;
 
 const EditTask = ({
-  loaded, updateTask, moveToTrashTask, id, title, impact, effort, description, due, scheduledStart,
+  loaded,
+  updateTask,
+  moveToTrashTask,
+  id,
+  title,
+  impact,
+  effort,
+  description,
+  due,
+  scheduledStart,
+  dependencies,
 }) => {
   const [hasDue, setHasDue] = useState(due != null);
   const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
@@ -69,21 +80,22 @@ const EditTask = ({
               <ContentContainer>
                 <TaskForm
                   title={title}
-                  impact={impact}
-                  effort={effort}
-                  description={description}
-                  hasDue={hasDue}
-                  due={due}
-                  hasScheduledStart={hasScheduledStart}
-                  scheduledStart={scheduledStart}
                   setTitle={value => onUpdate('title', value)}
+                  impact={impact}
                   setImpact={value => onUpdate('impact', value)}
+                  effort={effort}
                   setEffort={value => onUpdate('effort', value)}
+                  description={description}
                   setDescription={value => onUpdate('description', value)}
+                  hasDue={hasDue}
                   setHasDue={setHasDue}
+                  due={due}
                   setDue={value => onUpdate('due', value)}
+                  hasScheduledStart={hasScheduledStart}
                   setHasScheduledStart={setHasScheduledStart}
+                  scheduledStart={scheduledStart}
                   setScheduledStart={value => onUpdate('scheduledStart', value)}
+                  dependencies={dependencies}
                 />
 
                 <Button
@@ -112,6 +124,7 @@ const mapDispatchToProps = {
 const mapStateToProps = (state, ownProps) => ({
   loaded: getLoaded(state),
   ...getUndeletedTask(state, ownProps.match.params.id),
+  dependencies: getTaskDependencies(state, ownProps.match.params.id),
 });
 
 export default withLoadTasks(connect(mapStateToProps, mapDispatchToProps)(EditTask));
