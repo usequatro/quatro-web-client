@@ -19,6 +19,7 @@ export const fetchTasks = (userId) => {
   console.log(`${logPrefix} fetchTasks`, userId);
   return db.collection(TASKS)
     .where('userId', '==', userId)
+    .where('thrased', '==', null)
     .get()
     .then((querySnapshot) => {
       const tasks = querySnapshot.docs.map(doc => ({
