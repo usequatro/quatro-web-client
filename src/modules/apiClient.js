@@ -15,11 +15,19 @@ export const createTask = (task) => {
 
 // export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
 
-export const fetchTasks = (userId) => {
-  console.log(`${logPrefix} fetchTasks`, userId);
+export const fetchTasks = (
+  userId,
+  fetchParams,
+) => {
+  console.log(`${logPrefix} fetchTasks`, userId, fetchParams);
+  const {
+    completed: [completedOperator = '==', completedValue = null] = [],
+  } = fetchParams || {};
+
   return db.collection(TASKS)
     .where('userId', '==', userId)
     .where('thrased', '==', null)
+    .where('completed', completedOperator, completedValue)
     .get()
     .then((querySnapshot) => {
       const tasks = querySnapshot.docs.map(doc => ({

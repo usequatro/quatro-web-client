@@ -64,7 +64,6 @@ const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
 const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
 const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
 const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
-const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
 const RESET = `${NAMESPACE}/RESET`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS`;
@@ -73,8 +72,6 @@ const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
 // Reducers
 
 const INITIAL_STATE = {
-  loading: true,
-  loaded: false,
   tasks: {
     byId: {},
     allIds: [],
@@ -99,20 +96,27 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [SET_LOAD_FLAGS]: (state, { payload: { loading, loaded } }) => ({
-    ...state,
-    loading,
-    loaded,
-  }),
   [SET_TASKS]: (state, action) => ({
     ...state,
     tasks: {
-      allIds: action.payload.tasks.allIds,
-      byId: mapValues(action.payload.tasks.byId, addScore),
+      allIds: [
+        ...state.tasks.allIds,
+        ...action.payload.tasks.allIds,
+      ],
+      byId: {
+        ...state.tasks.byId,
+        ...mapValues(action.payload.tasks.byId, addScore),
+      },
     },
     taskDependencies: {
-      allIds: action.payload.taskDependencies.allIds,
-      byId: action.payload.taskDependencies.byId,
+      allIds: [
+        ...state.taskDependencies.allIds,
+        ...action.payload.taskDependencies.allIds,
+      ],
+      byId: {
+        ...state.taskDependencies.byId,
+        ...action.payload.taskDependencies.byId,
+      },
     },
   }),
   [ADD_TASK]: (state, action) => ({
@@ -222,8 +226,6 @@ export const getNonCompletedTasks = state => (
     .filter(task => task.completed == null)
 );
 
-export const getLoading = state => state[NAMESPACE].loading;
-export const getLoaded = state => state[NAMESPACE].loaded;
 export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
 export const getNowTasks = (state) => {
   const now = Date.now();
@@ -247,7 +249,7 @@ export const getNextTasks = (state) => {
 export const getBlockedTasks = (state) => {
   const taskDependencies = getTaskDependencies(state);
   const blockedTaskIds = taskDependencies.map(({ blockedId }) => blockedId);
-  const blockedTasks = blockedTaskIds
+  const blockedTasks = uniq(blockedTaskIds)
     .map(id => getTask(state, id));
   return sortBy(blockedTasks, 'score').reverse();
 };
@@ -310,11 +312,6 @@ const normalizeTasks = (rawTasks) => {
   return { tasks, taskDependencies };
 };
 
-const setLoadFlags = ({ loaded, loading }) => ({
-  type: SET_LOAD_FLAGS,
-  payload: { loaded, loading },
-});
-
 export const resetLoadedTasks = () => ({ type: RESET });
 
 export const setTasks = (tasks) => {
@@ -370,19 +367,11 @@ export const completeTask = taskId => (dispatch) => {
     });
 };
 
-export const loadTasks = () => (dispatch, getState, { getLoggedInUserUid }) => {
+export const loadTasks = fetchParams => (dispatch, getState, { getLoggedInUserUid }) => {
   const userId = getLoggedInUserUid();
-
-  dispatch(setLoadFlags({ loading: true, loaded: false }));
-
-  return apiClient.fetchTasks(userId)
+  return apiClient.fetchTasks(userId, fetchParams)
     .then((tasks) => {
       dispatch(setTasks(tasks));
-      dispatch(setLoadFlags({ loading: false, loaded: true }));
-    })
-    .catch((error) => {
-      console.error(error);
-      dispatch(setLoadFlags({ loading: false, loaded: false }));
     });
 };
 

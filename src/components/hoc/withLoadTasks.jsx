@@ -1,22 +1,22 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { loadTasks as loadTasksAction, getLoaded } from '../../modules/tasks';
+import { loadDashboardTasks as loadDashboardTasksAction, selectLoaded } from '../../modules/dashboard';
 
-export default (Component) => {
+export default (Component, view, fetchParams) => {
   const mapDispatchToProps = {
-    loadTasks: loadTasksAction,
+    loadDashboardTasks: loadDashboardTasksAction,
   };
   const mapStateToProps = state => ({
-    loaded: getLoaded(state),
+    loaded: selectLoaded(state, view),
   });
 
-  const ComponentWithLoader = ({ loadTasks, loaded, ...restProps }) => {
+  const ComponentWithLoader = ({ loadDashboardTasks, loaded, ...restProps }) => {
     useEffect(() => {
       if (!loaded) {
-        loadTasks();
+        loadDashboardTasks(view, fetchParams);
       }
     });
-    return <Component {...restProps} />;
+    return <Component {...restProps} loaded={loaded} />;
   };
   return connect(mapStateToProps, mapDispatchToProps)(ComponentWithLoader);
 };

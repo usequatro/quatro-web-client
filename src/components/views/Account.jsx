@@ -50,7 +50,12 @@ const Account = ({ history, resetLoadedTasks }) => {
               <UserInfo label="Email">{user.email}</UserInfo>
               <UserInfo label="Email verified">{user.emailVerified ? 'yes' : 'no'}</UserInfo>
             </Box>
-            <Button onClick={onSignOut}>Sign out</Button>
+            <Button onClick={onSignOut} mb={4}>
+              Sign out
+            </Button>
+            <Button onClick={() => window.location.reload(true)} variant="outline">
+              Reload App
+            </Button>
           </Main>
         </React.Fragment>
       )}

@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { Box } from 'rebass';
 
 import {
-  getLoaded,
   getUndeletedTask,
   updateTask as updateTaskAction,
   moveToTrashTask as moveToTrashTaskAction,
@@ -14,6 +13,7 @@ import {
   createTaskDependency as createTaskDependencyAction,
   getDependenciesForTask,
 } from '../../../../modules/tasks';
+import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
 
 import TaskForm from './TaskForm';
@@ -135,9 +135,13 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  loaded: getLoaded(state),
+  loaded: selectLoaded(state, 'default'),
   ...getUndeletedTask(state, ownProps.match.params.id),
   dependencies: getDependenciesForTask(state, ownProps.match.params.id),
 });
 
-export default withLoadTasks(connect(mapStateToProps, mapDispatchToProps)(EditTask));
+export default withLoadTasks(
+  connect(mapStateToProps, mapDispatchToProps)(EditTask),
+  'default',
+  undefined,
+);

@@ -1,16 +1,14 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getLoaded } from '../../../modules/tasks';
 import * as paths from '../../../constants/paths';
 
 import Header from './Header';
 import FooterNavigation from './FooterNavigation';
 import withLoadTasks from '../../hoc/withLoadTasks';
 import Main from '../../ui/Main';
-import Loader from '../../ui/Loader';
+import LoaderWrapper from '../../ui/LoaderWrapper';
 import NewTask from './NewTask/NewTask';
 import EditTask from './EditTask';
 import Now from './Now';
@@ -30,10 +28,7 @@ const Dashboard = ({ loaded }) => (
   <FlexContainer>
     <Header />
     <Main>
-      {!loaded && (
-        <Loader />
-      )}
-      {loaded && (
+      <LoaderWrapper loading={!loaded}>
         <Switch>
           <Redirect exact from={paths.DASHBOARD} to={paths.NOW} />
           <Route path={paths.NOW} component={Now} />
@@ -45,14 +40,14 @@ const Dashboard = ({ loaded }) => (
           <Route path={paths.EDIT_TASK} component={EditTask} />
           <Route>404</Route>
         </Switch>
-      )}
+      </LoaderWrapper>
     </Main>
     <FooterNavigation />
   </FlexContainer>
 );
 
-const mapStateToProps = state => ({
-  loaded: getLoaded(state),
-});
-
-export default withLoadTasks(connect(mapStateToProps)(Dashboard));
+export default withLoadTasks(
+  Dashboard,
+  'default',
+  undefined,
+);
