@@ -154,8 +154,8 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
-const BACKLOG_SCORE_THRESHOLD = 50;
-const IMPORTANT_TASKS_LIMIT = 7;
+const NEXT_SCORE_THRESHOLD = 50;
+const NOW_TASKS_LIMIT = 7;
 const isToday = (timestamp) => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -203,23 +203,23 @@ export const getNonCompletedTasks = state => (
 export const getLoading = state => state[NAMESPACE].loading;
 export const getLoaded = state => state[NAMESPACE].loaded;
 export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
-export const getImportantTasks = (state) => {
+export const getNowTasks = (state) => {
   const now = Date.now();
   const tasks = getNonCompletedTasks(state)
     .filter(task => task.scheduledStart == null || task.scheduledStart <= now);
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
   const tasksDueToday = tasks.filter(task => task.due && isToday(task.due));
-  const tasksSortedByScoreToPick = Math.max(0, IMPORTANT_TASKS_LIMIT - tasksDueToday.length);
+  const tasksSortedByScoreToPick = Math.max(0, NOW_TASKS_LIMIT - tasksDueToday.length);
   return [
     ...tasksDueToday,
     ...differenceTaskArrays(tasksSortedByScore, tasksDueToday).slice(0, tasksSortedByScoreToPick),
   ];
 };
-export const getBacklogTasks = (state) => {
+export const getNextTasks = (state) => {
   const now = Date.now();
   const tasks = getNonCompletedTasks(state)
     .filter(task => task.scheduledStart == null || task.scheduledStart <= now)
-    .filter(task => task.score < BACKLOG_SCORE_THRESHOLD);
+    .filter(task => task.score < NEXT_SCORE_THRESHOLD);
   return sortBy(tasks, 'score').reverse();
 };
 export const getBlockedTasks = (state) => {

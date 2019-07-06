@@ -1,17 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getBacklogTasks } from '../../../../modules/tasks';
+import { getNextTasks } from '../../../../modules/tasks';
 
 import Task from '../Task';
 import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
 
-const Backlog = ({ tasks }) => (
+const Next = ({ tasks }) => (
   <Workspace>
     <SearchTaskInput />
-    <TaskListHeadline title="Backlog" count={tasks.length} />
+    <TaskListHeadline title="Next" count={tasks.length} />
     {tasks.map(task => <Task key={task.id} {...task} />)}
     {tasks.length === 0 && (
       <p>No tasks. Good job!</p>
@@ -20,7 +20,7 @@ const Backlog = ({ tasks }) => (
 );
 
 const mapStateToProps = state => ({
-  tasks: getBacklogTasks(state),
+  tasks: getNextTasks(state),
 });
 
-export default connect(mapStateToProps)(Backlog);
+export default connect(mapStateToProps)(Next);

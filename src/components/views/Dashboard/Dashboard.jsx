@@ -13,8 +13,8 @@ import Main from '../../ui/Main';
 import Loader from '../../ui/Loader';
 import NewTask from './NewTask/NewTask';
 import EditTask from './EditTask';
-import Important from './Important';
-import Backlog from './Backlog';
+import Now from './Now';
+import Next from './Next';
 import Scheduled from './Scheduled';
 import Blocked from './Blocked';
 import Completed from './Completed';
@@ -35,9 +35,9 @@ const Dashboard = ({ loaded }) => (
       )}
       {loaded && (
         <Switch>
-          <Redirect exact from={paths.DASHBOARD} to={paths.IMPORTANT} />
-          <Route path={paths.IMPORTANT} component={Important} />
-          <Route path={paths.BACKLOG} component={Backlog} />
+          <Redirect exact from={paths.DASHBOARD} to={paths.NOW} />
+          <Route path={paths.NOW} component={Now} />
+          <Route path={paths.NEXT} component={Next} />
           <Route path={paths.SCHEDULED} component={Scheduled} />
           <Route path={paths.BLOCKED} component={Blocked} />
           <Route path={paths.COMPLETED} component={Completed} />

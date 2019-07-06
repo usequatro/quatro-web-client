@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import { Box } from 'rebass';
 import { connect } from 'react-redux';
 import {
-  getScheduledTasks, getBacklogTasks, getBlockedTasks, getImportantTasks, getCompletedTasks,
+  getScheduledTasks, getNextTasks, getBlockedTasks, getNowTasks, getCompletedTasks,
 } from '../../../modules/tasks';
+import * as paths from '../../../constants/paths';
 
 const FooterContainer = styled(Box).attrs({
   px: 2,
@@ -32,22 +33,22 @@ const Icon = styled.div`
 `;
 
 const FooterNavigation = ({
-  hasScheduled, hasBlocked, hasImportant, hasBacklog, hasCompleted,
+  hasScheduled, hasBlocked, hasNow, hasNext, hasCompleted,
 }) => (
   <FooterContainer>
-    <Link to="/dashboard/scheduled"><Icon hasContents={hasScheduled}>Sc</Icon></Link>
-    <Link to="/dashboard/blocked"><Icon hasContents={hasBlocked}>Bl</Icon></Link>
-    <Link to="/dashboard/important"><Icon hasContents={hasImportant}>Im</Icon></Link>
-    <Link to="/dashboard/backlog"><Icon hasContents={hasBacklog}>Ba</Icon></Link>
-    <Link to="/dashboard/completed"><Icon hasContents={hasCompleted}>Co</Icon></Link>
+    <Link to={paths.SCHEDULED}><Icon hasContents={hasScheduled}>Sce</Icon></Link>
+    <Link to={paths.BLOCKED}><Icon hasContents={hasBlocked}>Blo</Icon></Link>
+    <Link to={paths.NOW}><Icon hasContents={hasNow}>Now</Icon></Link>
+    <Link to={paths.NEXT}><Icon hasContents={hasNext}>Nxt</Icon></Link>
+    <Link to={paths.COMPLETED}><Icon hasContents={hasCompleted}>Com</Icon></Link>
   </FooterContainer>
 );
 
 const mapStateToProps = state => ({
   hasScheduled: getScheduledTasks(state).length > 0,
   hasBlocked: getBlockedTasks(state).length > 0,
-  hasImportant: getImportantTasks(state).length > 0,
-  hasBacklog: getBacklogTasks(state).length > 0,
+  hasNow: getNowTasks(state).length > 0,
+  hasNext: getNextTasks(state).length > 0,
   hasCompleted: getCompletedTasks(state).length > 0,
 });
 

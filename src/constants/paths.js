@@ -6,8 +6,8 @@ export const ACCOUNT = '/account';
 
 export const SCHEDULED = '/dashboard/scheduled';
 export const BLOCKED = '/dashboard/blocked';
-export const IMPORTANT = '/dashboard/important';
-export const BACKLOG = '/dashboard/backlog';
+export const NOW = '/dashboard/now';
+export const NEXT = '/dashboard/next';
 export const COMPLETED = '/dashboard/completed';
 export const NEW_TASK = '/dashboard/new';
 export const EDIT_TASK = '/dashboard/edit/:id';

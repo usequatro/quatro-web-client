@@ -29,8 +29,8 @@ const DashboardTitle = styled(Heading).attrs(() => ({
 const titles = {
   [paths.SCHEDULED]: 'Scheduled',
   [paths.BLOCKED]: 'Blocked',
-  [paths.IMPORTANT]: 'Important',
-  [paths.BACKLOG]: 'Backlog',
+  [paths.NOW]: 'Now',
+  [paths.NEXT]: 'Next',
   [paths.COMPLETED]: 'Completed',
   default: '',
 };
