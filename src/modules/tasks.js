@@ -181,7 +181,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 // Selectors
 
 const NEXT_SCORE_THRESHOLD = 50;
-const NOW_TASKS_LIMIT = 7;
+const NOW_TASKS_LIMIT = 4;
 const isToday = (timestamp) => {
   const date = new Date(timestamp);
   const now = new Date();
