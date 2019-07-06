@@ -52,7 +52,7 @@ const FullScreenPaper = ({ history, children, ...props }) => {
 
   return (
     <RootPortal>
-      <Transition in={visible} timeout={duration}>
+      <Transition appear in={visible} timeout={duration}>
         {state => (
           <PaperWithTransitionStyles {...props} state={state} pt={0}>
             <WidthContainer>
