@@ -2,6 +2,7 @@ import sortBy from 'lodash/sortBy';
 import isEqual from 'lodash/isEqual';
 import omit from 'lodash/omit';
 import uniq from 'lodash/uniq';
+import mapValues from 'lodash/mapValues';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
@@ -25,7 +26,7 @@ const TASK_KEYS_FOR_REDUX = {
   userId: true,
 };
 const TASK_KEYS_FOR_API = {
-  ...omit(TASK_KEYS_FOR_REDUX, ['id']),
+  ...omit(TASK_KEYS_FOR_REDUX, ['id', 'score']),
   blockedBy: true,
 };
 
@@ -48,6 +49,10 @@ const FACTOR = 2.0409; // factor to make score between 0 and 100;
 const calculateScore = (impact, effort) => (Number.isInteger(impact) && Number.isInteger(effort)
   ? Math.round(FACTOR * (impact * impact) / effort)
   : 0);
+const addScore = task => ({
+  ...task,
+  score: calculateScore(task.impact, task.effort),
+});
 
 const toInt = (value, fallback) => (!Number.isNaN(Number.parseInt(value, 10))
   ? Number.parseInt(value, 10)
@@ -87,7 +92,10 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...state.tasks,
       byId: {
         ...state.tasks.byId,
-        [taskId]: { ...state.tasks.byId[taskId], ...filterTaskKeys(updates, TASK_KEYS_FOR_REDUX) },
+        [taskId]: filterTaskKeys(addScore({
+          ...state.tasks.byId[taskId],
+          ...updates,
+        }), TASK_KEYS_FOR_REDUX),
       },
     },
   }),
@@ -100,7 +108,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     tasks: {
       allIds: action.payload.tasks.allIds,
-      byId: action.payload.tasks.byId,
+      byId: mapValues(action.payload.tasks.byId, addScore),
     },
     taskDependencies: {
       allIds: action.payload.taskDependencies.allIds,
@@ -113,7 +121,10 @@ export const reducer = createReducer(INITIAL_STATE, {
       allIds: [...state.tasks.allIds, action.payload.task.id],
       byId: {
         ...state.tasks.byId,
-        [action.payload.task.id]: filterTaskKeys(action.payload.task, TASK_KEYS_FOR_REDUX),
+        [action.payload.task.id]: filterTaskKeys(
+          addScore(action.payload.task),
+          TASK_KEYS_FOR_REDUX,
+        ),
       },
     },
   }),
@@ -313,7 +324,6 @@ export const setTasks = (tasks) => {
     return {
       ...task,
       blockedBy: (task.blockedBy || []).filter(Boolean),
-      score: calculateScore(impact, effort),
       impact,
       effort,
       id: `${task.id}`,
@@ -479,7 +489,6 @@ export const addTask = ({
     created: Date.now(),
     userId: getLoggedInUserUid(),
   };
-  const score = calculateScore(impact, effort);
 
   dispatch({
     type: ADD_TASK,
@@ -487,7 +496,6 @@ export const addTask = ({
       task: {
         ...task,
         id: temporaryId,
-        score,
       },
     },
   });
@@ -501,7 +509,6 @@ export const addTask = ({
           task: {
             ...task,
             id,
-            score,
           },
         },
       });
