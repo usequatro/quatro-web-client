@@ -13,7 +13,7 @@ const FieldsContainer = styled(Box).attrs({ mb: 3 })`
   justify-content: space-between;
 `;
 const DependencyTypeContainer = styled(Box).attrs({ mr: 3 })`
-  width: 10rem;
+  width: 14rem;
 `;
 const DeleteButtonContainer = styled(Box).attrs({ ml: 3 })``;
 
