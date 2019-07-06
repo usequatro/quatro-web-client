@@ -8,6 +8,7 @@ import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import BlockingTaskList from './BlockingTaskList';
 import Workspace from '../Workspace';
+import EndOfListSpacing from '../EndOfListSpacing';
 
 const Blocked = ({ tasks }) => (
   <Workspace>
@@ -22,6 +23,7 @@ const Blocked = ({ tasks }) => (
     {tasks.length === 0 && (
       <p>No tasks. Good job!</p>
     )}
+    <EndOfListSpacing />
   </Workspace>
 );
 

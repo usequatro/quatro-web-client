@@ -7,6 +7,7 @@ import Task from '../Task';
 import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
+import EndOfListSpacing from '../EndOfListSpacing';
 
 const Now = ({ tasks }) => (
   <Workspace>
@@ -16,6 +17,7 @@ const Now = ({ tasks }) => (
     {tasks.length === 0 && (
       <p>No tasks. Good job!</p>
     )}
+    <EndOfListSpacing />
   </Workspace>
 );
 
