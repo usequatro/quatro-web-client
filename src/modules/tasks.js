@@ -29,6 +29,8 @@ const TASK_KEYS_FOR_API = {
   blockedBy: true,
 };
 
+// Utilities
+
 const generateId = (prefix = '') => `${prefix}${uuid()}`;
 
 const filterTaskKeys = (task, keys = isRequired()) => {
@@ -41,6 +43,15 @@ const filterTaskKeys = (task, keys = isRequired()) => {
   }, {});
   return filteredTask;
 };
+
+const FACTOR = 2.0409; // factor to make score between 0 and 100;
+const calculateScore = (impact, effort) => (Number.isInteger(impact) && Number.isInteger(effort)
+  ? Math.round(FACTOR * (impact * impact) / effort)
+  : 0);
+
+const toInt = (value, fallback) => (!Number.isNaN(Number.parseInt(value, 10))
+  ? Number.parseInt(value, 10)
+  : fallback);
 
 // Action types
 
@@ -257,8 +268,6 @@ export const getTasksForDependencySelection = (state, id) => (
 
 // Actions
 
-const calculateScore = (impact, effort) => impact * impact * effort;
-
 const normalizeTasks = (rawTasks) => {
   const tasks = {
     byId: {},
@@ -290,14 +299,6 @@ const normalizeTasks = (rawTasks) => {
   return { tasks, taskDependencies };
 };
 
-// const serializeTask = (state, id) => {
-//   const task = {
-//     ...getTask(state, id),
-//     blockedBy: getDependenciesByTarget(state, id).map(({ targetId }) => targetId),
-//   };
-//   return filterTaskKeys(task);
-// };
-
 const setLoadFlags = ({ loaded, loading }) => ({
   type: SET_LOAD_FLAGS,
   payload: { loaded, loading },
@@ -306,12 +307,18 @@ const setLoadFlags = ({ loaded, loading }) => ({
 export const resetLoadedTasks = () => ({ type: RESET });
 
 export const setTasks = (tasks) => {
-  const parsedTasks = tasks.map(task => ({
-    ...task,
-    blockedBy: (task.blockedBy || []).filter(Boolean),
-    score: calculateScore(task.impact, task.effort),
-    id: `${task.id}`,
-  }));
+  const parsedTasks = tasks.map((task) => {
+    const impact = toInt(task.impact, null);
+    const effort = toInt(task.effort, null);
+    return {
+      ...task,
+      blockedBy: (task.blockedBy || []).filter(Boolean),
+      score: calculateScore(impact, effort),
+      impact,
+      effort,
+      id: `${task.id}`,
+    };
+  });
   const normalizedEntities = normalizeTasks(parsedTasks);
   return {
     type: SET_TASKS,
