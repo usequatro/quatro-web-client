@@ -1,4 +1,4 @@
-import * as firebase from 'firebase';
+import * as firebase from 'firebase/app';
 import omit from 'lodash/omit';
 
 const TASKS = 'tasks';

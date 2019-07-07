@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import isElectron from 'is-electron';
 import {
-  BrowserRouter, Switch, Route, Redirect,
+  BrowserRouter, MemoryRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';
@@ -27,6 +28,10 @@ const AppBackground = styled.div`
   max-width: ${MAX_WIDTH}px; /* only mobile width for now */
 `;
 
+const [Router, routerProps] = isElectron()
+  ? [MemoryRouter, { initialEntries: ['/'], initialIndex: 0 }]
+  : [BrowserRouter, {}];
+
 const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);
 const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 
@@ -34,16 +39,18 @@ export default () => (
   <AppStylesWrapper>
     <AppBackground>
       <Div100vh style={{ width: '100%', height: '100rvh' }}>
-        <BrowserRouter>
+        <Router {...routerProps}>
           <Switch>
             <Redirect exact from="/" to={paths.SIGN_UP} />
             <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
             <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
             <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
             <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
-            <Route>404</Route>
+
+            {/* fallback */}
+            <Redirect to={paths.SIGN_UP} />
           </Switch>
-        </BrowserRouter>
+        </Router>
         <Notification />
       </Div100vh>
     </AppBackground>

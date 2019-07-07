@@ -1,10 +1,12 @@
 {
-  "name": "tasket-frontend",
+  "name": "tasket",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "dayjs": "^1.8.14",
+    "electron-is-dev": "^1.1.0",
     "firebase": "^6.2.0",
+    "is-electron": "^2.2.0",
     "lodash": "^4.17.11",
     "react": "^16.8.6",
     "react-div-100vh": "^0.3.4",
@@ -20,18 +22,27 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "electron": "^5.0.6",
+    "electron-builder": "^20.44.4",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.13.0"
+    "eslint-plugin-react": "^7.13.0",
+    "typescript": "^3.5.2"
   },
+  "homepage": "./",
+  "main": "./public/electron.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build-and-deploy": "npm run build && firebase deploy --only hosting",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-start": "electron .",
+    "electron-pack": "electron-builder --dir",
+    "electron-dist": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "engines": {
     "yarn": "YARN NO LONGER USED - use npm instead."
@@ -47,5 +58,29 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "build": {
+    "appId": "com.tasket.app",
+    "files": [
+      "./dist/**/*"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
   }
 }
