@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const DIMENSIONS = {
   small: '1.5rem',
-  medium: '3rem',
+  medium: '2.5rem',
 };
 
 const Container = styled.div`
