@@ -37,7 +37,7 @@ const DependenciesSelector = ({
             <DependencyTypeContainer>
               <Dropdown
                 value={type}
-                onChange={(_, newType) => handleChange(
+                onChange={(/* event, newType */) => handleChange(
                   id,
                   blockedId,
                   blockerId,

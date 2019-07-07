@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
@@ -42,6 +42,7 @@ const getInitialDueDate = () => dayjs()
   .valueOf();
 
 const NewTask = ({ history, addTask, createTaskDependency }) => {
+  const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
@@ -52,7 +53,9 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
   const [scheduledStart, setScheduledStart] = useState(null);
   const [dependencies, setDependencies] = useState([]);
 
-  const temporaryId = `_${uuid()}`;
+  useEffect(() => {
+    setTemporaryId(`_${uuid()}`);
+  }, []);
 
   const createTask = (event) => {
     event.preventDefault();
@@ -65,8 +68,8 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
       due: hasDue ? due : null,
       scheduledStart: hasScheduledStart ? scheduledStart : null,
     });
-    dependencies.forEach(({ blockedId, blockerId }) => {
-      createTaskDependency(blockedId, blockerId);
+    dependencies.forEach(({ blockerId, blockedId }) => {
+      createTaskDependency(blockerId, blockedId);
     });
     history.goBack();
   };
@@ -137,8 +140,8 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  addTask: task => dispatch(addTaskAction(task)),
-  createTaskDependency: task => dispatch(createTaskDependencyAction(task)),
+  addTask: (...args) => dispatch(addTaskAction(...args)),
+  createTaskDependency: (...args) => dispatch(createTaskDependencyAction(...args)),
 });
 
 export default withRouter(connect(null, mapDispatchToProps)(NewTask));
