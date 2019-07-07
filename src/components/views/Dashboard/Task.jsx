@@ -90,9 +90,16 @@ const Task = ({
             )}
             {due && (
             <TaskSubtitle mt={1}>
-              Due date:
+              Due:
               {' '}
               {new Date(due).toLocaleString()}
+            </TaskSubtitle>
+            )}
+            {completed && (
+            <TaskSubtitle mt={1}>
+              Completed:
+              {' '}
+              {new Date(completed).toLocaleString()}
             </TaskSubtitle>
             )}
           </Box>
