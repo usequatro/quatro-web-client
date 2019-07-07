@@ -8,6 +8,7 @@ const ButtonFunctionality = styled.button.attrs({ type: 'button' })`
   font-size: inherit;
   padding: 0;
   color: inherit;
+  text-align: left;
 `;
 
 export default ButtonFunctionality;
