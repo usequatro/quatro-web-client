@@ -11,6 +11,17 @@ import { showInfoNotification, showNetworkErrorNotification, hideNotification } 
 
 export const NAMESPACE = 'tasks';
 
+const TASK_KEY_DEFAULTS = {
+  effort: null,
+  impact: null,
+  description: '',
+  due: null,
+  scheduledStart: null,
+  completed: null,
+  score: null,
+  trashed: null,
+  blockedBy: [],
+};
 const TASK_KEYS_FOR_REDUX = {
   id: true,
   title: true,
@@ -26,7 +37,16 @@ const TASK_KEYS_FOR_REDUX = {
   userId: true,
 };
 const TASK_KEYS_FOR_API = {
-  ...omit(TASK_KEYS_FOR_REDUX, ['id', 'score']),
+  title: true,
+  effort: true,
+  impact: true,
+  description: true,
+  created: true,
+  due: true,
+  scheduledStart: true,
+  completed: true,
+  trashed: true,
+  userId: true,
   blockedBy: true,
 };
 
@@ -474,7 +494,9 @@ export const addTask = ({
   ...restAttributes
 }) => (dispatch, getState, { getLoggedInUserUid }) => {
   const task = {
-    ...filterTaskKeys(restAttributes, TASK_KEYS_FOR_REDUX),
+    ...TASK_KEY_DEFAULTS,
+    ...restAttributes,
+    id: temporaryId,
     title,
     effort,
     impact,
@@ -487,10 +509,7 @@ export const addTask = ({
   dispatch({
     type: ADD_TASK,
     payload: {
-      task: {
-        ...task,
-        id: temporaryId,
-      },
+      task: filterTaskKeys(task, TASK_KEYS_FOR_REDUX),
     },
   });
 

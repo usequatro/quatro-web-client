@@ -73,7 +73,7 @@ const Task = ({
   return (
     <Transition in={visible} timeout={duration} onExited={onExited}>
       {state => (
-        <TaskContainer onClick={onTaskClick} state={state}>
+        <TaskContainer onClick={onTaskClick} state={state} data-id={id}>
           <Box flex={1}>
             <TaskTitle>{title}</TaskTitle>
             <TaskSubtitle>

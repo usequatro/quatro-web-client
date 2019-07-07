@@ -26,7 +26,7 @@ export const fetchTasks = (
 
   return db.collection(TASKS)
     .where('userId', '==', userId)
-    .where('thrased', '==', null)
+    .where('trashed', '==', null)
     .where('completed', completedOperator, completedValue)
     .get()
     .then((querySnapshot) => {
