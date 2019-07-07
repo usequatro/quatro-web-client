@@ -1,15 +1,15 @@
-// Command to deploy: firebase deploy --only functions
+// // Command to deploy: firebase deploy --only functions
 
-import * as functions from 'firebase-functions';
-import admin from 'firebase-admin';
+// import * as functions from 'firebase-functions';
+// import admin from 'firebase-admin';
 
-// import addKeyToAllTasks from './migrations/addKeyToAllTasks';
-import renameKeyInAllTasks from './migrations/renameKeyInAllTasks';
+// // import addKeyToAllTasks from './migrations/addKeyToAllTasks';
+// import renameKeyInAllTasks from './migrations/renameKeyInAllTasks';
 
-admin.initializeApp(functions.config().firebase);
+// admin.initializeApp(functions.config().firebase);
 
-export const migrate = functions.https.onRequest(async (request, response) => {
-  const db = admin.firestore();
-  await renameKeyInAllTasks(db, 'thrased', 'trashed', null);
-  response.send("Done!");
-});
+// export const migrate = functions.https.onRequest(async (request, response) => {
+//   const db = admin.firestore();
+//   await renameKeyInAllTasks(db, 'thrased', 'trashed', null);
+//   response.send("Done!");
+// });
