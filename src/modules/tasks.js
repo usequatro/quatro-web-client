@@ -125,7 +125,9 @@ export const reducer = createReducer(INITIAL_STATE, {
       ],
       byId: {
         ...state.tasks.byId,
-        ...mapValues(action.payload.tasks.byId, addScore),
+        ...mapValues(action.payload.tasks.byId, task => (
+          filterTaskKeys(addScore(task), TASK_KEYS_FOR_REDUX)
+        )),
       },
     },
     taskDependencies: {
@@ -313,19 +315,24 @@ const normalizeTasks = (rawTasks) => {
     allIds: [],
   };
 
-  rawTasks.forEach((task) => {
+  rawTasks.forEach(({ blockedBy, ...task }) => {
     tasks.allIds.push(task.id);
     tasks.byId[task.id] = {
       id: task.id,
       ...task,
     };
 
-    (task.blockedBy || []).forEach((blockerIds) => {
+    (blockedBy || []).forEach((blockerId) => {
+      // if there's no task, skip it.
+      if (!tasks.byId[blockerId]) {
+        return;
+      }
+
       const dependencyId = generateId();
       taskDependencies.allIds.push(dependencyId);
       taskDependencies.byId[dependencyId] = {
         id: dependencyId,
-        blockerId: blockerIds,
+        blockerId,
         blockedId: task.id,
       };
     });
@@ -340,13 +347,13 @@ export const setTasks = (tasks) => {
   const parsedTasks = tasks.map((task) => {
     const impact = toInt(task.impact, null);
     const effort = toInt(task.effort, null);
-    return filterTaskKeys({
+    return {
       ...task,
       blockedBy: (task.blockedBy || []).filter(Boolean),
       impact,
       effort,
       id: `${task.id}`,
-    }, TASK_KEYS_FOR_REDUX);
+    };
   });
   const normalizedEntities = normalizeTasks(parsedTasks);
   return {
