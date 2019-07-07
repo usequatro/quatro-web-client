@@ -10,6 +10,6 @@ admin.initializeApp(functions.config().firebase);
 
 export const migrate = functions.https.onRequest(async (request, response) => {
   const db = admin.firestore();
-  await renameKeyInAllTasks(db, 'thrased', 'trashed');
+  await renameKeyInAllTasks(db, 'thrased', 'trashed', null);
   response.send("Done!");
 });
