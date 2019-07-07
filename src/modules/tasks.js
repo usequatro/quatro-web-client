@@ -1,6 +1,5 @@
 import sortBy from 'lodash/sortBy';
 import isEqual from 'lodash/isEqual';
-import omit from 'lodash/omit';
 import uniq from 'lodash/uniq';
 import mapValues from 'lodash/mapValues';
 import uuid from 'uuid/v4';
@@ -341,13 +340,13 @@ export const setTasks = (tasks) => {
   const parsedTasks = tasks.map((task) => {
     const impact = toInt(task.impact, null);
     const effort = toInt(task.effort, null);
-    return {
+    return filterTaskKeys({
       ...task,
       blockedBy: (task.blockedBy || []).filter(Boolean),
       impact,
       effort,
       id: `${task.id}`,
-    };
+    }, TASK_KEYS_FOR_REDUX);
   });
   const normalizedEntities = normalizeTasks(parsedTasks);
   return {

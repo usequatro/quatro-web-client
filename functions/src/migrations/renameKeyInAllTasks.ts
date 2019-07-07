@@ -7,9 +7,10 @@ export default (db: any, oldKey: string, newKey: any, defaultValue: any) => {
     for (let i = 0; i < tasks.length; i++) {
       const id = tasks[i][0];
       const data = tasks[i][1];
-      const value = typeof data[oldKey] !== 'undefined' ? data[oldKey] : defaultValue;
+      const { oldKey: oldValue, ...restData } = data;
+      const value = typeof oldValue !== 'undefined' ? oldValue : defaultValue;
       const newData = {
-        ...data,
+        ...restData,
         [newKey]: value,
       };
       await db.collection(COLLECTION).doc(id).set(newData);
