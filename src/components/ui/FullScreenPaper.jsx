@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
@@ -10,7 +10,7 @@ import RootPortal from './RootPortal';
 const duration = 125;
 
 const transitionStyles = {
-  entering: { transform: 'translateY(0)' },
+  entering: { transform: 'translateY(100%)' },
   entered: { transform: 'translateY(0)' },
   exiting: { transform: 'translateY(100%)' },
   exited: { transform: 'translateY(100%)' },
@@ -39,11 +39,7 @@ const WidthContainer = styled(Box)`
 `;
 
 const FullScreenPaper = ({ history, children, ...props }) => {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(true);
-  }, []);
+  const [visible, setVisible] = useState(true);
 
   const close = () => {
     setVisible(false);
