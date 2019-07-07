@@ -1,3 +1,5 @@
+// Command to deploy: firebase deploy --only functions
+
 import * as functions from 'firebase-functions';
 import admin from 'firebase-admin';
 
