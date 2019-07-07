@@ -11,6 +11,7 @@ import {
 } from '../../../modules/tasks';
 import { EDIT_TASK } from '../../../constants/paths';
 import CheckIcon from '../../icons/CheckIcon';
+import ButtonFunction from '../../ui/ButtonFunction';
 
 const duration = 200;
 const transitionStyles = {
@@ -75,7 +76,11 @@ const Task = ({
       {state => (
         <TaskContainer onClick={onTaskClick} state={state} data-id={id}>
           <Box flex={1}>
-            <TaskTitle>{title}</TaskTitle>
+            <TaskTitle>
+              <ButtonFunction>
+                {title}
+              </ButtonFunction>
+            </TaskTitle>
             <TaskSubtitle>
               Tasket score:
               {' '}
@@ -105,7 +110,9 @@ const Task = ({
           </Box>
           <TaskButtons>
             {!completed && (
-            <CheckIcon onClick={onComplete} size="small" />
+              <ButtonFunction>
+                <CheckIcon onClick={onComplete} size="small" />
+              </ButtonFunction>
             )}
           </TaskButtons>
         </TaskContainer>

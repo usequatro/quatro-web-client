@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Box } from 'rebass';
 import XIcon from '../icons/XIcon';
 import BackIcon from '../icons/BackIcon';
+import ButtonFunction from './ButtonFunction';
 
 const Container = styled(Box).attrs({ pt: 3, pl: 3 })`
   position: absolute;
@@ -12,10 +13,12 @@ const Container = styled(Box).attrs({ pt: 3, pl: 3 })`
 
 const CloseButton = ({ onClick, backArrow }) => (
   <Container>
-    {backArrow
-      ? <BackIcon onClick={onClick} size="small" />
-      : <XIcon onClick={onClick} size="small" />
-    }
+    <ButtonFunction>
+      {backArrow
+        ? <BackIcon onClick={onClick} size="small" />
+        : <XIcon onClick={onClick} size="small" />
+      }
+    </ButtonFunction>
   </Container>
 );
 

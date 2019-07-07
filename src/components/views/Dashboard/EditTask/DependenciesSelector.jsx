@@ -6,6 +6,7 @@ import { BLOCKS, BLOCKED_BY } from '../../../../constants/dependencyTypes';
 
 import FieldLabel from '../../../ui/FieldLabel';
 import Dropdown from '../../../ui/Dropdown';
+import InlineButton from '../../../ui/InlineButton';
 import TaskSelectorField from './TaskSelectorField';
 
 const FieldsContainer = styled(Box).attrs({ mb: 3 })`
@@ -15,7 +16,10 @@ const FieldsContainer = styled(Box).attrs({ mb: 3 })`
 const DependencyTypeContainer = styled(Box).attrs({ mr: 3 })`
   width: 14rem;
 `;
-const DeleteButtonContainer = styled(Box).attrs({ ml: 3 })``;
+const DeleteButtonContainer = styled(Box).attrs({ ml: 3 })`
+  display: flex;
+  text-align: center;
+`;
 
 const DependenciesSelector = ({
   taskId, dependencies, updateTaskDependency, removeTaskDependency, createTaskDependency,
@@ -57,13 +61,13 @@ const DependenciesSelector = ({
               )}
             />
             <DeleteButtonContainer>
-              <button type="button" onClick={() => removeTaskDependency(id)}>X</button>
+              <InlineButton onClick={() => removeTaskDependency(id)}>X</InlineButton>
             </DeleteButtonContainer>
           </FieldsContainer>
         );
       })}
 
-      <button type="button" onClick={handleCreate}>New</button>
+      <InlineButton onClick={handleCreate}>Add new</InlineButton>
     </div>
   );
 };
