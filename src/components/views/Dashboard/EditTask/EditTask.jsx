@@ -52,6 +52,7 @@ const EditTask = ({
   effort,
   description,
   due,
+  completed,
   score,
   scheduledStart,
   dependencies,
@@ -85,6 +86,16 @@ const EditTask = ({
             )}
             {loaded && id && (
               <ContentContainer>
+                {completed && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onUpdate('completed', null)}
+                    mb={4}
+                  >
+                    Back to not completed
+                  </Button>
+                )}
+
                 <TaskForm
                   id={id}
                   title={title}
