@@ -52,6 +52,7 @@ const EditTask = ({
   effort,
   description,
   due,
+  score,
   scheduledStart,
   dependencies,
   updateTaskDependency,
@@ -107,6 +108,12 @@ const EditTask = ({
                   removeTaskDependency={removeTaskDependency}
                   createTaskDependency={createTaskDependency}
                 />
+
+                <Box mb={4}>
+                  <p>
+                    {`Tasket score: ${score.toFixed(2)}`}
+                  </p>
+                </Box>
 
                 <Button
                   variant="outline"

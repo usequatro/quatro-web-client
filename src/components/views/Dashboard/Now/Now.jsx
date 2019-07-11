@@ -13,7 +13,7 @@ const Now = ({ tasks }) => (
   <Workspace>
     <SearchTaskInput />
     <TaskListHeadline title="Now" count={tasks.length} />
-    {tasks.map(task => <Task key={task.id} {...task} />)}
+    {tasks.map((task, index) => <Task key={task.id} ranking={index + 1} {...task} />)}
     {tasks.length === 0 && (
       <p>No tasks. Good job!</p>
     )}

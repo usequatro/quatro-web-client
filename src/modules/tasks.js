@@ -6,6 +6,7 @@ import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
+import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import { showInfoNotification, showNetworkErrorNotification, hideNotification } from './notification';
 
 export const NAMESPACE = 'tasks';
@@ -65,13 +66,27 @@ const filterTaskKeys = (task, keys = isRequired()) => {
   return filteredTask;
 };
 
-const FACTOR = 2.0409; // factor to make score between 0 and 100;
-const calculateScore = (impact, effort) => (Number.isInteger(impact) && Number.isInteger(effort)
-  ? Math.round(FACTOR * (impact * impact) / effort)
-  : 0);
+const normalizeBase = (value, from, to) => (value * to) / from;
+const convertMillisecondsToDays = time => time / (1000 * 60 * 60 * 24);
+const getDaysDue = due => convertMillisecondsToDays(Math.max(due - Date.now(), 0));
+
+const calculateScore = (impact, effort, due) => {
+  if (!Number.isInteger(impact) || !Number.isInteger(effort)) {
+    return 0;
+  }
+  const normalizedImpact = normalizeBase(impact, 7, 10);
+  const normalizedEffort = normalizeBase(effort, 7, 10);
+
+  // https://www.wolframalpha.com/input/?i=plot+2%2Fx
+  const daysUntilFactor = due
+    ? 1 + 2 / Math.min(getDaysDue(due), 10000)
+    : 1;
+
+  return (normalizedImpact / normalizedEffort) * daysUntilFactor;
+};
 const addScore = task => ({
   ...task,
-  score: calculateScore(task.impact, task.effort),
+  score: calculateScore(task.impact, task.effort, task.due),
 });
 
 const toInt = (value, fallback) => (!Number.isNaN(Number.parseInt(value, 10))
@@ -202,22 +217,6 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
-const NEXT_SCORE_THRESHOLD = 50;
-const NOW_TASKS_LIMIT = 4;
-const isToday = (timestamp) => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  return now.getFullYear() === date.getFullYear()
-    && now.getMonth() === date.getMonth()
-    && now.getDate() === date.getDate();
-};
-const differenceTaskArrays = (tasks1, tasks2) => {
-  const idsInTasks2 = tasks2.reduce((memo, task) => ({
-    ...memo, [task.id]: true,
-  }), {});
-  return tasks1.filter(task => !idsInTasks2[task.id]);
-};
-
 const getNonTrashedTasks = state => (
   state[NAMESPACE].tasks.allIds
     .map(id => state[NAMESPACE].tasks.byId[id])
@@ -248,25 +247,22 @@ export const getNonCompletedTasks = state => (
     .filter(task => task.completed == null)
 );
 
-export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
-export const getNowTasks = (state) => {
+const getUpcomingSortedTasks = (state) => {
   const now = Date.now();
   const tasks = getNonCompletedTasks(state)
     .filter(task => task.scheduledStart == null || task.scheduledStart <= now);
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
-  const tasksDueToday = tasks.filter(task => task.due && isToday(task.due));
-  const tasksSortedByScoreToPick = Math.max(0, NOW_TASKS_LIMIT - tasksDueToday.length);
-  return [
-    ...tasksDueToday,
-    ...differenceTaskArrays(tasksSortedByScore, tasksDueToday).slice(0, tasksSortedByScoreToPick),
-  ];
+  return tasksSortedByScore;
+};
+
+export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
+export const getNowTasks = (state) => {
+  const tasksSortedByScore = getUpcomingSortedTasks(state);
+  return tasksSortedByScore.slice(0, NOW_TASKS_LIMIT);
 };
 export const getNextTasks = (state) => {
-  const now = Date.now();
-  const tasks = getNonCompletedTasks(state)
-    .filter(task => task.scheduledStart == null || task.scheduledStart <= now)
-    .filter(task => task.score < NEXT_SCORE_THRESHOLD);
-  return sortBy(tasks, 'score').reverse();
+  const tasksSortedByScore = getUpcomingSortedTasks(state);
+  return tasksSortedByScore.slice(NOW_TASKS_LIMIT);
 };
 export const getBlockedTasks = (state) => {
   const taskDependencies = getTaskDependencies(state);

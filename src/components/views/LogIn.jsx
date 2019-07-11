@@ -7,10 +7,9 @@ import * as firebase from 'firebase/app';
 import { DASHBOARD } from '../../constants/paths';
 import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
-import Main from '../ui/Main';
 import Button from '../ui/Button';
 import {
-  SignUpHeading, SignUpFooter, SignUpFormView,
+  SignUpHeading, SignUpFooter, SignUpFormView, Main, ScrollableDiv,
 } from './SignUp';
 import InvisibleForm from '../ui/InvisibleForm';
 
@@ -33,7 +32,7 @@ const LogIn = ({ history }) => {
   };
 
   return (
-    <React.Fragment>
+    <ScrollableDiv>
       <header>
         <SignUpHeading>
           Tasket
@@ -70,7 +69,7 @@ const LogIn = ({ history }) => {
         </SignUpFormView>
       </Main>
       <SignUpFooter />
-    </React.Fragment>
+    </ScrollableDiv>
   );
 };
 

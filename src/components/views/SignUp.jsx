@@ -8,7 +8,6 @@ import { DASHBOARD } from '../../constants/paths';
 import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
-import Main from '../ui/Main';
 import InvisibleForm from '../ui/InvisibleForm';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
@@ -35,6 +34,17 @@ const SignUpFooterContainer = styled.footer`
   justify-content: space-around;
   width: 100%;
   margin: 1rem 0 2rem 0;
+`;
+
+export const ScrollableDiv = styled.div`
+  overflow-y: auto;
+  height: 100%;
+`;
+export const Main = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
 `;
 
 export const SignUpFooter = () => (
@@ -79,7 +89,7 @@ const SignUp = ({ history }) => {
   };
 
   return (
-    <React.Fragment>
+    <ScrollableDiv>
       <header>
         <SignUpHeading>
           Tasket
@@ -128,7 +138,7 @@ const SignUp = ({ history }) => {
         </SignUpFormView>
       </Main>
       <SignUpFooter />
-    </React.Fragment>
+    </ScrollableDiv>
   );
 };
 

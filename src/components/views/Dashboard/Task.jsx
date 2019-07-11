@@ -56,7 +56,7 @@ const TaskButtons = styled(Box)`
 `;
 
 const Task = ({
-  id, title, score, scheduledStart, due, completed, completeTask, history,
+  id, title, /* score, */ scheduledStart, due, completed, completeTask, history, ranking,
 }) => {
   const [visible, setVisible] = useState(true);
 
@@ -78,14 +78,17 @@ const Task = ({
           <Box flex={1}>
             <TaskTitle>
               <ButtonFunction>
-                {title}
+                {ranking
+                  ? `#${ranking} - ${title}`
+                  : title
+                }
               </ButtonFunction>
             </TaskTitle>
-            <TaskSubtitle>
+            {/* <TaskSubtitle>
               Tasket score:
               {' '}
               {score}
-            </TaskSubtitle>
+            </TaskSubtitle> */}
             {scheduledStart && (
             <TaskSubtitle mt={1}>
               Scheduled start:
