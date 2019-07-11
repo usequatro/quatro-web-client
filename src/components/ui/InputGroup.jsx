@@ -7,9 +7,9 @@ const ChildContainer = styled(Box).attrs({ mb: 4 })`
 `;
 
 const GroupContainer = styled(Box)`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const InputGroup = ({ children }) => (
