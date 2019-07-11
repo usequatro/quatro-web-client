@@ -48,7 +48,9 @@ const Account = ({ history, resetLoadedTasks }) => {
             <Box>
               <UserInfo label="Full name">{user.displayName}</UserInfo>
               <UserInfo label="Email">{user.email}</UserInfo>
-              <UserInfo label="Email verified">{user.emailVerified ? 'yes' : 'no'}</UserInfo>
+              {/* <UserInfo label="Email verified">
+                {user.emailVerified ? 'yes' : 'no'}
+              </UserInfo> */}
             </Box>
             <Button onClick={onSignOut} mb={4}>
               Sign out
