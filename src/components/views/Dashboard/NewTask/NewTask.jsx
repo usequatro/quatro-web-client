@@ -29,7 +29,7 @@ const Form = styled.form`
   flex-direction: column;
   flex-shrink: 0;
 `;
-const NewTaskMain = styled(Main).attrs({ p: 3 })`
+const NewTaskMain = styled(Main).attrs({ p: 3, pb: 6 })`
   flex-grow: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

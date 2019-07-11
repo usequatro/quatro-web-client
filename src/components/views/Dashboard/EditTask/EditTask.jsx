@@ -31,7 +31,7 @@ const FlexContainer = styled.div`
   align-items: stretch;
   height: 100%;
 `;
-const EditTaskMain = styled(Main).attrs({ p: 3 })`
+const EditTaskMain = styled(Main).attrs({ p: 3, pb: 6 })`
   flex-grow: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
