@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Heading, Box } from 'rebass';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
+import StyledRouterLink from '../../ui/StyledRouterLink';
 import * as paths from '../../../constants/paths';
 import NewTaskIcon from '../../icons/NewTaskIcon';
 import UserIcon from '../../icons/UserIcon';
@@ -37,12 +38,12 @@ const titles = {
 
 export default withRouter(({ location }) => (
   <HeaderContainer>
-    <Link to={paths.ACCOUNT}>
+    <StyledRouterLink to={paths.ACCOUNT}>
       <UserIcon />
-    </Link>
+    </StyledRouterLink>
     <DashboardTitle>{titles[location.pathname] || titles.default}</DashboardTitle>
-    <Link to={paths.NEW_TASK}>
+    <StyledRouterLink to={paths.NEW_TASK}>
       <NewTaskIcon />
-    </Link>
+    </StyledRouterLink>
   </HeaderContainer>
 ));

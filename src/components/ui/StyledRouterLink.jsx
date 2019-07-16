@@ -1,14 +1,9 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
-const ButtonFunctionality = styled.button.attrs({ type: 'button' })`
-  background: transparent;
-  border: none;
+export default styled(Link)`
   outline-color: ${props => props.theme.colors.textHighlight};
   cursor: pointer;
-  font-size: inherit;
-  padding: 0;
-  color: inherit;
-  text-align: left;
   transition: color 150ms;
 
   &:active {
@@ -18,5 +13,3 @@ const ButtonFunctionality = styled.button.attrs({ type: 'button' })`
     color: ${props => props.theme.colors.textHighlight};
   }
 `;
-
-export default ButtonFunctionality;

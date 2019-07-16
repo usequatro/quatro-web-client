@@ -60,6 +60,9 @@ const Defaults = createGlobalStyle`
     font-family: ${props => props.theme.fonts.body};
     overflow: hidden; /* prevents pull outside the viewport */
   }
+  svg {
+    fill: currentColor; /* making SVG color be inherited */
+  }
 `;
 
 const RootStyles = createGlobalStyle`
