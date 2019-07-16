@@ -122,7 +122,7 @@ const EditTask = ({
 
                 <Box mb={4}>
                   <p>
-                    {`Tasket score: ${score.toFixed(2)}`}
+                    {`Score: ${score.toFixed(2)}`}
                   </p>
                 </Box>
 

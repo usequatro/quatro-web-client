@@ -35,7 +35,7 @@ const LogIn = ({ history }) => {
     <ScrollableDiv>
       <header>
         <SignUpHeading>
-          Tasket
+          Aizen
         </SignUpHeading>
       </header>
       <Main>

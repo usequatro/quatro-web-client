@@ -84,11 +84,6 @@ const Task = ({
                 }
               </ButtonFunction>
             </TaskTitle>
-            {/* <TaskSubtitle>
-              Tasket score:
-              {' '}
-              {score}
-            </TaskSubtitle> */}
             {scheduledStart && (
             <TaskSubtitle mt={1}>
               Scheduled start:

@@ -92,7 +92,7 @@ const SignUp = ({ history }) => {
     <ScrollableDiv>
       <header>
         <SignUpHeading>
-          Tasket
+          Aizen
         </SignUpHeading>
       </header>
       <Main>

@@ -3,7 +3,7 @@ import thunk from 'redux-thunk';
 import * as firebase from 'firebase/app';
 import { reducer } from './modules';
 
-const createTasketStore = () => {
+export default () => {
   // eslint-disable-next-line no-underscore-dangle
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
   const store = createStore(
@@ -17,5 +17,3 @@ const createTasketStore = () => {
   );
   return store;
 };
-
-export default createTasketStore;
