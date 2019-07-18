@@ -8,6 +8,7 @@ import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
 import EndOfListSpacing from '../EndOfListSpacing';
+import NoTasksView from '../NoTasksView';
 
 const Now = ({ tasks }) => (
   <Workspace>
@@ -15,7 +16,7 @@ const Now = ({ tasks }) => (
     <TaskListHeadline title="Now" count={tasks.length} />
     {tasks.map((task, index) => <Task key={task.id} ranking={index + 1} {...task} />)}
     {tasks.length === 0 && (
-      <p>No tasks. Good job!</p>
+      <NoTasksView message="Nothing to do yet! Good job!" />
     )}
     <EndOfListSpacing />
   </Workspace>

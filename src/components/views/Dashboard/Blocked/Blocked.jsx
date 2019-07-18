@@ -8,6 +8,7 @@ import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
 import EndOfListSpacing from '../EndOfListSpacing';
+import NoTasksView from '../NoTasksView';
 
 const Blocked = ({ tasks }) => (
   <Workspace>
@@ -19,7 +20,7 @@ const Blocked = ({ tasks }) => (
       </React.Fragment>
     ))}
     {tasks.length === 0 && (
-      <p>No tasks. Good job!</p>
+      <NoTasksView message="No blockers. Good job!" />
     )}
     <EndOfListSpacing />
   </Workspace>

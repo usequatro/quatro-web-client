@@ -9,6 +9,7 @@ import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
 import EndOfListSpacing from '../EndOfListSpacing';
 import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
+import NoTasksView from '../NoTasksView';
 
 const Next = ({ tasks }) => (
   <Workspace>
@@ -18,7 +19,7 @@ const Next = ({ tasks }) => (
       <Task key={task.id} ranking={NOW_TASKS_LIMIT + 1 + index} {...task} />
     ))}
     {tasks.length === 0 && (
-      <p>No tasks. Good job!</p>
+      <NoTasksView message="No tasks here. Good job!" />
     )}
     <EndOfListSpacing />
   </Workspace>

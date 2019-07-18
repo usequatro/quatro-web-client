@@ -23,7 +23,11 @@ const Blocked = ({ tasks }) => (
     <SmallerText>Blocked by:</SmallerText>
     <List>
       {tasks.map(task => (
-        <li><SmallerText>{task.title}</SmallerText></li>
+        <li key={task.id}>
+          <SmallerText>
+            {task.title}
+          </SmallerText>
+        </li>
       ))}
     </List>
   </Box>

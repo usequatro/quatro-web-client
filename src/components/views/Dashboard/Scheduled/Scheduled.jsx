@@ -8,6 +8,7 @@ import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
 import Workspace from '../Workspace';
 import EndOfListSpacing from '../EndOfListSpacing';
+import NoTasksView from '../NoTasksView';
 
 const Scheduled = ({ tasks }) => (
   <Workspace>
@@ -15,7 +16,7 @@ const Scheduled = ({ tasks }) => (
     <TaskListHeadline title="Scheduled" count={tasks.length} />
     {tasks.map(task => <Task key={task.id} {...task} />)}
     {tasks.length === 0 && (
-      <p>No tasks. Good job!</p>
+      <NoTasksView message="No scheduled tasks" />
     )}
     <EndOfListSpacing />
   </Workspace>
