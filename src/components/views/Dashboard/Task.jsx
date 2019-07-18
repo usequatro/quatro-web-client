@@ -12,38 +12,45 @@ import {
 import { EDIT_TASK } from '../../../constants/paths';
 import CheckIcon from '../../icons/CheckIcon';
 import ButtonFunction from '../../ui/ButtonFunction';
+import BlockingTaskList from './BlockingTaskList';
 
 const duration = 200;
 const transitionStyles = {
   entering: {
-    transform: 'scale(1, 1)', opacity: 1, maxHeight: 'none', padding: '1rem', margin: '1rem',
+    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
   },
   entered: {
-    transform: 'scale(1, 1)', opacity: 1, maxHeight: '10rem', padding: '1rem', margin: '1rem',
+    opacity: 1, maxHeight: '10rem', padding: '1.5rem',
   },
   exiting: {
-    transform: 'scale(3, 3)', opacity: 0, maxHeight: '0', padding: '0', margin: '0',
+    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
   },
   exited: {
-    transform: 'scale(3, 3)', opacity: 0, maxHeight: '0', padding: '0', margin: '0',
+    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
   },
 };
 
-const TaskContainer = styled(Box).attrs({})`
-  border: solid 1px ${props => props.theme.colors.border};
+const TaskContainer = styled(Box)`
   display: flex;
+  cursor: pointer;
 
-  transform: ${props => transitionStyles[props.state].transform};
+  border-style: solid;
+  border-color: ${props => props.theme.colors.border};
+  border-width: 0 0 1px 0;
+
   opacity: ${props => transitionStyles[props.state].opacity};
   max-height: ${props => transitionStyles[props.state].maxHeight};
-  margin-bottom: ${props => transitionStyles[props.state].margin};
   padding: ${props => transitionStyles[props.state].padding};
   transition:
-    transform ${duration / 2}ms ease-out,
-    opacity ${duration / 2}ms ease-out,
+    opacity ${duration}ms ease-out,
     max-height ${duration}ms linear,
     padding ${duration}ms linear,
-    margin-bottom ${duration}ms linear;
+    background-color 250ms ease;
+
+    background-color: ${props => props.theme.colors.appForeground};
+    &:hover {
+      background-color: ${props => props.theme.colors.appBackground};
+    }
 `;
 
 const TaskTitle = props => <Heading {...props} as="h4" fontSize={2} mb={2} />;
@@ -56,7 +63,7 @@ const TaskButtons = styled(Box)`
 `;
 
 const Task = ({
-  id, title, /* score, */ scheduledStart, due, completed, completeTask, history, ranking,
+  id, title, showBlocked, scheduledStart, due, completed, completeTask, history, ranking,
 }) => {
   const [visible, setVisible] = useState(true);
 
@@ -72,7 +79,7 @@ const Task = ({
   };
 
   return (
-    <Transition in={visible} timeout={duration} onExited={onExited}>
+    <Transition in={visible} timeout={duration} onExited={onExited} appear={!completed}>
       {state => (
         <TaskContainer onClick={onTaskClick} state={state} data-id={id}>
           <Box flex={1}>
@@ -104,6 +111,9 @@ const Task = ({
               {' '}
               {new Date(completed).toLocaleString()}
             </TaskSubtitle>
+            )}
+            {showBlocked && (
+              <BlockingTaskList blockedTaskId={id} />
             )}
           </Box>
           <TaskButtons>

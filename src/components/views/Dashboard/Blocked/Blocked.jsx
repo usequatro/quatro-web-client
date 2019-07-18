@@ -6,7 +6,6 @@ import { getBlockedTasks } from '../../../../modules/tasks';
 import Task from '../Task';
 import SearchTaskInput from '../SearchTaskInput';
 import TaskListHeadline from '../TaskListHeadline';
-import BlockingTaskList from './BlockingTaskList';
 import Workspace from '../Workspace';
 import EndOfListSpacing from '../EndOfListSpacing';
 
@@ -16,8 +15,7 @@ const Blocked = ({ tasks }) => (
     <TaskListHeadline title="Blocked" count={tasks.length} />
     {tasks.map(task => (
       <React.Fragment key={task.id}>
-        <Task {...task} />
-        <BlockingTaskList blockedTaskId={task.id} />
+        <Task {...task} showBlocked />
       </React.Fragment>
     ))}
     {tasks.length === 0 && (

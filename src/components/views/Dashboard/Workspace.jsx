@@ -11,14 +11,8 @@ const transitionStyles = {
   exited: { transform: 'translateY(1rem)', opacity: 0.5 },
 };
 
-const WorkspaceArea = styled(Box).attrs({
-  mx: 2,
-  my: 3,
-  px: 2,
-  py: 3,
-  bg: 'appForeground',
-})`
-  width: calc(100% - 2rem);
+const WorkspaceArea = styled(Box)`
+  width: 100%;
   min-height: calc(100% - 32px);
 
   transform: ${props => transitionStyles[props.state].transform};
