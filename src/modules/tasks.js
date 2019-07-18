@@ -246,9 +246,10 @@ export const getDependenciesForTask = (state, id) => (
 
 const getIsTaskBlocked = (state, id) => (
   getTaskDependencies(state)
-    .filter(({ blockerId, blockedId }) => (
-      blockedId === id && getTask(state, blockerId).completed == null
-    ))
+    .filter(({ blockerId, blockedId }) => {
+      const task = getTask(state, blockerId);
+      return blockedId === id && task && task.completed == null;
+    })
     .length > 0
 );
 
@@ -277,7 +278,10 @@ export const getNextTasks = (state) => {
 export const getBlockedTasks = (state) => {
   const taskDependencies = getTaskDependencies(state);
   const blockedTaskIds = taskDependencies
-    .filter(({ blockerId }) => getTask(state, blockerId).completed == null)
+    .filter(({ blockerId }) => {
+      const blockerTask = getTask(state, blockerId);
+      return blockerTask && blockerTask.completed == null;
+    })
     .map(({ blockedId }) => blockedId);
   const blockedTasks = uniq(blockedTaskIds)
     .map(id => getTask(state, id));
