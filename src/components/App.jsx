@@ -9,6 +9,7 @@ import AppStylesWrapper from './AppStylesWrapper';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
 import Account from './views/Account';
+import RuntimeError from './views/RuntimeError';
 import Dashboard from './views/Dashboard/Dashboard';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
@@ -38,21 +39,23 @@ const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 export default () => (
   <AppStylesWrapper>
     <AppBackground>
-      <Div100vh style={{ width: '100%', height: '100rvh' }}>
+      <RuntimeError>
         <Router {...routerProps}>
-          <Switch>
-            <Redirect exact from="/" to={paths.SIGN_UP} />
-            <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
-            <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
-            <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
-            <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
+          <Div100vh style={{ width: '100%', height: '100rvh' }}>
+            <Switch>
+              <Redirect exact from="/" to={paths.SIGN_UP} />
+              <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
+              <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
+              <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
+              <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
 
-            {/* fallback */}
-            <Redirect to={paths.SIGN_UP} />
-          </Switch>
+              {/* fallback */}
+              <Redirect to={paths.SIGN_UP} />
+            </Switch>
+            <Notification />
+          </Div100vh>
         </Router>
-        <Notification />
-      </Div100vh>
+      </RuntimeError>
     </AppBackground>
   </AppStylesWrapper>
 );
