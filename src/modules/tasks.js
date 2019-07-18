@@ -134,10 +134,10 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_TASKS]: (state, action) => ({
     ...state,
     tasks: {
-      allIds: [
+      allIds: uniq([
         ...state.tasks.allIds,
         ...action.payload.tasks.allIds,
-      ],
+      ]),
       byId: {
         ...state.tasks.byId,
         ...mapValues(action.payload.tasks.byId, task => (
@@ -217,6 +217,8 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
+export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
+
 const getNonTrashedTasks = state => (
   state[NAMESPACE].tasks.allIds
     .map(id => state[NAMESPACE].tasks.byId[id])
@@ -242,6 +244,14 @@ export const getDependenciesForTask = (state, id) => (
     .filter(({ blockedId, blockerId }) => (blockedId === id || blockerId === id))
 );
 
+const getIsTaskBlocked = (state, id) => (
+  getTaskDependencies(state)
+    .filter(({ blockerId, blockedId }) => (
+      blockedId === id && getTask(state, blockerId).completed == null
+    ))
+    .length > 0
+);
+
 export const getNonCompletedTasks = state => (
   getNonTrashedTasks(state)
     .filter(task => task.completed == null)
@@ -250,12 +260,12 @@ export const getNonCompletedTasks = state => (
 const getUpcomingSortedTasks = (state) => {
   const now = Date.now();
   const tasks = getNonCompletedTasks(state)
-    .filter(task => task.scheduledStart == null || task.scheduledStart <= now);
+    .filter(task => task.scheduledStart == null || task.scheduledStart <= now)
+    .filter(task => !getIsTaskBlocked(state, task.id));
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
   return tasksSortedByScore;
 };
 
-export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
 export const getNowTasks = (state) => {
   const tasksSortedByScore = getUpcomingSortedTasks(state);
   return tasksSortedByScore.slice(0, NOW_TASKS_LIMIT);
@@ -266,7 +276,9 @@ export const getNextTasks = (state) => {
 };
 export const getBlockedTasks = (state) => {
   const taskDependencies = getTaskDependencies(state);
-  const blockedTaskIds = taskDependencies.map(({ blockedId }) => blockedId);
+  const blockedTaskIds = taskDependencies
+    .filter(({ blockerId }) => getTask(state, blockerId).completed == null)
+    .map(({ blockedId }) => blockedId);
   const blockedTasks = uniq(blockedTaskIds)
     .map(id => getTask(state, id));
   return sortBy(blockedTasks, 'score').reverse();
