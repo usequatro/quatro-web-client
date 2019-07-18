@@ -36,7 +36,7 @@ const FooterNavigation = ({
   hasScheduled, hasBlocked, hasNow, hasNext, hasCompleted,
 }) => (
   <FooterContainer>
-    <Link to={paths.SCHEDULED}><Icon hasContents={hasScheduled}>Sce</Icon></Link>
+    <Link to={paths.SCHEDULED}><Icon hasContents={hasScheduled}>Sch</Icon></Link>
     <Link to={paths.BLOCKED}><Icon hasContents={hasBlocked}>Blo</Icon></Link>
     <Link to={paths.NOW}><Icon hasContents={hasNow}>Now</Icon></Link>
     <Link to={paths.NEXT}><Icon hasContents={hasNext}>Nxt</Icon></Link>
