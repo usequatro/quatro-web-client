@@ -5,9 +5,11 @@ import FieldLabel from './FieldLabel';
 
 const Input = styled.input`
   font-size: inherit;
-  padding: 1rem;
+  padding: 1rem 1rem 1rem 0;
   width: 100%;
-  border: solid 1px ${props => props.theme.colors.border};
+  border-style: solid;
+  border-color: ${props => props.theme.colors.border};
+  border-width: 0 0 1px 0;
   outline-color: ${props => props.theme.colors.textHighlight};
   background-color: ${props => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
   cursor: ${props => (props.disabled ? 'not-allowed' : 'auto')};

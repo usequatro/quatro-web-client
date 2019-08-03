@@ -16,7 +16,7 @@ export default {
     textHighlight: colors.SEA_BLUE,
     border: colors.LIGHT_GRAY,
     placeholder: colors.LIGHT_GRAY,
-    inputBackground: colors.WHITE,
+    inputBackground: 'transparent',
     disabled: colors.SUPER_LIGHT_GRAY,
     error: colors.ERROR_RED,
   },
