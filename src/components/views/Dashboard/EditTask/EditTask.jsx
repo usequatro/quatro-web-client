@@ -162,13 +162,13 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const { prioritizedAheadOf, ...task } = getUndeletedTask(state, ownProps.match.params.id);
+  const task = getUndeletedTask(state, ownProps.match.params.id);
 
   return {
     loaded: selectLoaded(state, 'default'),
     ...task,
-    taskPrioritizedAheadOfTitle: prioritizedAheadOf
-      ? get(getTask(state, prioritizedAheadOf), 'title', null)
+    taskPrioritizedAheadOfTitle: task && task.prioritizedAheadOf
+      ? get(getTask(state, task.prioritizedAheadOf), 'title', null)
       : null,
     dependencies: getDependenciesForTask(state, ownProps.match.params.id),
   };
