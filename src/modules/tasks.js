@@ -10,6 +10,7 @@ import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
+import * as blockerTypes from '../constants/blockerTypes';
 import {
   showInfoNotification,
   showErrorNotification,
@@ -445,7 +446,25 @@ const normalizeTasks = (rawTasks) => {
     allIds: [],
   };
   rawTasks.forEach(({ blockedBy, id: blockedId }) => {
-    (blockedBy || []).forEach((blockerId) => {
+    (blockedBy || []).forEach((descriptor) => {
+      // temporary so it works before the migration
+      if (typeof descriptor === 'string') {
+        console.warn('Applied migration of blockedBy format on load');
+        descriptor = { // eslint-disable-line no-param-reassign
+          type: blockerTypes.TASK,
+          config: { taskId: descriptor },
+        };
+      }
+
+      // Skip blockers that aren't tasks.
+      if (descriptor.type !== blockerTypes.TASK) {
+        return;
+      }
+      if (!descriptor.config || !descriptor.config.taskId) {
+        console.warn("normalizeTasks - blockedBy descriptor didn't have config", descriptor);
+        return;
+      }
+      const blockerId = descriptor.config.taskId;
       // if there's no task, skip it.
       if (!tasks.byId[blockerId]) {
         return;
@@ -568,9 +587,17 @@ export const updateTaskDependency = (id, blockerId, blockedId) => (dispatch, get
     if (isEqual(oldBlockedByArray, newBlockedByArray)) {
       return Promise.resolve();
     }
+
+    const blockedByToSave = newBlockedByArray.map(blockedById => ({
+      type: blockerTypes.TASK,
+      config: {
+        taskId: blockedById,
+      },
+    }));
+
     return apiClient.updateTask(
       taskId,
-      filterTaskKeys({ blockedBy: newBlockedByArray }, TASK_KEYS_FOR_API),
+      filterTaskKeys({ blockedBy: blockedByToSave }, TASK_KEYS_FOR_API),
     );
   });
 
