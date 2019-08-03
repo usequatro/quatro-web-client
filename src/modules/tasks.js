@@ -447,15 +447,6 @@ const normalizeTasks = (rawTasks) => {
   };
   rawTasks.forEach(({ blockedBy, id: blockedId }) => {
     (blockedBy || []).forEach((descriptor) => {
-      // temporary so it works before the migration
-      if (typeof descriptor === 'string') {
-        console.warn('Applied migration of blockedBy format on load');
-        descriptor = { // eslint-disable-line no-param-reassign
-          type: blockerTypes.TASK,
-          config: { taskId: descriptor },
-        };
-      }
-
       // Skip blockers that aren't tasks.
       if (descriptor.type !== blockerTypes.TASK) {
         return;

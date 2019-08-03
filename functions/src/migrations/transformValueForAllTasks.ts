@@ -1,6 +1,6 @@
 const COLLECTION = 'tasks';
 
-const LIMIT = 5;
+const LIMIT = 1000;
 
 export default (
   db: any,
@@ -8,7 +8,7 @@ export default (
   transformFunction: (value: any) => any,
 ) => {
   return db.collection(COLLECTION)
-    .limit(10)
+    .limit(LIMIT)
     .get()
     .then(async (querySnapshot: any) => {
       for (let i = 0; i < querySnapshot.docs.length; i++) {
