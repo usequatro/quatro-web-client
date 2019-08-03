@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getNowTasks } from '../../../../modules/tasks';
+import { NOW } from '../../../../constants/dashboardTabs';
 
 import Task from '../Task';
 import TaskListWorkspace from '../TaskListWorkspace';
 
 const Now = ({ tasks }) => (
   <TaskListWorkspace
-    taskListId="now"
+    taskListId={NOW}
     tasks={tasks}
     renderTask={(task, index, isDragging) => (
       <Task

@@ -36,7 +36,7 @@ export default {
     bold: 'bold',
   },
   // Values for lineHeight prop
-  lineHeights: {},
+  lineHeights: [],
   // Values for letterSpacing prop
   letterSpacings: {},
   // Values for boxShadow prop

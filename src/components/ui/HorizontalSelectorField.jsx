@@ -20,7 +20,7 @@ const ZeroWidthInputForFormValidation = styled.input`
 `;
 
 const HorizontalSelectorField = ({
-  label, className, options, onChange, value, required,
+  label, className, options, onChange, value, required, hiddenInputProps,
 }) => {
   const onSelection = (event, optionValue) => {
     // for Safari iOS at least.
@@ -33,7 +33,12 @@ const HorizontalSelectorField = ({
     <Box as={label ? 'label' : 'div'} className={className}>
       {label && (
         <FieldLabel>
-          <ZeroWidthInputForFormValidation required={required} value={value} />
+          <ZeroWidthInputForFormValidation
+            {...hiddenInputProps}
+            required={required}
+            value={value}
+            onChange={event => onSelection(event, event.target.value)}
+          />
           {label}
         </FieldLabel>
       )}

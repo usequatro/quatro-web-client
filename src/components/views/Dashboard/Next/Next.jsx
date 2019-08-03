@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getNextTasks } from '../../../../modules/tasks';
+import { NEXT } from '../../../../constants/dashboardTabs';
 
 import Task from '../Task';
 import TaskListWorkspace from '../TaskListWorkspace';
@@ -9,7 +10,7 @@ import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 
 const Next = ({ tasks }) => (
   <TaskListWorkspace
-    taskListId="now"
+    taskListId={NEXT}
     tasks={tasks}
     renderTask={(task, index, isDragging) => (
       <Task

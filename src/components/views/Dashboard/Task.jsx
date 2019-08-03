@@ -73,6 +73,7 @@ const Task = ({
   history,
   ranking,
   disableAnimations,
+  prioritizedAheadOf,
 }) => {
   const [visible, setVisible] = useState(true);
 
@@ -91,15 +92,19 @@ const Task = ({
       in={visible || disableAnimations}
       timeout={duration}
       onExited={onExited}
-      appear={!completed && !disableAnimations}
     >
       {state => (
-        <TaskContainer onClick={onTaskClick} state={state} data-id={id}>
+        <TaskContainer
+          onClick={onTaskClick}
+          state={state}
+          data-id={id}
+          data-ahead-of={prioritizedAheadOf}
+        >
           <Box flex={1}>
             <TaskTitle>
               <ButtonFunction>
                 {ranking
-                  ? `#${ranking} - ${title}`
+                  ? `#${ranking}${prioritizedAheadOf ? '*' : ''} - ${title}`
                   : title
                 }
               </ButtonFunction>

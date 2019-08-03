@@ -84,7 +84,7 @@ export const showInfoNotification = (message, { callbackButton, callbackFunction
   showNotification(message, { callbackButton, callbackFunction, type: 'info' })
 );
 
-const showErrorNotification = (message, { callbackButton, callbackFunction } = {}) => (
+export const showErrorNotification = (message, { callbackButton, callbackFunction } = {}) => (
   showNotification(message, { callbackButton, callbackFunction, type: 'error' })
 );
 

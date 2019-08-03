@@ -4,16 +4,18 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-import { setRelativePrioritization, clearRelativePrioritization } from '../../../modules/tasks';
+import { setRelativePrioritization } from '../../../modules/tasks';
 import PortalAware from '../../ui/PortalAware';
 import NoTasksView from './NoTasksView';
+import NOW_TASKS_LIMIT from '../../../constants/nowTasksLimit';
+import { NOW, NEXT } from '../../../constants/dashboardTabs';
 
-const duration = 125;
+const duration = 250;
 const transitionStyles = {
   entering: { transform: 'translateY(0)', opacity: 1 },
   entered: { transform: 'translateY(0)', opacity: 1 },
-  exiting: { transform: 'translateY(1rem)', opacity: 0.5 },
-  exited: { transform: 'translateY(1rem)', opacity: 0.5 },
+  exiting: { transform: 'translateY(2rem)', opacity: 0 },
+  exited: { transform: 'translateY(2rem)', opacity: 0 },
 };
 
 const WorkspaceArea = styled.div`
@@ -31,7 +33,7 @@ const EndOfListSpacing = styled.div`
 `;
 
 const TaskListWorkspace = ({
-  taskListId, tasks, renderTask, noTasksMessage, /* , isDragDisabled = false, */
+  taskListId, tasks, renderTask, noTasksMessage, isDragDisabled = false,
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -42,17 +44,21 @@ const TaskListWorkspace = ({
 
   const onDragEnd = useCallback(({ draggableId, source, destination }) => {
     if (destination) {
-      const realDestinationIndex = source.index < destination.index
-        ? destination.index
-        : destination.index + 1;
-      const destinationTask = tasks[realDestinationIndex];
-      if (destinationTask) {
-        dispatch(setRelativePrioritization(draggableId, destinationTask.id));
-      } else {
-        dispatch(clearRelativePrioritization(draggableId));
-      }
+      const indexOffsets = {
+        [NEXT]: () => NOW_TASKS_LIMIT,
+        [NOW]: () => 0,
+        default: () => { throw new Error('invalid type'); },
+      };
+      const offset = (indexOffsets[taskListId] || indexOffsets.default)();
+      dispatch(
+        setRelativePrioritization(
+          draggableId,
+          source.index + offset,
+          destination.index + offset,
+        ),
+      );
     }
-  }, [dispatch, tasks]);
+  }, [dispatch, taskListId]);
 
   return (
     <Transition in={visible} timeout={duration}>
@@ -70,7 +76,7 @@ const TaskListWorkspace = ({
                     draggableId={task.id}
                     key={task.id}
                     index={index}
-                    isDragDisabled
+                    isDragDisabled={isDragDisabled}
                   >
                     {(draggableProvided, draggableSnapshot) => (
                       <PortalAware usePortal={draggableSnapshot.isDragging}>

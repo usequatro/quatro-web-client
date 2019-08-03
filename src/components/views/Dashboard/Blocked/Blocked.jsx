@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getBlockedTasks } from '../../../../modules/tasks';
+import { BLOCKED } from '../../../../constants/dashboardTabs';
 
 import Task from '../Task';
 import TaskListWorkspace from '../TaskListWorkspace';
 
 const Blocked = ({ tasks }) => (
   <TaskListWorkspace
-    taskListId="completed"
+    taskListId={BLOCKED}
     tasks={tasks}
     renderTask={(task, index, isDragging) => (
       <Task
@@ -18,6 +19,7 @@ const Blocked = ({ tasks }) => (
       />
     )}
     noTasksMessage="No blockers. Good job!"
+    isDragDisabled
   />
 );
 

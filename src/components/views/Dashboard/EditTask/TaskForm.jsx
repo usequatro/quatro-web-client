@@ -6,7 +6,9 @@ import InputField from '../../../ui/InputField';
 import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
 import DateTimeField from '../../../ui/DateTimeField';
 import BooleanCheckbox from '../../../ui/BooleanCheckbox';
+import Paragraph from '../../../ui/Paragraph';
 import DependenciesSelector from './DependenciesSelector';
+import InlineButton from '../../../ui/InlineButton';
 
 const generateConsecutiveOptions = memoize((min, max) => {
   const array = Array.from(Array(max).keys());
@@ -26,6 +28,7 @@ const TaskForm = ({
   description,
   setDescription,
   due,
+  taskPrioritizedAheadOfTitle,
   setDue,
   hasDue,
   setHasDue,
@@ -37,6 +40,7 @@ const TaskForm = ({
   updateTaskDependency,
   removeTaskDependency,
   createTaskDependency,
+  clearRelativePrioritization,
 }) => (
   <InputGroup mb={4}>
     <InputField
@@ -45,10 +49,19 @@ const TaskForm = ({
       value={title}
       onChange={event => setTitle(event.target.value)}
     />
+    {taskPrioritizedAheadOfTitle && (
+      <Paragraph>
+        {`⚠️ This task is manually prioritized to be ahead of ${taskPrioritizedAheadOfTitle}. `}
+        <InlineButton onClick={() => clearRelativePrioritization(id)}>
+          Clear customization
+        </InlineButton>
+      </Paragraph>
+    )}
     <HorizontalSelectorField
       label="How important is this task? *"
       required
       value={impact}
+      hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
       onChange={(event, value) => setImpact(value)}
       options={generateConsecutiveOptions(1, 7)}
     />
@@ -56,6 +69,7 @@ const TaskForm = ({
       label="How much effort will it require? *"
       required
       value={effort}
+      hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
       onChange={(event, value) => setEffort(value)}
       options={generateConsecutiveOptions(1, 7)}
     />

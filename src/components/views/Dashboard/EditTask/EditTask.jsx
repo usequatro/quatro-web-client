@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Box } from 'rebass';
+import get from 'lodash/get';
 
 import {
   getUndeletedTask,
@@ -11,7 +12,9 @@ import {
   updateTaskDependency as updateTaskDependencyAction,
   removeTaskDependency as removeTaskDependencyAction,
   createTaskDependency as createTaskDependencyAction,
+  clearRelativePrioritization as clearRelativePrioritizationAction,
   getDependenciesForTask,
+  getTask,
 } from '../../../../modules/tasks';
 import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
@@ -24,6 +27,7 @@ import Loader from '../../../ui/Loader';
 import Main from '../../../ui/Main';
 import Button from '../../../ui/Button';
 import withLoadTasks from '../../../hoc/withLoadTasks';
+import Paragraph from '../../../ui/Paragraph';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -55,10 +59,12 @@ const EditTask = ({
   completed,
   score,
   scheduledStart,
+  taskPrioritizedAheadOfTitle,
   dependencies,
   updateTaskDependency,
   removeTaskDependency,
   createTaskDependency,
+  clearRelativePrioritization,
 }) => {
   const [hasDue, setHasDue] = useState(due != null);
   const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
@@ -109,6 +115,7 @@ const EditTask = ({
                   hasDue={hasDue}
                   setHasDue={setHasDue}
                   due={due}
+                  taskPrioritizedAheadOfTitle={taskPrioritizedAheadOfTitle}
                   setDue={value => onUpdate('due', value)}
                   hasScheduledStart={hasScheduledStart}
                   setHasScheduledStart={setHasScheduledStart}
@@ -118,12 +125,13 @@ const EditTask = ({
                   updateTaskDependency={updateTaskDependency}
                   removeTaskDependency={removeTaskDependency}
                   createTaskDependency={createTaskDependency}
+                  clearRelativePrioritization={clearRelativePrioritization}
                 />
 
                 <Box mb={4}>
-                  <p>
-                    {`Score: ${score.toFixed(2)}`}
-                  </p>
+                  <Paragraph>
+                    {`Score: ${score.toFixed(2)}${score === Infinity ? ' (it was already due)' : ''}`}
+                  </Paragraph>
                 </Box>
 
                 <Button
@@ -150,13 +158,21 @@ const mapDispatchToProps = {
   updateTaskDependency: updateTaskDependencyAction,
   removeTaskDependency: removeTaskDependencyAction,
   createTaskDependency: createTaskDependencyAction,
+  clearRelativePrioritization: clearRelativePrioritizationAction,
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  loaded: selectLoaded(state, 'default'),
-  ...getUndeletedTask(state, ownProps.match.params.id),
-  dependencies: getDependenciesForTask(state, ownProps.match.params.id),
-});
+const mapStateToProps = (state, ownProps) => {
+  const { prioritizedAheadOf, ...task } = getUndeletedTask(state, ownProps.match.params.id);
+
+  return {
+    loaded: selectLoaded(state, 'default'),
+    ...task,
+    taskPrioritizedAheadOfTitle: prioritizedAheadOf
+      ? get(getTask(state, prioritizedAheadOf), 'title', null)
+      : null,
+    dependencies: getDependenciesForTask(state, ownProps.match.params.id),
+  };
+};
 
 export default withLoadTasks(
   connect(mapStateToProps, mapDispatchToProps)(EditTask),

@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getScheduledTasks } from '../../../../modules/tasks';
+import { SCHEDULED } from '../../../../constants/dashboardTabs';
 
 import Task from '../Task';
 import TaskListWorkspace from '../TaskListWorkspace';
 
 const Scheduled = ({ tasks }) => (
   <TaskListWorkspace
-    taskListId="scheduled"
+    taskListId={SCHEDULED}
     tasks={tasks}
     renderTask={(task, index, isDragging) => (
       <Task
@@ -18,6 +19,7 @@ const Scheduled = ({ tasks }) => (
       />
     )}
     noTasksMessage="No scheduled tasks"
+    isDragDisabled
   />
 );
 
