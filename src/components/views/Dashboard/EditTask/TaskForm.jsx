@@ -82,16 +82,14 @@ const TaskForm = ({
 
     <DateTimeField
       label={(
-        <label>
-          <BooleanCheckbox
-            onChange={(event, value) => {
-              setHasDue(value);
-              setDue(null);
-            }}
-            value={hasDue}
-          />
-            Due Date
-        </label>
+        <BooleanCheckbox
+          onChange={(event, value) => {
+            setHasDue(value);
+            setDue(null);
+          }}
+          value={hasDue}
+          label="Due Date"
+        />
       )}
       onChange={(event, value) => setDue(value)}
       value={due}
@@ -100,16 +98,14 @@ const TaskForm = ({
 
     <DateTimeField
       label={(
-        <label>
-          <BooleanCheckbox
-            onChange={(event, value) => {
-              setHasScheduledStart(value);
-              setScheduledStart(null);
-            }}
-            value={hasScheduledStart}
-          />
-            Scheduled Start Date
-        </label>
+        <BooleanCheckbox
+          onChange={(event, value) => {
+            setHasScheduledStart(value);
+            setScheduledStart(null);
+          }}
+          value={hasScheduledStart}
+          label="Scheduled Start Date"
+        />
       )}
       onChange={(event, value) => setScheduledStart(value)}
       value={scheduledStart}

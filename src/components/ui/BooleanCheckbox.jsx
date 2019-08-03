@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Box } from 'rebass';
 
 const Container = styled.div`
   display: inline-block;
@@ -48,13 +49,24 @@ const Input = styled.input`
     outline: ${props => props.theme.colors.textHighlight} auto 5px;
   }
 `;
+const Label = styled(Box).attrs({
+  as: 'label',
+})`
+  display: block;
+  padding: 0.5rem 0;
+`;
 
-export default ({ onChange, value }) => {
-  const onCheckboxChange = event => onChange(event, Boolean(event.target.checked));
-  return (
+export default ({ onChange, value, label }) => (
+  <Label>
     <Container>
-      <Input type="checkbox" value="1" checked={value} onChange={onCheckboxChange} />
+      <Input
+        type="checkbox"
+        value="1"
+        checked={value}
+        onChange={event => onChange(event, Boolean(event.target.checked))}
+      />
       <ImprovedCheckbox checked={value} />
     </Container>
-  );
-};
+    {label}
+  </Label>
+);
