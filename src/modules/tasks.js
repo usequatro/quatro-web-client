@@ -505,7 +505,13 @@ export const moveToTrashTask = taskId => (dispatch) => {
     type: REMOVE_TASK_FROM_ALL_IDS,
     payload: { taskId },
   });
-  return dispatch(updateTask(taskId, { trashed: Date.now() }));
+  const notificationUid = dispatch(showInfoNotification('Task deleted'));
+  return dispatch(updateTask(taskId, { trashed: Date.now() }))
+    .catch((error) => {
+      console.error(error);
+      dispatch(hideNotification(notificationUid));
+      dispatch(showNetworkErrorNotification());
+    });
 };
 
 export const removeTaskFromAllIds = taskId => ({
