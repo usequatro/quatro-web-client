@@ -34,6 +34,7 @@ export const fetchTasks = (
         ...doc.data(),
         id: doc.id,
       }));
+      console.log(`${logPrefix} fetchTasks result`, tasks);
       return tasks;
     });
 };

@@ -1,4 +1,5 @@
 import sortBy from 'lodash/sortBy';
+import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
 import mapValues from 'lodash/mapValues';
@@ -25,9 +26,7 @@ const TASK_KEY_DEFAULTS = {
   due: null,
   scheduledStart: null,
   completed: null,
-  score: null,
   trashed: null,
-  blockedBy: [],
 };
 const TASK_KEYS_FOR_REDUX = {
   id: true,
@@ -428,22 +427,24 @@ const getTasksPrioritizedAheadOf = (state, id) => (
 // Actions
 
 const normalizeTasks = (rawTasks) => {
+  const tasksAllIds = rawTasks.map(task => task.id);
+  const tasksById = rawTasks.reduce((memo, { blockedBy, ...task }) => ({
+    ...memo,
+    [task.id]: {
+      id: task.id,
+      ...task,
+    },
+  }), {});
   const tasks = {
-    byId: {},
-    allIds: [],
+    allIds: tasksAllIds,
+    byId: tasksById,
   };
+
   const taskDependencies = {
     byId: {},
     allIds: [],
   };
-
-  rawTasks.forEach(({ blockedBy, ...task }) => {
-    tasks.allIds.push(task.id);
-    tasks.byId[task.id] = {
-      id: task.id,
-      ...task,
-    };
-
+  rawTasks.forEach(({ blockedBy, id: blockedId }) => {
     (blockedBy || []).forEach((blockerId) => {
       // if there's no task, skip it.
       if (!tasks.byId[blockerId]) {
@@ -455,7 +456,7 @@ const normalizeTasks = (rawTasks) => {
       taskDependencies.byId[dependencyId] = {
         id: dependencyId,
         blockerId,
-        blockedId: task.id,
+        blockedId,
       };
     });
   });
@@ -656,7 +657,9 @@ export const addTask = ({
     },
   });
 
-  return apiClient.createTask(filterTaskKeys(task, TASK_KEYS_FOR_API))
+  const taskWithoutId = omit(task, ['id']);
+
+  return apiClient.createTask(filterTaskKeys(taskWithoutId, TASK_KEYS_FOR_API))
     .then(({ id }) => {
       dispatch(removeTaskFromAllIds(temporaryId));
       dispatch({

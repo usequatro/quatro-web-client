@@ -101,6 +101,9 @@ const Task = ({
           data-ahead-of={prioritizedAheadOf}
         >
           <Box flex={1}>
+            {/* <TaskTitle>
+              {id}
+            </TaskTitle> */}
             <TaskTitle>
               <ButtonFunction>
                 {ranking
