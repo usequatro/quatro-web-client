@@ -2,6 +2,7 @@ const COLLECTION = 'tasks';
 
 export default (db: any, newKey: string, defaultValue: any) => {
   return db.collection(COLLECTION).get().then(async (querySnapshot: any) => {
+    // ⚠️ Need to improve this, here we're currently retrieving ALL tasks.
     const tasks = querySnapshot.docs.map((doc: any) => ([doc.id, doc.data()]));
 
     for (let i = 0; i < tasks.length; i++) {

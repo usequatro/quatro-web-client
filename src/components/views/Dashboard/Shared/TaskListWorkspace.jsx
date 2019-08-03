@@ -5,15 +5,14 @@ import styled from 'styled-components';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import { setRelativePrioritization } from '../../../../modules/tasks';
-import PortalAware from '../../../ui/PortalAware';
 import NoTasksView from './NoTasksView';
 import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 import { NOW, NEXT } from '../../../../constants/dashboardTabs';
 
 const duration = 250;
 const transitionStyles = {
-  entering: { transform: 'translateY(0)', opacity: 1 },
-  entered: { transform: 'translateY(0)', opacity: 1 },
+  entering: { transform: null, opacity: 1 },
+  entered: { transform: null, opacity: 1 },
   exiting: { transform: 'translateY(2rem)', opacity: 0 },
   exited: { transform: 'translateY(2rem)', opacity: 0 },
 };
@@ -22,7 +21,11 @@ const WorkspaceArea = styled.div`
   width: 100%;
   min-height: calc(100% - 32px);
 
-  transform: ${props => transitionStyles[props.state].transform};
+  /* conditionally using the transform CSS rule. Dnd doesn't like it, so that's why we clear it */
+  ${props => transitionStyles[props.state].transform && (
+    `transform: ${transitionStyles[props.state].transform};`
+  )}
+
   opacity: ${props => transitionStyles[props.state].opacity};
   transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
 `;
@@ -77,17 +80,16 @@ const TaskListWorkspace = ({
                     key={task.id}
                     index={index}
                     isDragDisabled={isDragDisabled}
+                    disableInteractiveElementBlocking
                   >
                     {(draggableProvided, draggableSnapshot) => (
-                      <PortalAware usePortal={draggableSnapshot.isDragging}>
-                        <div
-                          ref={draggableProvided.innerRef}
-                          {...draggableProvided.draggableProps}
-                          {...draggableProvided.dragHandleProps}
-                        >
-                          {renderTask(task, index, draggableSnapshot.isDragging)}
-                        </div>
-                      </PortalAware>
+                      <div
+                        ref={draggableProvided.innerRef}
+                        {...draggableProvided.draggableProps}
+                        {...draggableProvided.dragHandleProps}
+                      >
+                        {renderTask(task, index, draggableSnapshot.isDragging)}
+                      </div>
                     )}
                   </Draggable>
                 ))}
