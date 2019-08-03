@@ -3,6 +3,7 @@ import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
 import mapValues from 'lodash/mapValues';
 import keyBy from 'lodash/keyBy';
+import difference from 'lodash/difference';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
@@ -110,6 +111,7 @@ const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
 const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
 const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
 const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
+const UPDATE_TASK_BATCH = `${NAMESPACE}/UPDATE_TASK_BATCH`;
 const RESET = `${NAMESPACE}/RESET`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS`;
@@ -141,6 +143,21 @@ export const reducer = createReducer(INITIAL_STATE, {
           ...state.tasks.byId[taskId],
           ...updates,
         }), TASK_KEYS_FOR_REDUX),
+      },
+    },
+  }),
+  [UPDATE_TASK_BATCH]: (state, { payload: { updatesByTaskId } }) => ({
+    ...state,
+    tasks: {
+      ...state.tasks,
+      byId: {
+        ...state.tasks.byId,
+        ...mapValues(updatesByTaskId, (updates, taskId) => (
+          filterTaskKeys(addScore({
+            ...state.tasks.byId[taskId],
+            ...updates,
+          }), TASK_KEYS_FOR_REDUX)
+        )),
       },
     },
   }),
@@ -300,7 +317,10 @@ const applyRelativePrioritization = (tasks) => {
     if (task.prioritizedAheadOf) {
       return {
         ...memo,
-        [task.prioritizedAheadOf]: task.id,
+        [task.prioritizedAheadOf]: [
+          ...(memo[task.prioritizedAheadOf] || []),
+          task.id,
+        ],
       };
     }
     return memo;
@@ -315,17 +335,27 @@ const applyRelativePrioritization = (tasks) => {
   do {
     updatedTasksIds = updatedTasksIds.reduce((memo, id) => {
       if (taskBaseToAheadOf[id]) {
-        const taskAhead = taskBaseToAheadOf[id];
+        const tasksAhead = taskBaseToAheadOf[id];
         delete taskBaseToAheadOf[id];
-        return [...memo, taskAhead, id];
+        return [...memo, ...tasksAhead, id];
       }
       return [...memo, id];
     }, []);
     iterations += 1;
   } while (updatedTasksIds.length < tasks.length && iterations < maxIterations);
 
+  const taskIdsMissing = difference(tasks.map(task => task.id), updatedTasksIds);
+
+  if (taskIdsMissing.length) {
+    console.warn('Failed to prioritize all tasks.', taskIdsMissing);
+  }
+
+  const prioritizedTaskIds = taskIdsMissing.length
+    ? [...updatedTasksIds, ...taskIdsMissing]
+    : updatedTasksIds;
+
   const tasksById = keyBy(tasks, 'id');
-  return updatedTasksIds
+  return prioritizedTaskIds
     .map(id => tasksById[id]);
 };
 
@@ -460,6 +490,15 @@ export const updateTask = (taskId, updates) => (dispatch) => {
     payload: { taskId, updates },
   });
   return apiClient.updateTask(taskId, filterTaskKeys(updates, TASK_KEYS_FOR_API));
+};
+export const updateTaskBatch = updatesByTaskId => (dispatch) => {
+  dispatch({
+    type: UPDATE_TASK_BATCH,
+    payload: { updatesByTaskId },
+  });
+  return apiClient.updateTaskBatch(
+    mapValues(updatesByTaskId, updates => filterTaskKeys(updates, TASK_KEYS_FOR_API)),
+  );
 };
 export const moveToTrashTask = taskId => (dispatch) => {
   dispatch({
@@ -652,32 +691,23 @@ export const setRelativePrioritization = (sourceTaskId, sourceIndex, destination
       return; // nothing to do on this case, the task is already where it needs to be.
     }
 
-    dispatch({
-      type: SET_RELATIVE_PRIORITIZATION,
-      payload: {
-        sourceTaskId,
-        targetTaskId,
-      },
-    });
-
     // If there are other tasks depending on the one that is going to be moved,
     // we're going to associate them to the next one, so that they stay on the same spot.
     const tasksPrioritizedBefore = getTasksPrioritizedAheadOf(state, sourceTaskId);
     const taskAfter = allTasks[sourceIndex + 1];
 
-    tasksPrioritizedBefore.forEach((task) => {
-      dispatch({
-        type: SET_RELATIVE_PRIORITIZATION,
-        payload: {
-          sourceTaskId: task.id,
-          targetTaskId: taskAfter.id,
-        },
-      });
-    });
+    const updatesByTaskId = {
+      [sourceTaskId]: { prioritizedAheadOf: targetTaskId },
+      ...tasksPrioritizedBefore.reduce((memo, task) => ({
+        ...memo,
+        [task.id]: { prioritizedAheadOf: taskAfter.id },
+      }), {}),
+    };
+
+    dispatch(updateTaskBatch(updatesByTaskId));
   }
 );
 
-export const clearRelativePrioritization = taskId => ({
-  type: CLEAR_RELATIVE_PRIORITIZATION,
-  payload: { taskId },
+export const clearRelativePrioritization = taskId => updateTask(taskId, {
+  prioritizedAheadOf: null,
 });

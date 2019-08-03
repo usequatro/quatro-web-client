@@ -45,3 +45,14 @@ export const updateTask = (taskId, updates) => {
     { merge: true },
   );
 };
+
+export const updateTaskBatch = (updatesByTaskId) => {
+  console.log(`${logPrefix} updateTaskBatch`, updatesByTaskId);
+  const batch = db.batch();
+  Object.keys(updatesByTaskId).forEach((taskId) => {
+    const taskRef = db.collection(TASKS).doc(taskId);
+    const updates = excludeId(updatesByTaskId[taskId]);
+    batch.update(taskRef, updates);
+  });
+  return batch.commit();
+};

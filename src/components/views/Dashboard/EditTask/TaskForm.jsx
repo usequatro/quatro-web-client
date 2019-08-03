@@ -51,7 +51,7 @@ const TaskForm = ({
     />
     {taskPrioritizedAheadOfTitle && (
       <Paragraph>
-        {`⚠️ This task is manually prioritized to be ahead of ${taskPrioritizedAheadOfTitle}. `}
+        {`⚠️ This task is manually prioritized to be before ${taskPrioritizedAheadOfTitle}. `}
         <InlineButton onClick={() => clearRelativePrioritization(id)}>
           Clear customization
         </InlineButton>
