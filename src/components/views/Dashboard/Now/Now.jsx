@@ -4,22 +4,21 @@ import { connect } from 'react-redux';
 import { getNowTasks } from '../../../../modules/tasks';
 
 import Task from '../Task';
-import SearchTaskInput from '../SearchTaskInput';
-import TaskListHeadline from '../TaskListHeadline';
-import Workspace from '../Workspace';
-import EndOfListSpacing from '../EndOfListSpacing';
-import NoTasksView from '../NoTasksView';
+import TaskListWorkspace from '../TaskListWorkspace';
 
 const Now = ({ tasks }) => (
-  <Workspace>
-    <SearchTaskInput />
-    <TaskListHeadline title="Now" count={tasks.length} />
-    {tasks.map((task, index) => <Task key={task.id} ranking={index + 1} {...task} />)}
-    {tasks.length === 0 && (
-      <NoTasksView message="Nothing to do yet! Good job!" />
+  <TaskListWorkspace
+    taskListId="now"
+    tasks={tasks}
+    renderTask={(task, index, isDragging) => (
+      <Task
+        ranking={index + 1}
+        disableAnimations={isDragging}
+        {...task}
+      />
     )}
-    <EndOfListSpacing />
-  </Workspace>
+    noTasksMessage="Nothing to do yet! Good job!"
+  />
 );
 
 const mapStateToProps = state => ({

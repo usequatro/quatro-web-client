@@ -30,7 +30,7 @@ const transitionStyles = {
   },
 };
 
-const TaskContainer = styled(Box)`
+const TaskContainer = styled.div`
   display: flex;
   cursor: pointer;
 
@@ -63,7 +63,16 @@ const TaskButtons = styled(Box)`
 `;
 
 const Task = ({
-  id, title, showBlocked, scheduledStart, due, completed, completeTask, history, ranking,
+  id,
+  title,
+  showBlocked,
+  scheduledStart,
+  due,
+  completed,
+  completeTask,
+  history,
+  ranking,
+  disableAnimations,
 }) => {
   const [visible, setVisible] = useState(true);
 
@@ -78,7 +87,12 @@ const Task = ({
     history.push(EDIT_TASK.replace(/:id\b/, id));
   };
   return (
-    <Transition in={visible} timeout={duration} onExited={onExited} appear={!completed}>
+    <Transition
+      in={visible || disableAnimations}
+      timeout={duration}
+      onExited={onExited}
+      appear={!completed && !disableAnimations}
+    >
       {state => (
         <TaskContainer onClick={onTaskClick} state={state} data-id={id}>
           <Box flex={1}>
@@ -91,25 +105,25 @@ const Task = ({
               </ButtonFunction>
             </TaskTitle>
             {scheduledStart && (
-            <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={1}>
               Scheduled start:
-              {' '}
-              {new Date(scheduledStart).toLocaleString()}
-            </TaskSubtitle>
+                {' '}
+                {new Date(scheduledStart).toLocaleString()}
+              </TaskSubtitle>
             )}
             {due && (
-            <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={1}>
               Due:
-              {' '}
-              {new Date(due).toLocaleString()}
-            </TaskSubtitle>
+                {' '}
+                {new Date(due).toLocaleString()}
+              </TaskSubtitle>
             )}
             {completed && (
-            <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={1}>
               Completed:
-              {' '}
-              {new Date(completed).toLocaleString()}
-            </TaskSubtitle>
+                {' '}
+                {new Date(completed).toLocaleString()}
+              </TaskSubtitle>
             )}
             {showBlocked && (
               <BlockingTaskList blockedTaskId={id} />

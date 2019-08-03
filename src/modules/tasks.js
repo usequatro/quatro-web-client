@@ -2,6 +2,7 @@ import sortBy from 'lodash/sortBy';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
 import mapValues from 'lodash/mapValues';
+// import keyBy from 'lodash/keyBy';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
@@ -35,6 +36,7 @@ const TASK_KEYS_FOR_REDUX = {
   score: true,
   trashed: true,
   userId: true,
+  prioritizedAheadOf: true,
 };
 const TASK_KEYS_FOR_API = {
   title: true,
@@ -48,6 +50,7 @@ const TASK_KEYS_FOR_API = {
   trashed: true,
   userId: true,
   blockedBy: true,
+  prioritizedAheadOf: true,
 };
 
 // Utilities
@@ -106,6 +109,8 @@ const RESET = `${NAMESPACE}/RESET`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY_FROM_ALL_IDS`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
+const SET_RELATIVE_PRIORITIZATION = `${NAMESPACE}/SET_RELATIVE_PRIORITIZATION`;
+const CLEAR_RELATIVE_PRIORITIZATION = `${NAMESPACE}/CLEAR_RELATIVE_PRIORITIZATION`;
 
 // Reducers
 
@@ -216,6 +221,35 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
+  [SET_RELATIVE_PRIORITIZATION]: (
+    state,
+    { payload: { sourceTaskId = isRequired(), targetTaskId = isRequired() } },
+  ) => ({
+    ...state,
+    tasks: {
+      ...state.tasks,
+      byId: {
+        ...state.tasks.byId,
+        [sourceTaskId]: {
+          ...state.tasks.byId[sourceTaskId],
+          prioritizedAheadOf: targetTaskId,
+        },
+      },
+    },
+  }),
+  [CLEAR_RELATIVE_PRIORITIZATION]: (state, taskId) => ({
+    ...state,
+    tasks: {
+      ...state.tasks,
+      byId: {
+        ...state.tasks.byId,
+        [taskId]: {
+          ...state.tasks.byId[taskId],
+          prioritizedAheadOf: null,
+        },
+      },
+    },
+  }),
 });
 
 // Selectors
@@ -256,6 +290,41 @@ const getIsTaskBlocked = (state, id) => (
     .length > 0
 );
 
+const applyRelativePrioritization = tasks => tasks
+  // To do:
+  // const taskBaseToAheadOf = tasks.reduce((memo, task) => {
+  //   if (task.prioritizedAheadOf) {
+  //     return {
+  //       ...memo,
+  //       [task.prioritizedAheadOf]: task.id,
+  //     };
+  //   }
+  //   return memo;
+  // }, {});
+
+  // const topTaskIds = tasks.filter(task => !task.prioritizedAheadOf).map(task => task.id);
+
+  // let updatedTasksIds = topTaskIds;
+  // const maxIterations = 10;
+  // let iterations = 0;
+
+  // do {
+  //   updatedTasksIds = updatedTasksIds.reduce((memo, id) => {
+  //     if (taskBaseToAheadOf[id]) {
+  //       const taskAhead = taskBaseToAheadOf[id];
+  //       delete taskBaseToAheadOf[id];
+  //       return [...memo, taskAhead, id];
+  //     }
+  //     return [...memo, id];
+  //   }, []);
+  //   iterations += 1;
+  // } while (updatedTasksIds.length < tasks.length && iterations < maxIterations);
+
+  // const tasksById = keyBy(tasks, 'id');
+  // return updatedTasksIds
+  //   .map(id => tasksById[id]);
+;
+
 export const getNonCompletedTasks = state => (
   getNonTrashedTasks(state)
     .filter(task => task.completed == null)
@@ -267,16 +336,16 @@ const getUpcomingSortedTasks = (state) => {
     .filter(task => task.scheduledStart == null || task.scheduledStart <= now)
     .filter(task => !getIsTaskBlocked(state, task.id));
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
-  return tasksSortedByScore;
+  return applyRelativePrioritization(tasksSortedByScore);
 };
 
 export const getNowTasks = (state) => {
-  const tasksSortedByScore = getUpcomingSortedTasks(state);
-  return tasksSortedByScore.slice(0, NOW_TASKS_LIMIT);
+  const sortedTasks = getUpcomingSortedTasks(state);
+  return sortedTasks.slice(0, NOW_TASKS_LIMIT);
 };
 export const getNextTasks = (state) => {
-  const tasksSortedByScore = getUpcomingSortedTasks(state);
-  return tasksSortedByScore.slice(NOW_TASKS_LIMIT);
+  const sortedTasks = getUpcomingSortedTasks(state);
+  return sortedTasks.slice(NOW_TASKS_LIMIT);
 };
 export const getBlockedTasks = (state) => {
   const taskDependencies = getTaskDependencies(state);
@@ -554,3 +623,16 @@ export const addTask = ({
       dispatch(removeTaskFromAllIds(temporaryId));
     });
 };
+
+export const setRelativePrioritization = (sourceTaskId, targetTaskId) => ({
+  type: SET_RELATIVE_PRIORITIZATION,
+  payload: {
+    sourceTaskId,
+    targetTaskId,
+  },
+});
+
+export const clearRelativePrioritization = taskId => ({
+  type: CLEAR_RELATIVE_PRIORITIZATION,
+  payload: { taskId },
+});

@@ -7,23 +7,23 @@ import { FETCH_PARAMS_COMPLETED } from '../../../../modules/dashboard';
 
 import LoaderWrapper from '../../../ui/LoaderWrapper';
 import Task from '../Task';
-import SearchTaskInput from '../SearchTaskInput';
-import TaskListHeadline from '../TaskListHeadline';
-import Workspace from '../Workspace';
-import EndOfListSpacing from '../EndOfListSpacing';
-import NoTasksView from '../NoTasksView';
+import TaskListWorkspace from '../TaskListWorkspace';
 
 const Completed = ({ tasks, loaded }) => (
   <LoaderWrapper loading={!loaded}>
-    <Workspace>
-      <SearchTaskInput />
-      <TaskListHeadline title="Completed" count={tasks.length} />
-      {tasks.map(task => <Task key={task.id} {...task} />)}
-      {tasks.length === 0 && (
-        <NoTasksView message="No completed tasks yet. Get to work!" />
+    <TaskListWorkspace
+      taskListId="completed"
+      tasks={tasks}
+      renderTask={(task, index, isDragging) => (
+        <Task
+          key={task.id}
+          {...task}
+          disableAnimations={isDragging}
+        />
       )}
-      <EndOfListSpacing />
-    </Workspace>
+      noTasksMessage="No completed tasks yet. Get to work!"
+      isDragDisabled
+    />
   </LoaderWrapper>
 );
 

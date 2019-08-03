@@ -4,22 +4,21 @@ import { connect } from 'react-redux';
 import { getScheduledTasks } from '../../../../modules/tasks';
 
 import Task from '../Task';
-import SearchTaskInput from '../SearchTaskInput';
-import TaskListHeadline from '../TaskListHeadline';
-import Workspace from '../Workspace';
-import EndOfListSpacing from '../EndOfListSpacing';
-import NoTasksView from '../NoTasksView';
+import TaskListWorkspace from '../TaskListWorkspace';
 
 const Scheduled = ({ tasks }) => (
-  <Workspace>
-    <SearchTaskInput />
-    <TaskListHeadline title="Scheduled" count={tasks.length} />
-    {tasks.map(task => <Task key={task.id} {...task} />)}
-    {tasks.length === 0 && (
-      <NoTasksView message="No scheduled tasks" />
+  <TaskListWorkspace
+    taskListId="scheduled"
+    tasks={tasks}
+    renderTask={(task, index, isDragging) => (
+      <Task
+        key={task.id}
+        {...task}
+        disableAnimations={isDragging}
+      />
     )}
-    <EndOfListSpacing />
-  </Workspace>
+    noTasksMessage="No scheduled tasks"
+  />
 );
 
 const mapStateToProps = state => ({
