@@ -8,10 +8,10 @@ import {
 import { Transition } from 'react-transition-group';
 import {
   completeTask as completeTaskAction,
-} from '../../../modules/tasks';
-import { EDIT_TASK } from '../../../constants/paths';
-import CheckIcon from '../../icons/CheckIcon';
-import ButtonFunction from '../../ui/ButtonFunction';
+} from '../../../../modules/tasks';
+import { EDIT_TASK } from '../../../../constants/paths';
+import CheckIcon from '../../../icons/CheckIcon';
+import ButtonFunction from '../../../ui/ButtonFunction';
 import BlockingTaskList from './BlockingTaskList';
 
 const duration = 200;

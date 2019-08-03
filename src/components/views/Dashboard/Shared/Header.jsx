@@ -2,10 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { Heading, Box } from 'rebass';
 import { withRouter } from 'react-router-dom';
-import StyledRouterLink from '../../ui/StyledRouterLink';
-import * as paths from '../../../constants/paths';
-import NewTaskIcon from '../../icons/NewTaskIcon';
-import UserIcon from '../../icons/UserIcon';
+import StyledRouterLink from '../../../ui/StyledRouterLink';
+import * as paths from '../../../../constants/paths';
+import NewTaskIcon from '../../../icons/NewTaskIcon';
+import UserIcon from '../../../icons/UserIcon';
 
 const HeaderContainer = styled(Box).attrs({
   p: 3,

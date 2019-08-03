@@ -3,9 +3,7 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Box } from 'rebass';
 
-import { getTasksBlockingGivenTask } from '../../../modules/tasks';
-
-// import Task from '../Task';
+import { getTasksBlockingGivenTask } from '../../../../modules/tasks';
 
 const List = styled(Box).attrs({
   mt: 2,

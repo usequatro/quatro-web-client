@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { getNextTasks } from '../../../../modules/tasks';
 import { NEXT } from '../../../../constants/dashboardTabs';
 
-import Task from '../Task';
-import TaskListWorkspace from '../TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 
 const Next = ({ tasks }) => (

@@ -7,8 +7,8 @@ import { FETCH_PARAMS_COMPLETED } from '../../../../modules/dashboard';
 import { COMPLETED } from '../../../../constants/dashboardTabs';
 
 import LoaderWrapper from '../../../ui/LoaderWrapper';
-import Task from '../Task';
-import TaskListWorkspace from '../TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Completed = ({ tasks, loaded }) => (
   <LoaderWrapper loading={!loaded}>

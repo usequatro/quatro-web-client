@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { getScheduledTasks } from '../../../../modules/tasks';
 import { SCHEDULED } from '../../../../constants/dashboardTabs';
 
-import Task from '../Task';
-import TaskListWorkspace from '../TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Scheduled = ({ tasks }) => (
   <TaskListWorkspace

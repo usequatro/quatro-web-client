@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { getNowTasks } from '../../../../modules/tasks';
 import { NOW } from '../../../../constants/dashboardTabs';
 
-import Task from '../Task';
-import TaskListWorkspace from '../TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Now = ({ tasks }) => (
   <TaskListWorkspace

@@ -5,8 +5,8 @@ import { Box } from 'rebass';
 import { connect } from 'react-redux';
 import {
   getScheduledTasks, getNextTasks, getBlockedTasks, getNowTasks, getCompletedTasks,
-} from '../../../modules/tasks';
-import * as paths from '../../../constants/paths';
+} from '../../../../modules/tasks';
+import * as paths from '../../../../constants/paths';
 
 const FooterContainer = styled(Box).attrs({
   px: 2,

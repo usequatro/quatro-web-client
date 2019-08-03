@@ -4,18 +4,18 @@ import styled from 'styled-components';
 
 import * as paths from '../../../constants/paths';
 
-import Header from './Header';
-import FooterNavigation from './FooterNavigation';
+import Header from './Shared/Header';
+import FooterNavigation from './Shared/FooterNavigation';
 import withLoadTasks from '../../hoc/withLoadTasks';
 import Main from '../../ui/Main';
 import LoaderWrapper from '../../ui/LoaderWrapper';
 import NewTask from './NewTask/NewTask';
 import EditTask from './EditTask';
-import Now from './Now';
-import Next from './Next';
-import Scheduled from './Scheduled';
-import Blocked from './Blocked';
-import Completed from './Completed';
+import Now from './Lists/Now';
+import Next from './Lists/Next';
+import Scheduled from './Lists/Scheduled';
+import Blocked from './Lists/Blocked';
+import Completed from './Lists/Completed';
 
 const FlexContainer = styled.div`
   display: flex;
