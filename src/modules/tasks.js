@@ -77,12 +77,15 @@ const calculateScore = (impact, effort, due) => {
   const normalizedImpact = normalizeBase(impact, 7, 10);
   const normalizedEffort = normalizeBase(effort, 7, 10);
 
+  const weightenedImpact = normalizedImpact ** 1.5;
+  const weightenedEffort = normalizedEffort ** 1;
+
   // https://www.wolframalpha.com/input/?i=plot+2%2Fx
   const daysUntilFactor = due
     ? 1 + 2 / Math.min(getDaysDue(due), 10000)
     : 1;
 
-  return (normalizedImpact / normalizedEffort) * daysUntilFactor;
+  return (weightenedImpact / weightenedEffort) * daysUntilFactor;
 };
 const addScore = task => ({
   ...task,
