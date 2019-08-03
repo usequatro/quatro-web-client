@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
         <Container>
           <Text p={4}>
             {'There\'s been an error '}
-            <a href="/">Reload app</a>
+            <a href="/" target="_self">Reload app</a>
           </Text>
         </Container>
       );
