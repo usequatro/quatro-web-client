@@ -14,9 +14,13 @@ const ButtonsContainer = styled.div`
   display: flex;
   align-items: center;
 `;
+const ZeroWidthInputForFormValidation = styled.input`
+  width: 0;
+  opacity: 0;
+`;
 
 const HorizontalSelectorField = ({
-  label, className, options, onChange, value,
+  label, className, options, onChange, value, required,
 }) => {
   const onSelection = (event, optionValue) => {
     // for Safari iOS at least.
@@ -28,7 +32,10 @@ const HorizontalSelectorField = ({
   return (
     <Box as={label ? 'label' : 'div'} className={className}>
       {label && (
-        <FieldLabel>{label}</FieldLabel>
+        <FieldLabel>
+          <ZeroWidthInputForFormValidation required={required} value={value} />
+          {label}
+        </FieldLabel>
       )}
       <ButtonsContainer>
         {options.map(({ value: optionValue, label: optionLabel = `${optionValue}` }) => (

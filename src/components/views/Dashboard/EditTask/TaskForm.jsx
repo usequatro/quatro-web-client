@@ -46,13 +46,15 @@ const TaskForm = ({
       onChange={event => setTitle(event.target.value)}
     />
     <HorizontalSelectorField
-      label="How important is this task?"
+      label="How important is this task? *"
+      required
       value={impact}
       onChange={(event, value) => setImpact(value)}
       options={generateConsecutiveOptions(1, 7)}
     />
     <HorizontalSelectorField
-      label="How much effort will it require?"
+      label="How much effort will it require? *"
+      required
       value={effort}
       onChange={(event, value) => setEffort(value)}
       options={generateConsecutiveOptions(1, 7)}
