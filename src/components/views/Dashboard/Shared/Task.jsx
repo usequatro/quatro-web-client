@@ -134,7 +134,7 @@ const Task = ({
               </TaskSubtitle>
             )}
             {showBlocked && (
-              <BlockingTaskList blockedTaskId={id} />
+              <BlockingTaskList taskId={id} />
             )}
           </Box>
           <TaskButtons>

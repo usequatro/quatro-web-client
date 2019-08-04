@@ -1,7 +1,5 @@
-const isRequired = (param) => {
-  if (param === undefined) {
-    throw new Error('missing required parameter');
-  }
+const isRequired = (name) => {
+  throw new Error(`missing required parameter ${name}`);
 };
 
 export default isRequired;

@@ -7,7 +7,7 @@ import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
 import DateTimeField from '../../../ui/DateTimeField';
 import BooleanCheckbox from '../../../ui/BooleanCheckbox';
 import Paragraph from '../../../ui/Paragraph';
-import DependenciesSelector from './DependenciesSelector';
+import BlockersSelector from './BlockersSelector';
 import InlineButton from '../../../ui/InlineButton';
 
 const generateConsecutiveOptions = memoize((min, max) => {
@@ -112,7 +112,7 @@ const TaskForm = ({
       disabled={!hasScheduledStart}
     />
 
-    <DependenciesSelector
+    <BlockersSelector
       taskId={id}
       dependencies={dependencies}
       updateTaskDependency={updateTaskDependency}

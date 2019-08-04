@@ -17,7 +17,7 @@ const TaskSelectorField = ({
 );
 
 const mapStateToProps = (state, ownProps) => ({
-  tasks: getTasksForDependencySelection(state, ownProps.currentId),
+  tasks: getTasksForDependencySelection(state, ownProps.currentTaskViewedId),
 });
 
 export default connect(mapStateToProps)(TaskSelectorField);

@@ -16,7 +16,7 @@ const SmallerText = styled.span`
   font-size: 0.9em;
 `;
 
-const Blocked = ({ tasks }) => (
+const BlockingTaskList = ({ tasks }) => (
   <Box mt={3}>
     <SmallerText>Blocked by:</SmallerText>
     <List>
@@ -32,7 +32,7 @@ const Blocked = ({ tasks }) => (
 );
 
 const mapStateToProps = (state, props) => ({
-  tasks: getTasksBlockingGivenTask(state, props.blockedTaskId),
+  tasks: getTasksBlockingGivenTask(state, props.taskId),
 });
 
-export default connect(mapStateToProps)(Blocked);
+export default connect(mapStateToProps)(BlockingTaskList);

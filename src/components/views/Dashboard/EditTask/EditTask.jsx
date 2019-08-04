@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch, connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { connect } from 'react-redux';
+
 import styled from 'styled-components';
 import { Box } from 'rebass';
 import get from 'lodash/get';
@@ -11,10 +12,11 @@ import {
   moveToTrashTask as moveToTrashTaskAction,
   updateTaskDependency as updateTaskDependencyAction,
   removeTaskDependency as removeTaskDependencyAction,
-  createTaskDependency as createTaskDependencyAction,
+  createTaskDependency,
   clearRelativePrioritization as clearRelativePrioritizationAction,
-  getDependenciesForTask,
+  // getDependenciesForTask,
   getTask,
+  getTaskDependencies,
 } from '../../../../modules/tasks';
 import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
@@ -63,15 +65,19 @@ const EditTask = ({
   dependencies,
   updateTaskDependency,
   removeTaskDependency,
-  createTaskDependency,
   clearRelativePrioritization,
 }) => {
+  const dispatch = useDispatch();
+
   const [hasDue, setHasDue] = useState(due != null);
   const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
 
   const onUpdate = (key, value) => {
     updateTask(id, { [key]: value });
   };
+
+  const dependencyDescriptors = useSelector(state => getTaskDependencies(state, dependencies));
+  const taskDependencies = dependencyDescriptors.filter(dependency => dependency.type === 'task');
 
   return (
     <FullScreenPaper>
@@ -121,10 +127,10 @@ const EditTask = ({
                   setHasScheduledStart={setHasScheduledStart}
                   scheduledStart={scheduledStart}
                   setScheduledStart={value => onUpdate('scheduledStart', value)}
-                  dependencies={dependencies}
+                  dependencies={taskDependencies}
                   updateTaskDependency={updateTaskDependency}
                   removeTaskDependency={removeTaskDependency}
-                  createTaskDependency={createTaskDependency}
+                  createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}
                   clearRelativePrioritization={clearRelativePrioritization}
                 />
 
@@ -157,7 +163,6 @@ const mapDispatchToProps = {
   moveToTrashTask: moveToTrashTaskAction,
   updateTaskDependency: updateTaskDependencyAction,
   removeTaskDependency: removeTaskDependencyAction,
-  createTaskDependency: createTaskDependencyAction,
   clearRelativePrioritization: clearRelativePrioritizationAction,
 };
 
@@ -170,7 +175,6 @@ const mapStateToProps = (state, ownProps) => {
     taskPrioritizedAheadOfTitle: task && task.prioritizedAheadOf
       ? get(getTask(state, task.prioritizedAheadOf), 'title', null)
       : null,
-    dependencies: getDependenciesForTask(state, ownProps.match.params.id),
   };
 };
 

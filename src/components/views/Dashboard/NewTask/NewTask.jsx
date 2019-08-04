@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
 
-import {
-  addTask as addTaskAction,
-  createTaskDependency as createTaskDependencyAction,
-} from '../../../../modules/tasks';
+import { addTask } from '../../../../modules/tasks';
 
 import FullScreenPaper from '../../../ui/FullScreenPaper';
 import CloseButton from '../../../ui/CloseButton';
@@ -41,7 +38,7 @@ const getInitialDueDate = () => dayjs()
   .startOf('hour')
   .valueOf();
 
-const NewTask = ({ history, addTask, createTaskDependency }) => {
+const NewTask = ({ history }) => {
   const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
@@ -56,10 +53,11 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
   useEffect(() => {
     setTemporaryId(`_${uuid()}`);
   }, []);
+  const dispatch = useDispatch();
 
   const createTask = (event) => {
     event.preventDefault();
-    addTask({
+    const newTask = {
       temporaryId,
       title,
       impact,
@@ -67,31 +65,32 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
       description,
       due: hasDue ? due : null,
       scheduledStart: hasScheduledStart ? scheduledStart : null,
-    });
-    dependencies.forEach(({ blockerId, blockedId }) => {
-      createTaskDependency(blockerId, blockedId);
-    });
+    };
+    dispatch(addTask(newTask, dependencies));
     history.goBack();
   };
 
-  const onUpdateTaskDependency = (id, blockerId, blockedId) => {
+  const onUpdateTaskDependency = (id, updatedDependency) => {
     setDependencies(dependencies.map(dependency => (
       dependency.id !== id
         ? dependency
         : {
-          ...dependency,
-          blockerId,
-          blockedId,
+          ...updatedDependency,
+          taskId: temporaryId,
+          id,
         }
     )));
   };
   const onRemoveTaskDependency = (idToRemove) => {
-    setDependencies(dependencies.filter(({ id }) => id !== idToRemove));
+    setDependencies(dependencies.filter(dependency => dependency.id !== idToRemove));
   };
-  const onCreateTaskDependency = (blockerId, blockedId) => {
+  const onCreateTaskDependency = (dependency) => {
     setDependencies([
       ...dependencies,
-      { id: `_${uuid()}`, blockerId, blockedId },
+      {
+        ...dependency,
+        taskId: temporaryId,
+      },
     ]);
   };
 
@@ -139,9 +138,4 @@ const NewTask = ({ history, addTask, createTaskDependency }) => {
   );
 };
 
-const mapDispatchToProps = dispatch => ({
-  addTask: (...args) => dispatch(addTaskAction(...args)),
-  createTaskDependency: (...args) => dispatch(createTaskDependencyAction(...args)),
-});
-
-export default withRouter(connect(null, mapDispatchToProps)(NewTask));
+export default withRouter(NewTask);
