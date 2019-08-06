@@ -5,7 +5,7 @@ import FieldLabel from './FieldLabel';
 
 const Input = styled.input`
   font-size: inherit;
-  padding: 1rem 1rem 1rem 0.5rem;
+  padding: 1rem 0.5rem 1rem 0.5rem;
   width: 100%;
   border-style: solid;
   border-color: ${props => props.theme.colors.border};

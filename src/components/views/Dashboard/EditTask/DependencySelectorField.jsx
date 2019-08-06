@@ -9,7 +9,7 @@ import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';
 const FREE_TEXT_VALUE = '_freeText';
 
 const WidthVariableDropdown = styled(Dropdown)`
-  width: ${props => (props.currentDependencyType === FREE_TEXT ? '8rem' : '100%')};
+  width: ${props => (props.currentDependencyType === FREE_TEXT ? '10rem' : '100%')};
   transition: width 250ms ease;
 `;
 

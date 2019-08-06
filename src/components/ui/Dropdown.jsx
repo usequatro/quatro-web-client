@@ -9,7 +9,7 @@ const Container = styled(Box)`
 const arrowColor = '000000';
 const Select = styled.select`
   font-size: inherit;
-  padding: 1rem;
+  padding: 1rem 0.5rem 1rem 0.5rem;
   text-align: left;
   border-radius: 0;
   appearance: none;
