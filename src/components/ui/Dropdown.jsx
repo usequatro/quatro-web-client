@@ -13,7 +13,9 @@ const Select = styled.select`
   text-align: left;
   border-radius: 0;
   appearance: none;
-  border: solid 1px ${props => props.theme.colors.border};
+  border-style: 1px;
+  border-width: 0 0 1px 0;
+  border-color: ${props => props.theme.colors.border};
   outline-color: ${props => props.theme.colors.textHighlight};
   background-color: ${props => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
   cursor: ${props => (props.disabled ? 'not-allowed' : 'auto')};
@@ -34,9 +36,9 @@ const Option = styled.option`
 `;
 
 const Dropdown = ({
-  label, value, onChange, children,
+  label, value, onChange, children, className,
 }) => (
-  <Container as={label ? 'label' : 'div'}>
+  <Container as={label ? 'label' : 'div'} className={className}>
     {label && (
       <FieldLabel>{label}</FieldLabel>
     )}
@@ -44,7 +46,7 @@ const Dropdown = ({
       onChange={event => onChange(event, event.target.value)}
       value={value === null ? '' : value}
     >
-      <Option value="" disabled style={{ display: 'none' }} />
+      <Option value="" disabled />
       {children}
     </Select>
   </Container>

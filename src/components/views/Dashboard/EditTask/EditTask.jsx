@@ -14,7 +14,6 @@ import {
   removeTaskDependency as removeTaskDependencyAction,
   createTaskDependency,
   clearRelativePrioritization as clearRelativePrioritizationAction,
-  // getDependenciesForTask,
   getTask,
   getTaskDependencies,
 } from '../../../../modules/tasks';
@@ -62,7 +61,7 @@ const EditTask = ({
   score,
   scheduledStart,
   taskPrioritizedAheadOfTitle,
-  dependencies,
+  dependencyIds,
   updateTaskDependency,
   removeTaskDependency,
   clearRelativePrioritization,
@@ -76,8 +75,7 @@ const EditTask = ({
     updateTask(id, { [key]: value });
   };
 
-  const dependencyDescriptors = useSelector(state => getTaskDependencies(state, dependencies));
-  const taskDependencies = dependencyDescriptors.filter(dependency => dependency.type === 'task');
+  const dependencyDescriptors = useSelector(state => getTaskDependencies(state, dependencyIds));
 
   return (
     <FullScreenPaper>
@@ -127,7 +125,7 @@ const EditTask = ({
                   setHasScheduledStart={setHasScheduledStart}
                   scheduledStart={scheduledStart}
                   setScheduledStart={value => onUpdate('scheduledStart', value)}
-                  dependencies={taskDependencies}
+                  dependencies={dependencyDescriptors}
                   updateTaskDependency={updateTaskDependency}
                   removeTaskDependency={removeTaskDependency}
                   createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}

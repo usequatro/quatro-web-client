@@ -3,9 +3,11 @@ import styled from 'styled-components';
 import { Box } from 'rebass';
 import uuid from 'uuid/v4';
 
+import * as dependencyTypes from '../../../../constants/dependencyTypes';
 import FieldLabel from '../../../ui/FieldLabel';
 import InlineButton from '../../../ui/InlineButton';
-import TaskSelectorField from './TaskSelectorField';
+import DependencySelectorField from './DependencySelectorField';
+import InputField from '../../../ui/InputField';
 
 const FieldsContainer = styled(Box).attrs({ mb: 3 })`
   display: flex;
@@ -19,22 +21,43 @@ const DeleteButtonContainer = styled(Box).attrs({ ml: 3 })`
 const BlockersSelector = ({
   taskId, dependencies, updateTaskDependency, removeTaskDependency, createTaskDependency,
 }) => {
-  const handleChange = (id, blockedById) => {
-    updateTaskDependency(id, {
-      type: 'task',
-      taskId,
-      config: {
-        taskId: blockedById,
-      },
-    });
+  const handleChange = (id, type, value) => {
+    if (type === dependencyTypes.TASK) {
+      updateTaskDependency(id, {
+        type,
+        taskId,
+        config: {
+          taskId: value,
+        },
+      });
+    } else if (type === dependencyTypes.FREE_TEXT) {
+      updateTaskDependency(id, {
+        type,
+        taskId,
+        config: {
+          value,
+        },
+      });
+    } else {
+      throw new Error(`Unsupported dependency type "${type}"`);
+    }
   };
   const handleCreate = () => {
     createTaskDependency({
       id: `_${uuid()}`,
-      type: 'task',
+      type: dependencyTypes.TASK,
       taskId,
       config: {
         taskId: null,
+      },
+    });
+  };
+  const handleFreeTextValueChange = (id, value) => {
+    updateTaskDependency(id, {
+      type: dependencyTypes.FREE_TEXT,
+      taskId,
+      config: {
+        value,
       },
     });
   };
@@ -43,15 +66,19 @@ const BlockersSelector = ({
     <div>
       <FieldLabel>Blocked by</FieldLabel>
       {dependencies.map(dependency => (
-        <FieldsContainer key={dependency.id}>
-          <TaskSelectorField
+        <FieldsContainer key={dependency.id} dependencyType={dependency.type}>
+          <DependencySelectorField
             selectedId={dependency.config.taskId}
             currentTaskViewedId={taskId}
-            onChange={newId => handleChange(
-              dependency.id,
-              newId,
-            )}
+            currentDependencyType={dependency.type}
+            onChange={(dependencyType, newId) => handleChange(dependency.id, dependencyType, newId)}
           />
+          {dependency.type === dependencyTypes.FREE_TEXT && (
+            <InputField
+              value={dependency.config.value}
+              onChange={event => handleFreeTextValueChange(dependency.id, event.target.value)}
+            />
+          )}
           <DeleteButtonContainer>
             <InlineButton onClick={() => removeTaskDependency(dependency.id)}>X</InlineButton>
           </DeleteButtonContainer>

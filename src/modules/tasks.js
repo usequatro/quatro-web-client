@@ -9,7 +9,7 @@ import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
-// import * as blockerTypes from '../constants/blockerTypes';
+import { TASK, FREE_TEXT } from '../constants/dependencyTypes';
 import {
   showInfoNotification,
   showErrorNotification,
@@ -27,7 +27,7 @@ const TASK_KEY_DEFAULTS = {
   scheduledStart: null,
   completed: null,
   trashed: null,
-  dependencies: [],
+  dependencyIds: [],
 };
 const TASK_KEYS_FOR_REDUX = {
   id: true,
@@ -43,7 +43,7 @@ const TASK_KEYS_FOR_REDUX = {
   trashed: true,
   userId: true,
   prioritizedAheadOf: true,
-  dependencies: true,
+  dependencyIds: true,
 };
 const TASK_KEYS_FOR_API = {
   title: true,
@@ -221,7 +221,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [REMOVE_TASK_DEPENDENCY]: (state, { payload: { taskDependencyId, taskId } }) => ({
+  [REMOVE_TASK_DEPENDENCY]: (state, { payload: { dependencyId, taskId } }) => ({
     ...state,
     tasks: {
       ...state.tasks,
@@ -229,13 +229,13 @@ export const reducer = createReducer(INITIAL_STATE, {
         ...state.tasks.byId,
         [taskId]: {
           ...state.tasks.byId[taskId],
-          dependencies: state.tasks.byId[taskId].dependencies.filter(id => id !== taskDependencyId),
+          dependencyIds: state.tasks.byId[taskId].dependencyIds.filter(id => id !== dependencyId),
         },
       },
     },
     taskDependencies: {
       ...state.taskDependencies,
-      allIds: state.taskDependencies.allIds.filter(id => id !== taskDependencyId),
+      allIds: state.taskDependencies.allIds.filter(id => id !== dependencyId),
     },
   }),
   [CREATE_TASK_DEPENDENCY]: (
@@ -261,8 +261,8 @@ export const reducer = createReducer(INITIAL_STATE, {
         ...state.tasks.byId,
         [taskId]: {
           ...state.tasks.byId[taskId],
-          dependencies: [
-            ...state.tasks.byId[taskId].dependencies,
+          dependencyIds: [
+            ...state.tasks.byId[taskId].dependencyIds,
             id,
           ],
         },
@@ -322,23 +322,13 @@ export const getTaskDependencies = (state, ids = null) => (
     .map(id => getTaskDependency(state, id))
 );
 
-// const getTaskBlockedByIds = (state, taskId) => (
-//   getTaskDependencies(state)
-//     .filter(taskDependency => taskDependency.blockedId === taskId)
-//     .map(({ blockerId }) => blockerId)
-//     .filter(Boolean)
-// );
-
-// export const getDependenciesForTask = (state, id) => (
-//   getTaskDependencies(state)
-//     .filter(({ blockedId, blockerId }) => (blockedId === id || blockerId === id))
-// );
-
 const getIsTaskBlocked = (state, taskId) => {
   const task = getTask(state, taskId);
-  const dependencies = task.dependencies.map(id => getTaskDependency(state, id));
+  const dependencies = task.dependencyIds.map(id => getTaskDependency(state, id));
   const nonCompletedDependencies = dependencies
-    .filter(dependency => dependency.type === 'task' && getTask(state, dependency.config.taskId));
+    .filter(dependency => (
+      !(dependency.type === TASK && !getTask(state, dependency.config.taskId))
+    ));
   return nonCompletedDependencies.length > 0;
 };
 
@@ -413,12 +403,14 @@ export const getNextTasks = (state) => {
 };
 export const getBlockedTasks = (state) => {
   const tasks = getNonCompletedTasks(state);
-  const tasksWithBlockers = tasks.filter(task => task.dependencies.length);
+  const tasksWithBlockers = tasks.filter(task => task.dependencyIds.length);
   const tasksWithExistingBlockers = tasksWithBlockers
     .filter((task) => {
-      const dependencies = task.dependencies.map(id => getTaskDependency(state, id));
+      const dependencies = task.dependencyIds.map(id => getTaskDependency(state, id));
       const nonCompletedDependencies = dependencies
-        .filter(dependency => dependency.type === 'task' && getTask(state, dependency.config.taskId));
+        .filter(dependency => (
+          !(dependency.type === TASK && !getTask(state, dependency.config.taskId))
+        ));
       return nonCompletedDependencies.length;
     });
 
@@ -440,19 +432,32 @@ export const getCompletedTasks = (state) => {
     .filter(task => task.completed != null);
   return sortBy(tasks, 'completed').reverse();
 };
-export const getTasksBlockingGivenTask = (state, blockedTaskId) => {
+export const getDependenciesBlockingGivenTask = (state, blockedTaskId) => {
   const task = getTask(state, blockedTaskId);
-  const { dependencies = [] } = task || {};
+  const { dependencyIds = [] } = task || {};
 
-  const taskDependencies = dependencies
-    .map(id => getTaskDependency(state, id))
-    .filter(dependency => dependency.type === 'task');
+  const dependencies = dependencyIds.map(id => getTaskDependency(state, id));
 
-  const blockingTasks = taskDependencies
-    .map(dependency => getTask(state, dependency.config.taskId))
-    .filter(Boolean); // removing tasks not loaded, probably because they are completed.
+  const dependenciesAndTasks = dependencies.reduce((memo, dependency) => {
+    if (dependency.type === FREE_TEXT) {
+      return [
+        ...memo,
+        [dependency, null],
+      ];
+    } if (dependency.type === TASK) {
+      const dependencyTask = getTask(state, dependency.config.taskId);
+      if (dependencyTask) {
+        return [
+          ...memo,
+          [dependency, dependencyTask],
+        ];
+      }
+      return memo;
+    }
+    throw new Error(`Dependency type not supported ${dependency.type}`);
+  }, []);
 
-  return sortBy(blockingTasks, 'score').reverse();
+  return dependenciesAndTasks;
 };
 export const getUndeletedTask = (state, id) => {
   const task = getTask(state, id);
@@ -475,7 +480,7 @@ const normalizeTasks = (rawTasks) => {
     ...memo,
     [task.id]: {
       id: task.id,
-      dependencies: [],
+      dependencyIds: [],
       ...task,
     },
   }), {});
@@ -500,7 +505,7 @@ const normalizeTasks = (rawTasks) => {
       taskDependencies.allIds.push(dependencyId);
       taskDependencies.byId[dependencyId] = dependencyWithBackwardsRelationship;
 
-      tasksById[id].dependencies.push(dependencyId);
+      tasksById[id].dependencyIds.push(dependencyId);
     });
   });
 
@@ -510,12 +515,13 @@ const normalizeTasks = (rawTasks) => {
 const serializeTask = (state, id) => {
   const normalizedTask = getTask(state, id);
   const {
-    dependencies,
+    dependencyIds,
     id: taskId,
+    score,
     ...restData
   } = normalizedTask;
 
-  const blockedBy = dependencies
+  const blockedBy = dependencyIds
     .map(dependencyId => getTaskDependency(state, dependencyId))
     .map(dependency => omit(dependency, ['id', 'taskId']));
 
@@ -635,7 +641,7 @@ export const removeTaskDependency = id => (dispatch, getState) => {
     type: REMOVE_TASK_DEPENDENCY,
     payload: {
       taskId: dependency.taskId,
-      taskDependencyId: id,
+      dependencyId: id,
     },
   });
 
@@ -703,7 +709,7 @@ export const addTask = (newTask, dependencies) => (dispatch, getState, { getLogg
     completed: null,
     created: Date.now(),
     userId: getLoggedInUserUid(),
-    dependencies: dependencies.map(({ id = isRequired('dependency id') }) => id),
+    dependencyIds: dependencies.map(({ id = isRequired('dependency id') }) => id),
   };
 
   dispatch({
