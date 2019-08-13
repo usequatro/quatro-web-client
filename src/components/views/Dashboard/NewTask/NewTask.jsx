@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import dayjs from 'dayjs';
 import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
+import { Box } from 'rebass';
 
 import { addTask } from '../../../../modules/tasks';
 
@@ -20,10 +21,16 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const NewTaskMain = styled(Main).attrs({ p: 3, pb: 6 })`
+const NewTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+`;
+const ContentContainer = styled(Box)`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 `;
 
 const getInitialDueDate = () => dayjs()
@@ -94,35 +101,37 @@ const NewTask = ({ history }) => {
         <FormFlexContainer onSubmit={createTask}>
           <AppHeaderContainer>
             <AppHeader>
-                Create Task
+              Create Task
             </AppHeader>
             <CloseButton onClick={onRequestClose} title="Cancel" />
             <DoneButton buttonType="submit" title="Create task" />
           </AppHeaderContainer>
           <NewTaskMain>
-            <TaskForm
-              id={temporaryId}
-              title={title}
-              setTitle={setTitle}
-              impact={impact}
-              setImpact={setImpact}
-              effort={effort}
-              setEffort={setEffort}
-              description={description}
-              setDescription={setDescription}
-              due={due}
-              setHasDue={setHasDue}
-              hasDue={hasDue}
-              setDue={setDue}
-              scheduledStart={scheduledStart}
-              hasScheduledStart={hasScheduledStart}
-              setHasScheduledStart={setHasScheduledStart}
-              setScheduledStart={setScheduledStart}
-              dependencies={dependencies}
-              updateTaskDependency={onUpdateTaskDependency}
-              removeTaskDependency={onRemoveTaskDependency}
-              createTaskDependency={onCreateTaskDependency}
-            />
+            <ContentContainer>
+              <TaskForm
+                id={temporaryId}
+                title={title}
+                setTitle={setTitle}
+                impact={impact}
+                setImpact={setImpact}
+                effort={effort}
+                setEffort={setEffort}
+                description={description}
+                setDescription={setDescription}
+                due={due}
+                setHasDue={setHasDue}
+                hasDue={hasDue}
+                setDue={setDue}
+                scheduledStart={scheduledStart}
+                hasScheduledStart={hasScheduledStart}
+                setHasScheduledStart={setHasScheduledStart}
+                setScheduledStart={setScheduledStart}
+                dependencies={dependencies}
+                updateTaskDependency={onUpdateTaskDependency}
+                removeTaskDependency={onRemoveTaskDependency}
+                createTaskDependency={onCreateTaskDependency}
+              />
+            </ContentContainer>
           </NewTaskMain>
         </FormFlexContainer>
       )}

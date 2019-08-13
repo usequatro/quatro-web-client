@@ -30,18 +30,19 @@ import Button from '../../../ui/Button';
 import withLoadTasks from '../../../hoc/withLoadTasks';
 import Paragraph from '../../../ui/Paragraph';
 
-const FlexContainer = styled.div`
+const FormFlexContainer = styled.form`
   display: flex;
   flex-direction: column;
   align-items: stretch;
   height: 100%;
 `;
-const EditTaskMain = styled(Main).attrs({ p: 3, pb: 6 })`
+const EditTaskMain = styled(Main).attrs({ p: 3 })`
   flex-grow: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 `;
-const ContentContainer = styled(Box)`  width: 100%;
+const ContentContainer = styled(Box)`
+  width: 100%;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -80,11 +81,11 @@ const EditTask = ({
   return (
     <FullScreenPaper>
       {onRequestClose => (
-        <FlexContainer>
+        <FormFlexContainer onSubmit={onRequestClose}>
           <AppHeaderContainer>
             <AppHeader>
-            Edit Task
-              <CloseButton backArrow onClick={onRequestClose} title="Go back" />
+              Edit Task
+              <CloseButton backArrow buttonType="submit" title="Go back" />
             </AppHeader>
           </AppHeaderContainer>
           <EditTaskMain>
@@ -144,13 +145,14 @@ const EditTask = ({
                     moveToTrashTask(id);
                     onRequestClose();
                   }}
+                  mb={4}
                 >
                   Delete task
                 </Button>
               </ContentContainer>
             )}
           </EditTaskMain>
-        </FlexContainer>
+        </FormFlexContainer>
       )}
     </FullScreenPaper>
   );

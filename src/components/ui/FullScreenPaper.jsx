@@ -3,6 +3,7 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass';
+import Div100vh from 'react-div-100vh';
 import MAX_WIDTH from '../../constants/maxWidth';
 import RootPortal from './RootPortal';
 
@@ -31,16 +32,11 @@ const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   border: solid 1px ${props => props.theme.colors.border};
 `;
 
-const WidthContainer = styled(Box)`
-  max-width: ${MAX_WIDTH}px;
-  width: 100%;
-  height: 100vh;
-`;
-
 const FullScreenPaper = ({ history, children, ...props }) => {
   const [visible, setVisible] = useState(true);
 
-  const close = () => {
+  const close = (event) => {
+    event.preventDefault();
     setVisible(false);
     setTimeout(() => history && history.goBack(), duration);
   };
@@ -50,9 +46,9 @@ const FullScreenPaper = ({ history, children, ...props }) => {
       <Transition appear in={visible} timeout={duration}>
         {state => (
           <PaperWithTransitionStyles {...props} state={state} pt={0}>
-            <WidthContainer>
+            <Div100vh style={{ height: '100rvh', width: '100%', maxWidth: `${MAX_WIDTH}px` }}>
               {typeof children === 'function' ? children(close) : children}
-            </WidthContainer>
+            </Div100vh>
           </PaperWithTransitionStyles>
         )}
       </Transition>

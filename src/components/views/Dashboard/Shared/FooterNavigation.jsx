@@ -7,6 +7,7 @@ import {
   getScheduledTasks, getNextTasks, getBlockedTasks, getNowTasks, getCompletedTasks,
 } from '../../../../modules/tasks';
 import * as paths from '../../../../constants/paths';
+import Button from '../../../ui/Button';
 
 const FooterContainer = styled(Box).attrs({
   px: 2,
@@ -19,17 +20,23 @@ const FooterContainer = styled(Box).attrs({
   flex-shrink: 0;
   width: 100%;
   border-top: 1px solid ${props => props.theme.colors.border};
+
+  a {
+    text-decoration: none;
+  }
 `;
 
-const Icon = styled.div`
-  background-color: gray;
-  color: white;
-  opacity: ${props => (props.hasContents ? '1' : '0.75')};
+const Icon = styled(Button).attrs({
+  variant: 'outline',
+})`
+  padding: 0;
+  border-radius: 3px;
   height: 3rem;
   width: 3rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-decoration: ${props => (props.hasContents ? 'underline' : 'none')};
 `;
 
 const FooterNavigation = ({
