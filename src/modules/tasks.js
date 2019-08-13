@@ -4,6 +4,7 @@ import uniq from 'lodash/uniq';
 import mapValues from 'lodash/mapValues';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
+import findIndex from 'lodash/findIndex';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import isRequired from '../util/isRequired';
@@ -570,15 +571,82 @@ export const updateTaskBatch = updatesByTaskId => (dispatch) => {
     mapValues(updatesByTaskId, updates => filterTaskKeys(updates, TASK_KEYS_FOR_API)),
   );
 };
+
+export const setRelativePrioritization = (sourceTaskId, sourceIndex, destinationIndex) => (
+  (dispatch, getState) => {
+    const realDestinationIndex = sourceIndex < destinationIndex
+      ? destinationIndex + 1
+      : destinationIndex;
+
+    const state = getState();
+    const allTasks = getUpcomingSortedTasks(state);
+
+    if (realDestinationIndex >= allTasks.length || !allTasks[realDestinationIndex]) {
+      dispatch(showErrorNotification('Operation not supported'));
+      return;
+    }
+
+    const targetTaskId = allTasks[realDestinationIndex].id;
+
+    if (targetTaskId === sourceTaskId) {
+      return; // nothing to do on this case, the task is already where it needs to be.
+    }
+
+    // If there are other tasks depending on the one that is going to be moved,
+    // we're going to associate them to the next one, so that they stay on the same spot.
+    const tasksPrioritizedBefore = getTasksPrioritizedAheadOf(state, sourceTaskId);
+    const taskAfter = allTasks[sourceIndex + 1];
+
+    const updatesByTaskId = {
+      [sourceTaskId]: { prioritizedAheadOf: targetTaskId },
+      ...tasksPrioritizedBefore.reduce((memo, task) => ({
+        ...memo,
+        [task.id]: { prioritizedAheadOf: taskAfter.id },
+      }), {}),
+    };
+
+    dispatch(updateTaskBatch(updatesByTaskId));
+  }
+);
+
+const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getState) => {
+  const state = getState();
+
+  const tasksRelativelyPrioritized = getTasksPrioritizedAheadOf(state, taskId);
+  const allOriginalTasks = tasksRelativelyPrioritized.length ? getUpcomingSortedTasks(state) : [];
+  const taskIndex = findIndex(allOriginalTasks, task => task.id === taskId);
+  const newTaskIndex = taskIndex + offset;
+  const newTaskAfter = allOriginalTasks[newTaskIndex];
+
+  tasksRelativelyPrioritized.forEach((task) => {
+    dispatch(updateTask(task.id, {
+      prioritizedAheadOf: newTaskAfter ? newTaskAfter.id : null,
+    }));
+  });
+
+  // return undo.
+  return () => () => {
+    tasksRelativelyPrioritized.forEach((task) => {
+      dispatch(updateTask(task.id, {
+        prioritizedAheadOf: task.prioritizedAheadOf,
+      }));
+    });
+  };
+};
+
 export const moveToTrashTask = taskId => (dispatch) => {
+  // Relative prioritization: Any task that was set to go before this one should now go after next.
+  dispatch(updateRelativePrioritizationToNext(taskId, +1));
+
   dispatch({
     type: REMOVE_TASK_FROM_ALL_IDS,
     payload: { taskId },
   });
+
   const notificationUid = dispatch(showInfoNotification('Task deleted'));
   return dispatch(updateTask(taskId, { trashed: Date.now() }))
     .catch((error) => {
-      console.error(error);
+      console.warn(error);
       dispatch(hideNotification(notificationUid));
       dispatch(showNetworkErrorNotification());
     });
@@ -589,15 +657,24 @@ export const removeTaskFromAllIds = taskId => ({
   payload: { taskId },
 });
 
-export const undoCompletedTask = taskId => updateTask(taskId, { completed: null });
+export const undoCompletedTask = taskId => dispatch => (
+  dispatch(updateTask(taskId, { completed: null }))
+);
+
 export const completeTask = taskId => (dispatch) => {
+  // Relative prioritization: Any task that was set to go before this one should now go after next.
+  const undoPrioritizationChange = dispatch(updateRelativePrioritizationToNext(taskId, +1));
+
   const notificationUid = dispatch(showInfoNotification('Task completed! 🎉', {
     callbackButton: 'Undo',
-    callbackFunction: () => undoCompletedTask(taskId),
+    callbackFunction: () => () => {
+      dispatch(undoCompletedTask(taskId));
+      dispatch(undoPrioritizationChange());
+    },
   }));
   return dispatch(updateTask(taskId, { completed: Date.now() }))
     .catch((error) => {
-      console.error(error);
+      console.warn(error);
       dispatch(hideNotification(notificationUid));
       dispatch(showNetworkErrorNotification());
     });
@@ -742,48 +819,11 @@ export const addTask = (newTask, dependencies) => (dispatch, getState, { getLogg
       });
     })
     .catch((error) => {
-      console.error(error);
+      console.warn(error);
       dispatch(showNetworkErrorNotification());
       dispatch(removeTaskFromAllIds(temporaryId));
     });
 };
-
-export const setRelativePrioritization = (sourceTaskId, sourceIndex, destinationIndex) => (
-  (dispatch, getState) => {
-    const realDestinationIndex = sourceIndex < destinationIndex
-      ? destinationIndex + 1
-      : destinationIndex;
-
-    const state = getState();
-    const allTasks = getUpcomingSortedTasks(state);
-
-    if (realDestinationIndex >= allTasks.length || !allTasks[realDestinationIndex]) {
-      dispatch(showErrorNotification('Operation not supported'));
-      return;
-    }
-
-    const targetTaskId = allTasks[realDestinationIndex].id;
-
-    if (targetTaskId === sourceTaskId) {
-      return; // nothing to do on this case, the task is already where it needs to be.
-    }
-
-    // If there are other tasks depending on the one that is going to be moved,
-    // we're going to associate them to the next one, so that they stay on the same spot.
-    const tasksPrioritizedBefore = getTasksPrioritizedAheadOf(state, sourceTaskId);
-    const taskAfter = allTasks[sourceIndex + 1];
-
-    const updatesByTaskId = {
-      [sourceTaskId]: { prioritizedAheadOf: targetTaskId },
-      ...tasksPrioritizedBefore.reduce((memo, task) => ({
-        ...memo,
-        [task.id]: { prioritizedAheadOf: taskAfter.id },
-      }), {}),
-    };
-
-    dispatch(updateTaskBatch(updatesByTaskId));
-  }
-);
 
 export const clearRelativePrioritization = taskId => updateTask(taskId, {
   prioritizedAheadOf: null,
