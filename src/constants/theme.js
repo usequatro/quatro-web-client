@@ -9,12 +9,13 @@ export default {
   ],
   // Color names that can be used in color, bg, and borderColor props
   colors: {
-    appBackground: colors.SUPER_LIGHT_GRAY,
+    appBackground: colors.ALMOST_WHITE,
     appForeground: colors.WHITE,
     textPrimary: colors.ALMOST_BLACK,
     textSecondary: colors.LIGHT_GRAY,
     textHighlight: colors.SEA_BLUE,
     border: colors.LIGHT_GRAY,
+    borderLight: colors.SUPER_LIGHT_GRAY,
     placeholder: colors.LIGHT_GRAY,
     inputBackground: 'transparent',
     disabled: colors.SUPER_LIGHT_GRAY,

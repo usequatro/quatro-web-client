@@ -1,5 +1,6 @@
 export const WHITE = '#fff';
-export const SUPER_LIGHT_GRAY = '#fafafc';
+export const ALMOST_WHITE = '#fafafc';
+export const SUPER_LIGHT_GRAY = '#e0e0e0';
 export const LIGHT_GRAY = '#c9c9c9';
 export const ALMOST_BLACK = '#181818';
 

@@ -21,7 +21,7 @@ const HeaderContainer = styled(Box).attrs({
 `;
 
 const DashboardTitle = styled(Heading).attrs(() => ({
-  color: 'textHighlight',
+  color: 'textPrimary',
 }))`
   flex-grow: 1;
   text-align: center;

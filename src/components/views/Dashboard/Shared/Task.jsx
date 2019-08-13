@@ -35,7 +35,7 @@ const TaskContainer = styled.div`
   cursor: pointer;
 
   border-style: solid;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${props => props.theme.colors.borderLight};
   border-width: 0 0 1px 0;
 
   opacity: ${props => transitionStyles[props.state].opacity};

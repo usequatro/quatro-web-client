@@ -11,7 +11,7 @@ const AppHeaderContainer = styled(Box).attrs({
 `;
 
 const AppHeader = props => (
-  <Heading color="textHighlight" textAlign="center" fontFamily="headline" {...props} />
+  <Heading color="textPrimary" textAlign="center" fontFamily="headline" {...props} />
 );
 
 export {
