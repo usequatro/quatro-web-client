@@ -12,20 +12,13 @@ import CloseButton from '../../../ui/CloseButton';
 import DoneButton from '../../../ui/DoneButton';
 import { AppHeaderContainer, AppHeader } from '../../../ui/AppHeader';
 import Main from '../../../ui/Main';
-import Button from '../../../ui/Button';
 import TaskForm from '../EditTask/TaskForm';
 
-const FlexContainer = styled.div`
+const FormFlexContainer = styled.form`
   display: flex;
   flex-direction: column;
   align-items: stretch;
   height: 100%;
-`;
-const Form = styled.form`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
 `;
 const NewTaskMain = styled(Main).attrs({ p: 3, pb: 6 })`
   flex-grow: 1;
@@ -98,42 +91,40 @@ const NewTask = ({ history }) => {
   return (
     <FullScreenPaper>
       {onRequestClose => (
-        <FlexContainer>
-          <Form onSubmit={createTask}>
-            <AppHeaderContainer>
-              <AppHeader>
+        <FormFlexContainer onSubmit={createTask}>
+          <AppHeaderContainer>
+            <AppHeader>
                 Create Task
-              </AppHeader>
-              <CloseButton onClick={onRequestClose} title="Cancel" />
-              <DoneButton buttonType="submit" title="Create task" />
-            </AppHeaderContainer>
-            <NewTaskMain>
-              <TaskForm
-                id={temporaryId}
-                title={title}
-                setTitle={setTitle}
-                impact={impact}
-                setImpact={setImpact}
-                effort={effort}
-                setEffort={setEffort}
-                description={description}
-                setDescription={setDescription}
-                due={due}
-                setHasDue={setHasDue}
-                hasDue={hasDue}
-                setDue={setDue}
-                scheduledStart={scheduledStart}
-                hasScheduledStart={hasScheduledStart}
-                setHasScheduledStart={setHasScheduledStart}
-                setScheduledStart={setScheduledStart}
-                dependencies={dependencies}
-                updateTaskDependency={onUpdateTaskDependency}
-                removeTaskDependency={onRemoveTaskDependency}
-                createTaskDependency={onCreateTaskDependency}
-              />
-            </NewTaskMain>
-          </Form>
-        </FlexContainer>
+            </AppHeader>
+            <CloseButton onClick={onRequestClose} title="Cancel" />
+            <DoneButton buttonType="submit" title="Create task" />
+          </AppHeaderContainer>
+          <NewTaskMain>
+            <TaskForm
+              id={temporaryId}
+              title={title}
+              setTitle={setTitle}
+              impact={impact}
+              setImpact={setImpact}
+              effort={effort}
+              setEffort={setEffort}
+              description={description}
+              setDescription={setDescription}
+              due={due}
+              setHasDue={setHasDue}
+              hasDue={hasDue}
+              setDue={setDue}
+              scheduledStart={scheduledStart}
+              hasScheduledStart={hasScheduledStart}
+              setHasScheduledStart={setHasScheduledStart}
+              setScheduledStart={setScheduledStart}
+              dependencies={dependencies}
+              updateTaskDependency={onUpdateTaskDependency}
+              removeTaskDependency={onRemoveTaskDependency}
+              createTaskDependency={onCreateTaskDependency}
+            />
+          </NewTaskMain>
+        </FormFlexContainer>
       )}
     </FullScreenPaper>
   );
