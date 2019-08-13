@@ -84,7 +84,7 @@ const EditTask = ({
           <AppHeaderContainer>
             <AppHeader>
             Edit Task
-              <CloseButton backArrow onClick={onRequestClose} />
+              <CloseButton backArrow onClick={onRequestClose} title="Go back" />
             </AppHeader>
           </AppHeaderContainer>
           <EditTaskMain>

@@ -9,6 +9,7 @@ import { addTask } from '../../../../modules/tasks';
 
 import FullScreenPaper from '../../../ui/FullScreenPaper';
 import CloseButton from '../../../ui/CloseButton';
+import DoneButton from '../../../ui/DoneButton';
 import { AppHeaderContainer, AppHeader } from '../../../ui/AppHeader';
 import Main from '../../../ui/Main';
 import Button from '../../../ui/Button';
@@ -98,14 +99,15 @@ const NewTask = ({ history }) => {
     <FullScreenPaper>
       {onRequestClose => (
         <FlexContainer>
-          <AppHeaderContainer>
-            <AppHeader>
-              Create Task
-            </AppHeader>
-            <CloseButton onClick={onRequestClose} />
-          </AppHeaderContainer>
-          <NewTaskMain>
-            <Form onSubmit={createTask}>
+          <Form onSubmit={createTask}>
+            <AppHeaderContainer>
+              <AppHeader>
+                Create Task
+              </AppHeader>
+              <CloseButton onClick={onRequestClose} title="Cancel" />
+              <DoneButton buttonType="submit" title="Create task" />
+            </AppHeaderContainer>
+            <NewTaskMain>
               <TaskForm
                 id={temporaryId}
                 title={title}
@@ -129,9 +131,8 @@ const NewTask = ({ history }) => {
                 removeTaskDependency={onRemoveTaskDependency}
                 createTaskDependency={onCreateTaskDependency}
               />
-              <Button variant="primary" type="submit">Create task</Button>
-            </Form>
-          </NewTaskMain>
+            </NewTaskMain>
+          </Form>
         </FlexContainer>
       )}
     </FullScreenPaper>

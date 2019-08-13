@@ -11,9 +11,9 @@ const Container = styled(Box).attrs({ pt: 3, pl: 3 })`
   left: 0;
 `;
 
-const CloseButton = ({ onClick, backArrow }) => (
+const CloseButton = ({ onClick, backArrow, title }) => (
   <Container>
-    <ButtonFunction>
+    <ButtonFunction title={title}>
       {backArrow
         ? <BackIcon onClick={onClick} size="small" />
         : <XIcon onClick={onClick} size="small" />

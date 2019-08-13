@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 
-const ButtonFunctionality = styled.button.attrs({ type: 'button' })`
+const ButtonFunctionality = styled.button.attrs(props => ({
+  type: props.type || 'button',
+}))`
   background: transparent;
   border: none;
   outline-color: ${props => props.theme.colors.textHighlight};
