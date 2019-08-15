@@ -1,11 +1,12 @@
 import createReducer from '../util/createReducer';
-import { loadTasks } from './tasks';
+import { loadTasks, resetTasks } from './tasks';
 
 export const NAMESPACE = 'dashboard';
 
 // Action types
 
 const SET_LOAD_FLAGS = `${NAMESPACE}/SET_LOAD_FLAGS`;
+const RESET = `${NAMESPACE}/RESET`;
 
 // Reducers
 
@@ -29,6 +30,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       loaded,
     },
   }),
+  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors
@@ -57,3 +59,20 @@ export const loadDashboardTasks = (view = 'default', fetchParams = undefined) =>
       dispatch(setLoadFlags(view, { loading: false, loaded: false }));
     });
 };
+
+export const resetDashboard = () => ({ type: RESET });
+
+export const resumeDashboardActivity = (() => {
+  let lastTime = Date.now();
+  const timeout = 1000 * 60 * 30; // 30 minutes;
+
+  return () => (dispatch) => {
+    const now = Date.now();
+    if (now > lastTime + timeout) {
+      console.log('[resumeDashboardActivity] Refreshing tasks due to resumed activity');
+      dispatch(resetTasks());
+      dispatch(resetDashboard());
+    }
+    lastTime = now;
+  };
+})();

@@ -535,8 +535,6 @@ const serializeTask = (state, id) => {
   return serializedTask;
 };
 
-export const resetLoadedTasks = () => ({ type: RESET });
-
 export const setTasks = (tasks) => {
   const parsedTasks = tasks.map((task) => {
     const impact = toInt(task.impact, null);
@@ -694,6 +692,8 @@ export const loadTasks = fetchParams => (dispatch, getState, { getLoggedInUserUi
       dispatch(setTasks(tasks));
     });
 };
+
+export const resetTasks = () => ({ type: RESET });
 
 export const persistTask = id => (dispatch, getState) => {
   const state = getState();

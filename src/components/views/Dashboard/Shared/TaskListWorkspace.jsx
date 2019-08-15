@@ -8,6 +8,7 @@ import { setRelativePrioritization } from '../../../../modules/tasks';
 import NoTasksView from './NoTasksView';
 import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 import { NOW, NEXT } from '../../../../constants/dashboardTabs';
+import TaskRefreshListener from '../TaskRefreshListener';
 
 const duration = 250;
 const transitionStyles = {
@@ -101,6 +102,8 @@ const TaskListWorkspace = ({
               </WorkspaceArea>
             )}
           </Droppable>
+
+          <TaskRefreshListener />
         </DragDropContext>
       )}
     </Transition>

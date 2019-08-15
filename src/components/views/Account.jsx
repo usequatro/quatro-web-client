@@ -2,14 +2,15 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';
 import { Box, Text } from 'rebass';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import FullScreenPaper from '../ui/FullScreenPaper';
 import CloseButton from '../ui/CloseButton';
 import Main from '../ui/Main';
 import Button from '../ui/Button';
 import { AppHeaderContainer, AppHeader } from '../ui/AppHeader';
-import { resetLoadedTasks as resetLoadedTasksAction } from '../../modules/tasks';
+import { resetTasks } from '../../modules/tasks';
+import { resetDashboard } from '../../modules/dashboard';
 
 import { LOG_IN } from '../../constants/paths';
 
@@ -22,9 +23,11 @@ const UserInfo = ({ label, children }) => (
   </Text>
 );
 
-const Account = ({ history, resetLoadedTasks }) => {
+const Account = ({ history }) => {
+  const dispatch = useDispatch();
   const onSignOut = () => {
-    resetLoadedTasks();
+    dispatch(resetTasks());
+    dispatch(resetDashboard());
     firebase.auth().signOut()
       .then(() => {
         history.push(LOG_IN);
@@ -65,8 +68,4 @@ const Account = ({ history, resetLoadedTasks }) => {
   );
 };
 
-const mapDispatchToProps = {
-  resetLoadedTasks: resetLoadedTasksAction,
-};
-
-export default connect(null, mapDispatchToProps)(withRouter(Account));
+export default withRouter(Account);
