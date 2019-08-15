@@ -6,6 +6,8 @@ import {
 } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';
+import RouterHistoryListener from './tracking/RouterHistoryListener';
+import UserLoginListener from './tracking/UserLoginListener';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
 import Account from './views/Account';
@@ -40,7 +42,9 @@ export default () => (
   <AppStylesWrapper>
     <AppBackground>
       <RuntimeError>
+        <UserLoginListener />
         <Router {...routerProps}>
+          <RouterHistoryListener />
           <Div100vh style={{ width: '100%', height: '100rvh' }}>
             <Switch>
               <Redirect exact from="/" to={paths.SIGN_UP} />

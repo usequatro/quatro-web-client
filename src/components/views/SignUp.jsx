@@ -4,7 +4,7 @@ import { Heading, Text } from 'rebass';
 import { Link, withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';
 
-import { DASHBOARD } from '../../constants/paths';
+import { DASHBOARD, LOG_IN } from '../../constants/paths';
 import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
@@ -133,7 +133,7 @@ const SignUp = ({ history }) => {
           <Text color="textSecondary" mt={4}>
             Already have an account?
             {' '}
-            <Link to="/login">Log in</Link>
+            <Link to={LOG_IN}>Log in</Link>
           </Text>
         </SignUpFormView>
       </Main>

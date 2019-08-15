@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import * as firebase from 'firebase/app';
+
+import { selectUserLoggedIn } from '../../modules/session';
 
 const withUserLoggedInCondition = (userLoggedInCondition, fallbackRoute) => (Component) => {
   const WithUserLoggedInCondition = ({ ...props }) => {
-    const [userLoggedIn, setUserLoggedIn] = useState(null);
-
-    useEffect(() => {
-      const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-        console.log('[withUserLoggedInCondition] onAuthStateChanged', !!user);
-        setUserLoggedIn(!!user);
-      });
-      return unsubscribe;
-    }, []);
+    const userLoggedIn = useSelector(selectUserLoggedIn);
 
     if (userLoggedIn === null) {
       return null;

@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 
 import * as firebase from 'firebase/app';
 
-import { DASHBOARD } from '../../constants/paths';
+import { DASHBOARD, SIGN_UP } from '../../constants/paths';
 import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
@@ -64,7 +64,7 @@ const LogIn = ({ history }) => {
           </InvisibleForm>
           <Text color="textSecondary" mt={4}>
             {"Don't have an account yet? "}
-            <Link to="/signup">Sign up</Link>
+            <Link to={SIGN_UP}>Sign up</Link>
           </Text>
         </SignUpFormView>
       </Main>
