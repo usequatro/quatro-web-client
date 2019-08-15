@@ -15,3 +15,10 @@ export const trackTaskCreated = (taskTitle) => {
     event_label: taskTitle,
   });
 };
+
+export const taskTaskCompleted = (taskTitle) => {
+  gtag('event', 'complete_task', {
+    event_category: 'tasks',
+    event_label: taskTitle,
+  });
+};

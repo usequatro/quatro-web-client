@@ -7,7 +7,7 @@ import difference from 'lodash/difference';
 import findIndex from 'lodash/findIndex';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
-import { trackTaskCreated } from '../util/tracking';
+import { trackTaskCreated, taskTaskCompleted } from '../util/tracking';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
@@ -662,7 +662,9 @@ export const undoCompletedTask = taskId => dispatch => (
   dispatch(updateTask(taskId, { completed: null }))
 );
 
-export const completeTask = taskId => (dispatch) => {
+export const completeTask = taskId => (dispatch, getState) => {
+  const task = getTask(getState(), taskId);
+
   // Relative prioritization: Any task that was set to go before this one should now go after next.
   const undoPrioritizationChange = dispatch(updateRelativePrioritizationToNext(taskId, +1));
 
@@ -673,7 +675,11 @@ export const completeTask = taskId => (dispatch) => {
       dispatch(undoPrioritizationChange());
     },
   }));
+
   return dispatch(updateTask(taskId, { completed: Date.now() }))
+    .then(() => {
+      taskTaskCompleted(task.title);
+    })
     .catch((error) => {
       console.warn(error);
       dispatch(hideNotification(notificationUid));
