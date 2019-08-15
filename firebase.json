@@ -15,6 +15,7 @@
         "source": "**",
         "destination": "/index.html"
       }
-    ]
+    ],
+    "postdeploy": "./messageSlack.sh \"Deployer\" \"Application deployed\""
   }
 }
