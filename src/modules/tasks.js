@@ -7,6 +7,7 @@ import difference from 'lodash/difference';
 import findIndex from 'lodash/findIndex';
 import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
+import { trackTaskCreated } from '../util/tracking';
 import isRequired from '../util/isRequired';
 import * as apiClient from './apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
@@ -817,6 +818,8 @@ export const addTask = (newTask, dependencies) => (dispatch, getState, { getLogg
           taskId: finalId,
         }));
       });
+
+      trackTaskCreated(task.title);
     })
     .catch((error) => {
       console.warn(error);

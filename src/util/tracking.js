@@ -8,3 +8,10 @@ export const trackRouteChange = (pathname) => {
 export const trackUser = (userId) => {
   gtag('config', GA_MEASUREMENT_ID, { user_id: userId });
 };
+
+export const trackTaskCreated = (taskTitle) => {
+  gtag('event', 'create_task', {
+    event_category: 'tasks',
+    event_label: taskTitle,
+  });
+};
