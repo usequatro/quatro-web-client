@@ -46,7 +46,7 @@ const Input = styled.input`
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
 
   &:focus + ${ImprovedCheckbox} {
-    outline: ${props => props.theme.colors.textHighlight} auto 5px;
+    outline: ${props => props.theme.colors.textHighlight} auto 2px;
   }
 `;
 const Label = styled(Box).attrs({

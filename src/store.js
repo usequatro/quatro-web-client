@@ -1,4 +1,5 @@
 import { createStore, compose, applyMiddleware } from 'redux';
+import get from 'lodash/get';
 import thunk from 'redux-thunk';
 import * as firebase from 'firebase/app';
 import { reducer } from './modules';
@@ -11,7 +12,7 @@ export default () => {
     {},
     composeEnhancers(
       applyMiddleware(thunk.withExtraArgument({
-        getLoggedInUserUid: () => firebase.auth().currentUser.uid,
+        getLoggedInUserUid: () => get(firebase.auth().currentUser, 'uid'),
       })),
     ),
   );

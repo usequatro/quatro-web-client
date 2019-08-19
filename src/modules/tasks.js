@@ -687,6 +687,9 @@ export const completeTask = taskId => (dispatch, getState) => {
 
 export const loadTasks = fetchParams => (dispatch, getState, { getLoggedInUserUid }) => {
   const userId = getLoggedInUserUid();
+  if (!userId) {
+    throw new Error('[loadTasks] No userId');
+  }
   return apiClient.fetchTasks(userId, fetchParams)
     .then((tasks) => {
       dispatch(setTasks(tasks));

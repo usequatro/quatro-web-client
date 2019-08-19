@@ -2,8 +2,6 @@ export const SIGN_UP = '/signup';
 export const LOG_IN = '/login';
 export const DASHBOARD = '/dashboard';
 
-export const ACCOUNT = '/account';
-
 export const SCHEDULED = '/dashboard/scheduled';
 export const BLOCKED = '/dashboard/blocked';
 export const NOW = '/dashboard/now';

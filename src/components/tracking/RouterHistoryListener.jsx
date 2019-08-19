@@ -4,11 +4,11 @@ import { trackRouteChange } from '../../util/tracking';
 
 const RouterHistoryListener = ({ history }) => {
   useEffect(() => {
-    history.listen((location) => {
+    const unlisten = history.listen((location) => {
       trackRouteChange(location.pathname);
     });
 
-    return () => { history.unlisten(); };
+    return () => { unlisten(); };
   }, [history]);
 
   return null;

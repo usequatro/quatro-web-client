@@ -10,7 +10,6 @@ import RouterHistoryListener from './tracking/RouterHistoryListener';
 import UserLoginListener from './tracking/UserLoginListener';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
-import Account from './views/Account';
 import RuntimeError from './views/RuntimeError';
 import Dashboard from './views/Dashboard/Dashboard';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
@@ -51,7 +50,6 @@ export default () => (
               <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
               <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
               <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
-              <RouteLoggedIn path={paths.ACCOUNT} component={Account} />
 
               {/* fallback */}
               <Redirect to={paths.SIGN_UP} />

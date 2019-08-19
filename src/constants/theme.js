@@ -20,6 +20,7 @@ export default {
     inputBackground: 'transparent',
     disabled: colors.SUPER_LIGHT_GRAY,
     error: colors.ERROR_RED,
+    menuOptionHover: colors.ALMOST_WHITE,
   },
   // Array of numbers for use as margin and pixel values
   space: [
