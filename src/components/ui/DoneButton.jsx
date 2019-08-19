@@ -6,7 +6,7 @@ import ButtonFunction from './ButtonFunction';
 
 const Container = styled(Box).attrs({
   pt: 3,
-  pl: 3,
+  pr: 3,
 })`
   position: absolute;
   top: 0;
