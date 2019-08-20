@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import {
   Heading, Text, Box,
 } from 'rebass';
-// import { Transition } from 'react-transition-group';
+import { Transition } from 'react-transition-group';
 import {
   completeTask as completeTaskAction,
 } from '../../../../modules/tasks';
@@ -61,8 +61,6 @@ const TaskButtons = styled(Box)`
   flex-direction: column;
   justify-content: flex-start;
 `;
-
-const Transition = ({ children }) => children('entered');
 
 const Task = ({
   id,
