@@ -11,12 +11,14 @@ const SET_USER = `${NAMESPACE}/SET_USER`;
 // Reducers
 
 const INITIAL_STATE = {
+  userLoggedIn: null,
   user: null,
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
   [SET_USER]: (state, { payload: user }) => ({
     ...state,
+    userLoggedIn: user !== null, // Needs to be null, false or true.
     user,
   }),
   [RESET]: () => ({ ...INITIAL_STATE }),
@@ -27,7 +29,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 export const selectUserId = (state) => get(state[NAMESPACE].user, 'uid');
 export const selectUserEmail = (state) => get(state[NAMESPACE].user, 'email', '');
 export const selectUserDisplayName = (state) => get(state[NAMESPACE].user, 'displayName', '');
-export const selectUserLoggedIn = (state) => state[NAMESPACE].user !== null;
+export const selectUserLoggedIn = (state) => state[NAMESPACE].userLoggedIn;
 
 // Actions
 
