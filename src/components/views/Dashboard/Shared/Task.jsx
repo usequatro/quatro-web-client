@@ -35,26 +35,26 @@ const TaskContainer = styled.div`
   cursor: pointer;
 
   border-style: solid;
-  border-color: ${props => props.theme.colors.borderLight};
+  border-color: ${(props) => props.theme.colors.borderLight};
   border-width: 0 0 1px 0;
 
-  opacity: ${props => transitionStyles[props.state].opacity};
-  max-height: ${props => transitionStyles[props.state].maxHeight};
-  padding: ${props => transitionStyles[props.state].padding};
+  opacity: ${(props) => transitionStyles[props.state].opacity};
+  max-height: ${(props) => transitionStyles[props.state].maxHeight};
+  padding: ${(props) => transitionStyles[props.state].padding};
   transition:
     opacity ${duration}ms ease-out,
     max-height ${duration}ms linear,
     padding ${duration}ms linear,
     background-color 250ms ease;
 
-    background-color: ${props => props.theme.colors.appForeground};
+    background-color: ${(props) => props.theme.colors.appForeground};
     &:hover {
-      background-color: ${props => props.theme.colors.appBackground};
+      background-color: ${(props) => props.theme.colors.appBackground};
     }
 `;
 
-const TaskTitle = props => <Heading {...props} as="h4" fontSize={2} mb={2} />;
-const TaskSubtitle = props => <Text {...props} fontSize={2} mb={1} />;
+const TaskTitle = (props) => <Heading {...props} as="h4" fontSize={2} mb={2} />;
+const TaskSubtitle = (props) => <Text {...props} fontSize={2} mb={1} />;
 
 const TaskButtons = styled(Box)`
   display: flex;
@@ -93,7 +93,7 @@ const Task = ({
       timeout={duration}
       onExited={onExited}
     >
-      {state => (
+      {(state) => (
         <TaskContainer
           onClick={onTaskClick}
           state={state}
@@ -108,8 +108,7 @@ const Task = ({
               <ButtonFunction>
                 {ranking
                   ? `#${ranking}${prioritizedAheadOf ? '*' : ''} - ${title}`
-                  : title
-                }
+                  : title}
               </ButtonFunction>
             </TaskTitle>
             {scheduledStart && (

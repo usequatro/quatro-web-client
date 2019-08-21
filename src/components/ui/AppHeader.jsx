@@ -10,7 +10,7 @@ const AppHeaderContainer = styled(Box).attrs({
   position: relative;
 `;
 
-const AppHeader = props => (
+const AppHeader = (props) => (
   <Heading color="textPrimary" textAlign="center" fontFamily="headline" {...props} />
 );
 

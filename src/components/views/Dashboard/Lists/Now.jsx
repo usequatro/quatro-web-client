@@ -22,7 +22,7 @@ const Now = ({ tasks }) => (
   />
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tasks: getNowTasks(state),
 });
 

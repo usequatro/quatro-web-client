@@ -28,7 +28,7 @@ const Completed = ({ tasks, loaded }) => (
   </LoaderWrapper>
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tasks: getCompletedTasks(state),
 });
 

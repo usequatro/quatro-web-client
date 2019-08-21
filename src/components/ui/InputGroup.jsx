@@ -14,7 +14,7 @@ const GroupContainer = styled(Box)`
 
 const InputGroup = ({ children }) => (
   <GroupContainer>
-    {React.Children.map(children, child => (
+    {React.Children.map(children, (child) => (
       !child ? null : (
         <ChildContainer>
           {child}

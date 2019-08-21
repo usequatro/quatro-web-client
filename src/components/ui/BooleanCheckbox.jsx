@@ -17,9 +17,9 @@ const ImprovedCheckbox = styled.div`
   width: 100%;
   height: 100%;
   border-style: solid;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${(props) => props.theme.colors.border};
   border-width: 1px;
-  background-color: ${props => (props.checked ? props.theme.buttons.primary.backgroundColor : 'transparent')};
+  background-color: ${(props) => (props.checked ? props.theme.buttons.primary.backgroundColor : 'transparent')};
 
   &::after {
     content: '';
@@ -30,7 +30,7 @@ const ImprovedCheckbox = styled.div`
     height: 0.6rem;
     border-style: solid;
     border-width: 0 2px 2px 0;
-    border-color: ${props => props.theme.buttons.primary.color};
+    border-color: ${(props) => props.theme.buttons.primary.color};
     transform: translate(-50%, -65%) rotate(40deg);
   }
 `;
@@ -43,10 +43,10 @@ const Input = styled.input`
   padding: 0;
   margin: 0;
   opacity: 0;
-  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
 
   &:focus + ${ImprovedCheckbox} {
-    outline: ${props => props.theme.colors.textHighlight} auto 2px;
+    outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
   }
 `;
 const Label = styled(Box).attrs({
@@ -63,7 +63,7 @@ export default ({ onChange, value, label }) => (
         type="checkbox"
         value="1"
         checked={value}
-        onChange={event => onChange(event, Boolean(event.target.checked))}
+        onChange={(event) => onChange(event, Boolean(event.target.checked))}
       />
       <ImprovedCheckbox checked={value} />
     </Container>

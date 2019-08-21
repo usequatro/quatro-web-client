@@ -23,7 +23,7 @@ const Next = ({ tasks }) => (
   />
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tasks: getNextTasks(state),
 });
 

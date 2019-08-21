@@ -47,7 +47,7 @@ const TaskForm = ({
       required
       label="What do you have to do? *"
       value={title}
-      onChange={event => setTitle(event.target.value)}
+      onChange={(event) => setTitle(event.target.value)}
     />
     {taskPrioritizedAheadOfTitle && (
       <Paragraph>
@@ -77,7 +77,7 @@ const TaskForm = ({
       textarea
       label="Notes"
       value={description}
-      onChange={event => setDescription(event.target.value)}
+      onChange={(event) => setDescription(event.target.value)}
     />
 
     <DateTimeField

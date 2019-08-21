@@ -19,7 +19,7 @@ const FooterContainer = styled(Box).attrs({
   align-items: center;
   flex-shrink: 0;
   width: 100%;
-  border-top: 1px solid ${props => props.theme.colors.border};
+  border-top: 1px solid ${(props) => props.theme.colors.border};
 
   a {
     text-decoration: none;
@@ -36,7 +36,7 @@ const Icon = styled(Button).attrs({
   display: flex;
   justify-content: center;
   align-items: center;
-  text-decoration: ${props => (props.hasContents ? 'underline' : 'none')};
+  text-decoration: ${(props) => (props.hasContents ? 'underline' : 'none')};
 `;
 
 const FooterNavigation = ({
@@ -51,7 +51,7 @@ const FooterNavigation = ({
   </FooterContainer>
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   hasScheduled: getScheduledTasks(state).length > 0,
   hasBlocked: getBlockedTasks(state).length > 0,
   hasNow: getNowTasks(state).length > 0,

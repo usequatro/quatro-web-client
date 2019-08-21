@@ -6,7 +6,7 @@ const logPrefix = '[api]';
 
 const db = firebase.firestore();
 
-const excludeId = entity => omit(entity, ['id']);
+const excludeId = (entity) => omit(entity, ['id']);
 
 export const createTask = (task) => {
   console.log(`${logPrefix} createTask`, task);
@@ -30,7 +30,7 @@ export const fetchTasks = (
     .where('completed', completedOperator, completedValue)
     .get()
     .then((querySnapshot) => {
-      const tasks = querySnapshot.docs.map(doc => ({
+      const tasks = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
       }));

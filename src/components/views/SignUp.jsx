@@ -9,7 +9,6 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import InvisibleForm from '../ui/InvisibleForm';
-import { setUser } from '../../modules/session';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
   color: 'textHighlight',
@@ -27,7 +26,7 @@ export const SignUpFormView = styled.div`
   max-width: 30rem;
 `;
 
-const SignUpFooterLinks = props => <Text color="textSecondary" {...props} />;
+const SignUpFooterLinks = (props) => <Text color="textSecondary" {...props} />;
 
 const SignUpFooterContainer = styled.footer`
   display: flex;
@@ -103,21 +102,21 @@ const SignUp = ({ history }) => {
                 placeholder="Full Name"
                 required
                 value={fullName}
-                onChange={event => setFullName(event.target.value)}
+                onChange={(event) => setFullName(event.target.value)}
               />
               <InputField
                 placeholder="Email Address"
                 required
                 type="email"
                 value={emailAddress}
-                onChange={event => setEmailAddress(event.target.value)}
+                onChange={(event) => setEmailAddress(event.target.value)}
               />
               <InputField
                 placeholder="Password"
                 required
                 type="password"
                 value={password}
-                onChange={event => setPassword(event.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
               />
               <InputField
                 placeholder="Confirm Password"

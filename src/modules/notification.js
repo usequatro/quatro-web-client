@@ -25,7 +25,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     callbackButton: action.payload.callbackButton,
     type: action.payload.type,
   }),
-  [HIDE]: state => ({
+  [HIDE]: (state) => ({
     ...state,
     uid: null,
   }),
@@ -33,10 +33,10 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
-export const selectUid = state => state[NAMESPACE].uid;
-export const selectMessage = state => state[NAMESPACE].message;
-export const selectCallbackButton = state => state[NAMESPACE].callbackButton;
-export const selectType = state => state[NAMESPACE].type;
+export const selectUid = (state) => state[NAMESPACE].uid;
+export const selectMessage = (state) => state[NAMESPACE].message;
+export const selectCallbackButton = (state) => state[NAMESPACE].callbackButton;
+export const selectType = (state) => state[NAMESPACE].type;
 
 // Actions
 const duration = 3000;

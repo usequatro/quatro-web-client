@@ -9,7 +9,10 @@ const Container = styled(Box)`
 `;
 
 class ErrorBoundary extends React.Component {
-  state = { hasError: false };
+  constructor() {
+    super();
+    this.state = { hasError: false };
+  }
 
   componentDidCatch(error, info) {
     console.error(error, info);

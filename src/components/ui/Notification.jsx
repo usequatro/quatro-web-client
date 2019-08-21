@@ -31,17 +31,17 @@ const NotificationContainer = styled(Box)`
   justify-content: center;
   align-items: flex-end;
 
-  transform: ${props => transitionStyles[props.state].transform};
-  opacity: ${props => transitionStyles[props.state].opacity};
+  transform: ${(props) => transitionStyles[props.state].transform};
+  opacity: ${(props) => transitionStyles[props.state].opacity};
   transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
 `;
 
 const NotificationBox = styled(Box).attrs({ px: 4, py: 4 })`
   width: 90%;
-  background-color: ${props => props.theme.colors.appForeground};
+  background-color: ${(props) => props.theme.colors.appForeground};
   border-style: solid;
   border-width: 1px;
-  border-color: ${props => (props.notificationType === 'error' && props.theme.colors.error)
+  border-color: ${(props) => (props.notificationType === 'error' && props.theme.colors.error)
     || props.theme.colors.border};
   display: flex;
   align-items: center;
@@ -87,7 +87,7 @@ const Notification = ({
   return (
     <RootPortal>
       <Transition in={visible} timeout={duration} onExited={onExited}>
-        {state => (
+        {(state) => (
           <NotificationContainer state={state}>
             <NotificationBox onClick={onClickNotification} notificationType={type}>
               <NotificationMessage>{message}</NotificationMessage>
@@ -106,7 +106,7 @@ const Notification = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   uid: selectUid(state),
   message: selectMessage(state),
   callbackButton: selectCallbackButton(state),

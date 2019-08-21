@@ -8,21 +8,21 @@ const Input = styled.input`
   padding: 1rem 0.5rem 1rem 0.5rem;
   width: 100%;
   border-style: solid;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${(props) => props.theme.colors.border};
   border-width: 0 0 1px 0;
   border-radius: 0;
-  outline-color: ${props => props.theme.colors.textHighlight};
-  background-color: ${props => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
-  cursor: ${props => (props.disabled ? 'not-allowed' : 'auto')};
+  outline-color: ${(props) => props.theme.colors.textHighlight};
+  background-color: ${(props) => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'auto')};
 
   ::-webkit-input-placeholder { /* Edge */
-    color: ${props => props.theme.colors.placeholder};
+    color: ${(props) => props.theme.colors.placeholder};
   }
   :-ms-input-placeholder { /* Internet Explorer 10-11 */
-    color: ${props => props.theme.colors.placeholder};
+    color: ${(props) => props.theme.colors.placeholder};
   }
   ::placeholder {
-    color: ${props => props.theme.colors.placeholder};
+    color: ${(props) => props.theme.colors.placeholder};
   }
 `;
 

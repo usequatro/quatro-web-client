@@ -7,7 +7,7 @@ export default (Component, view, fetchParams) => {
   const mapDispatchToProps = {
     loadDashboardTasks: loadDashboardTasksAction,
   };
-  const mapStateToProps = state => ({
+  const mapStateToProps = (state) => ({
     loaded: selectLoaded(state, view),
     userLoggedIn: selectUserLoggedIn(state, view),
   });

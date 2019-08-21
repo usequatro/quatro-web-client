@@ -65,7 +65,7 @@ const BlockersSelector = ({
   return (
     <div>
       <FieldLabel>Blocked by</FieldLabel>
-      {dependencies.map(dependency => (
+      {dependencies.map((dependency) => (
         <FieldsContainer key={dependency.id} dependencyType={dependency.type}>
           <DependencySelectorField
             selectedId={dependency.config.taskId}
@@ -76,7 +76,7 @@ const BlockersSelector = ({
           {dependency.type === dependencyTypes.FREE_TEXT && (
             <InputField
               value={dependency.config.value}
-              onChange={event => handleFreeTextValueChange(dependency.id, event.target.value)}
+              onChange={(event) => handleFreeTextValueChange(dependency.id, event.target.value)}
             />
           )}
           <DeleteButtonContainer>

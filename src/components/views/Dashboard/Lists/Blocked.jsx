@@ -23,7 +23,7 @@ const Blocked = ({ tasks }) => (
   />
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tasks: getBlockedTasks(state),
 });
 

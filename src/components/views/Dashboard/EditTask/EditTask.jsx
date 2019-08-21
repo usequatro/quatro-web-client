@@ -76,11 +76,11 @@ const EditTask = ({
     updateTask(id, { [key]: value });
   };
 
-  const dependencyDescriptors = useSelector(state => getTaskDependencies(state, dependencyIds));
+  const dependencyDescriptors = useSelector((state) => getTaskDependencies(state, dependencyIds));
 
   return (
     <FullScreenPaper>
-      {onRequestClose => (
+      {(onRequestClose) => (
         <FormFlexContainer onSubmit={onRequestClose}>
           <AppHeaderContainer>
             <AppHeader>
@@ -110,22 +110,22 @@ const EditTask = ({
                 <TaskForm
                   id={id}
                   title={title}
-                  setTitle={value => onUpdate('title', value)}
+                  setTitle={(value) => onUpdate('title', value)}
                   impact={impact}
-                  setImpact={value => onUpdate('impact', value)}
+                  setImpact={(value) => onUpdate('impact', value)}
                   effort={effort}
-                  setEffort={value => onUpdate('effort', value)}
+                  setEffort={(value) => onUpdate('effort', value)}
                   description={description}
-                  setDescription={value => onUpdate('description', value)}
+                  setDescription={(value) => onUpdate('description', value)}
                   hasDue={hasDue}
                   setHasDue={setHasDue}
                   due={due}
                   taskPrioritizedAheadOfTitle={taskPrioritizedAheadOfTitle}
-                  setDue={value => onUpdate('due', value)}
+                  setDue={(value) => onUpdate('due', value)}
                   hasScheduledStart={hasScheduledStart}
                   setHasScheduledStart={setHasScheduledStart}
                   scheduledStart={scheduledStart}
-                  setScheduledStart={value => onUpdate('scheduledStart', value)}
+                  setScheduledStart={(value) => onUpdate('scheduledStart', value)}
                   dependencies={dependencyDescriptors}
                   updateTaskDependency={updateTaskDependency}
                   removeTaskDependency={removeTaskDependency}

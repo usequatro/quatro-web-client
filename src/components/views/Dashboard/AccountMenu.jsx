@@ -29,44 +29,44 @@ const AccountMenuContainer = styled(Box)`
   flex-shrink: 0;
   border-style: solid;
   border-width: 0 1px 0 0;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${(props) => props.theme.colors.border};
 
-  margin-left: ${props => transitionStyles[props.state].marginLeft};
+  margin-left: ${(props) => transitionStyles[props.state].marginLeft};
   transition: margin-left ${duration}ms ease;
 `;
 const ProfileSection = styled(Box).attrs({ p: 3 })`
   padding: 2rem 1rem 4rem 1rem;
   border-style: solid;
   border-width: 0 0 1px 0;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${(props) => props.theme.colors.border};
   display: flex;
   justify-content: space-between;
 `;
 
 const MenuLink = styled.button`
-  outline-color: ${props => props.theme.colors.textHighlight};
+  outline-color: ${(props) => props.theme.colors.textHighlight};
   cursor: pointer;
   transition: color 150ms;
-  color: ${props => props.theme.colors.textHighlight};
+  color: ${(props) => props.theme.colors.textHighlight};
   padding: 2rem 1rem;
   text-decoration: none;
   border-style: solid;
   border-width: 0 0 1px 0;
-  border-color: ${props => props.theme.colors.border};
+  border-color: ${(props) => props.theme.colors.border};
   background: transparent;
   font-size: inherit;
   text-align: left;
 
   &:active {
-    color: ${props => props.theme.colors.textHighlight};
+    color: ${(props) => props.theme.colors.textHighlight};
   }
   &:hover {
-    color: ${props => props.theme.colors.textHighlight};
-    background-color: ${props => props.theme.colors.menuOptionHover};
+    color: ${(props) => props.theme.colors.textHighlight};
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
   }
   &:focus {
-    background-color: ${props => props.theme.colors.menuOptionHover};
-    outline: ${props => props.theme.colors.textHighlight} auto 2px;
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
+    outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
     z-index: 1;
   }
 `;
@@ -105,10 +105,10 @@ const AccountMenu = ({ history }) => {
 
   return (
     <Transition in={open} timeout={duration}>
-      {state => (
+      {(state) => (
         <AccountMenuContainer state={state}>
           {state !== 'exited' && (
-            <React.Fragment>
+            <>
               <ProfileSection>
                 <div>
                   <p>{displayName}</p>
@@ -135,7 +135,7 @@ const AccountMenu = ({ history }) => {
               <MenuLink onClick={() => onLogOut()}>
                 Logout
               </MenuLink>
-            </React.Fragment>
+            </>
           )}
         </AccountMenuContainer>
       )}

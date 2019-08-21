@@ -23,7 +23,7 @@ const Scheduled = ({ tasks }) => (
   />
 );
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   tasks: getScheduledTasks(state),
 });
 

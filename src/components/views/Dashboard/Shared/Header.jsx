@@ -39,7 +39,7 @@ const HorizontalContainer = styled(Box).attrs({
   align-items: center;
   flex-shrink: 0;
   width: 100%;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
+  border-bottom: 1px solid ${(props) => props.theme.colors.border};
 `;
 
 const arrowColor = '000000';
@@ -47,7 +47,7 @@ const DashboardTitle = styled(Heading).attrs(() => ({
   color: 'textPrimary',
 }))`
   text-align: center;
-  font-family: ${props => props.theme.fonts.headline};
+  font-family: ${(props) => props.theme.fonts.headline};
   border: none;
   background-color: transparent;
   cursor: pointer;
@@ -60,11 +60,11 @@ const DashboardTitle = styled(Heading).attrs(() => ({
   background-size: .65em auto, 100%;
 
   &:hover {
-    background-color: ${props => props.theme.colors.menuOptionHover};
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
   }
   &:focus {
-    background-color: ${props => props.theme.colors.menuOptionHover};
-    outline: ${props => props.theme.colors.textHighlight} auto 2px;
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
+    outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
     z-index: 1;
   }
 `;
@@ -72,9 +72,9 @@ const DashboardTitle = styled(Heading).attrs(() => ({
 const MenuContainer = styled(Box)`
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
+  border-bottom: 1px solid ${(props) => props.theme.colors.border};
   overflow: hidden;
-  max-height: ${props => transitionStyles[props.state].maxHeight};
+  max-height: ${(props) => transitionStyles[props.state].maxHeight};
   transition: max-height ${duration}ms ease-out;
 `;
 
@@ -86,19 +86,19 @@ const MenuOption = styled(Heading).attrs({
   width: 100%;
   cursor: pointer;
   padding: 1rem;
-  font-family: ${props => props.theme.fonts.headline};
+  font-family: ${(props) => props.theme.fonts.headline};
   transition: background-color 50ms ease;
 
   &:hover {
-    background-color: ${props => props.theme.colors.menuOptionHover};
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
   }
   &:focus {
-    background-color: ${props => props.theme.colors.menuOptionHover};
-    outline: ${props => props.theme.colors.textHighlight} auto 2px;
+    background-color: ${(props) => props.theme.colors.menuOptionHover};
+    outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
     z-index: 1;
   }
 `;
-const MenuOptionButton = props => <MenuOption {...props} as="button" type="button" />;
+const MenuOptionButton = (props) => <MenuOption {...props} as="button" type="button" />;
 
 const titles = {
   [paths.SCHEDULED]: 'Scheduled',
@@ -152,7 +152,7 @@ const Header = ({ location, history }) => {
         </StyledRouterLink>
       </HorizontalContainer>
       <Transition in={open} timeout={duration}>
-        {state => (
+        {(state) => (
           <MenuContainer state={state}>
             <MenuOptionButton onClick={() => handleOptionSelected(paths.NOW)}>
               Now

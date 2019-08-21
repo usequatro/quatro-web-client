@@ -57,7 +57,7 @@ const Defaults = createGlobalStyle`
   body, html { font-size: 16px; }
   * { box-sizing: border-box; }
   body {
-    font-family: ${props => props.theme.fonts.body};
+    font-family: ${(props) => props.theme.fonts.body};
     overflow: hidden; /* prevents pull outside the viewport */
   }
   svg {
@@ -71,12 +71,12 @@ const RootStyles = createGlobalStyle`
 
 const AppStylesWrapper = ({ children }) => (
   <ThemeProvider theme={theme}>
-    <React.Fragment>
+    <>
       <Reset />
       <Defaults />
       <RootStyles />
       {children}
-    </React.Fragment>
+    </>
   </ThemeProvider>
 );
 

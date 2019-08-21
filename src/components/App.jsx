@@ -18,13 +18,13 @@ import MAX_WIDTH from '../constants/maxWidth';
 import Notification from './ui/Notification';
 
 const AppBackground = styled.div`
-  background-color: ${props => props.theme.colors.appBackground};
+  background-color: ${(props) => props.theme.colors.appBackground};
   width: 100vw;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: solid 1px ${props => props.theme.colors.border};
+  border: solid 1px ${(props) => props.theme.colors.border};
   overflow: hidden;
 
   max-width: ${MAX_WIDTH}px; /* only mobile width for now */

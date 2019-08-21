@@ -19,16 +19,16 @@ const SmallerText = styled.span`
 `;
 
 const TaskBlocker = (dependency, task) => <SmallerText>{task.title}</SmallerText>;
-const FreeTextBlocker = dependency => <SmallerText>{dependency.config.value}</SmallerText>;
+const FreeTextBlocker = (dependency) => <SmallerText>{dependency.config.value}</SmallerText>;
 
 const BlockerViewByType = {
   [TASK]: TaskBlocker,
   [FREE_TEXT]: FreeTextBlocker,
-  default: dependency => `Unknown dependency type ${dependency.type}`,
+  default: (dependency) => `Unknown dependency type ${dependency.type}`,
 };
 
 const BlockingTaskList = ({ taskId }) => {
-  const dependenciesAndTasks = useSelector(state => (
+  const dependenciesAndTasks = useSelector((state) => (
     getDependenciesBlockingGivenTask(state, taskId)
   ));
   return (

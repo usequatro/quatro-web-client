@@ -47,14 +47,14 @@ const LogIn = ({ history }) => {
                 value={emailAddress}
                 required
                 type="email"
-                onChange={event => setEmailAddress(event.target.value)}
+                onChange={(event) => setEmailAddress(event.target.value)}
               />
               <InputField
                 placeholder="Password"
                 value={password}
                 required
                 type="password"
-                onChange={event => setPassword(event.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
               />
             </InputGroup>
             {errorMessage && (

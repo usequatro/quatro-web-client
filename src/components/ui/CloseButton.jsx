@@ -12,7 +12,7 @@ const Container = styled(Box).attrs({
   position: absolute;
   top: 0;
   left: 0;
-  color: ${props => props.theme.colors.textHighlight};
+  color: ${(props) => props.theme.colors.textHighlight};
 `;
 
 const CloseButton = ({
@@ -20,10 +20,10 @@ const CloseButton = ({
 }) => (
   <Container>
     <ButtonFunction title={title} type={buttonType}>
-      {backArrow
+      {(backArrow
         ? <BackIcon onClick={onClick} size="small" />
         : <XIcon onClick={onClick} size="small" />
-      }
+      )}
     </ButtonFunction>
   </Container>
 );

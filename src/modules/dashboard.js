@@ -49,8 +49,8 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 export const selectLoading = (state, view) => state[NAMESPACE][view].loading;
 export const selectLoaded = (state, view) => state[NAMESPACE][view].loaded;
-export const selectDashboardMenuOpen = state => state[NAMESPACE].dashboardMenuOpen;
-export const selectAccountMenuOpen = state => state[NAMESPACE].accountMenuOpen;
+export const selectDashboardMenuOpen = (state) => state[NAMESPACE].dashboardMenuOpen;
+export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
 
 // Actions
 
@@ -88,11 +88,11 @@ export const resumeDashboardActivity = (() => {
   };
 })();
 
-export const setDashboardMenuOpen = dashboardMenuOpen => ({
+export const setDashboardMenuOpen = (dashboardMenuOpen) => ({
   type: SET_DASHBOARD_MENU_OPEN,
   payload: dashboardMenuOpen,
 });
-export const setAccountMenuOpen = accountMenuOpen => ({
+export const setAccountMenuOpen = (accountMenuOpen) => ({
   type: SET_ACCOUNT_MENU_OPEN,
   payload: accountMenuOpen,
 });

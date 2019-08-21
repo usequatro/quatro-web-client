@@ -17,7 +17,7 @@ const transitionStyles = {
 };
 
 const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
-  transform: ${props => transitionStyles[props.state].transform};
+  transform: ${(props) => transitionStyles[props.state].transform};
   transition: transform ${duration}ms ease-out;
 
   display: flex;
@@ -29,7 +29,7 @@ const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   bottom: 0;
   right: 0;
   z-index: 10;
-  border: solid 1px ${props => props.theme.colors.border};
+  border: solid 1px ${(props) => props.theme.colors.border};
 `;
 
 const FullScreenPaper = ({ history, children, ...props }) => {
@@ -44,7 +44,7 @@ const FullScreenPaper = ({ history, children, ...props }) => {
   return (
     <RootPortal>
       <Transition appear in={visible} timeout={duration}>
-        {state => (
+        {(state) => (
           <PaperWithTransitionStyles {...props} state={state} pt={0}>
             <Div100vh style={{ height: '100rvh', width: '100%', maxWidth: `${MAX_WIDTH}px` }}>
               {typeof children === 'function' ? children(close) : children}

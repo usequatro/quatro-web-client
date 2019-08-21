@@ -72,7 +72,7 @@ const NewTask = ({ history }) => {
   };
 
   const onUpdateTaskDependency = (id, updatedDependency) => {
-    setDependencies(dependencies.map(dependency => (
+    setDependencies(dependencies.map((dependency) => (
       dependency.id !== id
         ? dependency
         : {
@@ -83,7 +83,7 @@ const NewTask = ({ history }) => {
     )));
   };
   const onRemoveTaskDependency = (idToRemove) => {
-    setDependencies(dependencies.filter(dependency => dependency.id !== idToRemove));
+    setDependencies(dependencies.filter((dependency) => dependency.id !== idToRemove));
   };
   const onCreateTaskDependency = (dependency) => {
     setDependencies([
@@ -97,7 +97,7 @@ const NewTask = ({ history }) => {
 
   return (
     <FullScreenPaper>
-      {onRequestClose => (
+      {(onRequestClose) => (
         <FormFlexContainer onSubmit={createTask}>
           <AppHeaderContainer>
             <AppHeader>

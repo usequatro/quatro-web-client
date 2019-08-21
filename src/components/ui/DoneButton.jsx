@@ -11,7 +11,7 @@ const Container = styled(Box).attrs({
   position: absolute;
   top: 0;
   right: 0;
-  color: ${props => props.theme.colors.textHighlight};
+  color: ${(props) => props.theme.colors.textHighlight};
 `;
 
 const DoneButton = ({ onClick, buttonType, title }) => (

@@ -23,11 +23,11 @@ const WorkspaceArea = styled.div`
   min-height: calc(100% - 32px);
 
   /* conditionally using the transform CSS rule. Dnd doesn't like it, so that's why we clear it */
-  ${props => transitionStyles[props.state].transform && (
+  ${(props) => transitionStyles[props.state].transform && (
     `transform: ${transitionStyles[props.state].transform};`
   )}
 
-  opacity: ${props => transitionStyles[props.state].opacity};
+  opacity: ${(props) => transitionStyles[props.state].opacity};
   transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
 `;
 
@@ -66,10 +66,10 @@ const TaskListWorkspace = ({
 
   return (
     <Transition in={visible} timeout={duration}>
-      {state => (
+      {(state) => (
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId={`droppable-${taskListId}`}>
-            {droppableProvided /* , snapshot */ => (
+            {(droppableProvided) /* , snapshot */ => (
               <WorkspaceArea
                 state={state}
                 ref={droppableProvided.innerRef}

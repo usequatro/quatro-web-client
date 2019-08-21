@@ -42,7 +42,7 @@ const DashboardMenuOverlay = styled.div`
   position: absolute;
   flex-shrink: 0;
   opacity: 0.6;
-  background-color: ${props => props.theme.colors.appForeground};
+  background-color: ${(props) => props.theme.colors.appForeground};
   cursor: pointer;
 `;
 const AccountMenuOverlay = styled.div`
@@ -51,7 +51,7 @@ const AccountMenuOverlay = styled.div`
   position: absolute;
   flex-shrink: 0;
   opacity: 0.6;
-  background-color: ${props => props.theme.colors.appForeground};
+  background-color: ${(props) => props.theme.colors.appForeground};
   cursor: pointer;
   z-index: 100;
 `;

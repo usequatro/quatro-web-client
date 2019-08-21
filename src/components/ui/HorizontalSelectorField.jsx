@@ -7,7 +7,7 @@ const Button = styled.button`
   height: 2.5rem;
   flex-grow: 1;
   width: 100%;
-  ${props => props.theme.buttons[props.variant]}
+  ${(props) => props.theme.buttons[props.variant]}
   font-size: 1rem;
 `;
 const ButtonsContainer = styled.div`
@@ -37,7 +37,7 @@ const HorizontalSelectorField = ({
             {...hiddenInputProps}
             required={required}
             value={value}
-            onChange={event => onSelection(event, event.target.value)}
+            onChange={(event) => onSelection(event, event.target.value)}
           />
           {label}
         </FieldLabel>
@@ -46,7 +46,7 @@ const HorizontalSelectorField = ({
         {options.map(({ value: optionValue, label: optionLabel = `${optionValue}` }) => (
           <Button
             key={optionValue}
-            onClick={e => onSelection(e, optionValue)}
+            onClick={(e) => onSelection(e, optionValue)}
             data-value={optionValue}
             variant={`${value}` === `${optionValue}` ? 'primary' : 'outline'}
             type="button"
