@@ -1,8 +1,7 @@
 import { createStore, compose, applyMiddleware } from 'redux';
-import get from 'lodash/get';
 import thunk from 'redux-thunk';
-import * as firebase from 'firebase/app';
 import { reducer } from './modules';
+import * as apiClient from './modules/apiClient';
 
 export default () => {
   // eslint-disable-next-line no-underscore-dangle
@@ -12,7 +11,7 @@ export default () => {
     {},
     composeEnhancers(
       applyMiddleware(thunk.withExtraArgument({
-        getLoggedInUserUid: () => get(firebase.auth().currentUser, 'uid'),
+        apiClient,
       })),
     ),
   );

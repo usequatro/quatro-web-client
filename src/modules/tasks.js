@@ -9,7 +9,6 @@ import uuid from 'uuid/v4';
 import createReducer from '../util/createReducer';
 import { trackTaskCreated, taskTaskCompleted } from '../util/tracking';
 import isRequired from '../util/isRequired';
-import * as apiClient from './apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import { TASK, FREE_TEXT } from '../constants/dependencyTypes';
 import {
@@ -18,6 +17,8 @@ import {
   showNetworkErrorNotification,
   hideNotification,
 } from './notification';
+import { RESET } from './reset';
+import { selectUserId } from './session';
 
 export const NAMESPACE = 'tasks';
 
@@ -115,7 +116,7 @@ const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
 const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
 const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
 const UPDATE_TASK_BATCH = `${NAMESPACE}/UPDATE_TASK_BATCH`;
-const RESET = `${NAMESPACE}/RESET`;
+const RESET_TASKS = `${NAMESPACE}/RESET_TASKS`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
@@ -210,6 +211,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     },
   }),
   [RESET]: () => ({ ...INITIAL_STATE }),
+  [RESET_TASKS]: () => ({ ...INITIAL_STATE }),
   [UPDATE_TASK_DEPENDENCY]: (state, { payload: { id, updates } }) => ({
     ...state,
     taskDependencies: {
@@ -554,14 +556,14 @@ export const setTasks = (tasks) => {
   };
 };
 
-export const updateTask = (taskId, updates) => (dispatch) => {
+export const updateTask = (taskId, updates) => (dispatch, _, { apiClient }) => {
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
   return apiClient.updateTask(taskId, filterTaskKeys(updates, TASK_KEYS_FOR_API));
 };
-export const updateTaskBatch = updatesByTaskId => (dispatch) => {
+export const updateTaskBatch = updatesByTaskId => (dispatch, _, { apiClient }) => {
   dispatch({
     type: UPDATE_TASK_BATCH,
     payload: { updatesByTaskId },
@@ -685,8 +687,9 @@ export const completeTask = taskId => (dispatch, getState) => {
     });
 };
 
-export const loadTasks = fetchParams => (dispatch, getState, { getLoggedInUserUid }) => {
-  const userId = getLoggedInUserUid();
+export const loadTasks = fetchParams => (dispatch, getState, { apiClient }) => {
+  const state = getState();
+  const userId = selectUserId(state);
   if (!userId) {
     throw new Error('[loadTasks] No userId');
   }
@@ -696,9 +699,9 @@ export const loadTasks = fetchParams => (dispatch, getState, { getLoggedInUserUi
     });
 };
 
-export const resetTasks = () => ({ type: RESET });
+export const resetTasks = () => ({ type: RESET_TASKS });
 
-export const persistTask = id => (dispatch, getState) => {
+export const persistTask = id => (dispatch, getState, { apiClient }) => {
   const state = getState();
   const serializedTask = serializeTask(state, id);
   return apiClient.updateTask(
@@ -775,7 +778,7 @@ export const createTaskDependency = (dependency = isRequired('dependency')) => {
 //   }
 // );
 
-export const addTask = (newTask, dependencies) => (dispatch, getState, { getLoggedInUserUid }) => {
+export const addTask = (newTask, dependencies) => (dispatch, _, { apiClient }) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -795,7 +798,7 @@ export const addTask = (newTask, dependencies) => (dispatch, getState, { getLogg
     description,
     completed: null,
     created: Date.now(),
-    userId: getLoggedInUserUid(),
+    userId: selectUserId(),
     dependencyIds: dependencies.map(({ id = isRequired('dependency id') }) => id),
   };
 

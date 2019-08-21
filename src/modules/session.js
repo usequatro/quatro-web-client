@@ -1,4 +1,6 @@
+import get from 'lodash/get';
 import createReducer from '../util/createReducer';
+import { RESET } from './reset';
 
 export const NAMESPACE = 'session';
 
@@ -9,26 +11,27 @@ const SET_USER = `${NAMESPACE}/SET_USER`;
 // Reducers
 
 const INITIAL_STATE = {
-  userLoggedIn: null, // null until we know
-  userId: null,
+  user: null,
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [SET_USER]: (state, { payload: userId }) => ({
+  [SET_USER]: (state, { payload: user }) => ({
     ...state,
-    userLoggedIn: userId !== null,
-    userId,
+    user,
   }),
+  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors
 
-export const selectUserId = state => state[NAMESPACE].userId;
-export const selectUserLoggedIn = state => state[NAMESPACE].userLoggedIn;
+export const selectUserId = state => get(state[NAMESPACE].user, 'uid');
+export const selectUserEmail = state => get(state[NAMESPACE].user, 'email', '');
+export const selectUserDisplayName = state => get(state[NAMESPACE].user, 'displayName', '');
+export const selectUserLoggedIn = state => state[NAMESPACE].user !== null;
 
 // Actions
 
-export const setUser = userId => ({
+export const setUser = user => ({
   type: SET_USER,
-  payload: userId,
+  payload: user,
 });

@@ -9,6 +9,7 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import InvisibleForm from '../ui/InvisibleForm';
+import { setUser } from '../../modules/session';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
   color: 'textHighlight',
@@ -64,9 +65,8 @@ const SignUp = ({ history }) => {
     event.preventDefault();
     // https://firebase.google.com/docs/reference/js/firebase.auth.Auth.html?authuser=0#create-user-with-email-and-password
     firebase.auth().createUserWithEmailAndPassword(emailAddress, password)
-      .then(() => {
+      .then(({ user }) => {
         console.log('[SignUp] User registered, updating information.');
-        const user = firebase.auth().currentUser;
         if (user == null) {
           throw new Error('Error loading new user');
         } else {

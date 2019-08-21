@@ -6,9 +6,9 @@ import { withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';
 import { Transition } from 'react-transition-group';
 
-import { resetTasks } from '../../../modules/tasks';
-import { resetDashboard, setAccountMenuOpen, selectAccountMenuOpen } from '../../../modules/dashboard';
-import { setUser } from '../../../modules/session';
+import { setAccountMenuOpen, selectAccountMenuOpen } from '../../../modules/dashboard';
+import { resetReduxState } from '../../../modules/reset';
+import { selectUserDisplayName, selectUserEmail } from '../../../modules/session';
 import { LOG_IN, DASHBOARD } from '../../../constants/paths';
 import RefreshIcon from '../../icons/RefreshIcon';
 import ButtonFunctionality from '../../ui/ButtonFunction';
@@ -79,9 +79,7 @@ const AccountMenu = ({ history }) => {
     firebase.auth().signOut()
       .then(() => {
         history.push(LOG_IN);
-        dispatch(setUser(null));
-        dispatch(resetDashboard());
-        dispatch(resetTasks());
+        dispatch(resetReduxState());
       })
       .catch((error) => {
         console.error(error);
@@ -102,9 +100,8 @@ const AccountMenu = ({ history }) => {
     };
   }, [dispatch, history, open]);
 
-  // @TODO, read this from redux
-  const { displayName, email } = firebase.auth().currentUser;
-
+  const displayName = useSelector(selectUserDisplayName);
+  const email = useSelector(selectUserEmail);
 
   return (
     <Transition in={open} timeout={duration}>
