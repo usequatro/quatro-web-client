@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Box } from 'rebass';
 
-import { getDependenciesBlockingGivenTask } from '../../../../modules/tasks';
+import { selectDependenciesBlockingGivenTask } from '../../../../modules/tasks';
 import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';
 
 const List = styled(Box).attrs({
@@ -29,7 +29,7 @@ const BlockerViewByType = {
 
 const BlockingTaskList = ({ taskId }) => {
   const dependenciesAndTasks = useSelector((state) => (
-    getDependenciesBlockingGivenTask(state, taskId)
+    selectDependenciesBlockingGivenTask(state, taskId)
   ));
   return (
     <Box mt={3}>

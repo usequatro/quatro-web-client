@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getNowTasks } from '../../../../modules/tasks';
+import { selectNowTasks } from '../../../../modules/tasks';
 import { NOW } from '../../../../constants/dashboardTabs';
 
 import Task from '../Shared/Task';
@@ -23,7 +23,7 @@ const Now = ({ tasks }) => (
 );
 
 const mapStateToProps = (state) => ({
-  tasks: getNowTasks(state),
+  tasks: selectNowTasks(state),
 });
 
 export default connect(mapStateToProps)(Now);

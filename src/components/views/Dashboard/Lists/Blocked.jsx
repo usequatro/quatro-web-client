@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getBlockedTasks } from '../../../../modules/tasks';
+import { selectBlockedTasks } from '../../../../modules/tasks';
 import { BLOCKED } from '../../../../constants/dashboardTabs';
 
 import Task from '../Shared/Task';
@@ -24,7 +24,7 @@ const Blocked = ({ tasks }) => (
 );
 
 const mapStateToProps = (state) => ({
-  tasks: getBlockedTasks(state),
+  tasks: selectBlockedTasks(state),
 });
 
 export default connect(mapStateToProps)(Blocked);

@@ -306,32 +306,27 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
-export const getTask = (state, id) => state[NAMESPACE].tasks.byId[id];
+export const selectTask = (state, id) => state[NAMESPACE].tasks.byId[id];
 
-export const getTasks = (state, ids = null) => (
-  (ids || state[NAMESPACE].tasks.allIds)
-    .map((id) => getTask(state, id))
-);
-
-const getNonTrashedTasks = (state) => (
+const selectNonTrashedTasks = (state) => (
   state[NAMESPACE].tasks.allIds
     .map((id) => state[NAMESPACE].tasks.byId[id])
     .filter((task) => task.trashed == null)
 );
 
-export const getTaskDependency = (state, id) => state[NAMESPACE].taskDependencies.byId[id];
+const selectTaskDependency = (state, id) => state[NAMESPACE].taskDependencies.byId[id];
 
-export const getTaskDependencies = (state, ids = null) => (
+export const selectTaskDependencies = (state, ids = null) => (
   (ids || state[NAMESPACE].taskDependencies.allIds)
-    .map((id) => getTaskDependency(state, id))
+    .map((id) => selectTaskDependency(state, id))
 );
 
-const getIsTaskBlocked = (state, taskId) => {
-  const task = getTask(state, taskId);
-  const dependencies = task.dependencyIds.map((id) => getTaskDependency(state, id));
+const selectIsTaskBlocked = (state, taskId) => {
+  const task = selectTask(state, taskId);
+  const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
   const nonCompletedDependencies = dependencies
     .filter((dependency) => (
-      !(dependency.type === TASK && !getTask(state, dependency.config.taskId))
+      !(dependency.type === TASK && !selectTask(state, dependency.config.taskId))
     ));
   return nonCompletedDependencies.length > 0;
 };
@@ -383,64 +378,64 @@ const applyRelativePrioritization = (tasks) => {
     .map((id) => tasksById[id]);
 };
 
-export const getNonCompletedTasks = (state) => (
-  getNonTrashedTasks(state)
+const selectNonCompletedTasks = (state) => (
+  selectNonTrashedTasks(state)
     .filter((task) => task.completed == null)
 );
 
-const getUpcomingSortedTasks = (state) => {
+const selectUpcomingSortedTasks = (state) => {
   const now = Date.now();
-  const tasks = getNonCompletedTasks(state)
+  const tasks = selectNonCompletedTasks(state)
     .filter((task) => task.scheduledStart == null || task.scheduledStart <= now)
-    .filter((task) => !getIsTaskBlocked(state, task.id));
+    .filter((task) => !selectIsTaskBlocked(state, task.id));
   const tasksSortedByScore = sortBy(tasks, 'score').reverse();
   return applyRelativePrioritization(tasksSortedByScore);
 };
 
-export const getNowTasks = (state) => {
-  const sortedTasks = getUpcomingSortedTasks(state);
+export const selectNowTasks = (state) => {
+  const sortedTasks = selectUpcomingSortedTasks(state);
   return sortedTasks.slice(0, NOW_TASKS_LIMIT);
 };
-export const getNextTasks = (state) => {
-  const sortedTasks = getUpcomingSortedTasks(state);
+export const selectNextTasks = (state) => {
+  const sortedTasks = selectUpcomingSortedTasks(state);
   return sortedTasks.slice(NOW_TASKS_LIMIT);
 };
-export const getBlockedTasks = (state) => {
-  const tasks = getNonCompletedTasks(state);
+export const selectBlockedTasks = (state) => {
+  const tasks = selectNonCompletedTasks(state);
   const tasksWithBlockers = tasks.filter((task) => task.dependencyIds.length);
   const tasksWithExistingBlockers = tasksWithBlockers
     .filter((task) => {
-      const dependencies = task.dependencyIds.map((id) => getTaskDependency(state, id));
+      const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
       const nonCompletedDependencies = dependencies
         .filter((dependency) => (
-          !(dependency.type === TASK && !getTask(state, dependency.config.taskId))
+          !(dependency.type === TASK && !selectTask(state, dependency.config.taskId))
         ));
       return nonCompletedDependencies.length;
     });
 
   const blockedTaskIds = tasksWithExistingBlockers.map((task) => task.id);
   const blockedTasks = uniq(blockedTaskIds)
-    .map((id) => getTask(state, id));
+    .map((id) => selectTask(state, id));
 
   return sortBy(blockedTasks, 'score').reverse();
 };
-export const getScheduledTasks = (state) => {
+export const selectScheduledTasks = (state) => {
   const now = Date.now();
-  const tasks = getNonCompletedTasks(state)
+  const tasks = selectNonCompletedTasks(state)
     .filter((task) => task.scheduledStart != null && task.scheduledStart > now);
   return sortBy(tasks, 'scheduledStart');
 };
-export const getCompletedTasks = (state) => {
+export const selectCompletedTasks = (state) => {
   const tasks = state[NAMESPACE].tasks.allIds
     .map((id) => state[NAMESPACE].tasks.byId[id])
     .filter((task) => task.completed != null);
   return sortBy(tasks, 'completed').reverse();
 };
-export const getDependenciesBlockingGivenTask = (state, blockedTaskId) => {
-  const task = getTask(state, blockedTaskId);
+export const selectDependenciesBlockingGivenTask = (state, blockedTaskId) => {
+  const task = selectTask(state, blockedTaskId);
   const { dependencyIds = [] } = task || {};
 
-  const dependencies = dependencyIds.map((id) => getTaskDependency(state, id));
+  const dependencies = dependencyIds.map((id) => selectTaskDependency(state, id));
 
   const dependenciesAndTasks = dependencies.reduce((memo, dependency) => {
     if (dependency.type === FREE_TEXT) {
@@ -449,7 +444,7 @@ export const getDependenciesBlockingGivenTask = (state, blockedTaskId) => {
         [dependency, null],
       ];
     } if (dependency.type === TASK) {
-      const dependencyTask = getTask(state, dependency.config.taskId);
+      const dependencyTask = selectTask(state, dependency.config.taskId);
       if (dependencyTask) {
         return [
           ...memo,
@@ -463,16 +458,16 @@ export const getDependenciesBlockingGivenTask = (state, blockedTaskId) => {
 
   return dependenciesAndTasks;
 };
-export const getUndeletedTask = (state, id) => {
-  const task = getTask(state, id);
+export const selectUndeletedTask = (state, id) => {
+  const task = selectTask(state, id);
   return !task || task.trashed ? undefined : task;
 };
-export const getTasksForDependencySelection = (state, id) => (
-  getNonCompletedTasks(state)
+export const selectTasksForDependencySelection = (state, id) => (
+  selectNonCompletedTasks(state)
     .filter((task) => task.id !== id)
 );
-const getTasksPrioritizedAheadOf = (state, id) => (
-  getNonCompletedTasks(state)
+const selectTasksPrioritizedAheadOf = (state, id) => (
+  selectNonCompletedTasks(state)
     .filter((task) => task.prioritizedAheadOf === id)
 );
 
@@ -517,7 +512,7 @@ const normalizeTasks = (rawTasks) => {
 };
 
 const serializeTask = (state, id) => {
-  const normalizedTask = getTask(state, id);
+  const normalizedTask = selectTask(state, id);
   const {
     dependencyIds,
     id: taskId,
@@ -526,7 +521,7 @@ const serializeTask = (state, id) => {
   } = normalizedTask;
 
   const blockedBy = dependencyIds
-    .map((dependencyId) => getTaskDependency(state, dependencyId))
+    .map((dependencyId) => selectTaskDependency(state, dependencyId))
     .map((dependency) => omit(dependency, ['id', 'taskId']));
 
   const serializedTask = {
@@ -580,7 +575,7 @@ export const setRelativePrioritization = (sourceTaskId, sourceIndex, destination
       : destinationIndex;
 
     const state = getState();
-    const allTasks = getUpcomingSortedTasks(state);
+    const allTasks = selectUpcomingSortedTasks(state);
 
     if (realDestinationIndex >= allTasks.length || !allTasks[realDestinationIndex]) {
       dispatch(showErrorNotification('Operation not supported'));
@@ -595,7 +590,7 @@ export const setRelativePrioritization = (sourceTaskId, sourceIndex, destination
 
     // If there are other tasks depending on the one that is going to be moved,
     // we're going to associate them to the next one, so that they stay on the same spot.
-    const tasksPrioritizedBefore = getTasksPrioritizedAheadOf(state, sourceTaskId);
+    const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
     const taskAfter = allTasks[sourceIndex + 1];
 
     const updatesByTaskId = {
@@ -613,8 +608,8 @@ export const setRelativePrioritization = (sourceTaskId, sourceIndex, destination
 const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getState) => {
   const state = getState();
 
-  const tasksRelativelyPrioritized = getTasksPrioritizedAheadOf(state, taskId);
-  const allOriginalTasks = tasksRelativelyPrioritized.length ? getUpcomingSortedTasks(state) : [];
+  const tasksRelativelyPrioritized = selectTasksPrioritizedAheadOf(state, taskId);
+  const allOriginalTasks = tasksRelativelyPrioritized.length ? selectUpcomingSortedTasks(state) : [];
   const taskIndex = findIndex(allOriginalTasks, (task) => task.id === taskId);
   const newTaskIndex = taskIndex + offset;
   const newTaskAfter = allOriginalTasks[newTaskIndex];
@@ -663,7 +658,7 @@ export const undoCompletedTask = (taskId) => (dispatch) => (
 );
 
 export const completeTask = (taskId) => (dispatch, getState) => {
-  const task = getTask(getState(), taskId);
+  const task = selectTask(getState(), taskId);
 
   // Relative prioritization: Any task that was set to go before this one should now go after next.
   const undoPrioritizationChange = dispatch(updateRelativePrioritizationToNext(taskId, +1));
@@ -719,13 +714,13 @@ export const updateTaskDependency = (id, updates) => (dispatch, getState) => {
     },
   });
   const state = getState();
-  const dependency = getTaskDependency(state, id);
+  const dependency = selectTaskDependency(state, id);
   return dispatch(persistTask(dependency.taskId));
 };
 
 export const removeTaskDependency = (id) => (dispatch, getState) => {
   const state = getState();
-  const dependency = getTaskDependency(state, id);
+  const dependency = selectTaskDependency(state, id);
 
   dispatch({
     type: REMOVE_TASK_DEPENDENCY,
@@ -756,27 +751,6 @@ export const createTaskDependency = (dependency = isRequired('dependency')) => {
     },
   };
 };
-
-// export const updateIdInAllTaskDependencies = (oldId = isRequired(), newId = isRequired()) => (
-//   (dispatch, getState) => {
-//     const state = getState();
-//     const taskDependenciesToUpdate = getTaskDependencies(state)
-//       .map(dependency => (
-//         dependency.taskId !== oldId
-//           ? dependency
-//           : { ...dependency, taskId: newId }
-//       )
-
-
-//     taskDependenciesToUpdate.forEach(({ id, blockerId, blockedId }) => {
-//       dispatch(updateTaskDependency(
-//         id,
-//         blockerId === oldId ? newId : blockerId,
-//         blockedId === oldId ? newId : blockedId,
-//       ));
-//     });
-//   }
-// );
 
 export const addTask = (newTask, dependencies) => (dispatch, getState, { apiClient }) => {
   const {

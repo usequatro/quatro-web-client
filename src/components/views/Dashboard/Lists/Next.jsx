@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getNextTasks } from '../../../../modules/tasks';
+import { selectNextTasks } from '../../../../modules/tasks';
 import { NEXT } from '../../../../constants/dashboardTabs';
 
 import Task from '../Shared/Task';
@@ -24,7 +24,7 @@ const Next = ({ tasks }) => (
 );
 
 const mapStateToProps = (state) => ({
-  tasks: getNextTasks(state),
+  tasks: selectNextTasks(state),
 });
 
 export default connect(mapStateToProps)(Next);

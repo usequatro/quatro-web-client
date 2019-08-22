@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getScheduledTasks } from '../../../../modules/tasks';
+import { selectScheduledTasks } from '../../../../modules/tasks';
 import { SCHEDULED } from '../../../../constants/dashboardTabs';
 
 import Task from '../Shared/Task';
@@ -24,7 +24,7 @@ const Scheduled = ({ tasks }) => (
 );
 
 const mapStateToProps = (state) => ({
-  tasks: getScheduledTasks(state),
+  tasks: selectScheduledTasks(state),
 });
 
 export default connect(mapStateToProps)(Scheduled);

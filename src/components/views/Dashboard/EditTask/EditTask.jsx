@@ -7,15 +7,15 @@ import { Box } from 'rebass';
 import get from 'lodash/get';
 
 import {
-  getUndeletedTask,
+  selectUndeletedTask,
   updateTask as updateTaskAction,
   moveToTrashTask as moveToTrashTaskAction,
   updateTaskDependency as updateTaskDependencyAction,
   removeTaskDependency as removeTaskDependencyAction,
   createTaskDependency,
   clearRelativePrioritization as clearRelativePrioritizationAction,
-  getTask,
-  getTaskDependencies,
+  selectTask,
+  selectTaskDependencies,
 } from '../../../../modules/tasks';
 import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
@@ -76,7 +76,7 @@ const EditTask = ({
     updateTask(id, { [key]: value });
   };
 
-  const dependencyDescriptors = useSelector((state) => getTaskDependencies(state, dependencyIds));
+  const dependencyDescriptors = useSelector((state) => selectTaskDependencies(state, dependencyIds));
 
   return (
     <FullScreenPaper>
@@ -167,13 +167,13 @@ const mapDispatchToProps = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const task = getUndeletedTask(state, ownProps.match.params.id);
+  const task = selectUndeletedTask(state, ownProps.match.params.id);
 
   return {
     loaded: selectLoaded(state, 'default'),
     ...task,
     taskPrioritizedAheadOfTitle: task && task.prioritizedAheadOf
-      ? get(getTask(state, task.prioritizedAheadOf), 'title', null)
+      ? get(selectTask(state, task.prioritizedAheadOf), 'title', null)
       : null,
   };
 };

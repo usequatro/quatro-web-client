@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Box } from 'rebass';
 import { connect } from 'react-redux';
 import {
-  getScheduledTasks, getNextTasks, getBlockedTasks, getNowTasks, getCompletedTasks,
+  selectScheduledTasks, selectNextTasks, selectBlockedTasks, selectNowTasks, selectCompletedTasks,
 } from '../../../../modules/tasks';
 import * as paths from '../../../../constants/paths';
 import Button from '../../../ui/Button';
@@ -52,11 +52,11 @@ const FooterNavigation = ({
 );
 
 const mapStateToProps = (state) => ({
-  hasScheduled: getScheduledTasks(state).length > 0,
-  hasBlocked: getBlockedTasks(state).length > 0,
-  hasNow: getNowTasks(state).length > 0,
-  hasNext: getNextTasks(state).length > 0,
-  hasCompleted: getCompletedTasks(state).length > 0,
+  hasScheduled: selectScheduledTasks(state).length > 0,
+  hasBlocked: selectBlockedTasks(state).length > 0,
+  hasNow: selectNowTasks(state).length > 0,
+  hasNext: selectNextTasks(state).length > 0,
+  hasCompleted: selectCompletedTasks(state).length > 0,
 });
 
 export default connect(mapStateToProps)(FooterNavigation);

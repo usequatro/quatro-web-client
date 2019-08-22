@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import withLoadTasks from '../../../hoc/withLoadTasks';
 
-import { getCompletedTasks } from '../../../../modules/tasks';
+import { selectCompletedTasks } from '../../../../modules/tasks';
 import { FETCH_PARAMS_COMPLETED } from '../../../../modules/dashboard';
 import { COMPLETED } from '../../../../constants/dashboardTabs';
 
@@ -29,7 +29,7 @@ const Completed = ({ tasks, loaded }) => (
 );
 
 const mapStateToProps = (state) => ({
-  tasks: getCompletedTasks(state),
+  tasks: selectCompletedTasks(state),
 });
 
 export default withLoadTasks(

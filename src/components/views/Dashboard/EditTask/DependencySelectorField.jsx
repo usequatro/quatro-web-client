@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import Dropdown from '../../../ui/Dropdown';
-import { getTasksForDependencySelection } from '../../../../modules/tasks';
+import { selectTasksForDependencySelection } from '../../../../modules/tasks';
 import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';
 
 const FREE_TEXT_VALUE = '_freeText';
@@ -16,7 +16,7 @@ const WidthVariableDropdown = styled(Dropdown)`
 const DependencySelectorField = ({
   selectedId, className, onChange, currentTaskViewedId, currentDependencyType,
 }) => {
-  const tasks = useSelector((state) => getTasksForDependencySelection(state, currentTaskViewedId));
+  const tasks = useSelector((state) => selectTasksForDependencySelection(state, currentTaskViewedId));
 
   const handleChange = (event, value) => {
     const dependencyType = value === FREE_TEXT_VALUE ? FREE_TEXT : TASK;

@@ -10,7 +10,7 @@ import NewTaskIcon from '../../../icons/NewTaskIcon';
 import HamburgerIcon from '../../../icons/HamburgerIcon';
 import { selectDashboardMenuOpen, setDashboardMenuOpen, setAccountMenuOpen } from '../../../../modules/dashboard';
 import {
-  getScheduledTasks, getNextTasks, getBlockedTasks,
+  selectScheduledTasks, selectNextTasks, selectBlockedTasks,
 } from '../../../../modules/tasks';
 import ButtonFunction from '../../../ui/ButtonFunction';
 
@@ -116,9 +116,9 @@ const Header = ({ location, history }) => {
     history.push(option);
   };
 
-  const scheduledTasksCount = useSelector(getScheduledTasks).length;
-  const blockedTasksCount = useSelector(getBlockedTasks).length;
-  const nextTasksCount = useSelector(getNextTasks).length;
+  const scheduledTasksCount = useSelector(selectScheduledTasks).length;
+  const blockedTasksCount = useSelector(selectBlockedTasks).length;
+  const nextTasksCount = useSelector(selectNextTasks).length;
 
   useEffect(() => {
     const unlisten = history.listen(() => {
