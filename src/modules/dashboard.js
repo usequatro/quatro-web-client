@@ -92,6 +92,7 @@ export const setDashboardMenuOpen = (dashboardMenuOpen) => ({
   type: SET_DASHBOARD_MENU_OPEN,
   payload: dashboardMenuOpen,
 });
+
 export const setAccountMenuOpen = (accountMenuOpen) => ({
   type: SET_ACCOUNT_MENU_OPEN,
   payload: accountMenuOpen,

@@ -67,8 +67,7 @@ const NewTask = ({ history }) => {
       due: hasDue ? due : null,
       scheduledStart: hasScheduledStart ? scheduledStart : null,
     };
-    dispatch(addTask(newTask, dependencies));
-    history.goBack();
+    dispatch(addTask(newTask, dependencies, history));
   };
 
   const onUpdateTaskDependency = (id, updatedDependency) => {

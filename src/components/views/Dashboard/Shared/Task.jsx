@@ -87,6 +87,7 @@ const Task = ({
   const onTaskClick = () => {
     history.push(EDIT_TASK.replace(/:id\b/, id));
   };
+
   return (
     <Transition
       in={visible || disableAnimations}

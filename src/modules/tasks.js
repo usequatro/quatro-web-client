@@ -19,6 +19,8 @@ import {
 } from './notification';
 import { RESET } from './reset';
 import { selectUserId } from './session';
+import * as dashboardTabs from '../constants/dashboardTabs';
+import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
 
 export const NAMESPACE = 'tasks';
 
@@ -471,6 +473,23 @@ const selectTasksPrioritizedAheadOf = (state, id) => (
     .filter((task) => task.prioritizedAheadOf === id)
 );
 
+const containsTaskId = (tasks, id) => tasks.filter((task) => task.id === id).length > 0;
+
+export const selectSectionForTask = (state, taskId) => {
+  switch (true) {
+    case containsTaskId(selectNowTasks(state), taskId):
+      return dashboardTabs.NOW;
+    case containsTaskId(selectNextTasks(state), taskId):
+      return dashboardTabs.NEXT;
+    case containsTaskId(selectBlockedTasks(state), taskId):
+      return dashboardTabs.BLOCKED;
+    case containsTaskId(selectScheduledTasks(state), taskId):
+      return dashboardTabs.SCHEDULED;
+    default:
+      return undefined;
+  }
+};
+
 // Actions
 
 const normalizeTasks = (rawTasks) => {
@@ -609,7 +628,9 @@ const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getSta
   const state = getState();
 
   const tasksRelativelyPrioritized = selectTasksPrioritizedAheadOf(state, taskId);
-  const allOriginalTasks = tasksRelativelyPrioritized.length ? selectUpcomingSortedTasks(state) : [];
+  const allOriginalTasks = tasksRelativelyPrioritized.length
+    ? selectUpcomingSortedTasks(state)
+    : [];
   const taskIndex = findIndex(allOriginalTasks, (task) => task.id === taskId);
   const newTaskIndex = taskIndex + offset;
   const newTaskAfter = allOriginalTasks[newTaskIndex];
@@ -752,7 +773,7 @@ export const createTaskDependency = (dependency = isRequired('dependency')) => {
   };
 };
 
-export const addTask = (newTask, dependencies) => (dispatch, getState, { apiClient }) => {
+export const addTask = (newTask, dependencies, history) => (dispatch, getState, { apiClient }) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -786,8 +807,12 @@ export const addTask = (newTask, dependencies) => (dispatch, getState, { apiClie
   });
   dependencies.map((dependency) => dispatch(createTaskDependency(dependency)));
 
-  const taskWithoutId = omit(task, ['id']);
+  const tab = selectSectionForTask(getState(), temporaryId);
+  if (tab && DASHBOARD_TABS_TO_PATHS[tab]) {
+    history.push(DASHBOARD_TABS_TO_PATHS[tab]);
+  }
 
+  const taskWithoutId = omit(task, ['id']);
   return apiClient.createTask(filterTaskKeys(taskWithoutId, TASK_KEYS_FOR_API))
     .then(({ id: finalId }) => {
       dispatch(removeTaskFromAllIds(temporaryId));
