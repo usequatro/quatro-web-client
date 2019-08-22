@@ -778,7 +778,7 @@ export const createTaskDependency = (dependency = isRequired('dependency')) => {
 //   }
 // );
 
-export const addTask = (newTask, dependencies) => (dispatch, _, { apiClient }) => {
+export const addTask = (newTask, dependencies) => (dispatch, getState, { apiClient }) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -787,6 +787,8 @@ export const addTask = (newTask, dependencies) => (dispatch, _, { apiClient }) =
     description = isRequired(),
     ...restAttributes
   } = newTask;
+
+  const state = getState();
 
   const task = {
     ...TASK_KEY_DEFAULTS,
@@ -798,7 +800,7 @@ export const addTask = (newTask, dependencies) => (dispatch, _, { apiClient }) =
     description,
     completed: null,
     created: Date.now(),
-    userId: selectUserId(),
+    userId: selectUserId(state),
     dependencyIds: dependencies.map(({ id = isRequired('dependency id') }) => id),
   };
 
