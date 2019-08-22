@@ -10,7 +10,12 @@ module.exports = {
     },
     "sourceType": "module",
   },
-  "extends": ["eslint:recommended", "react-app", "airbnb"],
+  "extends": [
+    "eslint:recommended",
+    "react-app",
+    "airbnb",
+    "plugin:import/typescript"
+  ],
   "rules": {
     "react/prop-types": "off",
     "jsx-a11y/label-has-associated-control": [ 2, {
