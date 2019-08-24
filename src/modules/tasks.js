@@ -684,7 +684,7 @@ export const completeTask = (taskId) => (dispatch, getState) => {
   // Relative prioritization: Any task that was set to go before this one should now go after next.
   const undoPrioritizationChange = dispatch(updateRelativePrioritizationToNext(taskId, +1));
 
-  const notificationUid = dispatch(showInfoNotification('Task completed! 🎉', {
+  const notificationUid = dispatch(showInfoNotification('Task complete', {
     callbackButton: 'Undo',
     callbackFunction: () => () => {
       dispatch(undoCompletedTask(taskId));
@@ -773,6 +773,13 @@ export const createTaskDependency = (dependency = isRequired('dependency')) => {
   };
 };
 
+export const navigateToTabForTask = (taskId, history) => (dispatch, getState) => {
+  const tab = selectSectionForTask(getState(), taskId);
+  if (tab && DASHBOARD_TABS_TO_PATHS[tab]) {
+    history.push(DASHBOARD_TABS_TO_PATHS[tab]);
+  }
+};
+
 export const addTask = (newTask, dependencies, history) => (dispatch, getState, { apiClient }) => {
   const {
     temporaryId = isRequired(),
@@ -807,10 +814,7 @@ export const addTask = (newTask, dependencies, history) => (dispatch, getState, 
   });
   dependencies.map((dependency) => dispatch(createTaskDependency(dependency)));
 
-  const tab = selectSectionForTask(getState(), temporaryId);
-  if (tab && DASHBOARD_TABS_TO_PATHS[tab]) {
-    history.push(DASHBOARD_TABS_TO_PATHS[tab]);
-  }
+  dispatch(navigateToTabForTask(temporaryId, history));
 
   const taskWithoutId = omit(task, ['id']);
   return apiClient.createTask(filterTaskKeys(taskWithoutId, TASK_KEYS_FOR_API))

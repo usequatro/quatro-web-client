@@ -1,9 +1,10 @@
 import { Text } from 'rebass';
 import styled from 'styled-components';
 
-const Label = styled(Text).attrs({
+const HelpText = styled(Text).attrs({
   mb: 2,
+  color: 'textSecondary',
 })`
 `;
 
-export default Label;
+export default HelpText;

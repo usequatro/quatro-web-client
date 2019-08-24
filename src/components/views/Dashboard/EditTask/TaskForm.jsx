@@ -1,14 +1,18 @@
 import React from 'react';
+import styled from 'styled-components';
 import memoize from 'lodash/memoize';
 
 import InputGroup from '../../../ui/InputGroup';
 import InputField from '../../../ui/InputField';
 import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
-import DateTimeField from '../../../ui/DateTimeField';
-import BooleanCheckbox from '../../../ui/BooleanCheckbox';
+import ToggleableDateTimeField from '../../../ui/ToggleableDateTimeField';
 import Paragraph from '../../../ui/Paragraph';
 import BlockersSelector from './BlockersSelector';
 import InlineButton from '../../../ui/InlineButton';
+
+const Italic = styled.span`
+  font-style: italic;
+`;
 
 const generateConsecutiveOptions = memoize((min, max) => {
   const array = Array.from(Array(max).keys());
@@ -30,12 +34,8 @@ const TaskForm = ({
   due,
   taskPrioritizedAheadOfTitle,
   setDue,
-  hasDue,
-  setHasDue,
   scheduledStart,
   setScheduledStart,
-  hasScheduledStart,
-  setHasScheduledStart,
   dependencies,
   updateTaskDependency,
   removeTaskDependency,
@@ -45,20 +45,24 @@ const TaskForm = ({
   <InputGroup mb={4}>
     <InputField
       required
-      label="What do you have to do? *"
+      label="Summary *"
+      helpText="What do you have to do?"
       value={title}
       onChange={(event) => setTitle(event.target.value)}
     />
     {taskPrioritizedAheadOfTitle && (
       <Paragraph>
-        {`⚠️ This task is manually prioritized to be before ${taskPrioritizedAheadOfTitle}. `}
+        {'⚠️ This task is manually prioritized to be before '}
+        <Italic>{taskPrioritizedAheadOfTitle}</Italic>
+        {'.'}
         <InlineButton onClick={() => clearRelativePrioritization(id)}>
           Clear customization
         </InlineButton>
       </Paragraph>
     )}
     <HorizontalSelectorField
-      label="How important is this task? *"
+      label="Impact *"
+      helpText="How important is this task?"
       required
       value={impact}
       hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
@@ -66,58 +70,38 @@ const TaskForm = ({
       options={generateConsecutiveOptions(1, 7)}
     />
     <HorizontalSelectorField
-      label="How much effort will it require? *"
+      label="Effort *"
+      helpText="How much effort will this task require?"
       required
       value={effort}
       hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
       onChange={(event, value) => setEffort(value)}
       options={generateConsecutiveOptions(1, 7)}
     />
-    <InputField
-      textarea
-      label="Notes"
-      value={description}
-      onChange={(event) => setDescription(event.target.value)}
-    />
-
-    <DateTimeField
-      label={(
-        <BooleanCheckbox
-          onChange={(event, value) => {
-            setHasDue(value);
-            setDue(null);
-          }}
-          value={hasDue}
-          label="Due Date"
-        />
-      )}
-      onChange={(event, value) => setDue(value)}
+    <ToggleableDateTimeField
+      label="Due Date"
+      helpText="Does it need to be complete by a certain date?"
       value={due}
-      disabled={!hasDue}
+      onChange={(event, value) => setDue(value)}
     />
-
-    <DateTimeField
-      label={(
-        <BooleanCheckbox
-          onChange={(event, value) => {
-            setHasScheduledStart(value);
-            setScheduledStart(null);
-          }}
-          value={hasScheduledStart}
-          label="Scheduled Start Date"
-        />
-      )}
-      onChange={(event, value) => setScheduledStart(value)}
+    <ToggleableDateTimeField
+      label="Scheduled Start Date"
+      helpText="Do you want to delay starting this task?"
       value={scheduledStart}
-      disabled={!hasScheduledStart}
+      onChange={(event, value) => setScheduledStart(value)}
     />
-
     <BlockersSelector
       taskId={id}
       dependencies={dependencies}
       updateTaskDependency={updateTaskDependency}
       removeTaskDependency={removeTaskDependency}
       createTaskDependency={createTaskDependency}
+    />
+    <InputField
+      textarea
+      label="Notes"
+      value={description}
+      onChange={(event) => setDescription(event.target.value)}
     />
   </InputGroup>
 );

@@ -4,6 +4,8 @@ import styled from 'styled-components';
 const DIMENSIONS = {
   small: '1.5rem',
   medium: '2.5rem',
+  large: '3.5rem',
+  fill: '100%',
 };
 
 const Container = styled.div`

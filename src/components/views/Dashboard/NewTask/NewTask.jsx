@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import dayjs from 'dayjs';
 import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
 import { Box } from 'rebass';
@@ -9,11 +8,11 @@ import { Box } from 'rebass';
 import { addTask } from '../../../../modules/tasks';
 
 import FullScreenPaper from '../../../ui/FullScreenPaper';
-import CloseButton from '../../../ui/CloseButton';
-import DoneButton from '../../../ui/DoneButton';
-import { AppHeaderContainer, AppHeader } from '../../../ui/AppHeader';
-import Main from '../../../ui/Main';
+import PapelHeader from '../../../ui/PaperHeader';
+import BasicMain from '../../../ui/BasicMain';
+import ButtonFooter from '../../../ui/ButtonFooter';
 import TaskForm from '../EditTask/TaskForm';
+import Button from '../../../ui/Button';
 
 const FormFlexContainer = styled.form`
   display: flex;
@@ -21,11 +20,7 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const NewTaskMain = styled(Main).attrs({ p: 3 })`
-  flex-grow: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-`;
+const NewTaskMain = styled(BasicMain).attrs({ p: 3, pt: 4 })``;
 const ContentContainer = styled(Box)`
   width: 100%;
   display: flex;
@@ -33,21 +28,13 @@ const ContentContainer = styled(Box)`
   flex-shrink: 0;
 `;
 
-const getInitialDueDate = () => dayjs()
-  .add(1, 'day')
-  .hour(17)
-  .startOf('hour')
-  .valueOf();
-
 const NewTask = ({ history }) => {
   const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState('');
   const [effort, setEffort] = useState('');
   const [description, setDescription] = useState('');
-  const [hasDue, setHasDue] = useState(false);
-  const [due, setDue] = useState(getInitialDueDate());
-  const [hasScheduledStart, setHasScheduledStart] = useState(false);
+  const [due, setDue] = useState(null);
   const [scheduledStart, setScheduledStart] = useState(null);
   const [dependencies, setDependencies] = useState([]);
 
@@ -64,8 +51,8 @@ const NewTask = ({ history }) => {
       impact,
       effort,
       description,
-      due: hasDue ? due : null,
-      scheduledStart: hasScheduledStart ? scheduledStart : null,
+      due,
+      scheduledStart,
     };
     dispatch(addTask(newTask, dependencies, history));
   };
@@ -98,13 +85,14 @@ const NewTask = ({ history }) => {
     <FullScreenPaper>
       {(onRequestClose) => (
         <FormFlexContainer onSubmit={createTask}>
-          <AppHeaderContainer>
-            <AppHeader>
-              Create Task
-            </AppHeader>
-            <CloseButton onClick={onRequestClose} title="Cancel" />
-            <DoneButton buttonType="submit" title="Create task" />
-          </AppHeaderContainer>
+          <PapelHeader
+            headline="Create Task"
+            buttonRight={(
+              <Button variant="textOverBackground" onClick={onRequestClose}>
+                Cancel
+              </Button>
+            )}
+          />
           <NewTaskMain>
             <ContentContainer>
               <TaskForm
@@ -118,12 +106,8 @@ const NewTask = ({ history }) => {
                 description={description}
                 setDescription={setDescription}
                 due={due}
-                setHasDue={setHasDue}
-                hasDue={hasDue}
                 setDue={setDue}
                 scheduledStart={scheduledStart}
-                hasScheduledStart={hasScheduledStart}
-                setHasScheduledStart={setHasScheduledStart}
                 setScheduledStart={setScheduledStart}
                 dependencies={dependencies}
                 updateTaskDependency={onUpdateTaskDependency}
@@ -132,6 +116,12 @@ const NewTask = ({ history }) => {
               />
             </ContentContainer>
           </NewTaskMain>
+
+          <ButtonFooter.Container>
+            <ButtonFooter.Button type="submit" variant="primary">
+              Create Task
+            </ButtonFooter.Button>
+          </ButtonFooter.Container>
         </FormFlexContainer>
       )}
     </FullScreenPaper>

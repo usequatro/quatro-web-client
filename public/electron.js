@@ -11,7 +11,7 @@ let win;
 function createWindow() {
   // Create the browser window. https://electronjs.org/docs/api/browser-window
   win = new BrowserWindow({
-    width: 416,
+    width: 600,
     height: 750,
     resizable: isDev,
     webPreferences: {

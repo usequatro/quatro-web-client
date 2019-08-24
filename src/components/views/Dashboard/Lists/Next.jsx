@@ -17,6 +17,7 @@ const Next = ({ tasks }) => (
         ranking={NOW_TASKS_LIMIT + 1 + index}
         {...task}
         disableAnimations={isDragging}
+        enableDragHint
       />
     )}
     noTasksMessage="No tasks here. Good job!"

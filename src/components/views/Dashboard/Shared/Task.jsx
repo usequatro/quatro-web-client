@@ -1,60 +1,84 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import {
   Heading, Text, Box,
 } from 'rebass';
 import { Transition } from 'react-transition-group';
-import {
-  completeTask as completeTaskAction,
-} from '../../../../modules/tasks';
+import { completeTask } from '../../../../modules/tasks';
 import { EDIT_TASK } from '../../../../constants/paths';
 import CheckIcon from '../../../icons/CheckIcon';
 import ButtonFunction from '../../../ui/ButtonFunction';
 import BlockingTaskList from './BlockingTaskList';
+import activeLighter from '../../../style-mixins/activeLighter';
+import { mediaVerySmall } from '../../../style-mixins/mediaQueries';
 
-const duration = 200;
-const transitionStyles = {
-  entering: {
-    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
-  },
-  entered: {
-    opacity: 1, maxHeight: '10rem', padding: '1.5rem',
-  },
-  exiting: {
-    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
-  },
-  exited: {
-    opacity: 0, maxHeight: '0', padding: '0 1.5rem',
-  },
+const duration = 300;
+const maxHeightTransitionStyles = {
+  entering: 'none',
+  entered: 'none',
+  exiting: '10rem',
+  exited: '0',
 };
 
 const TaskContainer = styled.div`
   display: flex;
-  cursor: pointer;
+  width: calc(100% + 2px); /* two pix to account for borders that we want to hide on the side */
 
   border-style: solid;
   border-color: ${(props) => props.theme.colors.borderLight};
-  border-width: 0 0 1px 0;
+  border-width: ${({ state }) => (state === 'exited' ? '0' : '1px')};
+  border-radius: 2rem;
+  margin: 0 -1px 0 -1px; /* to hide side borders */
+  background-color: ${(props) => props.theme.colors.appForeground};
 
-  opacity: ${(props) => transitionStyles[props.state].opacity};
-  max-height: ${(props) => transitionStyles[props.state].maxHeight};
-  padding: ${(props) => transitionStyles[props.state].padding};
+  background-image: ${({ theme }) => (
+    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.appForeground} 50%)`
+  )};
+  background-size: 300% 100%;
+
+  padding-left: 0;
+  padding-right: ${({ theme }) => theme.space[4]};
+  ${mediaVerySmall} {
+    padding-right: ${({ theme }) => theme.space[3]};
+  }
+
+  overflow: hidden;
+
+  background-position: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0% 0%' : '100% 0%')};
+  opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
+  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[5])};
+  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[5])};
+  ${mediaVerySmall} {
+    padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+    padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+  }
+  margin-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+  ${mediaVerySmall} {
+    margin-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
+  }
+  max-height: ${({ state }) => maxHeightTransitionStyles[state]};
   transition:
+    background-position ${duration}ms linear,
     opacity ${duration}ms ease-out,
-    max-height ${duration}ms linear,
-    padding ${duration}ms linear,
-    background-color 250ms ease;
+    padding-top ${duration}ms ease-out,
+    padding-bottom ${duration}ms ease-out,
+    margin-bottom ${duration}ms ease-out,
+    max-height ${duration}ms ease-out;
 
-    background-color: ${(props) => props.theme.colors.appForeground};
-    &:hover {
-      background-color: ${(props) => props.theme.colors.appBackground};
-    }
+  cursor: auto; /* overriding draggable that makes drag cursor */
+
+  &:hover {
+    background-image: ${({ theme }) => (
+    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.foregroundOptionHover} 50%)`
+  )};
+  }
+  ${activeLighter}
 `;
 
-const TaskTitle = (props) => <Heading {...props} as="h4" fontSize={2} mb={2} />;
-const TaskSubtitle = (props) => <Text {...props} fontSize={2} mb={1} />;
+const TaskTitle = (props) => <Heading {...props} as="h4" fontSize={[3, 4]} mb={2} />;
+const TaskSubtitle = (props) => <Text {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
 
 const TaskButtons = styled(Box)`
   display: flex;
@@ -62,27 +86,48 @@ const TaskButtons = styled(Box)`
   justify-content: flex-start;
 `;
 
+const CompleteButton = styled(ButtonFunction)`
+  opacity: 0.5;
+  &:hover {
+    opacity: 1;
+  }
+  ${activeLighter}
+`;
+
+const DragHandle = styled.div`
+  width: ${({ theme }) => theme.space[4]};
+  min-height: ${({ theme }) => theme.space[4]};
+  ${mediaVerySmall} {
+    width: ${({ theme }) => theme.space[3]};
+    min-height: ${({ theme }) => theme.space[3]};
+  }
+  cursor: ${(props) => (props.enableDragHint ? 'grab' : 'inherit')};
+`;
+
 const Task = ({
   id,
   title,
+  description,
   showBlocked,
+  enableDragHint = false,
+  allowComplete = true,
   scheduledStart,
   due,
   completed,
-  completeTask,
   history,
   ranking,
   disableAnimations,
   prioritizedAheadOf,
 }) => {
-  const [visible, setVisible] = useState(true);
+  const dispatch = useDispatch();
+  const [completedStart, setCompletedStart] = useState(false);
 
   const onComplete = (event) => {
     event.stopPropagation();
-    setVisible(false);
+    setCompletedStart(true);
   };
   const onExited = () => {
-    completeTask(id);
+    dispatch(completeTask(id));
   };
   const onTaskClick = () => {
     history.push(EDIT_TASK.replace(/:id\b/, id));
@@ -90,9 +135,9 @@ const Task = ({
 
   return (
     <Transition
-      in={visible || disableAnimations}
+      in={!completedStart || disableAnimations}
       timeout={duration}
-      onExited={onExited}
+      onExited={() => setTimeout(onExited, duration)}
     >
       {(state) => (
         <TaskContainer
@@ -101,33 +146,37 @@ const Task = ({
           data-id={id}
           data-ahead-of={prioritizedAheadOf}
         >
+          <DragHandle enableDragHint={enableDragHint} />
           <Box flex={1}>
-            {/* <TaskTitle>
-              {id}
-            </TaskTitle> */}
+            {/* <TaskTitle>{id}</TaskTitle> */}
             <TaskTitle>
-              <ButtonFunction>
+              <ButtonFunction variant="text">
                 {ranking
-                  ? `#${ranking}${prioritizedAheadOf ? '*' : ''} - ${title}`
+                  ? `# ${ranking}${prioritizedAheadOf ? '*' : ''}  -  ${title}`
                   : title}
               </ButtonFunction>
             </TaskTitle>
             {scheduledStart && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
               Scheduled start:
                 {' '}
                 {new Date(scheduledStart).toLocaleString()}
               </TaskSubtitle>
             )}
             {due && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
               Due:
                 {' '}
                 {new Date(due).toLocaleString()}
               </TaskSubtitle>
             )}
+            {description && (
+              <TaskSubtitle mt={2}>
+                {description}
+              </TaskSubtitle>
+            )}
             {completed && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
               Completed:
                 {' '}
                 {new Date(completed).toLocaleString()}
@@ -138,10 +187,10 @@ const Task = ({
             )}
           </Box>
           <TaskButtons>
-            {!completed && (
-              <ButtonFunction>
-                <CheckIcon onClick={onComplete} size="small" />
-              </ButtonFunction>
+            {!completed && allowComplete && (
+              <CompleteButton variant="text">
+                <CheckIcon onClick={onComplete} size="small" title="Mark as Completed" />
+              </CompleteButton>
             )}
           </TaskButtons>
         </TaskContainer>
@@ -150,8 +199,4 @@ const Task = ({
   );
 };
 
-const mapDispatchToProps = {
-  completeTask: completeTaskAction,
-};
-
-export default withRouter(connect(null, mapDispatchToProps)(Task));
+export default withRouter(Task);

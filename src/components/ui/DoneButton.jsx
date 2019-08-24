@@ -16,7 +16,7 @@ const Container = styled(Box).attrs({
 
 const DoneButton = ({ onClick, buttonType, title }) => (
   <Container>
-    <ButtonFunction type={buttonType} title={title}>
+    <ButtonFunction type={buttonType} title={title} variant="text">
       <TickIcon onClick={onClick} size="small" />
     </ButtonFunction>
   </Container>

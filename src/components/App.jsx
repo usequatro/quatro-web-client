@@ -11,6 +11,7 @@ import UserLoginListener from './tracking/UserLoginListener';
 import SignUp from './views/SignUp';
 import LogIn from './views/LogIn';
 import RuntimeError from './views/RuntimeError';
+import AccountMenu from './views/AccountMenu/AccountMenu';
 import Dashboard from './views/Dashboard/Dashboard';
 import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
 import * as paths from '../constants/paths';
@@ -24,10 +25,10 @@ const AppBackground = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: solid 1px ${(props) => props.theme.colors.border};
+  outline: solid 1px ${(props) => props.theme.colors.border}; /* external border to the window */
   overflow: hidden;
 
-  max-width: ${MAX_WIDTH}px; /* only mobile width for now */
+  max-width: ${MAX_WIDTH}; /* only mobile width for now */
 `;
 
 const [Router, routerProps] = isElectron()
@@ -49,7 +50,15 @@ export default () => (
               <Redirect exact from="/" to={paths.SIGN_UP} />
               <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
               <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
-              <RouteLoggedIn path={[paths.DASHBOARD, paths.NEW_TASK]} component={Dashboard} />
+              <RouteLoggedIn
+                path={[paths.DASHBOARD, paths.NEW_TASK]}
+                render={() => (
+                  <>
+                    <AccountMenu />
+                    <Dashboard />
+                  </>
+                )}
+              />
 
               {/* fallback */}
               <Redirect to={paths.SIGN_UP} />

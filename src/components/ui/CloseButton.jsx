@@ -19,7 +19,7 @@ const CloseButton = ({
   onClick, backArrow, title, buttonType,
 }) => (
   <Container>
-    <ButtonFunction title={title} type={buttonType}>
+    <ButtonFunction title={title} type={buttonType} variant="text">
       {(backArrow
         ? <BackIcon onClick={onClick} size="small" />
         : <XIcon onClick={onClick} size="small" />

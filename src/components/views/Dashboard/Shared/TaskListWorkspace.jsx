@@ -36,6 +36,10 @@ const EndOfListSpacing = styled.div`
   height: 2.5rem;
 `;
 
+const DraggableDiv = styled.div`
+  display: flex;
+`;
+
 const TaskListWorkspace = ({
   taskListId, tasks, renderTask, noTasksMessage, isDragDisabled = false,
 }) => {
@@ -84,13 +88,13 @@ const TaskListWorkspace = ({
                     disableInteractiveElementBlocking
                   >
                     {(draggableProvided, draggableSnapshot) => (
-                      <div
+                      <DraggableDiv
                         ref={draggableProvided.innerRef}
                         {...draggableProvided.draggableProps}
                         {...draggableProvided.dragHandleProps}
                       >
                         {renderTask(task, index, draggableSnapshot.isDragging)}
-                      </div>
+                      </DraggableDiv>
                     )}
                   </Draggable>
                 ))}

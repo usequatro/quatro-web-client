@@ -29,16 +29,22 @@ const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   bottom: 0;
   right: 0;
   z-index: 10;
-  border: solid 1px ${(props) => props.theme.colors.border};
+  border-style: solid;
+  border-width: 0 1px 0 1px;
+  border-color: ${(props) => props.theme.colors.border};
 `;
 
-const FullScreenPaper = ({ history, children, ...props }) => {
+const FullScreenPaper = ({
+  history, onCloseCustom, children, ...props
+}) => {
   const [visible, setVisible] = useState(true);
 
   const close = (event) => {
     event.preventDefault();
     setVisible(false);
-    setTimeout(() => history && history.goBack(), duration);
+    setTimeout(() => (
+      onCloseCustom ? onCloseCustom(history) : history.goBack()
+    ), duration);
   };
 
   return (
@@ -46,7 +52,7 @@ const FullScreenPaper = ({ history, children, ...props }) => {
       <Transition appear in={visible} timeout={duration}>
         {(state) => (
           <PaperWithTransitionStyles {...props} state={state} pt={0}>
-            <Div100vh style={{ height: '100rvh', width: '100%', maxWidth: `${MAX_WIDTH}px` }}>
+            <Div100vh style={{ height: '100rvh', width: '100%', maxWidth: MAX_WIDTH }}>
               {typeof children === 'function' ? children(close) : children}
             </Div100vh>
           </PaperWithTransitionStyles>

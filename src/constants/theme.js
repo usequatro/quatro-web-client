@@ -2,40 +2,42 @@ import * as colors from './colors';
 
 export default {
   // Array of strings representing viewport widths to use for min-width media queries.
-  breakpoints: ['40em', '52em', '64em'],
+  breakpoints: ['400px', '599px'],
   // Array of numbers to use as a typographic scale
   fontSizes: [
-    12, 14, 16, 20, 24, 32, 48, 64,
+    '10px', '12px', '14px', '16px', '18px', '20px', '24px', '32px', '48px', '64px',
   ],
   // Color names that can be used in color, bg, and borderColor props
   colors: {
-    appBackground: colors.ALMOST_WHITE,
+    appBackground: colors.PAINT_BLUE,
     appForeground: colors.WHITE,
+    barBackground: colors.DEEP_SEA_BLUE,
     textPrimary: colors.ALMOST_BLACK,
-    textSecondary: colors.LIGHT_GRAY,
-    textHighlight: colors.SEA_BLUE,
-    border: colors.LIGHT_GRAY,
+    textPrimaryOverBackground: colors.WHITE,
+    textSecondary: colors.GRAY,
+    textHighlight: colors.PAINT_BLUE,
+    border: colors.SUPER_LIGHT_GRAY,
     borderLight: colors.SUPER_LIGHT_GRAY,
     placeholder: colors.LIGHT_GRAY,
     inputBackground: 'transparent',
     disabled: colors.SUPER_LIGHT_GRAY,
     error: colors.ERROR_RED,
-    menuOptionHover: colors.ALMOST_WHITE,
+    foregroundOptionHover: colors.ALMOST_WHITE,
+    foregroundOptionActive: colors.SUPER_LIGHT_GRAY,
   },
   // Array of numbers for use as margin and pixel values
   space: [
-    0, 4, 8, 16, 32, 64, 128, 256,
+    '0', '0.25rem', '0.5rem', '1rem', '1.5rem', '2rem', '4rem', '6rem',
   ],
   // Values for the fontFamily prop
   fonts: {
-    headline: "'Open Sans', sans-serif",
-    body: 'Roboto, sans-serif',
+    headline: "'Maven Pro', sans-serif;",
+    body: "'Maven Pro', sans-serif;",
   },
   // Values for fontWeight prop
   fontWeights: {
-    lighter: 'lighter',
-    normal: 'normal',
-    bold: 'bold',
+    headline: 400,
+    body: 400,
   },
   // Values for lineHeight prop
   lineHeights: [],
@@ -56,16 +58,35 @@ export default {
   buttons: {
     primary: {
       color: colors.WHITE,
-      backgroundColor: colors.DEEP_BLUE,
+      backgroundColor: colors.PAINT_BLUE,
+      outlineColor: colors.PAINT_BLUE,
+      fontWeight: 'normal',
     },
     outline: {
-      color: colors.DEEP_BLUE,
+      color: colors.PAINT_BLUE,
       backgroundColor: 'transparent',
       boxShadow: 'inset 0 0 0 2px',
+      outlineColor: colors.PAINT_BLUE,
+      fontWeight: 'normal',
+    },
+    outlineOverBackground: {
+      color: colors.WHITE,
+      backgroundColor: 'transparent',
+      boxShadow: 'inset 0 0 0 2px',
+      outlineColor: colors.WHITE,
+      fontWeight: 'normal',
     },
     text: {
-      color: colors.DEEP_BLUE,
+      color: colors.PAINT_BLUE,
       backgroundColor: 'transparent',
+      outlineColor: colors.PAINT_BLUE,
+      fontWeight: 'normal',
+    },
+    textOverBackground: {
+      color: colors.WHITE,
+      backgroundColor: 'transparent',
+      outlineColor: colors.WHITE,
+      fontWeight: 'normal',
     },
   },
 };

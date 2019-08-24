@@ -2,12 +2,16 @@ import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass';
 
+import FieldLabel from './FieldLabel';
+import FieldHelpText from './FieldHelpText';
+import { activeOpacity } from '../style-mixins/activeLighter';
+
 const Container = styled.div`
-  display: inline-block;
   position: relative;
   width: 1rem;
   height: 1rem;
   margin: 0 0.5rem -1px 0;
+  flex-shrink: 0;
 `;
 const ImprovedCheckbox = styled.div`
   display: inline-block;
@@ -20,6 +24,8 @@ const ImprovedCheckbox = styled.div`
   border-color: ${(props) => props.theme.colors.border};
   border-width: 1px;
   background-color: ${(props) => (props.checked ? props.theme.buttons.primary.backgroundColor : 'transparent')};
+
+  opacity: ${(props) => (props.disabled ? '0.5' : '1')};
 
   &::after {
     content: '';
@@ -48,25 +54,39 @@ const Input = styled.input`
   &:focus + ${ImprovedCheckbox} {
     outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
   }
+  &:active + ${ImprovedCheckbox} {
+    opacity: ${activeOpacity};
+  }
+`;
+const HorizontalContainer = styled.div`
+  display: flex;
 `;
 const Label = styled(Box).attrs({
   as: 'label',
 })`
-  display: block;
+  flex-grow: 1;
   padding: 0.5rem 0;
 `;
 
-export default ({ onChange, value, label }) => (
+export default ({
+  onChange, value, label, helpText, disabled,
+}) => (
   <Label>
-    <Container>
-      <Input
-        type="checkbox"
-        value="1"
-        checked={value}
-        onChange={(event) => onChange(event, Boolean(event.target.checked))}
-      />
-      <ImprovedCheckbox checked={value} />
-    </Container>
-    {label}
+    <HorizontalContainer>
+      <Container>
+        <Input
+          type="checkbox"
+          value="1"
+          checked={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event, Boolean(event.target.checked))}
+        />
+        <ImprovedCheckbox checked={value} disabled={disabled} />
+      </Container>
+      <FieldLabel>{label}</FieldLabel>
+    </HorizontalContainer>
+    {helpText && (
+      <FieldHelpText>{helpText}</FieldHelpText>
+    )}
   </Label>
 );

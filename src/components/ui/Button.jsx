@@ -1,12 +1,17 @@
 import styled from 'styled-components';
 import { Button } from 'rebass';
+import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
+import activeLighter from '../style-mixins/activeLighter';
 
 export default styled(Button).attrs((props) => ({
-  fontWeight: 'normal',
   type: props.type || 'button', // convenient to have it here, we can forget about it.
   variant: props.variant || 'primary', // default
+  py: [2, 3],
+  px: [4, 5],
 }))`
-  padding: 1rem 2rem;
-  outline-color: ${(props) => props.theme.colors.textHighlight};
   cursor: pointer;
+
+  ${({ theme, variant }) => keyboardOnlyOutline(theme.buttons[variant].outlineColor)};
+
+  ${activeLighter}
 `;

@@ -1,6 +1,7 @@
 // import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass';
+import verticalScroll from '../style-mixins/verticalScroll';
 
 export default styled(Box).attrs({ as: 'main' })`
   flex-grow: 1;
@@ -8,6 +9,5 @@ export default styled(Box).attrs({ as: 'main' })`
   flex-direction: column;
   width: 100%;
   align-items: center;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  ${verticalScroll}
 `;

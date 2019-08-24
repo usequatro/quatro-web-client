@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass';
 import FieldLabel from './FieldLabel';
+import FieldHelpText from './FieldHelpText';
 
 const Input = styled.input`
   font-size: inherit;
@@ -9,8 +10,8 @@ const Input = styled.input`
   width: 100%;
   border-style: solid;
   border-color: ${(props) => props.theme.colors.border};
-  border-width: 0 0 1px 0;
-  border-radius: 0;
+  border-width: 1px;
+  border-radius: 0.25rem;
   outline-color: ${(props) => props.theme.colors.textHighlight};
   background-color: ${(props) => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'auto')};
@@ -24,14 +25,19 @@ const Input = styled.input`
   ::placeholder {
     color: ${(props) => props.theme.colors.placeholder};
   }
+
+  ${(props) => (props.as === 'textarea' ? 'min-height: 8rem;': '')}
 `;
 
 const InputField = ({
-  label, className, textarea, ...props
+  label, helpText, className, textarea, ...props
 }) => (
   <Box as={label ? 'label' : 'div'} className={className}>
     {label && (
       <FieldLabel>{label}</FieldLabel>
+    )}
+    {helpText && (
+      <FieldHelpText>{helpText}</FieldHelpText>
     )}
     <Input as={textarea ? 'textarea' : 'input'} {...props} />
   </Box>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Transition } from 'react-transition-group';
-import { Box, Text } from 'rebass';
+import { Box } from 'rebass';
 import { connect } from 'react-redux';
 
+import HeadingResponsive from './HeadingResponsive';
 import {
   selectUid,
   selectMessage,
@@ -14,13 +15,15 @@ import {
 } from '../../modules/notification';
 import Button from './Button';
 import RootPortal from './RootPortal';
+import maxWidth from '../../constants/maxWidth';
+import dropShadow from '../style-mixins/dropShadow';
 
 const duration = 125;
 const transitionStyles = {
   entering: { transform: 'translateY(0)', opacity: 1 },
   entered: { transform: 'translateY(0)', opacity: 1 },
-  exiting: { transform: 'translateY(1rem)', opacity: 0 },
-  exited: { transform: 'translateY(1rem)', opacity: 0 },
+  exiting: { transform: 'translateY(10rem)', opacity: 0 },
+  exited: { transform: 'translateY(10rem)', opacity: 0 },
 };
 
 const NotificationContainer = styled(Box)`
@@ -31,23 +34,30 @@ const NotificationContainer = styled(Box)`
   justify-content: center;
   align-items: flex-end;
 
+  margin-bottom: 6rem;
+
   transform: ${(props) => transitionStyles[props.state].transform};
   opacity: ${(props) => transitionStyles[props.state].opacity};
-  transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
+  transition: transform ${duration}ms ease, opacity ${duration}ms ease;
 `;
 
 const NotificationBox = styled(Box).attrs({ px: 4, py: 4 })`
   width: 90%;
-  background-color: ${(props) => props.theme.colors.appForeground};
-  border-style: solid;
-  border-width: 1px;
-  border-color: ${(props) => (props.notificationType === 'error' && props.theme.colors.error)
-    || props.theme.colors.border};
+  max-width: calc(${maxWidth} - 2rem);
+  background-color: ${({ theme, notificationType }) => (
+    (notificationType === 'error' && theme.colors.error)
+    || theme.colors.appBackground
+  )};
   display: flex;
   align-items: center;
+  border-radius: 2rem;
+
+  ${dropShadow(0.2)}
 `;
 
-const NotificationMessage = styled(Text)`
+const NotificationMessage = styled(HeadingResponsive).attrs({
+  color: 'textPrimaryOverBackground',
+})`
   flex-grow: 1;
 `;
 
@@ -90,10 +100,12 @@ const Notification = ({
         {(state) => (
           <NotificationContainer state={state}>
             <NotificationBox onClick={onClickNotification} notificationType={type}>
-              <NotificationMessage>{message}</NotificationMessage>
+              <NotificationMessage>
+                {message}
+              </NotificationMessage>
               {callbackButton && (
                 <Box>
-                  <Button variant="outline" onClick={onClickButton}>
+                  <Button variant="outlineOverBackground" onClick={onClickButton}>
                     {callbackButton}
                   </Button>
                 </Box>

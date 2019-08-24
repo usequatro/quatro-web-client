@@ -15,6 +15,7 @@ const Now = ({ tasks }) => (
       <Task
         ranking={index + 1}
         disableAnimations={isDragging}
+        enableDragHint
         {...task}
       />
     )}

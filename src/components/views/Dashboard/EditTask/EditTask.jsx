@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch, connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
@@ -16,16 +16,16 @@ import {
   clearRelativePrioritization as clearRelativePrioritizationAction,
   selectTask,
   selectTaskDependencies,
+  navigateToTabForTask,
 } from '../../../../modules/tasks';
 import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
 
 import TaskForm from './TaskForm';
 import FullScreenPaper from '../../../ui/FullScreenPaper';
-import CloseButton from '../../../ui/CloseButton';
-import { AppHeaderContainer, AppHeader } from '../../../ui/AppHeader';
+import PapelHeader from '../../../ui/PaperHeader';
 import Loader from '../../../ui/Loader';
-import Main from '../../../ui/Main';
+import BasicMain from '../../../ui/BasicMain';
 import Button from '../../../ui/Button';
 import withLoadTasks from '../../../hoc/withLoadTasks';
 import Paragraph from '../../../ui/Paragraph';
@@ -36,11 +36,7 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const EditTaskMain = styled(Main).attrs({ p: 3 })`
-  flex-grow: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-`;
+const EditTaskMain = styled(BasicMain).attrs({ p: 3, pt: 4 })``;
 const ContentContainer = styled(Box)`
   width: 100%;
   display: flex;
@@ -69,25 +65,26 @@ const EditTask = ({
 }) => {
   const dispatch = useDispatch();
 
-  const [hasDue, setHasDue] = useState(due != null);
-  const [hasScheduledStart, setHasScheduledStart] = useState(scheduledStart != null);
-
   const onUpdate = (key, value) => {
     updateTask(id, { [key]: value });
   };
 
-  const dependencyDescriptors = useSelector((state) => selectTaskDependencies(state, dependencyIds));
+  const dependencyDescriptors = useSelector((state) => (
+    selectTaskDependencies(state, dependencyIds)
+  ));
 
   return (
-    <FullScreenPaper>
+    <FullScreenPaper onCloseCustom={(history) => dispatch(navigateToTabForTask(id, history))}>
       {(onRequestClose) => (
         <FormFlexContainer onSubmit={onRequestClose}>
-          <AppHeaderContainer>
-            <AppHeader>
-              Edit Task
-              <CloseButton backArrow buttonType="submit" title="Go back" />
-            </AppHeader>
-          </AppHeaderContainer>
+          <PapelHeader
+            headline="Edit Task"
+            buttonRight={(
+              <Button variant="textOverBackground" onClick={onRequestClose}>
+                Done
+              </Button>
+            )}
+          />
           <EditTaskMain>
             {!loaded && (
               <Loader />
@@ -103,7 +100,7 @@ const EditTask = ({
                     onClick={() => onUpdate('completed', null)}
                     mb={4}
                   >
-                    Back to not completed
+                    Set as not completed
                   </Button>
                 )}
 
@@ -117,13 +114,9 @@ const EditTask = ({
                   setEffort={(value) => onUpdate('effort', value)}
                   description={description}
                   setDescription={(value) => onUpdate('description', value)}
-                  hasDue={hasDue}
-                  setHasDue={setHasDue}
                   due={due}
                   taskPrioritizedAheadOfTitle={taskPrioritizedAheadOfTitle}
                   setDue={(value) => onUpdate('due', value)}
-                  hasScheduledStart={hasScheduledStart}
-                  setHasScheduledStart={setHasScheduledStart}
                   scheduledStart={scheduledStart}
                   setScheduledStart={(value) => onUpdate('scheduledStart', value)}
                   dependencies={dependencyDescriptors}

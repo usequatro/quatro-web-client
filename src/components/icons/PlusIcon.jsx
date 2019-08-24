@@ -1,4 +1,4 @@
-import { ReactComponent } from './svg/complete_2147852.svg';
+import { ReactComponent } from './svg/plus_2310784.svg';
 import withIconSize from './withIconSize';
 
 export default withIconSize(ReactComponent);

@@ -9,6 +9,7 @@ import InputGroup from '../ui/InputGroup';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import InvisibleForm from '../ui/InvisibleForm';
+import verticalScroll from '../style-mixins/verticalScroll';
 
 export const SignUpHeading = styled(Heading).attrs(() => ({
   color: 'textHighlight',
@@ -37,8 +38,8 @@ const SignUpFooterContainer = styled.footer`
 `;
 
 export const ScrollableDiv = styled.div`
-  overflow-y: auto;
   height: 100%;
+  ${verticalScroll}
 `;
 export const Main = styled.div`
   display: flex;

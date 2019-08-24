@@ -15,6 +15,8 @@ const Blocked = ({ tasks }) => (
       <Task
         {...task}
         showBlocked
+        allowComplete={false}
+        allowDragging={false}
         disableAnimations={isDragging}
       />
     )}
