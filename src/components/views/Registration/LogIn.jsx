@@ -55,7 +55,7 @@ const LogIn = ({ history }) => {
         {errorMessage && (
           <ErrorMessage>{errorMessage}</ErrorMessage>
         )}
-        <SubmitButton variant="primary" type="submit" mt={[4, 5]} submitting={submitting}>
+        <SubmitButton variant="primary" type="submit" submitting={submitting}>
           Log In
         </SubmitButton>
       </InvisibleForm>

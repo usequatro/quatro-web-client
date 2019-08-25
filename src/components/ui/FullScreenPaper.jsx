@@ -29,9 +29,6 @@ const PaperWithTransitionStyles = styled(Box).attrs({ bg: 'appForeground' })`
   bottom: 0;
   right: 0;
   z-index: 10;
-  border-style: solid;
-  border-width: 0 1px 0 1px;
-  border-color: ${(props) => props.theme.colors.border};
 `;
 
 const FullScreenPaper = ({
