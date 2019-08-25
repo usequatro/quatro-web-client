@@ -14,7 +14,7 @@ const LoaderCss = createGlobalStyle`
     width: 11px;
     height: 11px;
     border-radius: 50%;
-    background: ${(props) => props.theme.colors.textHighlight};
+    background: ${(props) => props.theme.colors[props.loaderColor]};
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
   }
   .lds-ellipsis div:nth-child(1) {
@@ -67,9 +67,9 @@ const LoaderContainer = styled.div`
   align-items: center;
 `;
 
-const Loader = () => (
+const Loader = ({ color = 'textHighlight' }) => (
   <LoaderContainer>
-    <LoaderCss />
+    <LoaderCss loaderColor={color} />
     <div className="lds-ellipsis">
       <div />
       <div />

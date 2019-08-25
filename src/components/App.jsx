@@ -8,8 +8,7 @@ import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';
 import RouterHistoryListener from './tracking/RouterHistoryListener';
 import UserLoginListener from './tracking/UserLoginListener';
-import SignUp from './views/SignUp';
-import LogIn from './views/LogIn';
+import Registration from './views/Registration/Registration';
 import RuntimeError from './views/RuntimeError';
 import AccountMenu from './views/AccountMenu/AccountMenu';
 import Dashboard from './views/Dashboard/Dashboard';
@@ -48,8 +47,7 @@ export default () => (
           <Div100vh style={{ width: '100%', height: '100rvh' }}>
             <Switch>
               <Redirect exact from="/" to={paths.SIGN_UP} />
-              <RouteLoggedOut path={paths.SIGN_UP} component={SignUp} />
-              <RouteLoggedOut path={paths.LOG_IN} component={LogIn} />
+              <RouteLoggedOut path={[paths.SIGN_UP, paths.LOG_IN]} component={Registration} />
               <RouteLoggedIn
                 path={[paths.DASHBOARD, paths.NEW_TASK]}
                 render={() => (

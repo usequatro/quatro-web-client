@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { resumeDashboardActivity } from '../../../modules/dashboard';
+// import { resumeDashboardActivity } from '../../../modules/dashboard';
 
 
 const TaskRefreshListener = () => {
@@ -9,7 +9,9 @@ const TaskRefreshListener = () => {
 
   useEffect(() => {
     const onFocus = () => {
-      dispatch(resumeDashboardActivity());
+      // commenting because there might be a problem with this, experienced as tasks not loading
+      // until refreshing manually.
+      // dispatch(resumeDashboardActivity());
     };
 
     window.addEventListener('focus', onFocus);

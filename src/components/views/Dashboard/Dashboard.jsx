@@ -16,12 +16,13 @@ import Next from './Lists/Next';
 import Scheduled from './Lists/Scheduled';
 import Blocked from './Lists/Blocked';
 import Completed from './Lists/Completed';
+import safariBorderRadiusFix from '../../style-mixins/safariBorderRadiusFix';
 
 const DashboardMain = styled(BasicMain).attrs({
   bg: 'appForeground',
 })`
   border-radius: 2rem 2rem 0 0;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  ${safariBorderRadiusFix}
 `;
 const FlexContainer = styled.div`
   display: flex;
