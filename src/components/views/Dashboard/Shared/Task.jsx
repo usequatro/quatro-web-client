@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
+import truncate from 'lodash/truncate';
 import {
   Heading, Text, Box,
 } from 'rebass';
@@ -172,7 +173,7 @@ const Task = ({
             )}
             {description && (
               <TaskSubtitle mt={2}>
-                {description}
+                {truncate(description, { separator: ' ', length: 200 })}
               </TaskSubtitle>
             )}
             {completed && (
