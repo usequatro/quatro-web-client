@@ -18,6 +18,7 @@ const FormView = styled.div`
   justify-content: space-around;
   width: 100%;
   max-width: 30rem;
+  flex-shrink: 0;
 `;
 
 const SignUpHeading = styled(Heading).attrs(() => ({
