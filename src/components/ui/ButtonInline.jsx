@@ -6,9 +6,8 @@ import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 export default styled(Button).attrs((props) => ({
   type: props.type || 'button', // convenient to have it here, we can forget about it.
-  variant: props.variant || 'primary', // default
-  py: [2, 3],
-  px: [4, 5],
+  variant: props.variant || 'text', // default
+  p: 0,
 }))`
   cursor: pointer;
 

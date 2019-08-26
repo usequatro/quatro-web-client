@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
 import activeLighter from '../style-mixins/activeLighter';
+import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 const ButtonFunction = styled.button.attrs((props) => ({
   type: props.type || 'button',
@@ -16,6 +17,8 @@ const ButtonFunction = styled.button.attrs((props) => ({
   ${({ theme, variant }) => keyboardOnlyOutline(theme.buttons[variant].outlineColor)};
 
   ${activeLighter}
+
+  transition: ${colorSmoothTransitions};
 `;
 
 export default ButtonFunction;

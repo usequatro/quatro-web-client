@@ -4,7 +4,7 @@ import { Box } from 'rebass';
 import uuid from 'uuid/v4';
 
 import * as dependencyTypes from '../../../../constants/dependencyTypes';
-import InlineButton from '../../../ui/InlineButton';
+import ButtonInline from '../../../ui/ButtonInline';
 import DependencySelectorField from './DependencySelectorField';
 import InputField from '../../../ui/InputField';
 import BooleanCheckbox from '../../../ui/BooleanCheckbox';
@@ -109,12 +109,12 @@ const BlockersSelector = ({
                 />
               )}
               <DeleteButtonContainer>
-                <InlineButton onClick={() => removeTaskDependency(dependency.id)}>X</InlineButton>
+                <ButtonInline onClick={() => removeTaskDependency(dependency.id)}>X</ButtonInline>
               </DeleteButtonContainer>
             </FieldsContainer>
           ))}
 
-          <InlineButton onClick={handleCreate}>Add new</InlineButton>
+          <ButtonInline onClick={handleCreate}>Add new</ButtonInline>
         </>
       )}
     </div>

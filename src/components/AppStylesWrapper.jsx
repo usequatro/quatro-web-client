@@ -63,6 +63,10 @@ const Defaults = createGlobalStyle`
   svg {
     fill: currentColor; /* making SVG color be inherited */
   }
+  ::selection {
+    color: ${(props) => props.theme.colors.textPrimaryOverBackground};
+    background-color: ${(props) => props.theme.colors.appBackground};
+  }
 `;
 
 const RootStyles = createGlobalStyle`

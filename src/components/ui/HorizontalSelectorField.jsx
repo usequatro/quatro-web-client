@@ -5,6 +5,7 @@ import FieldLabel from './FieldLabel';
 import FieldHelpText from './FieldHelpText';
 import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
 import activeLighter from '../style-mixins/activeLighter';
+import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 const Button = styled.button`
   height: 2.5rem;
@@ -16,6 +17,8 @@ const Button = styled.button`
 
   ${(props) => keyboardOnlyOutline(props.theme.buttons[props.variant].outlineColor)};
   ${activeLighter}
+
+  transition: ${colorSmoothTransitions};
 `;
 const ButtonsContainer = styled.div`
   display: flex;

@@ -5,6 +5,7 @@ import { Box } from 'rebass';
 import FieldLabel from './FieldLabel';
 import FieldHelpText from './FieldHelpText';
 import { activeOpacity } from '../style-mixins/activeLighter';
+import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 const Container = styled.div`
   position: relative;
@@ -21,9 +22,10 @@ const ImprovedCheckbox = styled.div`
   width: 100%;
   height: 100%;
   border-style: solid;
-  border-color: ${(props) => props.theme.colors.border};
+  border-color: ${({ checked, theme }) => (checked ? theme.buttons.primary.color : theme.colors.border)};
   border-width: 1px;
   background-color: ${(props) => (props.checked ? props.theme.buttons.primary.backgroundColor : 'transparent')};
+  transition: ${colorSmoothTransitions};
 
   opacity: ${(props) => (props.disabled ? '0.5' : '1')};
 
@@ -39,6 +41,7 @@ const ImprovedCheckbox = styled.div`
     border-color: ${(props) => props.theme.buttons.primary.color};
     transform: translate(-50%, -65%) rotate(40deg);
   }
+
 `;
 const Input = styled.input`
   position: absolute;
@@ -51,7 +54,7 @@ const Input = styled.input`
   opacity: 0;
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
 
-  &:focus + ${ImprovedCheckbox} {
+  &:focus-visible + ${ImprovedCheckbox} {
     outline: ${(props) => props.theme.colors.textHighlight} auto 2px;
   }
   &:active + ${ImprovedCheckbox} {

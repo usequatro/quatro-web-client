@@ -8,7 +8,7 @@ import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
 import ToggleableDateTimeField from '../../../ui/ToggleableDateTimeField';
 import Paragraph from '../../../ui/Paragraph';
 import BlockersSelector from './BlockersSelector';
-import InlineButton from '../../../ui/InlineButton';
+import ButtonInline from '../../../ui/ButtonInline';
 
 const Italic = styled.span`
   font-style: italic;
@@ -55,9 +55,9 @@ const TaskForm = ({
         {'⚠️ This task is manually prioritized to be before '}
         <Italic>{taskPrioritizedAheadOfTitle}</Italic>
         {'.'}
-        <InlineButton onClick={() => clearRelativePrioritization(id)}>
+        <ButtonInline onClick={() => clearRelativePrioritization(id)}>
           Clear customization
-        </InlineButton>
+        </ButtonInline>
       </Paragraph>
     )}
     <HorizontalSelectorField
