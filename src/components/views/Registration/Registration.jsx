@@ -11,6 +11,9 @@ import SignUp from './SignUp';
 import safariBorderRadiusFix from '../../style-mixins/safariBorderRadiusFix';
 import { mediaVerySmall } from '../../style-mixins/mediaQueries';
 
+const Header = styled.header`
+  flex-shrink: 0;
+`;
 const FormView = styled.div`
   display: flex;
   flex-direction: column;
@@ -42,7 +45,7 @@ const SectionTitleContainer = styled(Heading)`
 `;
 
 const OuterContainer = styled.div`
-  height: 100vh;
+  height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -65,14 +68,14 @@ const locationToSectionTitle = {
 
 const Registration = ({ location }) => (
   <OuterContainer>
-    <header>
+    <Header>
       <SignUpHeading>
           Aizen
       </SignUpHeading>
       <SectionTitleContainer>
         {locationToSectionTitle[location.pathname]}
       </SectionTitleContainer>
-    </header>
+    </Header>
     <RegistrationContainer>
       <FormView>
         <Switch>
