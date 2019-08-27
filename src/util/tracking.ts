@@ -1,5 +1,5 @@
 const GA_MEASUREMENT_ID = process.env.REACT_APP_GA_MEASUREMENT_ID;
-const gtag = (window as any).gtag || (() => { console.warn('GA not loaded'); });
+const gtag: Function = (window as any).gtag || (() => { console.warn('GA not loaded'); });
 
 export const trackRouteChange = (pathname: string) => {
   gtag('config', GA_MEASUREMENT_ID, { page_path: pathname });
