@@ -5,6 +5,7 @@ import FieldLabel from './FieldLabel';
 import FieldHelpText from './FieldHelpText';
 
 const Input = styled.input`
+  font-family: inherit;
   font-size: inherit;
   padding: 1rem 0.5rem 1rem 0.5rem;
   width: 100%;
@@ -15,6 +16,7 @@ const Input = styled.input`
   outline-color: ${(props) => props.theme.colors.textHighlight};
   background-color: ${(props) => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'auto')};
+  -webkit-appearance: none;
 
   ::-webkit-input-placeholder { /* Edge */
     color: ${(props) => props.theme.colors.placeholder};
@@ -26,7 +28,7 @@ const Input = styled.input`
     color: ${(props) => props.theme.colors.placeholder};
   }
 
-  ${(props) => (props.as === 'textarea' ? 'min-height: 8rem;': '')}
+  ${(props) => (props.as === 'textarea' ? 'min-height: 8rem;' : '')}
 `;
 
 const InputField = ({
