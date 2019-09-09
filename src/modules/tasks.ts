@@ -360,18 +360,25 @@ const selectNonTrashedTasks = (state:AS) => (
 
 const selectTaskDependency = (state:AS, id:string) => state[NAMESPACE].taskDependencies.byId[id];
 
+const isDependencyApplicable = (state:AS, dependency:TaskDependency):boolean => {
+  if (dependency.type === TASK) {
+    const dependencyTask = selectTask(state, dependency.config.taskId!);
+    return dependencyTask && dependencyTask.completed == null;
+  }
+  return true;
+};
+
 export const selectTaskDependencies = (state:AS, ids = null) => (
   (ids || state[NAMESPACE].taskDependencies.allIds)
-    .map((id) => selectTaskDependency(state, id))
+  .map((id) => selectTaskDependency(state, id))
+  .filter((dependency) => isDependencyApplicable(state, dependency))
 );
 
 const selectIsTaskBlocked = (state:AS, taskId:string) => {
   const task = selectTask(state, taskId);
   const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
   const nonCompletedDependencies = dependencies
-    .filter((dependency) => (
-      !(dependency.type === TASK && !selectTask(state, dependency.config.taskId!))
-    ));
+    .filter((dependency) => isDependencyApplicable(state, dependency));
   return nonCompletedDependencies.length > 0;
 };
 
@@ -446,21 +453,7 @@ export const selectNextTasks = (state:AS) => {
 };
 export const selectBlockedTasks = (state:AS) => {
   const tasks = selectNonCompletedTasks(state);
-  const tasksWithBlockers = tasks.filter((task) => task.dependencyIds.length);
-  const tasksWithExistingBlockers = tasksWithBlockers
-    .filter((task) => {
-      const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
-      const nonCompletedDependencies = dependencies
-        .filter((dependency) => (
-          !(dependency.type === TASK && !selectTask(state, dependency.config.taskId!))
-        ));
-      return nonCompletedDependencies.length;
-    });
-
-  const blockedTaskIds = tasksWithExistingBlockers.map((task) => task.id);
-  const blockedTasks = uniq(blockedTaskIds)
-    .map((id) => selectTask(state, id));
-
+  const blockedTasks = tasks.filter(({ id }) => selectIsTaskBlocked(state, id));
   return sortBy(blockedTasks, 'score').reverse();
 };
 export const selectScheduledTasks = (state:AS) => {

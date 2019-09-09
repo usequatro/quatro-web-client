@@ -14,6 +14,9 @@ export default () => {
       )
     ),
   );
+  if (process.env.REACT_APP_DEVELOPMENT) {
+    (window as any).store = store;
+  }
   return store;
 };
 
