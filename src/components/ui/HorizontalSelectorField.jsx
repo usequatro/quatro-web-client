@@ -14,6 +14,7 @@ const Button = styled.button`
   ${(props) => props.theme.buttons[props.variant]}
   font-size: 1rem;
   cursor: pointer;
+  border: none;
 
   ${(props) => keyboardOnlyOutline(props.theme.buttons[props.variant].outlineColor)};
   ${activeLighter}

@@ -78,13 +78,19 @@ const TaskContainer = styled.div`
   ${activeLighter}
 `;
 
+const TextForParagraphs = styled(Text)`
+  text-overflow: ellipsis;
+  overflow: hidden;
+`;
+
 const TaskTitle = (props) => <Heading {...props} as="h4" fontSize={[3, 4]} mb={2} />;
-const TaskSubtitle = (props) => <Text {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
+const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
 
 const TaskButtons = styled(Box)`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  flex-shrink: 0;
 `;
 
 const CompleteButton = styled(ButtonFunction)`
@@ -98,11 +104,16 @@ const CompleteButton = styled(ButtonFunction)`
 const DragHandle = styled.div`
   width: ${({ theme }) => theme.space[4]};
   min-height: ${({ theme }) => theme.space[4]};
+  flex-shrink: 0;
   ${mediaVerySmall} {
     width: ${({ theme }) => theme.space[3]};
     min-height: ${({ theme }) => theme.space[3]};
   }
   cursor: ${(props) => (props.enableDragHint ? 'grab' : 'inherit')};
+`;
+const MainContainer = styled(Box)`
+  flex-grow: 1;
+  overflow: hidden;
 `;
 
 const Task = ({
@@ -148,7 +159,7 @@ const Task = ({
           data-ahead-of={prioritizedAheadOf}
         >
           <DragHandle enableDragHint={enableDragHint} />
-          <Box flex={1}>
+          <MainContainer>
             {/* <TaskTitle>{id}</TaskTitle> */}
             <TaskTitle>
               <ButtonFunction variant="text">
@@ -186,7 +197,7 @@ const Task = ({
             {showBlocked && (
               <BlockingTaskList taskId={id} />
             )}
-          </Box>
+          </MainContainer>
           <TaskButtons>
             {!completed && allowComplete && (
               <CompleteButton variant="text">
