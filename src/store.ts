@@ -16,3 +16,7 @@ export default () => {
   );
   return store;
 };
+
+export type ExtraArgs = {
+  apiClient: typeof apiClient,
+};

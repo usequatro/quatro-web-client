@@ -1,14 +1,50 @@
 import * as firebase from 'firebase/app';
-import omit from 'lodash/omit';
 
 const TASKS = 'tasks';
 const logPrefix = '[api]';
 
 const db = firebase.firestore();
 
-const excludeId = (entity) => omit(entity, ['id']);
+const excludeId = (entity:TaskApiWithId|TaskApiUpdatesWithId):TaskApi|TaskApiUpdates => {
+  const { id, ...rest } = entity;
+  return { ...rest };
+};
 
-export const createTask = (task) => {
+type TaskApi = {
+  title: string,
+  effort: number,
+  impact: number,
+  description: string,
+  created: number,
+  due: number | null,
+  scheduledStart: number | null,
+  completed: number | null,
+  trashed: number | null,
+  userId: string,
+  blockedBy: [string],
+  prioritizedAheadOf: string | null,
+};
+type WithId = {
+  id: string,
+};
+type TaskApiWithId = TaskApi & WithId;
+type TaskApiUpdates = {
+  title?: string,
+  effort?: number,
+  impact?: number,
+  description?: string,
+  created?: number,
+  due?: number | null,
+  scheduledStart?: number | null,
+  completed?: number | null,
+  trashed?: number | null,
+  userId?: string,
+  blockedBy?: [string],
+  prioritizedAheadOf?: string | null,
+};
+type TaskApiUpdatesWithId = TaskApiUpdates & WithId;
+
+export const createTask = (task:TaskApiWithId) => {
   console.log(`${logPrefix} createTask`, task);
   return db.collection(TASKS).add(excludeId(task));
 };
@@ -16,9 +52,9 @@ export const createTask = (task) => {
 // export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
 
 export const fetchTasks = (
-  userId,
-  fetchParams,
-) => {
+  userId:string,
+  fetchParams:any,
+):Promise<TaskApiWithId[]> => {
   console.log(`${logPrefix} fetchTasks`, userId, fetchParams);
   const {
     completed: [completedOperator = '==', completedValue = null] = [],
@@ -33,13 +69,13 @@ export const fetchTasks = (
       const tasks = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
-      }));
+      })) as TaskApiWithId[];
       console.log(`${logPrefix} fetchTasks result`, tasks);
       return tasks;
     });
 };
 
-export const updateTask = (taskId, updates) => {
+export const updateTask = (taskId:string, updates:TaskApiUpdatesWithId) => {
   console.log(`${logPrefix} updateTask`, taskId, updates);
   return db.collection(TASKS).doc(taskId).set(
     excludeId(updates),
@@ -47,7 +83,7 @@ export const updateTask = (taskId, updates) => {
   );
 };
 
-export const updateTaskBatch = (updatesByTaskId) => {
+export const updateTaskBatch = (updatesByTaskId: {[id: string]: TaskApiUpdatesWithId}) => {
   console.log(`${logPrefix} updateTaskBatch`, updatesByTaskId);
   const batch = db.batch();
   Object.keys(updatesByTaskId).forEach((taskId) => {

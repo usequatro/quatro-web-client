@@ -24,7 +24,10 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [SET_LOAD_FLAGS]: (state, { payload: { loading, loaded, view } }) => ({
+  [SET_LOAD_FLAGS]: (
+    state:S,
+    { payload: { loading, loaded, view } }:{payload:{loading:boolean,loaded:boolean,view:string}}
+  ) => ({
     ...state,
     [view]: {
       ...(state[view] || {}),
@@ -32,36 +35,42 @@ export const reducer = createReducer(INITIAL_STATE, {
       loaded,
     },
   }),
-  [SET_ACCOUNT_MENU_OPEN]: (state, { payload: accountMenuOpen }) => ({
+  [SET_ACCOUNT_MENU_OPEN]: (
+    state:S,
+    { payload: accountMenuOpen }:{payload: boolean}
+  ) => ({
     ...state,
     accountMenuOpen,
   }),
   [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
+type S = ReturnType<typeof reducer>;
+type AS = { [NAMESPACE]: S };
+
 // Selectors
 
-export const selectLoading = (state, view) => state[NAMESPACE][view].loading;
-export const selectLoaded = (state, view) => state[NAMESPACE][view].loaded;
-export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
+export const selectLoading = (state:AS, view:string) => state[NAMESPACE][view].loading;
+export const selectLoaded = (state:AS, view:string) => state[NAMESPACE][view].loaded;
+export const selectAccountMenuOpen = (state:AS) => state[NAMESPACE].accountMenuOpen;
 
 // Actions
 
-const setLoadFlags = (view, { loading, loaded }) => ({
+const setLoadFlags = (view: string, { loading, loaded }:{ loading:boolean, loaded:boolean }) => ({
   type: SET_LOAD_FLAGS,
   payload: { view, loading, loaded },
 });
 
 export const FETCH_PARAMS_COMPLETED = { completed: ['>', 0] };
 
-export const loadDashboardTasks = (view = 'default', fetchParams = undefined) => (dispatch) => {
+export const loadDashboardTasks = (view = 'default', fetchParams = undefined) => (dispatch:Function) => {
   dispatch(setLoadFlags(view, { loading: true, loaded: false }));
 
   dispatch(loadTasks(fetchParams))
     .then(() => {
       dispatch(setLoadFlags(view, { loading: false, loaded: true }));
     })
-    .catch((error) => {
+    .catch((error:Error) => {
       console.error(error);
       dispatch(setLoadFlags(view, { loading: false, loaded: false }));
     });
@@ -71,7 +80,7 @@ export const resumeDashboardActivity = (() => {
   let lastTime = Date.now();
   const timeout = 1000 * 60 * 30; // 30 minutes;
 
-  return () => (dispatch) => {
+  return () => (dispatch:Function) => {
     const now = Date.now();
     if (now > lastTime + timeout) {
       console.log('[resumeDashboardActivity] Refreshing tasks due to resumed activity');
@@ -81,7 +90,7 @@ export const resumeDashboardActivity = (() => {
   };
 })();
 
-export const setAccountMenuOpen = (accountMenuOpen) => ({
+export const setAccountMenuOpen = (accountMenuOpen:boolean) => ({
   type: SET_ACCOUNT_MENU_OPEN,
   payload: accountMenuOpen,
 });

@@ -21,8 +21,38 @@ import { RESET } from './reset';
 import { selectUserId } from './session';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
+import { ExtraArgs } from '../store';
 
 export const NAMESPACE = 'tasks';
+
+type TaskUnfiltered = { [s: string]: any };
+type TaskUpdates = { [s: string]: any };
+type Task = {
+  id: string,
+  title: string,
+  effort: number,
+  impact: number,
+  description: string,
+  created: number,
+  due: number | null,
+  scheduledStart: number | null,
+  completed: number | null,
+  score: number | null,
+  trashed: number | null,
+  userId: string,
+  prioritizedAheadOf: string | null,
+  dependencyIds: [string],
+};
+
+type TaskDependency = {
+  id: string,
+  taskId: string,
+  type: string,
+  config: {
+    taskId?: string,
+    value?: string,
+  },
+};
 
 const TASK_KEY_DEFAULTS = {
   effort: null,
@@ -50,6 +80,21 @@ const TASK_KEYS_FOR_REDUX = {
   prioritizedAheadOf: true,
   dependencyIds: true,
 };
+type TaskFromApiClient = {
+  id: string,
+  title: string,
+  effort: number,
+  impact: number,
+  description: string,
+  created: number,
+  due: number | null,
+  scheduledStart: number | null,
+  completed: number | null,
+  trashed: number | null,
+  userId: string,
+  blockedBy: [string],
+  prioritizedAheadOf: string | null,
+};
 const TASK_KEYS_FOR_API = {
   title: true,
   effort: true,
@@ -70,7 +115,7 @@ const TASK_KEYS_FOR_API = {
 const generateId = (prefix = '_') => `${prefix}${uuid()}`;
 // const isTemporaryId = id => /^_/.test(id);
 
-const filterTaskKeys = (task, keys = isRequired()) => {
+const filterTaskKeys = (task:TaskUnfiltered, keys:{[s:string]:boolean}):object => {
   const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
     if (!keys[key]) {
       console.warn(`[tasks] Unknown key "${key}" with value "${value}" in task ${task.id}`);
@@ -81,16 +126,21 @@ const filterTaskKeys = (task, keys = isRequired()) => {
   return filteredTask;
 };
 
-const normalizeBase = (value, from, to) => (value * to) / from;
-const convertMillisecondsToDays = (time) => time / (1000 * 60 * 60 * 24);
-const getDaysDue = (due) => convertMillisecondsToDays(Math.max(due - Date.now(), 0));
+const filterTaskForRedux = (task:TaskUnfiltered):Task =>
+  filterTaskKeys(task, TASK_KEYS_FOR_REDUX) as Task;
+const filterTaskForApi = (task:TaskUnfiltered):TaskFromApiClient =>
+  filterTaskKeys(task, TASK_KEYS_FOR_API) as TaskFromApiClient;
 
-const calculateScore = (impact, effort, due) => {
-  if (!Number.isInteger(impact) || !Number.isInteger(effort)) {
+const normalizeBase = (value:number, from:number, to:number) => (value * to) / from;
+const convertMillisecondsToDays = (time:number) => time / (1000 * 60 * 60 * 24);
+const getDaysDue = (due:number) => convertMillisecondsToDays(Math.max(due - Date.now(), 0));
+
+const calculateScore = (impact:number|null, effort:number|null, due:number|null) => {
+  if (!Number.isInteger(impact!) || !Number.isInteger(effort!)) {
     return 0;
   }
-  const normalizedImpact = normalizeBase(impact, 7, 10);
-  const normalizedEffort = normalizeBase(effort, 7, 10);
+  const normalizedImpact = normalizeBase(impact!, 7, 10);
+  const normalizedEffort = normalizeBase(effort!, 7, 10);
 
   const weightenedImpact = normalizedImpact ** 1.5;
   const weightenedEffort = normalizedEffort ** 1;
@@ -102,14 +152,16 @@ const calculateScore = (impact, effort, due) => {
 
   return (weightenedImpact / weightenedEffort) * daysUntilFactor;
 };
-const addScore = (task) => ({
+const addScore = (task:Task|TaskUnfiltered):Task|TaskUnfiltered => ({
   ...task,
   score: calculateScore(task.impact, task.effort, task.due),
 });
 
-const toInt = (value, fallback) => (!Number.isNaN(Number.parseInt(value, 10))
-  ? Number.parseInt(value, 10)
-  : fallback);
+const toInt = (value:any, fallback:number|null):number|null => (
+  !Number.isNaN(Number.parseInt(value, 10))
+    ? Number.parseInt(value, 10)
+    : fallback
+);
 
 // Action types
 
@@ -122,8 +174,6 @@ const RESET_TASKS = `${NAMESPACE}/RESET_TASKS`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
-const SET_RELATIVE_PRIORITIZATION = `${NAMESPACE}/SET_RELATIVE_PRIORITIZATION`;
-const CLEAR_RELATIVE_PRIORITIZATION = `${NAMESPACE}/CLEAR_RELATIVE_PRIORITIZATION`;
 
 // Reducers
 
@@ -138,21 +188,33 @@ const INITIAL_STATE = {
   },
 };
 
+type NormalizedEntities<Entity> = {
+  allIds: string[],
+  byId: { [s: string]: Entity },
+};
+type S = {
+  tasks: NormalizedEntities<Task>,
+  taskDependencies: NormalizedEntities<TaskDependency>,
+};
+
 export const reducer = createReducer(INITIAL_STATE, {
-  [UPDATE_TASK]: (state, { payload: { taskId, updates } }) => ({
+  [UPDATE_TASK]: (state:S, { payload: { taskId, updates } }:{payload:{taskId:string,updates:TaskUpdates}}) => ({
     ...state,
     tasks: {
       ...state.tasks,
       byId: {
         ...state.tasks.byId,
-        [taskId]: filterTaskKeys(addScore({
+        [taskId]: filterTaskForRedux(addScore({
           ...state.tasks.byId[taskId],
           ...updates,
-        }), TASK_KEYS_FOR_REDUX),
+        })),
       },
     },
   }),
-  [UPDATE_TASK_BATCH]: (state, { payload: { updatesByTaskId } }) => ({
+  [UPDATE_TASK_BATCH]: (
+    state:S,
+    { payload: { updatesByTaskId } } : {payload:{updatesByTaskId:{[s:string]:TaskUpdates}}}
+  ) => ({
     ...state,
     tasks: {
       ...state.tasks,
@@ -167,7 +229,10 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [SET_TASKS]: (state, action) => ({
+  [SET_TASKS]: (
+    state:S,
+    action: {payload:{tasks:NormalizedEntities<Task>, taskDependencies: NormalizedEntities<TaskDependency>}}
+  ) => ({
     ...state,
     tasks: {
       allIds: uniq([
@@ -192,7 +257,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [ADD_TASK]: (state, action) => ({
+  [ADD_TASK]: (state:S, action:{payload:{task:TaskUnfiltered}}) => ({
     ...state,
     tasks: {
       allIds: [...state.tasks.allIds, action.payload.task.id],
@@ -205,7 +270,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [REMOVE_TASK_FROM_ALL_IDS]: (state, { payload: { taskId } }) => ({
+  [REMOVE_TASK_FROM_ALL_IDS]: (state:S, { payload: taskId }:{payload:string}) => ({
     ...state,
     tasks: {
       ...state.tasks,
@@ -214,7 +279,10 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [RESET]: () => ({ ...INITIAL_STATE }),
   [RESET_TASKS]: () => ({ ...INITIAL_STATE }),
-  [UPDATE_TASK_DEPENDENCY]: (state, { payload: { id, updates } }) => ({
+  [UPDATE_TASK_DEPENDENCY]: (
+    state:S,
+    { payload: { id, updates } }:{payload:{id:string, updates: TaskUpdates}}
+  ) => ({
     ...state,
     taskDependencies: {
       ...state.taskDependencies,
@@ -227,7 +295,10 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [REMOVE_TASK_DEPENDENCY]: (state, { payload: { dependencyId, taskId } }) => ({
+  [REMOVE_TASK_DEPENDENCY]: (
+    state:S,
+    { payload: { dependencyId, taskId } }:{payload:{dependencyId:string, taskId:string}}
+  ) => ({
     ...state,
     tasks: {
       ...state.tasks,
@@ -245,19 +316,17 @@ export const reducer = createReducer(INITIAL_STATE, {
     },
   }),
   [CREATE_TASK_DEPENDENCY]: (
-    state,
-    { payload: { dependency = isRequired(), id = isRequired(), taskId = isRequired() } },
+    state:S,
+    { payload: dependency }:{payload:TaskDependency},
   ) => ({
     ...state,
     taskDependencies: {
       ...state.taskDependencies,
-      allIds: [...state.taskDependencies.allIds, id],
+      allIds: [...state.taskDependencies.allIds, dependency.id],
       byId: {
         ...state.taskDependencies.byId,
-        [id]: {
+        [dependency.id]: {
           ...dependency,
-          id,
-          taskId,
         },
       },
     },
@@ -265,76 +334,49 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...state.tasks,
       byId: {
         ...state.tasks.byId,
-        [taskId]: {
-          ...state.tasks.byId[taskId],
+        [dependency.taskId]: {
+          ...state.tasks.byId[dependency.taskId],
           dependencyIds: [
-            ...state.tasks.byId[taskId].dependencyIds,
-            id,
+            ...state.tasks.byId[dependency.taskId].dependencyIds,
+            dependency.id,
           ],
-        },
-      },
-    },
-  }),
-  [SET_RELATIVE_PRIORITIZATION]: (
-    state,
-    { payload: { sourceTaskId = isRequired(), targetTaskId = isRequired() } },
-  ) => ({
-    ...state,
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        [sourceTaskId]: {
-          ...state.tasks.byId[sourceTaskId],
-          prioritizedAheadOf: targetTaskId,
-        },
-      },
-    },
-  }),
-  [CLEAR_RELATIVE_PRIORITIZATION]: (state, { payload: { taskId } }) => ({
-    ...state,
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        [taskId]: {
-          ...state.tasks.byId[taskId],
-          prioritizedAheadOf: null,
         },
       },
     },
   }),
 });
 
+type AS = { [NAMESPACE]: S };
+
 // Selectors
 
-export const selectTask = (state, id) => state[NAMESPACE].tasks.byId[id];
+export const selectTask = (state:AS, id:string) => state[NAMESPACE].tasks.byId[id];
 
-const selectNonTrashedTasks = (state) => (
+const selectNonTrashedTasks = (state:AS) => (
   state[NAMESPACE].tasks.allIds
     .map((id) => state[NAMESPACE].tasks.byId[id])
     .filter((task) => task.trashed == null)
 );
 
-const selectTaskDependency = (state, id) => state[NAMESPACE].taskDependencies.byId[id];
+const selectTaskDependency = (state:AS, id:string) => state[NAMESPACE].taskDependencies.byId[id];
 
-export const selectTaskDependencies = (state, ids = null) => (
+export const selectTaskDependencies = (state:AS, ids = null) => (
   (ids || state[NAMESPACE].taskDependencies.allIds)
     .map((id) => selectTaskDependency(state, id))
 );
 
-const selectIsTaskBlocked = (state, taskId) => {
+const selectIsTaskBlocked = (state:AS, taskId:string) => {
   const task = selectTask(state, taskId);
   const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
   const nonCompletedDependencies = dependencies
     .filter((dependency) => (
-      !(dependency.type === TASK && !selectTask(state, dependency.config.taskId))
+      !(dependency.type === TASK && !selectTask(state, dependency.config.taskId!))
     ));
   return nonCompletedDependencies.length > 0;
 };
 
-const applyRelativePrioritization = (tasks) => {
-  const taskBaseToAheadOf = tasks.reduce((memo, task) => {
+const applyRelativePrioritization = (tasks: Task[]) => {
+  const taskBaseToAheadOf:{[s:string]: string[]} = tasks.reduce((memo: {[s:string]: string[]}, task) => {
     if (task.prioritizedAheadOf) {
       return {
         ...memo,
@@ -354,7 +396,7 @@ const applyRelativePrioritization = (tasks) => {
   let iterations = 0;
 
   do {
-    updatedTasksIds = updatedTasksIds.reduce((memo, id) => {
+    updatedTasksIds = updatedTasksIds.reduce((memo:string[], id:string) => {
       if (taskBaseToAheadOf[id]) {
         const tasksAhead = taskBaseToAheadOf[id];
         delete taskBaseToAheadOf[id];
@@ -380,12 +422,12 @@ const applyRelativePrioritization = (tasks) => {
     .map((id) => tasksById[id]);
 };
 
-const selectNonCompletedTasks = (state) => (
+const selectNonCompletedTasks = (state:AS) => (
   selectNonTrashedTasks(state)
     .filter((task) => task.completed == null)
 );
 
-const selectUpcomingSortedTasks = (state) => {
+const selectUpcomingSortedTasks = (state:AS) => {
   const now = Date.now();
   const tasks = selectNonCompletedTasks(state)
     .filter((task) => task.scheduledStart == null || task.scheduledStart <= now)
@@ -394,15 +436,15 @@ const selectUpcomingSortedTasks = (state) => {
   return applyRelativePrioritization(tasksSortedByScore);
 };
 
-export const selectNowTasks = (state) => {
+export const selectNowTasks = (state:AS) => {
   const sortedTasks = selectUpcomingSortedTasks(state);
   return sortedTasks.slice(0, NOW_TASKS_LIMIT);
 };
-export const selectNextTasks = (state) => {
+export const selectNextTasks = (state:AS) => {
   const sortedTasks = selectUpcomingSortedTasks(state);
   return sortedTasks.slice(NOW_TASKS_LIMIT);
 };
-export const selectBlockedTasks = (state) => {
+export const selectBlockedTasks = (state:AS) => {
   const tasks = selectNonCompletedTasks(state);
   const tasksWithBlockers = tasks.filter((task) => task.dependencyIds.length);
   const tasksWithExistingBlockers = tasksWithBlockers
@@ -410,7 +452,7 @@ export const selectBlockedTasks = (state) => {
       const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
       const nonCompletedDependencies = dependencies
         .filter((dependency) => (
-          !(dependency.type === TASK && !selectTask(state, dependency.config.taskId))
+          !(dependency.type === TASK && !selectTask(state, dependency.config.taskId!))
         ));
       return nonCompletedDependencies.length;
     });
@@ -421,61 +463,62 @@ export const selectBlockedTasks = (state) => {
 
   return sortBy(blockedTasks, 'score').reverse();
 };
-export const selectScheduledTasks = (state) => {
+export const selectScheduledTasks = (state:AS) => {
   const now = Date.now();
   const tasks = selectNonCompletedTasks(state)
     .filter((task) => task.scheduledStart != null && task.scheduledStart > now);
   return sortBy(tasks, 'scheduledStart');
 };
-export const selectCompletedTasks = (state) => {
+export const selectCompletedTasks = (state:AS) => {
   const tasks = state[NAMESPACE].tasks.allIds
     .map((id) => state[NAMESPACE].tasks.byId[id])
     .filter((task) => task.completed != null);
   return sortBy(tasks, 'completed').reverse();
 };
-export const selectDependenciesBlockingGivenTask = (state, blockedTaskId) => {
+export const selectDependenciesBlockingGivenTask = (state:AS, blockedTaskId:string) => {
   const task = selectTask(state, blockedTaskId);
-  const { dependencyIds = [] } = task || {};
+  const { dependencyIds } = task;
 
-  const dependencies = dependencyIds.map((id) => selectTaskDependency(state, id));
+  const dependencies = (dependencyIds || []).map((id) => selectTaskDependency(state, id));
 
-  const dependenciesAndTasks = dependencies.reduce((memo, dependency) => {
-    if (dependency.type === FREE_TEXT) {
-      return [
-        ...memo,
-        [dependency, null],
-      ];
-    } if (dependency.type === TASK) {
-      const dependencyTask = selectTask(state, dependency.config.taskId);
-      if (dependencyTask) {
+  const dependenciesAndTasks:Array<[TaskDependency, Task | null]> =
+    dependencies.reduce((memo: any, dependency: TaskDependency) => {
+      if (dependency.type === FREE_TEXT) {
         return [
           ...memo,
-          [dependency, dependencyTask],
+          [dependency, null],
         ];
+      } if (dependency.type === TASK) {
+        const dependencyTask = selectTask(state, dependency.config.taskId!);
+        if (dependencyTask) {
+          return [
+            ...memo,
+            [dependency, dependencyTask],
+          ];
+        }
+        return memo;
       }
-      return memo;
-    }
-    throw new Error(`Dependency type not supported ${dependency.type}`);
-  }, []);
+      throw new Error(`Dependency type not supported ${dependency.type}`);
+    }, []);
 
   return dependenciesAndTasks;
 };
-export const selectUndeletedTask = (state, id) => {
+export const selectUndeletedTask = (state:AS, id:string) => {
   const task = selectTask(state, id);
   return !task || task.trashed ? undefined : task;
 };
-export const selectTasksForDependencySelection = (state, id) => (
+export const selectTasksForDependencySelection = (state:AS, id:string) => (
   selectNonCompletedTasks(state)
     .filter((task) => task.id !== id)
 );
-const selectTasksPrioritizedAheadOf = (state, id) => (
+const selectTasksPrioritizedAheadOf = (state:AS, id:string) => (
   selectNonCompletedTasks(state)
     .filter((task) => task.prioritizedAheadOf === id)
 );
 
-const containsTaskId = (tasks, id) => tasks.filter((task) => task.id === id).length > 0;
+const containsTaskId = (tasks:Task[], id:string) => tasks.filter((task) => task.id === id).length > 0;
 
-export const selectSectionForTask = (state, taskId) => {
+export const selectSectionForTask = (state:AS, taskId:string) => {
   switch (true) {
     case containsTaskId(selectNowTasks(state), taskId):
       return dashboardTabs.NOW;
@@ -492,7 +535,7 @@ export const selectSectionForTask = (state, taskId) => {
 
 // Actions
 
-const normalizeTasks = (rawTasks) => {
+const normalizeTasks = (rawTasks:any[]) => {
   const tasksAllIds = rawTasks.map((task) => task.id);
   const tasksById = rawTasks.reduce((memo, { blockedBy, ...task }) => ({
     ...memo,
@@ -502,19 +545,19 @@ const normalizeTasks = (rawTasks) => {
       ...task,
     },
   }), {});
-  const tasks = {
+  const tasks:NormalizedEntities<Task> = {
     allIds: tasksAllIds,
     byId: tasksById,
   };
 
-  const taskDependencies = {
+  const taskDependencies:NormalizedEntities<TaskDependency> = {
     byId: {},
     allIds: [],
   };
   rawTasks.forEach(({ id, blockedBy }) => {
-    (blockedBy || []).forEach((dependency) => {
+    (blockedBy || []).forEach((dependency:any) => {
       const dependencyId = generateId();
-      const dependencyWithBackwardsRelationship = {
+      const dependencyWithBackwardsRelationship:TaskDependency = {
         id: dependencyId,
         taskId: id,
         ...dependency,
@@ -530,7 +573,7 @@ const normalizeTasks = (rawTasks) => {
   return { tasks, taskDependencies };
 };
 
-const serializeTask = (state, id) => {
+const serializeTask = (state:AS, id:string) => {
   const normalizedTask = selectTask(state, id);
   const {
     dependencyIds,
@@ -551,7 +594,7 @@ const serializeTask = (state, id) => {
   return serializedTask;
 };
 
-export const setTasks = (tasks) => {
+export const setTasks = (tasks: TaskFromApiClient[]) => {
   const parsedTasks = tasks.map((task) => {
     const impact = toInt(task.impact, null);
     const effort = toInt(task.effort, null);
@@ -570,25 +613,25 @@ export const setTasks = (tasks) => {
   };
 };
 
-export const updateTask = (taskId, updates) => (dispatch, _, { apiClient }) => {
+export const updateTask = (taskId:string, updates:TaskUpdates) => (dispatch:Function, _:any, { apiClient }:ExtraArgs) => {
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
-  return apiClient.updateTask(taskId, filterTaskKeys(updates, TASK_KEYS_FOR_API));
+  return apiClient.updateTask(taskId, filterTaskForApi(updates));
 };
-export const updateTaskBatch = (updatesByTaskId) => (dispatch, _, { apiClient }) => {
+export const updateTaskBatch = (updatesByTaskId:{[id:string]: TaskUpdates}) => (dispatch:Function, _:any, { apiClient }:ExtraArgs) => {
   dispatch({
     type: UPDATE_TASK_BATCH,
     payload: { updatesByTaskId },
   });
   return apiClient.updateTaskBatch(
-    mapValues(updatesByTaskId, (updates) => filterTaskKeys(updates, TASK_KEYS_FOR_API)),
+    mapValues(updatesByTaskId, (updates) => filterTaskForApi(updates)),
   );
 };
 
-export const setRelativePrioritization = (sourceTaskId, sourceIndex, destinationIndex) => (
-  (dispatch, getState) => {
+export const setRelativePrioritization = (sourceTaskId:string, sourceIndex:number, destinationIndex:number) => (
+  (dispatch:Function, getState:Function) => {
     const realDestinationIndex = sourceIndex < destinationIndex
       ? destinationIndex + 1
       : destinationIndex;
@@ -624,7 +667,7 @@ export const setRelativePrioritization = (sourceTaskId, sourceIndex, destination
   }
 );
 
-const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getState) => {
+const updateRelativePrioritizationToNext = (taskId:string, offset:number) => (dispatch:Function, getState:Function) => {
   const state = getState();
 
   const tasksRelativelyPrioritized = selectTasksPrioritizedAheadOf(state, taskId);
@@ -643,7 +686,7 @@ const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getSta
 
   // return undo.
   return () => () => {
-    tasksRelativelyPrioritized.forEach((task) => {
+    tasksRelativelyPrioritized.forEach((task:Task) => {
       dispatch(updateTask(task.id, {
         prioritizedAheadOf: task.prioritizedAheadOf,
       }));
@@ -651,34 +694,34 @@ const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getSta
   };
 };
 
-export const moveToTrashTask = (taskId) => (dispatch) => {
+export const moveToTrashTask = (taskId:string) => (dispatch:Function) => {
   // Relative prioritization: Any task that was set to go before this one should now go after next.
   dispatch(updateRelativePrioritizationToNext(taskId, +1));
 
   dispatch({
     type: REMOVE_TASK_FROM_ALL_IDS,
-    payload: { taskId },
+    payload: taskId,
   });
 
   const notificationUid = dispatch(showInfoNotification('Task deleted'));
   return dispatch(updateTask(taskId, { trashed: Date.now() }))
-    .catch((error) => {
+    .catch((error:Error) => {
       console.warn(error);
       dispatch(hideNotification(notificationUid));
       dispatch(showNetworkErrorNotification());
     });
 };
 
-export const removeTaskFromAllIds = (taskId) => ({
+export const removeTaskFromAllIds = (taskId:string) => ({
   type: REMOVE_TASK_FROM_ALL_IDS,
-  payload: { taskId },
+  payload: taskId,
 });
 
-export const undoCompletedTask = (taskId) => (dispatch) => (
+export const undoCompletedTask = (taskId:string) => (dispatch:Function) => (
   dispatch(updateTask(taskId, { completed: null }))
 );
 
-export const completeTask = (taskId) => (dispatch, getState) => {
+export const completeTask = (taskId:string) => (dispatch:Function, getState:Function) => {
   const task = selectTask(getState(), taskId);
 
   // Relative prioritization: Any task that was set to go before this one should now go after next.
@@ -696,14 +739,14 @@ export const completeTask = (taskId) => (dispatch, getState) => {
     .then(() => {
       taskTaskCompleted(task.title);
     })
-    .catch((error) => {
+    .catch((error:Error) => {
       console.warn(error);
       dispatch(hideNotification(notificationUid));
       dispatch(showNetworkErrorNotification());
     });
 };
 
-export const loadTasks = (fetchParams) => (dispatch, getState, { apiClient }) => {
+export const loadTasks = (fetchParams:any) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
   const state = getState();
   const userId = selectUserId(state);
   if (!userId) {
@@ -717,16 +760,16 @@ export const loadTasks = (fetchParams) => (dispatch, getState, { apiClient }) =>
 
 export const resetTasks = () => ({ type: RESET_TASKS });
 
-export const persistTask = (id) => (dispatch, getState, { apiClient }) => {
+export const persistTask = (id:string) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
   const state = getState();
   const serializedTask = serializeTask(state, id);
   return apiClient.updateTask(
     id,
-    filterTaskKeys(serializedTask, TASK_KEYS_FOR_API),
+    filterTaskForApi(serializedTask),
   );
 };
 
-export const updateTaskDependency = (id, updates) => (dispatch, getState) => {
+export const updateTaskDependency = (id:string, updates:TaskUpdates) => (dispatch:Function, getState:Function) => {
   dispatch({
     type: UPDATE_TASK_DEPENDENCY,
     payload: {
@@ -739,7 +782,7 @@ export const updateTaskDependency = (id, updates) => (dispatch, getState) => {
   return dispatch(persistTask(dependency.taskId));
 };
 
-export const removeTaskDependency = (id) => (dispatch, getState) => {
+export const removeTaskDependency = (id:string) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const dependency = selectTaskDependency(state, id);
 
@@ -755,32 +798,21 @@ export const removeTaskDependency = (id) => (dispatch, getState) => {
 };
 
 // create doesn't save to the API at the moment because for adding it needs to be modified
-export const createTaskDependency = (dependency = isRequired('dependency')) => {
-  const {
-    id = isRequired('id'),
-    taskId = isRequired('taskId'),
-    ...restFields
-  } = dependency;
+export const createTaskDependency = (dependency:TaskDependency) => {
   return {
     type: CREATE_TASK_DEPENDENCY,
-    payload: {
-      id,
-      taskId,
-      dependency: {
-        ...restFields,
-      },
-    },
+    payload: dependency,
   };
 };
 
-export const navigateToTabForTask = (taskId, history) => (dispatch, getState) => {
+export const navigateToTabForTask = (taskId:string, history:{push:Function}) => (dispatch:Function, getState:Function) => {
   const tab = selectSectionForTask(getState(), taskId);
   if (tab && DASHBOARD_TABS_TO_PATHS[tab]) {
     history.push(DASHBOARD_TABS_TO_PATHS[tab]);
   }
 };
 
-export const addTask = (newTask, dependencies, history) => (dispatch, getState, { apiClient }) => {
+export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], history:{push:Function}) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -803,7 +835,7 @@ export const addTask = (newTask, dependencies, history) => (dispatch, getState, 
     completed: null,
     created: Date.now(),
     userId: selectUserId(state),
-    dependencyIds: dependencies.map(({ id = isRequired('dependency id') }) => id),
+    dependencyIds: dependencies.map(({ id }) => id),
   };
 
   dispatch({
@@ -817,7 +849,7 @@ export const addTask = (newTask, dependencies, history) => (dispatch, getState, 
   dispatch(navigateToTabForTask(temporaryId, history));
 
   const taskWithoutId = omit(task, ['id']);
-  return apiClient.createTask(filterTaskKeys(taskWithoutId, TASK_KEYS_FOR_API))
+  return apiClient.createTask(filterTaskForApi(taskWithoutId))
     .then(({ id: finalId }) => {
       dispatch(removeTaskFromAllIds(temporaryId));
       dispatch({
@@ -838,13 +870,13 @@ export const addTask = (newTask, dependencies, history) => (dispatch, getState, 
 
       trackTaskCreated(task.title);
     })
-    .catch((error) => {
+    .catch((error:Error) => {
       console.warn(error);
       dispatch(showNetworkErrorNotification());
       dispatch(removeTaskFromAllIds(temporaryId));
     });
 };
 
-export const clearRelativePrioritization = (taskId) => updateTask(taskId, {
+export const clearRelativePrioritization = (taskId:string) => updateTask(taskId, {
   prioritizedAheadOf: null,
 });
