@@ -368,10 +368,17 @@ const isDependencyApplicable = (state:AS, dependency:TaskDependency):boolean => 
   return true;
 };
 
+const isNewUnsavedDependency = (dependency:TaskDependency):boolean => (
+  dependency.type === TASK && dependency.config.taskId === null
+);
+
 export const selectTaskDependencies = (state:AS, ids = null) => (
   (ids || state[NAMESPACE].taskDependencies.allIds)
   .map((id) => selectTaskDependency(state, id))
-  .filter((dependency) => isDependencyApplicable(state, dependency))
+  .filter((dependency) => (
+    isDependencyApplicable(state, dependency) ||
+    isNewUnsavedDependency(dependency)
+  ))
 );
 
 const selectIsTaskBlocked = (state:AS, taskId:string) => {
