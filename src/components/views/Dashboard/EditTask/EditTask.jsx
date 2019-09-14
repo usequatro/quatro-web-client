@@ -124,6 +124,7 @@ const EditTask = ({
                   removeTaskDependency={removeTaskDependency}
                   createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}
                   clearRelativePrioritization={clearRelativePrioritization}
+                  setRecurringConfig={(...args) => console.log(...args)}
                 />
 
                 <Box mb={4}>

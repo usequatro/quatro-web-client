@@ -113,6 +113,7 @@ const NewTask = ({ history }) => {
                 updateTaskDependency={onUpdateTaskDependency}
                 removeTaskDependency={onRemoveTaskDependency}
                 createTaskDependency={onCreateTaskDependency}
+                setRecurringConfig={(...args) => console.log(...args)}
               />
             </ContentContainer>
           </NewTaskMain>

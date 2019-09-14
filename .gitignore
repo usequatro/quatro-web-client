@@ -21,3 +21,6 @@ firebase-debug.log
 
 # electron builds
 dist
+
+# Editors
+.idea
