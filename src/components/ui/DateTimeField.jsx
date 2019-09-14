@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import InputField from './InputField';
 import FieldLabel from './FieldLabel';
 

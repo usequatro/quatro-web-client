@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, Box } from 'rebass';
+import { Text, Box } from 'rebass/styled-components';
 import { Link, withRouter } from 'react-router-dom';
 
 import * as firebase from 'firebase/app';

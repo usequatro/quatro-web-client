@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
 import HeadingResponsive from './HeadingResponsive';
@@ -38,7 +38,7 @@ const PapelHeader = ({ headline, buttonLeft, buttonRight }) => (
     <HeadingResponsive
       color="textPrimaryOverBackground"
       textAlign="center"
-      fontFamily="headline"
+      fontFamily="heading"
       fontWeight="normal"
     >
       {headline}

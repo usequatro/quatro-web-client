@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Switch, Route, withRouter } from 'react-router-dom';
-import { Heading } from 'rebass';
+import { Heading } from 'rebass/styled-components';
 
 import { SIGN_UP, LOG_IN } from '../../../constants/paths';
 

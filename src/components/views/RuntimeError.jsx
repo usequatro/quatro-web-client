@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Box } from 'rebass';
+import { Text, Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
 const Container = styled(Box)`

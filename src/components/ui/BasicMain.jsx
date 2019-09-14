@@ -1,6 +1,6 @@
 // import React from 'react';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import verticalScroll from '../style-mixins/verticalScroll';
 
 export default styled(Box).attrs({ as: 'main' })`

@@ -1,4 +1,4 @@
-import { Text } from 'rebass';
+import { Text } from 'rebass/styled-components';
 import styled from 'styled-components';
 
 const Paragraph = styled(Text)`

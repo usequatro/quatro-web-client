@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import { withRouter } from 'react-router-dom';
 import invert from 'lodash/invert';
 
@@ -52,7 +52,7 @@ const DashboardTitle = styled(HeadingResponsive).attrs(() => ({
   fontWeight: 'body',
 }))`
   text-align: center;
-  font-family: ${(props) => props.theme.fonts.headline};
+  font-family: ${(props) => props.theme.fonts.heading};
   border: none;
   background-color: transparent;
   padding: 0 3rem;

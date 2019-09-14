@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Text } from 'rebass';
+import { Box, Text } from 'rebass/styled-components';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';

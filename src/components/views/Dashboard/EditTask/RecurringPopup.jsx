@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heading, Box } from 'rebass';
+import { Heading, Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
 import Popup from '../../../ui/Popup';

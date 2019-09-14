@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 
 export default styled(Box).attrs({ as: 'form' })`
   display: inherit;

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Button } from 'rebass';
+import { Button } from 'rebass/styled-components';
 import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
 import activeLighter from '../style-mixins/activeLighter';
 import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';

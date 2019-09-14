@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import XIcon from '../icons/XIcon';
 import BackIcon from '../icons/BackIcon';
 import ButtonFunction from './ButtonFunction';

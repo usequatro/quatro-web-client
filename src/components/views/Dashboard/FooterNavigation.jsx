@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import invert from 'lodash/invert';
 import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from '../../../constants/paths';
 import * as dashboardTabs from '../../../constants/dashboardTabs';

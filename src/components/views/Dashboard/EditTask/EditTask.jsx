@@ -3,7 +3,7 @@ import { useSelector, useDispatch, connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import get from 'lodash/get';
 
 import {

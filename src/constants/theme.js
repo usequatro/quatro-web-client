@@ -31,12 +31,12 @@ export default {
   ],
   // Values for the fontFamily prop
   fonts: {
-    headline: "'Maven Pro', sans-serif;",
+    heading: "'Maven Pro', sans-serif;",
     body: "'Maven Pro', sans-serif;",
   },
   // Values for fontWeight prop
   fontWeights: {
-    headline: 400,
+    heading: 400,
     body: 400,
   },
   // Values for lineHeight prop

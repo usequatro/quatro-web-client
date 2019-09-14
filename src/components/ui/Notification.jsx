@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Transition } from 'react-transition-group';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import { connect } from 'react-redux';
 
 import HeadingResponsive from './HeadingResponsive';

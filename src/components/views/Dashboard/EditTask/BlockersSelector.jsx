@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import uuid from 'uuid/v4';
 
 import * as dependencyTypes from '../../../../constants/dependencyTypes';

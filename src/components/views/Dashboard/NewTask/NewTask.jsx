@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 
 import { addTask } from '../../../../modules/tasks';
 

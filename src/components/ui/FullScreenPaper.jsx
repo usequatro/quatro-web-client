@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import Div100vh from 'react-div-100vh';
 import MAX_WIDTH from '../../constants/maxWidth';
 import RootPortal from './RootPortal';

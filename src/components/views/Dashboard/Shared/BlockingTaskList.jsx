@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 
 import { selectDependenciesBlockingGivenTask } from '../../../../modules/tasks';
 import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';

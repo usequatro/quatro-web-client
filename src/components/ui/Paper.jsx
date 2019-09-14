@@ -1,4 +1,4 @@
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
 export default styled(Box).attrs({

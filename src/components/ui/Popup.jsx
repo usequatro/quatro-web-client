@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
-import { Box } from 'rebass';
+import { Box } from 'rebass/styled-components';
 
 import RootPortal from './RootPortal';
 import dropShadow from '../style-mixins/dropShadow';

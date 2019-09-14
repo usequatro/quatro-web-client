@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import truncate from 'lodash/truncate';
 import {
   Heading, Text, Box,
-} from 'rebass';
+} from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
 import { completeTask } from '../../../../modules/tasks';
 import { EDIT_TASK } from '../../../../constants/paths';
