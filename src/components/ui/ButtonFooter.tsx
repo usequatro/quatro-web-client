@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+// @ts-ignore
 import { Box } from 'rebass/styled-components';
 import Button from './Button';
 

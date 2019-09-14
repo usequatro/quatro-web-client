@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+// @ts-ignore
 import { Box } from 'rebass/styled-components';
 
 import FieldLabel from './FieldLabel';
@@ -14,7 +15,7 @@ const Container = styled.div`
   margin: 0 0.5rem -1px 0;
   flex-shrink: 0;
 `;
-const ImprovedCheckbox = styled.div`
+const ImprovedCheckbox = styled.div<{ checked: boolean, disabled?: boolean }>`
   display: inline-block;
   position: absolute;
   top: 0;
@@ -71,7 +72,15 @@ const Label = styled(Box).attrs({
   padding: 0.5rem 0;
 `;
 
-export default ({
+type BooleanCheckboxProps = {
+  onChange: Function,
+  value: boolean,
+  label: string,
+  helpText?: string,
+  disabled?: boolean,
+};
+
+const BooleanCheckbox: React.FC<BooleanCheckboxProps> = ({
   onChange, value, label, helpText, disabled,
 }) => (
   <Label>
@@ -93,3 +102,5 @@ export default ({
     )}
   </Label>
 );
+
+export default BooleanCheckbox;

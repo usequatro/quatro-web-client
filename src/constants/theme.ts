@@ -1,6 +1,6 @@
 import * as colors from './colors';
 
-export default {
+const theme = {
   // Array of strings representing viewport widths to use for min-width media queries.
   breakpoints: ['400px', '599px'],
   // Array of numbers to use as a typographic scale
@@ -90,3 +90,7 @@ export default {
     },
   },
 };
+
+export type ThemeType = typeof theme;
+
+export default theme;

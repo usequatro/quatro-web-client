@@ -1,5 +1,6 @@
 // import React from 'react';
 import styled from 'styled-components';
+// @ts-ignore
 import { Box } from 'rebass/styled-components';
 import verticalScroll from '../style-mixins/verticalScroll';
 

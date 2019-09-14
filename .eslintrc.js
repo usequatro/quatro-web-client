@@ -25,6 +25,7 @@ module.exports = {
       "depth": 3,
     }],
     "jsx-a11y/label-has-for": "off", // this rule was deprecated.
-    "react/jsx-props-no-spreading": "off"
+    "react/jsx-props-no-spreading": "off",
+    "react/jsx-filename-extension": ["error", { "extensions": [".jsx",".tsx"] }]
   }
 };

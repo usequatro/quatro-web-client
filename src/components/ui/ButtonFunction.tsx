@@ -5,7 +5,7 @@ import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 const ButtonFunction = styled.button.attrs((props) => ({
   type: props.type || 'button',
-}))`
+}))<{ variant: string }>`
   background: transparent;
   border: none;
   cursor: pointer;
