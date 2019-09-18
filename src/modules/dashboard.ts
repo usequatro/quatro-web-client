@@ -26,7 +26,7 @@ const INITIAL_STATE = {
 export const reducer = createReducer(INITIAL_STATE, {
   [SET_LOAD_FLAGS]: (
     state:S,
-    { payload: { loading, loaded, view } }:{payload:{loading:boolean,loaded:boolean,view:string}}
+    { payload: { loading, loaded, view } }:{payload:{loading:boolean, loaded:boolean, view:string}},
   ) => ({
     ...state,
     [view]: {
@@ -37,7 +37,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [SET_ACCOUNT_MENU_OPEN]: (
     state:S,
-    { payload: accountMenuOpen }:{payload: boolean}
+    { payload: accountMenuOpen }:{payload: boolean},
   ) => ({
     ...state,
     accountMenuOpen,
@@ -61,12 +61,10 @@ const setLoadFlags = (view: string, { loading, loaded }:{ loading:boolean, loade
   payload: { view, loading, loaded },
 });
 
-export const FETCH_PARAMS_COMPLETED = { completed: ['>', 0] };
-
-export const loadDashboardTasks = (view = 'default', fetchParams = undefined) => (dispatch:Function) => {
+export const loadDashboardTasks = (view = 'default') => (dispatch:Function) => {
   dispatch(setLoadFlags(view, { loading: true, loaded: false }));
 
-  dispatch(loadTasks(fetchParams))
+  dispatch(loadTasks(view === 'completed'))
     .then(() => {
       dispatch(setLoadFlags(view, { loading: false, loaded: true }));
     })

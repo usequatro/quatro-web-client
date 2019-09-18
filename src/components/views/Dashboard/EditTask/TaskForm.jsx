@@ -12,11 +12,10 @@ import DateTimeField from '../../../ui/DateTimeField';
 import Paragraph from '../../../ui/Paragraph';
 import BlockersSelector from './BlockersSelector';
 import ButtonInline from '../../../ui/ButtonInline';
-import RecurringPopup from  './RecurringPopup';
+import RecurringPopup from './RecurringPopup';
 
 import * as DURATION_UNITS from '../../../../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../../../../constants/weekdays';
-import { MONDAY } from '../../../../constants/weekdays';
 
 const Italic = styled.span`
   font-style: italic;
@@ -119,54 +118,52 @@ const TaskForm = ({
             onChange={(event, newDateTime) => setScheduledStart(newDateTime)}
           />
         </ToggleableFieldWrapper>
-        {false && (
-          <ToggleableFieldWrapper
-            label="Recurrence"
-            helpText="Do you need to do this multiple times?"
-            value={scheduledStart}
-            onChange={(event, value) => setScheduledStart(value)}
+        <ToggleableFieldWrapper
+          label="Recurrence"
+          helpText="Do you need to do this multiple times?"
+          value={scheduledStart}
+          onChange={(event, value) => setScheduledStart(value)}
+        >
+          <Dropdown onChange={(event, value) => {
+            const recurringDropdownActions = {
+              '': () => {},
+              custom: () => setRecurringPopupVisible(true),
+              everyMonday: () => setRecurringConfig({
+                unit: DURATION_UNITS.WEEK,
+                amount: 1,
+                activeWeekdays: {
+                  [WEEKDAYS.MONDAY]: true,
+                  [WEEKDAYS.TUESDAY]: false,
+                  [WEEKDAYS.WEDNESDAY]: false,
+                  [WEEKDAYS.THURSDAY]: false,
+                  [WEEKDAYS.FRIDAY]: false,
+                  [WEEKDAYS.SATURDAY]: false,
+                  [WEEKDAYS.SUNDAY]: false,
+                },
+              }),
+              weekdays: () => setRecurringConfig({
+                unit: DURATION_UNITS.WEEK,
+                amount: 1,
+                activeWeekdays: {
+                  [WEEKDAYS.MONDAY]: true,
+                  [WEEKDAYS.TUESDAY]: true,
+                  [WEEKDAYS.WEDNESDAY]: true,
+                  [WEEKDAYS.THURSDAY]: true,
+                  [WEEKDAYS.FRIDAY]: true,
+                  [WEEKDAYS.SATURDAY]: false,
+                  [WEEKDAYS.SUNDAY]: false,
+                },
+              }),
+            };
+            (recurringDropdownActions[value] || (() => {}))();
+          }}
           >
-            <Dropdown onChange={(event, value) => {
-              const recurringDropdownActions = {
-                '': () => {},
-                custom: () => setRecurringPopupVisible(true),
-                everyMonday: () => setRecurringConfig({
-                  unit: DURATION_UNITS.WEEK,
-                  amount: 1,
-                  activeWeekdays: {
-                    [WEEKDAYS.MONDAY]: true,
-                    [WEEKDAYS.TUESDAY]: false,
-                    [WEEKDAYS.WEDNESDAY]: false,
-                    [WEEKDAYS.THURSDAY]: false,
-                    [WEEKDAYS.FRIDAY]: false,
-                    [WEEKDAYS.SATURDAY]: false,
-                    [WEEKDAYS.SUNDAY]: false,
-                  },
-                }),
-                weekdays: () => setRecurringConfig({
-                  unit: DURATION_UNITS.WEEK,
-                  amount: 1,
-                  activeWeekdays: {
-                    [WEEKDAYS.MONDAY]: true,
-                    [WEEKDAYS.TUESDAY]: true,
-                    [WEEKDAYS.WEDNESDAY]: true,
-                    [WEEKDAYS.THURSDAY]: true,
-                    [WEEKDAYS.FRIDAY]: true,
-                    [WEEKDAYS.SATURDAY]: false,
-                    [WEEKDAYS.SUNDAY]: false,
-                  },
-                }),
-              };
-              (recurringDropdownActions[value] || (() => {}))();
-            }}
-            >
-              <Dropdown.Option value=""></Dropdown.Option>
-              <Dropdown.Option value="everyMonday">Every Monday</Dropdown.Option>
-              <Dropdown.Option value="weekdays">Every weekday (Monday to Friday)</Dropdown.Option>
-              <Dropdown.Option value="custom">Custom...</Dropdown.Option>
-            </Dropdown>
-          </ToggleableFieldWrapper>
-        )}
+            <Dropdown.Option value=""></Dropdown.Option>
+            <Dropdown.Option value="everyMonday">Every Monday</Dropdown.Option>
+            <Dropdown.Option value="weekdays">Every weekday (Monday to Friday)</Dropdown.Option>
+            <Dropdown.Option value="custom">Custom...</Dropdown.Option>
+          </Dropdown>
+        </ToggleableFieldWrapper>
         <BlockersSelector
           taskId={id}
           dependencies={dependencies}

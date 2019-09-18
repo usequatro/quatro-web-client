@@ -74,7 +74,7 @@ type OptionalNotificationParams = {
 const showNotification = (
   type:string,
   message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {}
+  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
 ) => (
   (dispatch:Function) => {
     const uid = `${Math.round(Math.random() * 10000)}`;
@@ -100,14 +100,14 @@ const showNotification = (
 
 export const showInfoNotification = (
   message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {}
+  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
 ) => (
   showNotification('info', message, { callbackButton, callbackFunction })
 );
 
 export const showErrorNotification = (
   message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {}
+  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
 ) => (
   showNotification('error', message, { callbackButton, callbackFunction })
 );

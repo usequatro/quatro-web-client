@@ -59,5 +59,4 @@ const Dashboard = ({ loaded }) => (
 export default withLoadTasks(
   Dashboard,
   'default',
-  undefined,
 );

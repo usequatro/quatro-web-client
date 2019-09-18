@@ -21,7 +21,7 @@ import { RESET } from './reset';
 import { selectUserId } from './session';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
-import { ExtraArgs } from '../store';
+import * as apiClient from './apiClient';
 
 export const NAMESPACE = 'tasks';
 
@@ -126,10 +126,12 @@ const filterTaskKeys = (task:TaskUnfiltered, keys:{[s:string]:boolean}):object =
   return filteredTask;
 };
 
-const filterTaskForRedux = (task:TaskUnfiltered):Task =>
-  filterTaskKeys(task, TASK_KEYS_FOR_REDUX) as Task;
-const filterTaskForApi = (task:TaskUnfiltered):TaskFromApiClient =>
-  filterTaskKeys(task, TASK_KEYS_FOR_API) as TaskFromApiClient;
+const filterTaskForRedux = (task:TaskUnfiltered):Task => (
+  filterTaskKeys(task, TASK_KEYS_FOR_REDUX) as Task
+);
+const filterTaskForApi = (task:TaskUnfiltered):TaskFromApiClient => (
+  filterTaskKeys(task, TASK_KEYS_FOR_API) as TaskFromApiClient
+);
 
 const normalizeBase = (value:number, from:number, to:number) => (value * to) / from;
 const convertMillisecondsToDays = (time:number) => time / (1000 * 60 * 60 * 24);
@@ -198,7 +200,10 @@ type S = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [UPDATE_TASK]: (state:S, { payload: { taskId, updates } }:{payload:{taskId:string,updates:TaskUpdates}}) => ({
+  [UPDATE_TASK]: (
+    state:S,
+    { payload: { taskId, updates } }:{payload:{taskId:string, updates:TaskUpdates}},
+  ) => ({
     ...state,
     tasks: {
       ...state.tasks,
@@ -213,7 +218,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [UPDATE_TASK_BATCH]: (
     state:S,
-    { payload: { updatesByTaskId } } : {payload:{updatesByTaskId:{[s:string]:TaskUpdates}}}
+    { payload: { updatesByTaskId } } : {payload:{updatesByTaskId:{[s:string]:TaskUpdates}}},
   ) => ({
     ...state,
     tasks: {
@@ -231,7 +236,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [SET_TASKS]: (
     state:S,
-    action: {payload:{tasks:NormalizedEntities<Task>, taskDependencies: NormalizedEntities<TaskDependency>}}
+    action: {payload:{tasks:NormalizedEntities<Task>, taskDependencies: NormalizedEntities<TaskDependency>}},
   ) => ({
     ...state,
     tasks: {
@@ -281,7 +286,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   [RESET_TASKS]: () => ({ ...INITIAL_STATE }),
   [UPDATE_TASK_DEPENDENCY]: (
     state:S,
-    { payload: { id, updates } }:{payload:{id:string, updates: TaskUpdates}}
+    { payload: { id, updates } }:{payload:{id:string, updates: TaskUpdates}},
   ) => ({
     ...state,
     taskDependencies: {
@@ -297,7 +302,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [REMOVE_TASK_DEPENDENCY]: (
     state:S,
-    { payload: { dependencyId, taskId } }:{payload:{dependencyId:string, taskId:string}}
+    { payload: { dependencyId, taskId } }:{payload:{dependencyId:string, taskId:string}},
   ) => ({
     ...state,
     tasks: {
@@ -374,11 +379,11 @@ const isNewUnsavedDependency = (dependency:TaskDependency):boolean => (
 
 export const selectTaskDependencies = (state:AS, ids = null) => (
   (ids || state[NAMESPACE].taskDependencies.allIds)
-  .map((id) => selectTaskDependency(state, id))
-  .filter((dependency) => (
-    isDependencyApplicable(state, dependency) ||
-    isNewUnsavedDependency(dependency)
-  ))
+    .map((id) => selectTaskDependency(state, id))
+    .filter((dependency) => (
+      isDependencyApplicable(state, dependency)
+    || isNewUnsavedDependency(dependency)
+    ))
 );
 
 const selectIsTaskBlocked = (state:AS, taskId:string) => {
@@ -481,25 +486,24 @@ export const selectDependenciesBlockingGivenTask = (state:AS, blockedTaskId:stri
 
   const dependencies = (dependencyIds || []).map((id) => selectTaskDependency(state, id));
 
-  const dependenciesAndTasks:Array<[TaskDependency, Task | null]> =
-    dependencies.reduce((memo: any, dependency: TaskDependency) => {
-      if (dependency.type === FREE_TEXT) {
+  const dependenciesAndTasks:Array<[TaskDependency, Task | null]> = dependencies.reduce((memo: any, dependency: TaskDependency) => {
+    if (dependency.type === FREE_TEXT) {
+      return [
+        ...memo,
+        [dependency, null],
+      ];
+    } if (dependency.type === TASK) {
+      const dependencyTask = selectTask(state, dependency.config.taskId!);
+      if (dependencyTask) {
         return [
           ...memo,
-          [dependency, null],
+          [dependency, dependencyTask],
         ];
-      } if (dependency.type === TASK) {
-        const dependencyTask = selectTask(state, dependency.config.taskId!);
-        if (dependencyTask) {
-          return [
-            ...memo,
-            [dependency, dependencyTask],
-          ];
-        }
-        return memo;
       }
-      throw new Error(`Dependency type not supported ${dependency.type}`);
-    }, []);
+      return memo;
+    }
+    throw new Error(`Dependency type not supported ${dependency.type}`);
+  }, []);
 
   return dependenciesAndTasks;
 };
@@ -613,14 +617,14 @@ export const setTasks = (tasks: TaskFromApiClient[]) => {
   };
 };
 
-export const updateTask = (taskId:string, updates:TaskUpdates) => (dispatch:Function, _:any, { apiClient }:ExtraArgs) => {
+export const updateTask = (taskId:string, updates:TaskUpdates) => (dispatch:Function) => {
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
   return apiClient.updateTask(taskId, filterTaskForApi(updates));
 };
-export const updateTaskBatch = (updatesByTaskId:{[id:string]: TaskUpdates}) => (dispatch:Function, _:any, { apiClient }:ExtraArgs) => {
+export const updateTaskBatch = (updatesByTaskId:{[id:string]: TaskUpdates}) => (dispatch:Function) => {
   dispatch({
     type: UPDATE_TASK_BATCH,
     payload: { updatesByTaskId },
@@ -746,13 +750,17 @@ export const completeTask = (taskId:string) => (dispatch:Function, getState:Func
     });
 };
 
-export const loadTasks = (fetchParams:any) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
+export const loadTasks = (completed:boolean) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const userId = selectUserId(state);
   if (!userId) {
     throw new Error('[loadTasks] No userId');
   }
-  return apiClient.fetchTasks(userId, fetchParams)
+  const fetcher = completed
+    ? apiClient.fetchCompletedTasks
+    : apiClient.fetchNonCompletedTasks;
+
+  return fetcher(userId)
     .then((tasks) => {
       dispatch(setTasks(tasks));
     });
@@ -760,7 +768,7 @@ export const loadTasks = (fetchParams:any) => (dispatch:Function, getState:Funct
 
 export const resetTasks = () => ({ type: RESET_TASKS });
 
-export const persistTask = (id:string) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
+export const persistTask = (id:string) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const serializedTask = serializeTask(state, id);
   return apiClient.updateTask(
@@ -798,12 +806,10 @@ export const removeTaskDependency = (id:string) => (dispatch:Function, getState:
 };
 
 // create doesn't save to the API at the moment because for adding it needs to be modified
-export const createTaskDependency = (dependency:TaskDependency) => {
-  return {
-    type: CREATE_TASK_DEPENDENCY,
-    payload: dependency,
-  };
-};
+export const createTaskDependency = (dependency:TaskDependency) => ({
+  type: CREATE_TASK_DEPENDENCY,
+  payload: dependency,
+});
 
 export const navigateToTabForTask = (taskId:string, history:{push:Function}) => (dispatch:Function, getState:Function) => {
   const tab = selectSectionForTask(getState(), taskId);
@@ -812,7 +818,7 @@ export const navigateToTabForTask = (taskId:string, history:{push:Function}) => 
   }
 };
 
-export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], history:{push:Function}) => (dispatch:Function, getState:Function, { apiClient }:ExtraArgs) => {
+export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], history:{push:Function}) => (dispatch:Function, getState:Function) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -850,7 +856,7 @@ export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], h
 
   const taskWithoutId = omit(task, ['id']);
   return apiClient.createTask(filterTaskForApi(taskWithoutId))
-    .then(({ id: finalId }) => {
+    .then(({ id: finalId } : { id: string }) => {
       dispatch(removeTaskFromAllIds(temporaryId));
       dispatch({
         type: ADD_TASK,

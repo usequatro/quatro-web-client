@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { loadDashboardTasks as loadDashboardTasksAction, selectLoaded } from '../../modules/dashboard';
 import { selectUserLoggedIn } from '../../modules/session';
 
-export default (Component, view, fetchParams) => {
+export default (Component, view) => {
   const mapDispatchToProps = {
     loadDashboardTasks: loadDashboardTasksAction,
   };
@@ -17,7 +17,7 @@ export default (Component, view, fetchParams) => {
   }) => {
     useEffect(() => {
       if (!loaded && userLoggedIn) {
-        loadDashboardTasks(view, fetchParams);
+        loadDashboardTasks(view);
       }
     });
     return <Component {...restProps} loaded={loaded} />;

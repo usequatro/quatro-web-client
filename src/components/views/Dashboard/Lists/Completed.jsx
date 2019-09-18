@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import withLoadTasks from '../../../hoc/withLoadTasks';
 
 import { selectCompletedTasks } from '../../../../modules/tasks';
-import { FETCH_PARAMS_COMPLETED } from '../../../../modules/dashboard';
 import { COMPLETED } from '../../../../constants/dashboardTabs';
 
 import LoaderWrapper from '../../../ui/LoaderWrapper';
@@ -35,5 +34,4 @@ const mapStateToProps = (state) => ({
 export default withLoadTasks(
   connect(mapStateToProps)(Completed),
   'completed',
-  FETCH_PARAMS_COMPLETED,
 );

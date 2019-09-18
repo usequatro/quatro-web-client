@@ -75,6 +75,33 @@ export const fetchTasks = (
     });
 };
 
+const parseTaskResults = (querySnapshot : firebase.firestore.QuerySnapshot) => (
+  querySnapshot.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as TaskApiWithId[]
+);
+
+export const fetchNonCompletedTasks = (userId:string):Promise<TaskApiWithId[]> => {
+  console.log(`${logPrefix} fetchNonCompletedTasks`, userId);
+  return db.collection(TASKS)
+    .where('userId', '==', userId)
+    .where('trashed', '==', null)
+    .where('completed', '==', null)
+    .get()
+    .then((querySnapshot) => parseTaskResults(querySnapshot));
+};
+
+export const fetchCompletedTasks = (userId:string):Promise<TaskApiWithId[]> => {
+  console.log(`${logPrefix} fetchCompletedTasks`, userId);
+  return db.collection(TASKS)
+    .where('userId', '==', userId)
+    .where('trashed', '==', null)
+    .where('completed', '>', 0)
+    .get()
+    .then((querySnapshot) => parseTaskResults(querySnapshot));
+};
+
 export const updateTask = (taskId:string, updates:TaskApiUpdatesWithId) => {
   console.log(`${logPrefix} updateTask`, taskId, updates);
   return db.collection(TASKS).doc(taskId).set(
@@ -93,3 +120,5 @@ export const updateTaskBatch = (updatesByTaskId: {[id: string]: TaskApiUpdatesWi
   });
   return batch.commit();
 };
+
+export type ApiClient = typeof module.exports.default;

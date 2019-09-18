@@ -10,16 +10,12 @@ export default () => {
     {},
     composeEnhancers(
       applyMiddleware(
-        thunk.withExtraArgument({apiClient})
-      )
+        thunk.withExtraArgument({ apiClient }),
+      ),
     ),
   );
   if (process.env.REACT_APP_DEVELOPMENT) {
     (window as any).store = store;
   }
   return store;
-};
-
-export type ExtraArgs = {
-  apiClient: typeof apiClient,
 };

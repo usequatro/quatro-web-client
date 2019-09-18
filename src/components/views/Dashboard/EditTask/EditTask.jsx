@@ -175,5 +175,4 @@ const mapStateToProps = (state, ownProps) => {
 export default withLoadTasks(
   connect(mapStateToProps, mapDispatchToProps)(EditTask),
   'default',
-  undefined,
 );
