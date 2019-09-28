@@ -188,7 +188,7 @@ const Task = ({
             )}
             {recurringLabel && (
               <TaskSubtitle mt={2}>
-                {`Recurring: ${recurringLabel}`}
+                {`Recurrence: ${recurringLabel}`}
               </TaskSubtitle>
             )}
             {description && (

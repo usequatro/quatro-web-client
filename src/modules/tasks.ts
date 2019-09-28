@@ -64,7 +64,6 @@ const TASK_KEY_DEFAULTS = {
   scheduledStart: null,
   completed: null,
   trashed: null,
-  recurringConfig: null,
   dependencyIds: [],
 };
 const TASK_KEYS_FOR_REDUX = {
@@ -82,7 +81,6 @@ const TASK_KEYS_FOR_REDUX = {
   userId: true,
   prioritizedAheadOf: true,
   dependencyIds: true,
-  recurringConfig: true,
 };
 type TaskFromApiClient = {
   id: string,
@@ -98,7 +96,6 @@ type TaskFromApiClient = {
   userId: string,
   blockedBy: [string],
   prioritizedAheadOf: string | null,
-  recurringConfig?: RecurringConfig,
 };
 const TASK_KEYS_FOR_API = {
   title: true,
@@ -113,7 +110,6 @@ const TASK_KEYS_FOR_API = {
   userId: true,
   blockedBy: true,
   prioritizedAheadOf: true,
-  recurringConfig: true,
 };
 
 // Utilities
