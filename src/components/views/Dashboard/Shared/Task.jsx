@@ -3,10 +3,12 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import truncate from 'lodash/truncate';
+import isEmpty from 'lodash/isEmpty';
 import {
   Heading, Text, Box,
 } from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
+
 import { completeTask } from '../../../../modules/tasks';
 import { EDIT_TASK } from '../../../../constants/paths';
 import CheckIcon from '../../../icons/CheckIcon';
@@ -14,6 +16,7 @@ import ButtonFunction from '../../../ui/ButtonFunction';
 import BlockingTaskList from './BlockingTaskList';
 import activeLighter from '../../../style-mixins/activeLighter';
 import { mediaVerySmall } from '../../../style-mixins/mediaQueries';
+import { getRecurringOptionLabel } from '../../../../util/recurrence';
 
 const duration = 300;
 const maxHeightTransitionStyles = {
@@ -130,6 +133,7 @@ const Task = ({
   ranking,
   disableAnimations,
   prioritizedAheadOf,
+  recurringConfig,
 }) => {
   const dispatch = useDispatch();
   const [completedStart, setCompletedStart] = useState(false);
@@ -144,6 +148,10 @@ const Task = ({
   const onTaskClick = () => {
     history.push(EDIT_TASK.replace(/:id\b/, id));
   };
+
+  const recurringLabel = !isEmpty(recurringConfig)
+    ? getRecurringOptionLabel(recurringConfig)
+    : null;
 
   return (
     <Transition
@@ -170,16 +178,17 @@ const Task = ({
             </TaskTitle>
             {scheduledStart && (
               <TaskSubtitle mt={2}>
-              Scheduled start:
-                {' '}
-                {new Date(scheduledStart).toLocaleString()}
+                {`Scheduled start: ${new Date(scheduledStart).toLocaleString()}`}
               </TaskSubtitle>
             )}
             {due && (
               <TaskSubtitle mt={2}>
-              Due:
-                {' '}
-                {new Date(due).toLocaleString()}
+                {`Due: ${new Date(due).toLocaleString()}`}
+              </TaskSubtitle>
+            )}
+            {recurringLabel && (
+              <TaskSubtitle mt={2}>
+                {`Recurring: ${recurringLabel}`}
               </TaskSubtitle>
             )}
             {description && (
@@ -189,9 +198,7 @@ const Task = ({
             )}
             {completed && (
               <TaskSubtitle mt={2}>
-              Completed:
-                {' '}
-                {new Date(completed).toLocaleString()}
+                {`Completed: ${new Date(completed).toLocaleString()}`}
               </TaskSubtitle>
             )}
             {showBlocked && (

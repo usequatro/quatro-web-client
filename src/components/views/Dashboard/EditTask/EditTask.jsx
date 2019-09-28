@@ -57,6 +57,7 @@ const EditTask = ({
   completed,
   score,
   scheduledStart,
+  recurringConfig,
   taskPrioritizedAheadOfTitle,
   dependencyIds,
   updateTaskDependency,
@@ -124,7 +125,8 @@ const EditTask = ({
                   removeTaskDependency={removeTaskDependency}
                   createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}
                   clearRelativePrioritization={clearRelativePrioritization}
-                  setRecurringConfig={(...args) => console.log(...args)}
+                  recurringConfig={recurringConfig}
+                  setRecurringConfig={(value) => onUpdate('recurringConfig', value)}
                 />
 
                 <Box mb={4}>

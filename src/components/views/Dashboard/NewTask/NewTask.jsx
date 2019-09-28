@@ -37,6 +37,7 @@ const NewTask = ({ history }) => {
   const [due, setDue] = useState(null);
   const [scheduledStart, setScheduledStart] = useState(null);
   const [dependencies, setDependencies] = useState([]);
+  const [recurringConfig, setRecurringConfig] = useState(null);
 
   useEffect(() => {
     setTemporaryId(`_${uuid()}`);
@@ -113,7 +114,8 @@ const NewTask = ({ history }) => {
                 updateTaskDependency={onUpdateTaskDependency}
                 removeTaskDependency={onRemoveTaskDependency}
                 createTaskDependency={onCreateTaskDependency}
-                setRecurringConfig={(...args) => console.log(...args)}
+                recurringConfig={recurringConfig}
+                setRecurringConfig={setRecurringConfig}
               />
             </ContentContainer>
           </NewTaskMain>

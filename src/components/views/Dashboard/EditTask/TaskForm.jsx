@@ -14,8 +14,15 @@ import BlockersSelector from './BlockersSelector';
 import ButtonInline from '../../../ui/ButtonInline';
 import RecurringPopup from './RecurringPopup';
 
-import * as DURATION_UNITS from '../../../../constants/recurringDurationUnits';
-import * as WEEKDAYS from '../../../../constants/weekdays';
+import {
+  getRecurringPresetFromConfig,
+  RECURRING_CONFIG_EVERY_MONDAY,
+  RECURRING_CONFIG_EVERY_WEEKDAY,
+  NO_RECURRENCE_OPTION,
+  EVERY_MONDAY_OPTION,
+  WEEKDAYS_OPTION,
+  CUSTOM_OPTION,
+} from '../../../../util/recurrence';
 
 const Italic = styled.span`
   font-style: italic;
@@ -54,9 +61,11 @@ const TaskForm = ({
   removeTaskDependency,
   createTaskDependency,
   clearRelativePrioritization,
+  recurringConfig,
   setRecurringConfig,
 }) => {
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
+  const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
 
   return (
     <>
@@ -121,47 +130,28 @@ const TaskForm = ({
         <ToggleableFieldWrapper
           label="Recurrence"
           helpText="Do you need to do this multiple times?"
-          value={scheduledStart}
-          onChange={(event, value) => setScheduledStart(value)}
+          defaultChecked={selectedRecurringOption !== ''}
         >
-          <Dropdown onChange={(event, value) => {
-            const recurringDropdownActions = {
-              '': () => {},
-              custom: () => setRecurringPopupVisible(true),
-              everyMonday: () => setRecurringConfig({
-                unit: DURATION_UNITS.WEEK,
-                amount: 1,
-                activeWeekdays: {
-                  [WEEKDAYS.MONDAY]: true,
-                  [WEEKDAYS.TUESDAY]: false,
-                  [WEEKDAYS.WEDNESDAY]: false,
-                  [WEEKDAYS.THURSDAY]: false,
-                  [WEEKDAYS.FRIDAY]: false,
-                  [WEEKDAYS.SATURDAY]: false,
-                  [WEEKDAYS.SUNDAY]: false,
-                },
-              }),
-              weekdays: () => setRecurringConfig({
-                unit: DURATION_UNITS.WEEK,
-                amount: 1,
-                activeWeekdays: {
-                  [WEEKDAYS.MONDAY]: true,
-                  [WEEKDAYS.TUESDAY]: true,
-                  [WEEKDAYS.WEDNESDAY]: true,
-                  [WEEKDAYS.THURSDAY]: true,
-                  [WEEKDAYS.FRIDAY]: true,
-                  [WEEKDAYS.SATURDAY]: false,
-                  [WEEKDAYS.SUNDAY]: false,
-                },
-              }),
-            };
-            (recurringDropdownActions[value] || (() => {}))();
-          }}
+          <Dropdown
+            value={selectedRecurringOption}
+            onChange={(event, value) => {
+              const recurringDropdownActions = {
+                [NO_RECURRENCE_OPTION]: () => setRecurringConfig(null),
+                [CUSTOM_OPTION]: () => setRecurringPopupVisible(true),
+                [EVERY_MONDAY_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_MONDAY),
+                [WEEKDAYS_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_WEEKDAY),
+              };
+              (recurringDropdownActions[value] || (() => {}))();
+            }}
           >
-            <Dropdown.Option value=""></Dropdown.Option>
-            <Dropdown.Option value="everyMonday">Every Monday</Dropdown.Option>
-            <Dropdown.Option value="weekdays">Every weekday (Monday to Friday)</Dropdown.Option>
-            <Dropdown.Option value="custom">Custom...</Dropdown.Option>
+            <Dropdown.Option value={NO_RECURRENCE_OPTION}>
+              {selectedRecurringOption === NO_RECURRENCE_OPTION ? '' : 'Not recurring'}
+            </Dropdown.Option>
+            <Dropdown.Option value={EVERY_MONDAY_OPTION}>Every Monday</Dropdown.Option>
+            <Dropdown.Option value={WEEKDAYS_OPTION}>
+              Every weekday (Monday to Friday)
+            </Dropdown.Option>
+            <Dropdown.Option value={CUSTOM_OPTION}>Custom...</Dropdown.Option>
           </Dropdown>
         </ToggleableFieldWrapper>
         <BlockersSelector

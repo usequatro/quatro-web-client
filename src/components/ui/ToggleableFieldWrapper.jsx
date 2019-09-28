@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import noop from 'lodash/noop';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 
@@ -7,7 +8,7 @@ import BooleanCheckbox from './BooleanCheckbox';
 const Container = styled(Box).attrs({ mb: 2 })``;
 
 const ToggleableFieldWrapper = ({
-  defaultChecked, label, helpText, onChange, disabled, children,
+  defaultChecked = false, label, helpText, onChange = noop, disabled, children,
 }) => {
   const [checked, setChecked] = useState(defaultChecked);
 
