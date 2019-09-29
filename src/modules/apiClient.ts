@@ -164,4 +164,6 @@ export const updateRecurringConfig = (id:string, updates:RecurringConfigApiWithI
     .then(() => ({ id })) // for convenience so it returns the same as add()
 };
 
+export const deleteRecurringConfig = (id:string) => db.collection(RECURRING_CONFIGS).doc(id).delete();
+
 export type ApiClient = typeof module.exports.default;

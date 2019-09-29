@@ -143,7 +143,7 @@ const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
 const SET_RECURRING_CONFIGS = `${NAMESPACE}/SET_RECURRING_CONFIGS`;
 const UPDATE_RECURRING_CONFIG = `${NAMESPACE}/UPDATE_RECURRING_CONFIG`;
-const REMOVE_RECURRING_CONFIG_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_RECURRING_CONFIG_FROM_ALL_IDS`;
+const REMOVE_RECURRING_CONFIG = `${NAMESPACE}/REMOVE_RECURRING_CONFIG`;
 
 // Reducers
 
@@ -357,7 +357,7 @@ export const reducer = createReducer(INITIAL_STATE, {
       },
     },
   }),
-  [REMOVE_RECURRING_CONFIG_FROM_ALL_IDS]: (
+  [REMOVE_RECURRING_CONFIG]: (
     state : S,
     { payload } : { payload : string }
   ) => ({
@@ -365,6 +365,7 @@ export const reducer = createReducer(INITIAL_STATE, {
     recurringConfigs: {
       ...state.recurringConfigs,
       allIds: state.recurringConfigs.allIds.filter(id => id !== payload),
+      byId: omit(state.recurringConfigs.byId, payload),
     },
   }),
 });
@@ -970,6 +971,7 @@ export const updateTaskRecurringConfig = (taskId: string, updates: apiClient.Rec
   saveRecurringConfig()
     .then(({ id: finalRecurringConfigId } : { id: string }) => {
       if (task.recurringConfigId !== finalRecurringConfigId) {
+        const temporaryId = recurringConfigId;
         dispatch({
           type: UPDATE_RECURRING_CONFIG,
           payload: {
@@ -979,8 +981,8 @@ export const updateTaskRecurringConfig = (taskId: string, updates: apiClient.Rec
         });
         dispatch(updateTask(taskId, { recurringConfigId: finalRecurringConfigId }));
         dispatch({
-          type: REMOVE_RECURRING_CONFIG_FROM_ALL_IDS,
-          payload: task.recurringConfigId,
+          type: REMOVE_RECURRING_CONFIG,
+          payload: temporaryId,
         });
       }
     });
@@ -991,10 +993,15 @@ export const removeTaskRecurringConfig = (taskId: string) => (dispatch:Function,
   const task = selectTask(state, taskId);
   const recurringConfigId = task.recurringConfigId;
 
+  if (recurringConfigId == null) {
+    throw new Error("Tried to remove recurring config but task isn't recurring");
+  }
+
   dispatch({
-    type: REMOVE_RECURRING_CONFIG_FROM_ALL_IDS,
+    type: REMOVE_RECURRING_CONFIG,
     payload: recurringConfigId,
   });
-
   dispatch(updateTask(taskId, { recurringConfigId: null }));
+
+  apiClient.deleteRecurringConfig(recurringConfigId);
 };
