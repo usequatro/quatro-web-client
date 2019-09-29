@@ -23,38 +23,13 @@ import * as dashboardTabs from '../constants/dashboardTabs';
 import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
 import * as apiClient from './apiClient';
 
-import { RecurringConfig } from '../types';
+import { Task, TaskDependency, RecurringConfig } from '../types';
+import invert from 'lodash/invert';
 
 export const NAMESPACE = 'tasks';
 
 type TaskUnfiltered = { [s: string]: any };
-type TaskUpdates = { [s: string]: any };
-type Task = {
-  id: string,
-  title: string,
-  effort: number,
-  impact: number,
-  description: string,
-  created: number,
-  due: number | null,
-  scheduledStart: number | null,
-  completed: number | null,
-  score: number | null,
-  trashed: number | null,
-  userId: string,
-  prioritizedAheadOf: string | null,
-  dependencyIds: [string],
-};
-
-type TaskDependency = {
-  id: string,
-  taskId: string,
-  type: string,
-  config: {
-    taskId?: string,
-    value?: string,
-  },
-};
+type Updates = { [s: string]: any };
 
 const TASK_KEY_DEFAULTS = {
   effort: null,
@@ -65,6 +40,7 @@ const TASK_KEY_DEFAULTS = {
   completed: null,
   trashed: null,
   dependencyIds: [],
+  recurringConfigId: null,
 };
 const TASK_KEYS_FOR_REDUX = {
   id: true,
@@ -81,21 +57,7 @@ const TASK_KEYS_FOR_REDUX = {
   userId: true,
   prioritizedAheadOf: true,
   dependencyIds: true,
-};
-type TaskFromApiClient = {
-  id: string,
-  title: string,
-  effort: number,
-  impact: number,
-  description: string,
-  created: number,
-  due: number | null,
-  scheduledStart: number | null,
-  completed: number | null,
-  trashed: number | null,
-  userId: string,
-  blockedBy: [string],
-  prioritizedAheadOf: string | null,
+  recurringConfigId: true,
 };
 const TASK_KEYS_FOR_API = {
   title: true,
@@ -110,6 +72,7 @@ const TASK_KEYS_FOR_API = {
   userId: true,
   blockedBy: true,
   prioritizedAheadOf: true,
+  recurringConfigId: true,
 };
 
 // Utilities
@@ -131,8 +94,8 @@ const filterTaskKeys = (task:TaskUnfiltered, keys:{[s:string]:boolean}):object =
 const filterTaskForRedux = (task:TaskUnfiltered):Task => (
   filterTaskKeys(task, TASK_KEYS_FOR_REDUX) as Task
 );
-const filterTaskForApi = (task:TaskUnfiltered):TaskFromApiClient => (
-  filterTaskKeys(task, TASK_KEYS_FOR_API) as TaskFromApiClient
+const filterTaskForApi = (task:TaskUnfiltered):apiClient.TaskApiWithId => (
+  filterTaskKeys(task, TASK_KEYS_FOR_API) as apiClient.TaskApiWithId
 );
 
 const normalizeBase = (value:number, from:number, to:number) => (value * to) / from;
@@ -178,6 +141,9 @@ const RESET_TASKS = `${NAMESPACE}/RESET_TASKS`;
 const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
+const SET_RECURRING_CONFIGS = `${NAMESPACE}/SET_RECURRING_CONFIGS`;
+const UPDATE_RECURRING_CONFIG = `${NAMESPACE}/UPDATE_RECURRING_CONFIG`;
+const REMOVE_RECURRING_CONFIG_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_RECURRING_CONFIG_FROM_ALL_IDS`;
 
 // Reducers
 
@@ -190,6 +156,10 @@ const INITIAL_STATE = {
     byId: {},
     allIds: [],
   },
+  recurringConfigs: {
+    byId: {},
+    allIds: [],
+  },
 };
 
 type NormalizedEntities<Entity> = {
@@ -199,12 +169,13 @@ type NormalizedEntities<Entity> = {
 type S = {
   tasks: NormalizedEntities<Task>,
   taskDependencies: NormalizedEntities<TaskDependency>,
+  recurringConfigs: NormalizedEntities<RecurringConfig>,
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
   [UPDATE_TASK]: (
     state:S,
-    { payload: { taskId, updates } }:{payload:{taskId:string, updates:TaskUpdates}},
+    { payload: { taskId, updates } }:{payload:{taskId:string, updates:Updates}},
   ) => ({
     ...state,
     tasks: {
@@ -220,7 +191,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
   [UPDATE_TASK_BATCH]: (
     state:S,
-    { payload: { updatesByTaskId } } : {payload:{updatesByTaskId:{[s:string]:TaskUpdates}}},
+    { payload: { updatesByTaskId } } : {payload:{updatesByTaskId:{[s:string]:Updates}}},
   ) => ({
     ...state,
     tasks: {
@@ -288,7 +259,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   [RESET_TASKS]: () => ({ ...INITIAL_STATE }),
   [UPDATE_TASK_DEPENDENCY]: (
     state:S,
-    { payload: { id, updates } }:{payload:{id:string, updates: TaskUpdates}},
+    { payload: { id, updates } }:{payload:{id:string, updates: Updates}},
   ) => ({
     ...state,
     taskDependencies: {
@@ -349,6 +320,51 @@ export const reducer = createReducer(INITIAL_STATE, {
           ],
         },
       },
+    },
+  }),
+  [SET_RECURRING_CONFIGS]: (
+    state : S,
+    { payload } : { payload : NormalizedEntities<RecurringConfig> }
+  ) => ({
+    ...state,
+    recurringConfigs: {
+      allIds: uniq([
+        ...state.recurringConfigs.allIds,
+        ...payload.allIds,
+      ]),
+      byId: {
+        ...state.recurringConfigs.byId,
+        ...payload.byId,
+      },
+    },
+  }),
+  [UPDATE_RECURRING_CONFIG]: (
+    state : S,
+    { payload } : { payload : { id: string, updates: object } }
+  ) => ({
+    ...state,
+    recurringConfigs: {
+      allIds: uniq([
+        ...state.recurringConfigs.allIds,
+        payload.id,
+      ]),
+      byId: {
+        ...state.recurringConfigs.byId,
+        [payload.id]: {
+          ...(state.recurringConfigs.byId[payload.id] || {}),
+          ...payload.updates,
+        },
+      },
+    },
+  }),
+  [REMOVE_RECURRING_CONFIG_FROM_ALL_IDS]: (
+    state : S,
+    { payload } : { payload : string }
+  ) => ({
+    ...state,
+    recurringConfigs: {
+      ...state.recurringConfigs,
+      allIds: state.recurringConfigs.allIds.filter(id => id !== payload),
     },
   }),
 });
@@ -539,6 +555,8 @@ export const selectSectionForTask = (state:AS, taskId:string) => {
   }
 };
 
+export const selectRecurringConfig = (state:AS, id:string) => state[NAMESPACE].recurringConfigs.byId[id];
+
 // Actions
 
 const normalizeTasks = (rawTasks:any[]) => {
@@ -551,6 +569,7 @@ const normalizeTasks = (rawTasks:any[]) => {
       ...task,
     },
   }), {});
+
   const tasks:NormalizedEntities<Task> = {
     allIds: tasksAllIds,
     byId: tasksById,
@@ -560,6 +579,7 @@ const normalizeTasks = (rawTasks:any[]) => {
     byId: {},
     allIds: [],
   };
+
   rawTasks.forEach(({ id, blockedBy }) => {
     (blockedBy || []).forEach((dependency:any) => {
       const dependencyId = generateId();
@@ -600,7 +620,7 @@ const serializeTask = (state:AS, id:string) => {
   return serializedTask;
 };
 
-export const setTasks = (tasks: TaskFromApiClient[]) => {
+export const setTasks = (tasks: apiClient.TaskApiWithId[]) => {
   const parsedTasks = tasks.map((task) => {
     const impact = toInt(task.impact, null);
     const effort = toInt(task.effort, null);
@@ -619,14 +639,35 @@ export const setTasks = (tasks: TaskFromApiClient[]) => {
   };
 };
 
-export const updateTask = (taskId:string, updates:TaskUpdates) => (dispatch:Function) => {
+const normalizeRecurringConfigs = (recurringConfigs: RecurringConfig[]) => (
+  recurringConfigs.reduce((memo, rc:RecurringConfig) => (rc === null ? memo : {
+    allIds: [
+      ...memo.allIds,
+      rc.id,
+    ],
+    byId: {
+      ...memo.byId,
+      [rc.id]: rc,
+    },
+  }), { allIds: [], byId: {} } as NormalizedEntities<RecurringConfig> )
+);
+
+export const setRecurringConfigs = (recurringConfigs: RecurringConfig[]) => {
+  const normalizedEntities = normalizeRecurringConfigs(recurringConfigs);
+  return {
+    type: SET_RECURRING_CONFIGS,
+    payload: { ...normalizedEntities },
+  };
+};
+
+export const updateTask = (taskId:string, updates:Updates) => (dispatch:Function) => {
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
   return apiClient.updateTask(taskId, filterTaskForApi(updates));
 };
-export const updateTaskBatch = (updatesByTaskId:{[id:string]: TaskUpdates}) => (dispatch:Function) => {
+export const updateTaskBatch = (updatesByTaskId:{[id:string]: Updates}) => (dispatch:Function) => {
   dispatch({
     type: UPDATE_TASK_BATCH,
     payload: { updatesByTaskId },
@@ -752,6 +793,20 @@ export const completeTask = (taskId:string) => (dispatch:Function, getState:Func
     });
 };
 
+export const loadRecurringConfigs = (ids: string[]) => (dispatch:Function, getState:Function) => {
+  const state = getState();
+  const userId = selectUserId(state);
+  if (!userId) {
+    throw new Error('[loadRecurringConfigs] No userId');
+  }
+  return apiClient.fetchRecurringConfigs(userId)
+    .then((recurringConfigs) => {
+      const idsMap = invert(ids);
+      const filteredRecurringConfigs = recurringConfigs.filter(({ id }) => !!idsMap[id])
+      dispatch(setRecurringConfigs(filteredRecurringConfigs));
+    });
+};
+
 export const loadTasks = (completed:boolean) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const userId = selectUserId(state);
@@ -765,6 +820,7 @@ export const loadTasks = (completed:boolean) => (dispatch:Function, getState:Fun
   return fetcher(userId)
     .then((tasks) => {
       dispatch(setTasks(tasks));
+      return tasks;
     });
 };
 
@@ -779,7 +835,7 @@ export const persistTask = (id:string) => (dispatch:Function, getState:Function)
   );
 };
 
-export const updateTaskDependency = (id:string, updates:TaskUpdates) => (dispatch:Function, getState:Function) => {
+export const updateTaskDependency = (id:string, updates:Updates) => (dispatch:Function, getState:Function) => {
   dispatch({
     type: UPDATE_TASK_DEPENDENCY,
     payload: {
@@ -888,3 +944,57 @@ export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], h
 export const clearRelativePrioritization = (taskId:string) => updateTask(taskId, {
   prioritizedAheadOf: null,
 });
+
+export const updateTaskRecurringConfig = (taskId: string, updates: apiClient.RecurringConfigApiWithId) => (dispatch:Function, getState:Function) => {
+  const state = getState();
+  const task = selectTask(state, taskId);
+
+  const isNew = task.recurringConfigId == null;
+  const recurringConfigId = task.recurringConfigId == null ? `_${uuid()}` : task.recurringConfigId;
+
+  dispatch({
+    type: UPDATE_RECURRING_CONFIG,
+    payload: {
+      id: recurringConfigId,
+      updates,
+    },
+  });
+
+  const saveRecurringConfig = isNew
+    ? ():Promise<{ id: string }> => apiClient.createRecurringConfig({
+      ...updates,
+      userId: selectUserId(state),
+    })
+    : ():Promise<{ id: string }> => apiClient.updateRecurringConfig(recurringConfigId, updates);
+
+  saveRecurringConfig()
+    .then(({ id: finalRecurringConfigId } : { id: string }) => {
+      if (task.recurringConfigId !== finalRecurringConfigId) {
+        dispatch({
+          type: UPDATE_RECURRING_CONFIG,
+          payload: {
+            id: finalRecurringConfigId,
+            updates,
+          },
+        });
+        dispatch(updateTask(taskId, { recurringConfigId: finalRecurringConfigId }));
+        dispatch({
+          type: REMOVE_RECURRING_CONFIG_FROM_ALL_IDS,
+          payload: task.recurringConfigId,
+        });
+      }
+    });
+};
+
+export const removeTaskRecurringConfig = (taskId: string) => (dispatch:Function, getState:Function) => {
+  const state = getState();
+  const task = selectTask(state, taskId);
+  const recurringConfigId = task.recurringConfigId;
+
+  dispatch({
+    type: REMOVE_RECURRING_CONFIG_FROM_ALL_IDS,
+    payload: recurringConfigId,
+  });
+
+  dispatch(updateTask(taskId, { recurringConfigId: null }));
+};

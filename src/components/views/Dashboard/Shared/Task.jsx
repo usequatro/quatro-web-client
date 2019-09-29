@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import truncate from 'lodash/truncate';
-import isEmpty from 'lodash/isEmpty';
 import {
   Heading, Text, Box,
 } from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
 
-import { completeTask } from '../../../../modules/tasks';
+import { completeTask, selectRecurringConfig } from '../../../../modules/tasks';
 import { EDIT_TASK } from '../../../../constants/paths';
 import CheckIcon from '../../../icons/CheckIcon';
 import ButtonFunction from '../../../ui/ButtonFunction';
@@ -133,7 +132,7 @@ const Task = ({
   ranking,
   disableAnimations,
   prioritizedAheadOf,
-  recurringConfig,
+  recurringConfigId,
 }) => {
   const dispatch = useDispatch();
   const [completedStart, setCompletedStart] = useState(false);
@@ -149,9 +148,8 @@ const Task = ({
     history.push(EDIT_TASK.replace(/:id\b/, id));
   };
 
-  const recurringLabel = !isEmpty(recurringConfig)
-    ? getRecurringOptionLabel(recurringConfig)
-    : null;
+  const recurringConfig = useSelector((state) => selectRecurringConfig(state, recurringConfigId));
+  const recurringLabel = recurringConfigId ? getRecurringOptionLabel(recurringConfig) : null;
 
   return (
     <Transition

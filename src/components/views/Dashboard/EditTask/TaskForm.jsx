@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import memoize from 'lodash/memoize';
 import dayjs from 'dayjs';
+import uuid from 'uuid/v4';
 
+import get from 'lodash/get';
 import InputGroup from '../../../ui/InputGroup';
 import InputField from '../../../ui/InputField';
 import Dropdown from '../../../ui/Dropdown';
@@ -131,6 +133,11 @@ const TaskForm = ({
           label="Recurrence"
           helpText="Do you need to do this multiple times?"
           defaultChecked={selectedRecurringOption !== ''}
+          onChange={(event, checked) => {
+            if (!checked) {
+              setRecurringConfig(null);
+            }
+          }}
         >
           <Dropdown
             value={selectedRecurringOption}
@@ -172,7 +179,7 @@ const TaskForm = ({
       <RecurringPopup
         open={recurringPopupVisible}
         onClose={() => setRecurringPopupVisible(false)}
-        onDone={setRecurringConfig}
+        onDone={(value) => setRecurringConfig(value)}
       />
     </>
   );

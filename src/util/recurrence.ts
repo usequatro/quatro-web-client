@@ -3,9 +3,9 @@ import isEqual from 'lodash/isEqual';
 import * as WEEKDAYS from '../constants/weekdays';
 import * as DURATION_UNITS from '../constants/recurringDurationUnits';
 
-import { RecurringConfig } from '../types';
+import { RecurringConfig, RecurringConfigWithoutId } from '../types';
 
-export const RECURRING_CONFIG_EVERY_MONDAY:RecurringConfig = {
+export const RECURRING_CONFIG_EVERY_MONDAY:RecurringConfigWithoutId = {
   unit: DURATION_UNITS.WEEK,
   amount: 1,
   activeWeekdays: {
@@ -18,7 +18,7 @@ export const RECURRING_CONFIG_EVERY_MONDAY:RecurringConfig = {
     [WEEKDAYS.SUNDAY]: false,
   },
 };
-export const RECURRING_CONFIG_EVERY_WEEKDAY:RecurringConfig = {
+export const RECURRING_CONFIG_EVERY_WEEKDAY:RecurringConfigWithoutId = {
   unit: DURATION_UNITS.WEEK,
   amount: 1,
   activeWeekdays: {
@@ -48,10 +48,16 @@ export const getRecurringPresetFromConfig = (recurringConfig:RecurringConfig) =>
   if (!recurringConfig || isEqual(recurringConfig, {})) {
     return NO_RECURRENCE_OPTION;
   }
-  if (isEqual(recurringConfig, RECURRING_CONFIG_EVERY_MONDAY)) {
+  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_MONDAY.unit &&
+    recurringConfig.amount === RECURRING_CONFIG_EVERY_MONDAY.amount &&
+    isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_MONDAY.activeWeekdays)
+  ) {
     return EVERY_MONDAY_OPTION;
   }
-  if (isEqual(recurringConfig, RECURRING_CONFIG_EVERY_WEEKDAY)) {
+  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_WEEKDAY.unit &&
+    recurringConfig.amount === RECURRING_CONFIG_EVERY_WEEKDAY.amount &&
+    isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_WEEKDAY.activeWeekdays)
+  ) {
     return WEEKDAYS_OPTION;
   }
   return CUSTOM_OPTION;

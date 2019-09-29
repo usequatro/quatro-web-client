@@ -1,6 +1,9 @@
+import uniq from 'lodash/uniq';
+
 import createReducer from '../util/createReducer';
-import { loadTasks, resetTasks } from './tasks';
+import { loadTasks, resetTasks, loadRecurringConfigs } from './tasks';
 import { RESET } from './reset';
+import { Task } from '../types';
 
 export const NAMESPACE = 'dashboard';
 
@@ -65,6 +68,10 @@ export const loadDashboardTasks = (view = 'default') => (dispatch:Function) => {
   dispatch(setLoadFlags(view, { loading: true, loaded: false }));
 
   dispatch(loadTasks(view === 'completed'))
+    .then((tasks:Task[]) => {
+      const recurringConfigIds = uniq(tasks.map((t) => t.recurringConfigId).filter(Boolean));
+      return dispatch(loadRecurringConfigs(recurringConfigIds as string[]));
+    })
     .then(() => {
       dispatch(setLoadFlags(view, { loading: false, loaded: true }));
     })

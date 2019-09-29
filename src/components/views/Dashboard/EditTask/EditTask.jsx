@@ -8,15 +8,18 @@ import get from 'lodash/get';
 
 import {
   selectUndeletedTask,
-  updateTask as updateTaskAction,
-  moveToTrashTask as moveToTrashTaskAction,
-  updateTaskDependency as updateTaskDependencyAction,
-  removeTaskDependency as removeTaskDependencyAction,
+  updateTask,
+  moveToTrashTask,
+  updateTaskDependency,
+  removeTaskDependency,
   createTaskDependency,
-  clearRelativePrioritization as clearRelativePrioritizationAction,
+  clearRelativePrioritization,
+  navigateToTabForTask,
+  removeTaskRecurringConfig,
+  updateTaskRecurringConfig,
   selectTask,
   selectTaskDependencies,
-  navigateToTabForTask,
+  selectRecurringConfig,
 } from '../../../../modules/tasks';
 import { selectLoaded } from '../../../../modules/dashboard';
 import * as paths from '../../../../constants/paths';
@@ -46,8 +49,6 @@ const ContentContainer = styled(Box)`
 
 const EditTask = ({
   loaded,
-  updateTask,
-  moveToTrashTask,
   id,
   title,
   impact,
@@ -57,17 +58,14 @@ const EditTask = ({
   completed,
   score,
   scheduledStart,
-  recurringConfig,
+  associatedRecurringConfig,
   taskPrioritizedAheadOfTitle,
   dependencyIds,
-  updateTaskDependency,
-  removeTaskDependency,
-  clearRelativePrioritization,
 }) => {
   const dispatch = useDispatch();
 
   const onUpdate = (key, value) => {
-    updateTask(id, { [key]: value });
+    dispatch(updateTask(id, { [key]: value }));
   };
 
   const dependencyDescriptors = useSelector((state) => (
@@ -121,12 +119,18 @@ const EditTask = ({
                   scheduledStart={scheduledStart}
                   setScheduledStart={(value) => onUpdate('scheduledStart', value)}
                   dependencies={dependencyDescriptors}
-                  updateTaskDependency={updateTaskDependency}
-                  removeTaskDependency={removeTaskDependency}
+                  updateTaskDependency={(...args) => dispatch(updateTaskDependency(...args))}
+                  removeTaskDependency={(...args) => dispatch(removeTaskDependency(...args))}
                   createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}
-                  clearRelativePrioritization={clearRelativePrioritization}
-                  recurringConfig={recurringConfig}
-                  setRecurringConfig={(value) => onUpdate('recurringConfig', value)}
+                  clearRelativePrioritization={(...args) => dispatch(clearRelativePrioritization(...args))}
+                  recurringConfig={associatedRecurringConfig}
+                  setRecurringConfig={(value) => {
+                    if (value === null) {
+                      dispatch(removeTaskRecurringConfig(id));
+                    } else {
+                      dispatch(updateTaskRecurringConfig(id, value));
+                    }
+                  }}
                 />
 
                 <Box mb={4}>
@@ -138,7 +142,7 @@ const EditTask = ({
                 <Button
                   variant="outline"
                   onClick={() => {
-                    moveToTrashTask(id);
+                    dispatch(moveToTrashTask(id));
                     onRequestClose();
                   }}
                   mb={4}
@@ -154,14 +158,6 @@ const EditTask = ({
   );
 };
 
-const mapDispatchToProps = {
-  updateTask: updateTaskAction,
-  moveToTrashTask: moveToTrashTaskAction,
-  updateTaskDependency: updateTaskDependencyAction,
-  removeTaskDependency: removeTaskDependencyAction,
-  clearRelativePrioritization: clearRelativePrioritizationAction,
-};
-
 const mapStateToProps = (state, ownProps) => {
   const task = selectUndeletedTask(state, ownProps.match.params.id);
 
@@ -171,10 +167,11 @@ const mapStateToProps = (state, ownProps) => {
     taskPrioritizedAheadOfTitle: task && task.prioritizedAheadOf
       ? get(selectTask(state, task.prioritizedAheadOf), 'title', null)
       : null,
+    associatedRecurringConfig: task.recurringConfigId ? selectRecurringConfig(state, task.recurringConfigId) : null,
   };
 };
 
 export default withLoadTasks(
-  connect(mapStateToProps, mapDispatchToProps)(EditTask),
+  connect(mapStateToProps)(EditTask),
   'default',
 );
