@@ -27,7 +27,6 @@ const DateTimeField = ({
       newValue = dayjs(`${newDate} ${newTime}`).valueOf();
     }
 
-    console.log('DateTimeField', newValue);
     onChange(event, newValue);
   };
 
