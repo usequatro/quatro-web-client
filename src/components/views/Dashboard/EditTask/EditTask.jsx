@@ -17,6 +17,7 @@ import {
   navigateToTabForTask,
   removeTaskRecurringConfig,
   updateTaskRecurringConfig,
+  createTaskRecurringConfig,
   selectTask,
   selectTaskDependencies,
   selectRecurringConfig,
@@ -124,13 +125,14 @@ const EditTask = ({
                   createTaskDependency={(...args) => dispatch(createTaskDependency(...args))}
                   clearRelativePrioritization={(...args) => dispatch(clearRelativePrioritization(...args))}
                   recurringConfig={associatedRecurringConfig}
-                  setRecurringConfig={(value) => {
-                    if (value === null) {
-                      dispatch(removeTaskRecurringConfig(id));
+                  setRecurringConfig={(recurringConfig) => {
+                    if (associatedRecurringConfig) {
+                      dispatch(updateTaskRecurringConfig(id, recurringConfig));
                     } else {
-                      dispatch(updateTaskRecurringConfig(id, value));
+                      dispatch(createTaskRecurringConfig(id, recurringConfig));
                     }
                   }}
+                  removeRecurringConfig={() => dispatch(removeTaskRecurringConfig(id))}
                 />
 
                 <Box mb={4}>

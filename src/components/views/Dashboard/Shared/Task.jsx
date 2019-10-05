@@ -149,7 +149,9 @@ const Task = ({
   };
 
   const recurringConfig = useSelector((state) => selectRecurringConfig(state, recurringConfigId));
-  const recurringLabel = recurringConfigId ? getRecurringOptionLabel(recurringConfig) : null;
+  const recurringLabel = recurringConfigId && recurringConfig
+    ? getRecurringOptionLabel(recurringConfig)
+    : '';
 
   return (
     <Transition

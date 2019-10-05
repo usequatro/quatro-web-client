@@ -26,18 +26,25 @@ export type TaskDependency = {
   },
 };
 
-export type RecurringConfigWithoutId = {
+export type ActiveWeekdays = {
+  mon: boolean,
+  tue: boolean,
+  wed: boolean,
+  thu: boolean,
+  fri: boolean,
+  sat: boolean,
+  sun: boolean,
+};
+
+export type RecurringConfig = {
+  id: string
   unit: string,
   amount: number,
-  activeWeekdays?: {
-    mon: boolean,
-    tue: boolean,
-    wed: boolean,
-    thu: boolean,
-    fri: boolean,
-    sat: boolean,
-    sun: boolean,
-  },
-} | null;
+  userId: string,
+  activeWeekdays: ActiveWeekdays,
+  referenceDate: number | null,
+};
 
-export type RecurringConfig = RecurringConfigWithoutId & { id: string };
+export type OptionalKeys<T> = {
+  [P in keyof T]?: T[P];
+}

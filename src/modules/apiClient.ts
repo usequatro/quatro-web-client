@@ -132,6 +132,7 @@ type RecurringConfigApi = null | {
   amount: number,
   activeWeekdays: Weekdays,
   userId: string,
+  referenceDate: number,
 };
 export type RecurringConfigApiWithId = RecurringConfigApi & WithId;
 

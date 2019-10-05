@@ -16,6 +16,7 @@ import RecurringPopup from './RecurringPopup';
 
 import {
   getRecurringPresetFromConfig,
+  getRecurringOptionLabel,
   RECURRING_CONFIG_EVERY_MONDAY,
   RECURRING_CONFIG_EVERY_WEEKDAY,
   NO_RECURRENCE_OPTION,
@@ -41,6 +42,8 @@ const getInitialDueDate = () => dayjs()
   .startOf('hour')
   .valueOf();
 
+const OPEN_RECURRENCE_MODAL_OPTION = 'openRecurrenceModal';
+
 const TaskForm = ({
   id,
   title,
@@ -63,6 +66,7 @@ const TaskForm = ({
   clearRelativePrioritization,
   recurringConfig,
   setRecurringConfig,
+  removeRecurringConfig,
 }) => {
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
@@ -132,8 +136,8 @@ const TaskForm = ({
           helpText="Do you need to do this multiple times?"
           defaultChecked={selectedRecurringOption !== ''}
           onChange={(event, checked) => {
-            if (!checked) {
-              setRecurringConfig(null);
+            if (!checked && recurringConfig) {
+              removeRecurringConfig();
             }
           }}
         >
@@ -141,10 +145,11 @@ const TaskForm = ({
             value={selectedRecurringOption}
             onChange={(event, value) => {
               const recurringDropdownActions = {
-                [NO_RECURRENCE_OPTION]: () => setRecurringConfig(null),
-                [CUSTOM_OPTION]: () => setRecurringPopupVisible(true),
+                [NO_RECURRENCE_OPTION]: () => removeRecurringConfig(),
                 [EVERY_MONDAY_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_MONDAY),
                 [WEEKDAYS_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_WEEKDAY),
+                [CUSTOM_OPTION]: () => {},
+                [OPEN_RECURRENCE_MODAL_OPTION]: () => setRecurringPopupVisible(true),
               };
               (recurringDropdownActions[value] || (() => {}))();
             }}
@@ -156,7 +161,12 @@ const TaskForm = ({
             <Dropdown.Option value={WEEKDAYS_OPTION}>
               Every weekday (Monday to Friday)
             </Dropdown.Option>
-            <Dropdown.Option value={CUSTOM_OPTION}>Custom...</Dropdown.Option>
+            {recurringConfig && selectedRecurringOption === CUSTOM_OPTION && (
+              <Dropdown.Option value={CUSTOM_OPTION}>
+                {getRecurringOptionLabel(recurringConfig)}
+              </Dropdown.Option>
+            )}
+            <Dropdown.Option value={OPEN_RECURRENCE_MODAL_OPTION}>Custom...</Dropdown.Option>
           </Dropdown>
         </ToggleableFieldWrapper>
         <BlockersSelector
@@ -178,6 +188,9 @@ const TaskForm = ({
         open={recurringPopupVisible}
         onClose={() => setRecurringPopupVisible(false)}
         onDone={(value) => setRecurringConfig(value)}
+        initialAmount={recurringConfig ? recurringConfig.amount : undefined}
+        initialUnit={recurringConfig ? recurringConfig.unit : undefined}
+        initialActiveWeekdays={recurringConfig ? recurringConfig.activeWeekdays : undefined}
       />
     </>
   );

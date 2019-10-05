@@ -23,7 +23,7 @@ import * as dashboardTabs from '../constants/dashboardTabs';
 import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
 import * as apiClient from './apiClient';
 
-import { Task, TaskDependency, RecurringConfig } from '../types';
+import { Task, TaskDependency, RecurringConfig, OptionalKeys } from '../types';
 import invert from 'lodash/invert';
 
 export const NAMESPACE = 'tasks';
@@ -142,6 +142,7 @@ const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
 const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
 const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
 const SET_RECURRING_CONFIGS = `${NAMESPACE}/SET_RECURRING_CONFIGS`;
+const CREATE_RECURRING_CONFIG = `${NAMESPACE}/CREATE_RECURRING_CONFIG`;
 const UPDATE_RECURRING_CONFIG = `${NAMESPACE}/UPDATE_RECURRING_CONFIG`;
 const REMOVE_RECURRING_CONFIG = `${NAMESPACE}/REMOVE_RECURRING_CONFIG`;
 
@@ -344,16 +345,30 @@ export const reducer = createReducer(INITIAL_STATE, {
   ) => ({
     ...state,
     recurringConfigs: {
-      allIds: uniq([
-        ...state.recurringConfigs.allIds,
-        payload.id,
-      ]),
+      ...state.recurringConfigs,
       byId: {
         ...state.recurringConfigs.byId,
         [payload.id]: {
-          ...(state.recurringConfigs.byId[payload.id] || {}),
+          ...state.recurringConfigs.byId[payload.id],
           ...payload.updates,
         },
+      },
+    },
+  }),
+  [CREATE_RECURRING_CONFIG]: (
+    state : S,
+    { payload } : { payload : { id: string, properties: object } }
+  ) => ({
+    ...state,
+    recurringConfigs: {
+      ...state.recurringConfigs,
+      allIds: [
+        ...state.recurringConfigs.allIds,
+        payload.id,
+      ],
+      byId: {
+        ...state.recurringConfigs.byId,
+        [payload.id]: payload.properties,
       },
     },
   }),
@@ -641,7 +656,7 @@ export const setTasks = (tasks: apiClient.TaskApiWithId[]) => {
 };
 
 const normalizeRecurringConfigs = (recurringConfigs: RecurringConfig[]) => (
-  recurringConfigs.reduce((memo, rc:RecurringConfig) => (rc === null ? memo : {
+  recurringConfigs.reduce((memo, rc:RecurringConfig) => (rc === null || !rc.id ? memo : {
     allIds: [
       ...memo.allIds,
       rc.id,
@@ -661,11 +676,26 @@ export const setRecurringConfigs = (recurringConfigs: RecurringConfig[]) => {
   };
 };
 
-export const updateTask = (taskId:string, updates:Updates) => (dispatch:Function) => {
+export const updateTask = (taskId:string, updates:Updates) => (dispatch:Function, getState:()=>AS) => {
   dispatch({
     type: UPDATE_TASK,
     payload: { taskId, updates },
   });
+
+  // If the task has a recurring config associated, we should update its reference date.
+  if (updates.hasOwnProperty('scheduledStart')) {
+    const state = getState();
+    const task = selectTask(state, taskId);
+    const recurringConfig = task.recurringConfigId
+      ? selectRecurringConfig(state, task.recurringConfigId)
+      : null;
+    if (recurringConfig) {
+      dispatch(updateTaskRecurringConfig(taskId, {
+        referenceDate: updates.scheduledStart || Date.now(),
+      }));
+    }
+  }
+
   return apiClient.updateTask(taskId, filterTaskForApi(updates));
 };
 export const updateTaskBatch = (updatesByTaskId:{[id:string]: Updates}) => (dispatch:Function) => {
@@ -946,12 +976,15 @@ export const clearRelativePrioritization = (taskId:string) => updateTask(taskId,
   prioritizedAheadOf: null,
 });
 
-export const updateTaskRecurringConfig = (taskId: string, updates: apiClient.RecurringConfigApiWithId) => (dispatch:Function, getState:Function) => {
+export const updateTaskRecurringConfig = (taskId: string, updates: OptionalKeys<RecurringConfig>) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const task = selectTask(state, taskId);
 
-  const isNew = task.recurringConfigId == null;
-  const recurringConfigId = task.recurringConfigId == null ? `_${uuid()}` : task.recurringConfigId;
+  const { recurringConfigId } = task;
+
+  if (!recurringConfigId) {
+    throw new Error("Tried to update recurring config but task doesn't have recurring config id");
+  }
 
   dispatch({
     type: UPDATE_RECURRING_CONFIG,
@@ -961,30 +994,47 @@ export const updateTaskRecurringConfig = (taskId: string, updates: apiClient.Rec
     },
   });
 
-  const saveRecurringConfig = isNew
-    ? ():Promise<{ id: string }> => apiClient.createRecurringConfig({
-      ...updates,
-      userId: selectUserId(state),
-    })
-    : ():Promise<{ id: string }> => apiClient.updateRecurringConfig(recurringConfigId, updates);
+  const recurringConfig = selectRecurringConfig(getState(), recurringConfigId);
+  apiClient.updateRecurringConfig(recurringConfigId, recurringConfig as apiClient.RecurringConfigApiWithId);
+};
 
-  saveRecurringConfig()
+export const createTaskRecurringConfig = (taskId: string, properties: apiClient.RecurringConfigApiWithId) => (dispatch:Function, getState:Function) => {
+  const state = getState();
+  const task = selectTask(state, taskId);
+
+  const temporaryId = `_${uuid()}`;
+
+  // Important to add the reference date for all recurring tasks that happen every few days/weeks.
+  const propertiesWithReferenceDate = {
+    ...properties,
+    referenceDate: task.scheduledStart || Date.now(),
+  };
+
+  dispatch({
+    type: CREATE_RECURRING_CONFIG,
+    payload: {
+      id: temporaryId,
+      properties: propertiesWithReferenceDate,
+    },
+  });
+
+  apiClient.createRecurringConfig({
+    ...propertiesWithReferenceDate,
+    userId: selectUserId(state),
+  })
     .then(({ id: finalRecurringConfigId } : { id: string }) => {
-      if (task.recurringConfigId !== finalRecurringConfigId) {
-        const temporaryId = recurringConfigId;
-        dispatch({
-          type: UPDATE_RECURRING_CONFIG,
-          payload: {
-            id: finalRecurringConfigId,
-            updates,
-          },
-        });
-        dispatch(updateTask(taskId, { recurringConfigId: finalRecurringConfigId }));
-        dispatch({
-          type: REMOVE_RECURRING_CONFIG,
-          payload: temporaryId,
-        });
-      }
+      dispatch({
+        type: CREATE_RECURRING_CONFIG,
+        payload: {
+          id: finalRecurringConfigId,
+          properties: propertiesWithReferenceDate,
+        },
+      });
+      dispatch(updateTask(taskId, { recurringConfigId: finalRecurringConfigId }));
+      dispatch({
+        type: REMOVE_RECURRING_CONFIG,
+        payload: temporaryId,
+      });
     });
 };
 
