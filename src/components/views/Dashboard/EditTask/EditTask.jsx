@@ -167,7 +167,9 @@ const mapStateToProps = (state, ownProps) => {
     taskPrioritizedAheadOfTitle: task && task.prioritizedAheadOf
       ? get(selectTask(state, task.prioritizedAheadOf), 'title', null)
       : null,
-    associatedRecurringConfig: task.recurringConfigId ? selectRecurringConfig(state, task.recurringConfigId) : null,
+    associatedRecurringConfig: task && task.recurringConfigId
+      ? selectRecurringConfig(state, task.recurringConfigId)
+      : null,
   };
 };
 

@@ -37,7 +37,9 @@ const FullScreenPaper = ({
   const [visible, setVisible] = useState(true);
 
   const close = (event) => {
-    event.preventDefault();
+    if (event && event.preventDefault) {
+      event.preventDefault();
+    }
     setVisible(false);
     setTimeout(() => (
       onCloseCustom ? onCloseCustom(history) : history.goBack()

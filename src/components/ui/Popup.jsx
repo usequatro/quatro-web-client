@@ -56,7 +56,9 @@ const Popup = ({ open, onClose, children }) => {
   }, [open]);
 
   const close = (event) => {
-    event.preventDefault();
+    if (event && event.preventDefault) {
+      event.preventDefault();
+    }
     setVisible(false);
     setTimeout(() => onClose(), duration);
   };
