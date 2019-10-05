@@ -557,7 +557,10 @@ const selectTasksPrioritizedAheadOf = (state:AS, id:string) => (
 const containsTaskId = (tasks:Task[], id:string) => tasks.filter((task) => task.id === id).length > 0;
 
 export const selectSectionForTask = (state:AS, taskId:string) => {
+  const task = selectTask(state, taskId);
   switch (true) {
+    case task.completed != null:
+      return dashboardTabs.COMPLETED;
     case containsTaskId(selectNowTasks(state), taskId):
       return dashboardTabs.NOW;
     case containsTaskId(selectNextTasks(state), taskId):
