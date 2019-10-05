@@ -55,7 +55,7 @@ const NewTask = ({ history }) => {
       due,
       scheduledStart,
     };
-    dispatch(addTask(newTask, dependencies, history));
+    dispatch(addTask(newTask, dependencies, recurringConfig, history));
   };
 
   const onUpdateTaskDependency = (id, updatedDependency) => {
@@ -115,7 +115,8 @@ const NewTask = ({ history }) => {
                 removeTaskDependency={onRemoveTaskDependency}
                 createTaskDependency={onCreateTaskDependency}
                 recurringConfig={recurringConfig}
-                setRecurringConfig={setRecurringConfig}
+                setRecurringConfig={(newRecurringConfig) => setRecurringConfig(newRecurringConfig)}
+                removeRecurringConfig={() => setRecurringConfig(null)}
               />
             </ContentContainer>
           </NewTaskMain>

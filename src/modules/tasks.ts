@@ -385,7 +385,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   }),
 });
 
-type AS = { [NAMESPACE]: S };
+interface AS { tasks: S };
 
 // Selectors
 
@@ -907,7 +907,12 @@ export const navigateToTabForTask = (taskId:string, history:{push:Function}) => 
   }
 };
 
-export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], history:{push:Function}) => (dispatch:Function, getState:Function) => {
+export const addTask = (
+  newTask:TaskUnfiltered,
+  dependencies:TaskDependency[],
+  recurringConfig: RecurringConfig | null,
+  history:{push:Function}
+) => (dispatch:Function, getState:Function) => {
   const {
     temporaryId = isRequired(),
     title = isRequired(),
@@ -963,6 +968,10 @@ export const addTask = (newTask:TaskUnfiltered, dependencies:TaskDependency[], h
         }));
       });
 
+      if (recurringConfig) {
+        dispatch(createTaskRecurringConfig(finalId, recurringConfig));
+      }
+
       trackTaskCreated(task.title);
     })
     .catch((error:Error) => {
@@ -998,7 +1007,7 @@ export const updateTaskRecurringConfig = (taskId: string, updates: OptionalKeys<
   apiClient.updateRecurringConfig(recurringConfigId, recurringConfig as apiClient.RecurringConfigApiWithId);
 };
 
-export const createTaskRecurringConfig = (taskId: string, properties: apiClient.RecurringConfigApiWithId) => (dispatch:Function, getState:Function) => {
+export const createTaskRecurringConfig = (taskId: string, properties: RecurringConfig) => (dispatch:Function, getState:Function) => {
   const state = getState();
   const task = selectTask(state, taskId);
 

@@ -49,7 +49,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 });
 
 type S = ReturnType<typeof reducer>;
-type AS = { [NAMESPACE]: S };
+interface AS { dashboard: S };
 
 // Selectors
 
