@@ -132,7 +132,7 @@ const TaskForm = ({
           />
         </ToggleableFieldWrapper>
         <ToggleableFieldWrapper
-          label="Recurrence"
+          label="Recurrence (early beta, unstable)"
           helpText="Do you need to do this multiple times?"
           defaultChecked={selectedRecurringOption !== ''}
           onChange={(event, checked) => {

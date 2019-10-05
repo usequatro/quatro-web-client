@@ -12,6 +12,21 @@ import Dropdown from '../../../ui/Dropdown';
 
 const RowBox = styled(Box).attrs({ pb: 4 })`
   display: flex;
+
+  > * {
+    margin: 0 0.5rem;
+  }
+  > *:first-child {
+    margin-left: 0;
+  }
+  > *:last-child {
+    margin-right: 0;
+  }
+`;
+
+const AmountInput = styled(InputField)`
+  text-align: right;
+  min-width: 2.5rem;
 `;
 
 const RecurringPopup = ({
@@ -49,8 +64,8 @@ const RecurringPopup = ({
       </Popup.Header>
       <Popup.Content>
         <RowBox>
-          Repeats every
-          <InputField
+          <div>Repeats every</div>
+          <AmountInput
             value={durationAmount}
             onChange={(event) => setDurationAmount(event.target.value)}
             type="number"
@@ -64,7 +79,7 @@ const RecurringPopup = ({
         </RowBox>
 
         {durationUnit === DURATION_UNITS.WEEK && (
-          <RowBox>
+          <Box>
             {Object.values(WEEKDAYS).map((weekday) => (
               <BooleanCheckbox
                 key={weekday}
@@ -75,7 +90,7 @@ const RecurringPopup = ({
                 {weekday}
               </BooleanCheckbox>
             ))}
-          </RowBox>
+          </Box>
         )}
       </Popup.Content>
       <Popup.Footer>
