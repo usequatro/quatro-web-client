@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import truncate from 'lodash/truncate';
+import memoize from 'lodash/memoize';
 import {
   Heading, Text, Box,
 } from 'rebass/styled-components';
@@ -16,6 +17,8 @@ import BlockingTaskList from './BlockingTaskList';
 import activeLighter from '../../../style-mixins/activeLighter';
 import { mediaVerySmall } from '../../../style-mixins/mediaQueries';
 import { getRecurringOptionLabel } from '../../../../util/recurrence';
+
+const MAX_DESCRIPTION_CHARACTERS = 200;
 
 const duration = 300;
 const maxHeightTransitionStyles = {
@@ -118,6 +121,37 @@ const MainContainer = styled(Box)`
   overflow: hidden;
 `;
 
+const stopPropagation = (event) => event.stopPropagation();
+
+/**
+ *
+ * @param {string} text
+ * @return {React[]}
+ */
+const addLinkTags = memoize((text) => {
+  const tmp = '|+|-|+|';
+  const pieces = text.replace(/(https?:\/\/[^\s]+)/ig, `${tmp}$1${tmp}`).split(tmp);
+
+  let remainingLength = MAX_DESCRIPTION_CHARACTERS;
+
+  return pieces.map((piece, index) => {
+    if (remainingLength <= 0) {
+      return null;
+    }
+    const truncatedPiece = truncate(piece, { separator: ' ', length: remainingLength });
+    remainingLength -= truncatedPiece.length;
+
+    const isLink = index % 2 === 1;
+
+    /* eslint-disable react/no-array-index-key */
+    return isLink
+      ? <a href={piece} target="_blank" rel="noopener noreferrer" key={index} onClick={stopPropagation}>{truncatedPiece}</a>
+      : <React.Fragment key={index}>{truncatedPiece}</React.Fragment>;
+    /* eslint-enable react/no-array-index-key */
+  })
+    .filter(Boolean);
+});
+
 const Task = ({
   id,
   title,
@@ -193,7 +227,7 @@ const Task = ({
             )}
             {description && (
               <TaskSubtitle mt={2}>
-                {truncate(description, { separator: ' ', length: 200 })}
+                {addLinkTags(description)}
               </TaskSubtitle>
             )}
             {completed && (
