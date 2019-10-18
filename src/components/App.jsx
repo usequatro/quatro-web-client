@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import isElectron from 'is-electron';
 import {
-  BrowserRouter, MemoryRouter, Switch, Route, Redirect,
+  BrowserRouter, HashRouter, MemoryRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';
@@ -30,7 +30,10 @@ const AppBackground = styled.div`
   max-width: ${MAX_WIDTH}; /* only mobile width for now */
 `;
 
-const [Router, routerProps] = isElectron()
+// In Safari, when saving the website to home.
+const isAppFullScreenMode = () => ('standalone' in window.navigator) && window.navigator.standalone;
+
+const [Router, routerProps] = isElectron() || isAppFullScreenMode()
   ? [MemoryRouter, { initialEntries: ['/'], initialIndex: 0 }]
   : [BrowserRouter, {}];
 
