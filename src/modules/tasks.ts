@@ -576,6 +576,11 @@ export const selectSectionForTask = (state:AS, taskId:string) => {
 
 export const selectRecurringConfig = (state:AS, id:string) => state[NAMESPACE].recurringConfigs.byId[id];
 
+const selectUncompletedTasksWithRecurringConfigId = (state:AS, rcId:string) : Task[] => {
+  const nonCompletedTasks = selectNonCompletedTasks(state);
+  return nonCompletedTasks.filter(({ recurringConfigId }) => recurringConfigId === rcId);
+};
+
 // Actions
 
 const normalizeTasks = (rawTasks:any[]) => {
@@ -775,7 +780,9 @@ const updateRelativePrioritizationToNext = (taskId:string, offset:number) => (di
   };
 };
 
-export const moveToTrashTask = (taskId:string) => (dispatch:Function) => {
+export const moveToTrashTask = (taskId:string) => (dispatch:Function, getState:Function) => {
+  const task = selectTask(getState(), taskId);
+
   // Relative prioritization: Any task that was set to go before this one should now go after next.
   dispatch(updateRelativePrioritizationToNext(taskId, +1));
 
@@ -786,6 +793,14 @@ export const moveToTrashTask = (taskId:string) => (dispatch:Function) => {
 
   const notificationUid = dispatch(showInfoNotification('Task deleted'));
   return dispatch(updateTask(taskId, { trashed: Date.now() }))
+    .then(() => {
+      if (task.recurringConfigId) {
+        const otherTasksOnSameRecurringConfig = selectUncompletedTasksWithRecurringConfigId(getState(), task.recurringConfigId);
+        if (otherTasksOnSameRecurringConfig.length === 0) {
+          return dispatch(removeRecurringConfig(task.recurringConfigId));
+        }
+      }
+    })
     .catch((error:Error) => {
       console.warn(error);
       dispatch(hideNotification(notificationUid));
@@ -1059,11 +1074,14 @@ export const removeTaskRecurringConfig = (taskId: string) => (dispatch:Function,
     throw new Error("Tried to remove recurring config but task isn't recurring");
   }
 
+  dispatch(updateTask(taskId, { recurringConfigId: null }));
+  dispatch(removeRecurringConfig(recurringConfigId));
+};
+
+const removeRecurringConfig = (recurringConfigId: string) => (dispatch:Function) => {
   dispatch({
     type: REMOVE_RECURRING_CONFIG,
     payload: recurringConfigId,
   });
-  dispatch(updateTask(taskId, { recurringConfigId: null }));
-
-  apiClient.deleteRecurringConfig(recurringConfigId);
+  return apiClient.deleteRecurringConfig(recurringConfigId);
 };
