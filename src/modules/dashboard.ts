@@ -1,3 +1,7 @@
+/**
+ * Basic app state for views, like which view shows, if side menus are open, etc.
+ */
+
 import uniq from 'lodash/uniq';
 
 import createReducer from '../util/createReducer';

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import isElectron from 'is-electron';
 import {
-  BrowserRouter, HashRouter, MemoryRouter, Switch, Route, Redirect,
+  BrowserRouter, MemoryRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 import AppStylesWrapper from './AppStylesWrapper';

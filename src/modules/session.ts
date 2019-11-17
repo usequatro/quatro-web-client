@@ -1,3 +1,7 @@
+/**
+ * Namespace to keep information of the current session, like user details.
+ */
+
 import get from 'lodash/get';
 import createReducer from '../util/createReducer';
 import { RESET } from './reset';

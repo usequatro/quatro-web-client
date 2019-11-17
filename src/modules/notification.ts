@@ -1,3 +1,7 @@
+/**
+ * Module to show UI notifications.
+ */
+
 import createReducer from '../util/createReducer';
 
 export const NAMESPACE = 'notification';

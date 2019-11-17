@@ -1,3 +1,7 @@
+/**
+ * File to interact with Firebase's Firestore database
+ */
+
 import * as firebase from 'firebase/app';
 
 const TASKS = 'tasks';

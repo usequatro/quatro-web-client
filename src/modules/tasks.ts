@@ -1,3 +1,7 @@
+/**
+ * Namespace for the data structures to represent tasks
+ */
+
 import sortBy from 'lodash/sortBy';
 import omit from 'lodash/omit';
 import uniq from 'lodash/uniq';
@@ -21,7 +25,7 @@ import { RESET } from './reset';
 import { selectUserId } from './session';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
-import * as apiClient from './apiClient';
+import * as apiClient from '../util/apiClient';
 
 import { Task, TaskDependency, RecurringConfig, OptionalKeys } from '../types';
 import invert from 'lodash/invert';
@@ -932,11 +936,11 @@ export const addTask = (
   history:{push:Function}
 ) => (dispatch:Function, getState:Function) => {
   const {
-    temporaryId = isRequired(),
-    title = isRequired(),
-    effort = isRequired(),
-    impact = isRequired(),
-    description = isRequired(),
+    temporaryId = isRequired('temporaryId'),
+    title = isRequired('title'),
+    effort = isRequired('effort'),
+    impact = isRequired('impact'),
+    description = isRequired('description'),
     ...restAttributes
   } = newTask;
 

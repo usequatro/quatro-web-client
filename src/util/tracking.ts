@@ -1,3 +1,7 @@
+/**
+ * Utils to send track events to Google Analytics
+ */
+
 const GA_MEASUREMENT_ID = process.env.REACT_APP_GA_MEASUREMENT_ID;
 const gtag: Function = (window as any).gtag || (() => { console.warn('GA not loaded'); });
 
