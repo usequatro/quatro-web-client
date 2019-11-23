@@ -31,8 +31,8 @@ const theme = {
   ],
   // Values for the fontFamily prop
   fonts: {
-    heading: "'Maven Pro', sans-serif;",
-    body: "'Maven Pro', sans-serif;",
+    heading: "'Work Sans', sans-serif;",
+    body: "'Work Sans', sans-serif;",
   },
   // Values for fontWeight prop
   fontWeights: {
