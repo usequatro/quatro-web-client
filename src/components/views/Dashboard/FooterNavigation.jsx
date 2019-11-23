@@ -7,7 +7,12 @@ import invert from 'lodash/invert';
 import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from 'constants/paths';
 import * as dashboardTabs from 'constants/dashboardTabs';
 
+import BacklogIcon from 'components/icons/Backlog';
+import BlockedIcon from 'components/icons/Blocked';
+import CalendarIcon from 'components/icons/Calendar';
 import PlusIcon from 'components/icons/PlusIcon';
+import TopFourIcon from 'components/icons/TopFour';
+
 import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
 import activeLighter from 'components/style-mixins/activeLighter';
 import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
@@ -41,15 +46,18 @@ const NavButton = styled.button.attrs({ type: 'primary' })`
   ${(props) => keyboardOnlyOutline(props.theme.colors.textHighlight)};
   ${activeLighter}
 `;
-const Circle = styled.div`
+
+const NavIcon = styled.div`
   width: 1.25rem;
   height: 1.25rem;
-  background-color: currentColor;
+  background-color: white;
   border-radius: 100%;
   margin-bottom: 0.5rem;
 `;
+
 const Label = styled.div`
   text-transform: uppercase;
+  font-family: ${({ theme }) => theme.fonts.heading};
   font-size: ${({ theme }) => theme.fontSizes[1]};
   overflow: -webkit-paged-x; /* weird thing for safari to render labels outside width */
   ${mediaVerySmall} {
@@ -59,13 +67,6 @@ const Label = styled.div`
     font-size: ${({ theme }) => theme.fontSizes[2]};
   }
 `;
-
-const NavItem = ({ selected, onClick, children }) => (
-  <NavButton selected={selected} onClick={onClick}>
-    <Circle />
-    <Label>{children}</Label>
-  </NavButton>
-);
 
 const NewTaskButtonContainer = styled.div`
   display: flex;
@@ -80,6 +81,7 @@ const NewTaskButtonContainer = styled.div`
     width: 3rem;
   }
 `;
+
 const NewTaskButton = styled.button`
   background-color: ${(props) => props.theme.colors.appForeground};
 
@@ -107,35 +109,56 @@ const FooterNavigation = ({
 
   return (
     <FooterContainer>
-      <NavItem
-        onClick={() => handleNavigation(dashboardTabs.NOW)}
+      {/* Top Four */}
+      <NavButton
         selected={currentTab === dashboardTabs.NOW}
+        onClick={() => handleNavigation(dashboardTabs.NOW)}
       >
-        Top 4
-      </NavItem>
-      <NavItem
-        onClick={() => handleNavigation(dashboardTabs.NEXT)}
+        <NavIcon>
+          <TopFourIcon size="fill" title="Top 4" />
+        </NavIcon>
+        <Label>Top 4</Label>
+      </NavButton>
+
+      {/* Backlog */}
+      <NavButton
         selected={currentTab === dashboardTabs.NEXT}
+        onClick={() => handleNavigation(dashboardTabs.NEXT)}
       >
-        Backlog
-      </NavItem>
+        <NavIcon>
+          <BacklogIcon size="fill" title="Backlog" />
+        </NavIcon>
+        <Label>Backlog</Label>
+      </NavButton>
+
+      {/* New Task Button */}
       <NewTaskButtonContainer>
         <NewTaskButton onClick={() => history.push(NEW_TASK)}>
           <PlusIcon size="fill" title="New Task" />
         </NewTaskButton>
       </NewTaskButtonContainer>
-      <NavItem
-        onClick={() => handleNavigation(dashboardTabs.SCHEDULED)}
+
+      {/* Calendar */}
+      <NavButton
         selected={currentTab === dashboardTabs.SCHEDULED}
+        onClick={() => handleNavigation(dashboardTabs.SCHEDULED)}
       >
-        Calendar
-      </NavItem>
-      <NavItem
-        onClick={() => handleNavigation(dashboardTabs.BLOCKED)}
+        <NavIcon>
+          <CalendarIcon size="fill" title="Calendar" />
+        </NavIcon>
+        <Label>Calendar</Label>
+      </NavButton>
+
+      {/* Blocked */}
+      <NavButton
         selected={currentTab === dashboardTabs.BLOCKED}
+        onClick={() => handleNavigation(dashboardTabs.BLOCKED)}
       >
-        Blocked
-      </NavItem>
+        <NavIcon>
+          <BlockedIcon size="fill" title="Blocked" />
+        </NavIcon>
+        <Label>Blocked</Label>
+      </NavButton>
     </FooterContainer>
   );
 };

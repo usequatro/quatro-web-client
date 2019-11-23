@@ -15,3 +15,11 @@ export const RUSTY_BROWN = 'rgb(51, 51, 3)';
 
 export const ERROR_RED = '#cc0000';
 export const SUCCESS_GREEN = 'rgb(29, 204, 42)';
+
+// New Color Scheme. @TODO: Clean up unused colors after porting over to new
+// style guide
+export const LIGHT_BLUE = '#7187b5';
+export const DARK_BLUE = '#00303a';
+export const ORANGE = '#ff8a01';
+export const NEW_LIGHT_GRAY = '#3d717b';
+

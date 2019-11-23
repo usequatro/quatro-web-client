@@ -19,10 +19,12 @@ import StyledRouterLink from 'components/ui/StyledRouterLink';
 import HeadingResponsive from 'components/ui/HeadingResponsive';
 import CheckListIcon from 'components/icons/CheckListIcon';
 import HamburgerIcon from 'components/icons/HamburgerIcon';
+import LogoIcon from 'components/icons/Logo';
 import ButtonFunction from 'components/ui/ButtonFunction';
 import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
+const HEADER_HEIGHT = '90px';
 
 const HeaderContainer = styled(Box).attrs({
   bg: 'transparent',
@@ -31,6 +33,7 @@ const HeaderContainer = styled(Box).attrs({
   flex-direction: column;
   flex-shrink: 0;
   width: 100%;
+  height: ${HEADER_HEIGHT};
 `;
 
 const HorizontalContainer = styled(Box).attrs({
@@ -41,6 +44,7 @@ const HorizontalContainer = styled(Box).attrs({
   align-items: center;
   flex-shrink: 0;
   width: 100%;
+  height: 100%;
 
   padding: ${({ theme }) => theme.space[5]};
   ${mediaVerySmall} {
@@ -48,16 +52,9 @@ const HorizontalContainer = styled(Box).attrs({
   }
 `;
 
-const DashboardTitle = styled(HeadingResponsive).attrs(() => ({
-  color: 'textPrimaryOverBackground',
-  fontWeight: 'body',
-}))`
+const DashboardTitle = styled.div`
   text-align: center;
-  font-family: ${(props) => props.theme.fonts.heading};
-  border: none;
-  background-color: transparent;
-  padding: 0 3rem;
-  opacity: 0.8; /* to make it lighter */
+  height: 100%;
 `;
 const SectionTitleContainer = styled(HeadingResponsive)`
   color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
@@ -106,7 +103,7 @@ const DashboardHeader = ({ location }) => {
           <HamburgerIcon size="small" title="Menu" />
         </ButtonFunction>
         <DashboardTitle>
-          Aizen
+          <LogoIcon size="fill" title="Aizen Logo" />
         </DashboardTitle>
         <StyledRouterLink
           to={paths.COMPLETED}

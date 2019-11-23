@@ -9,9 +9,9 @@ const theme = {
   ],
   // Color names that can be used in color, bg, and borderColor props
   colors: {
-    appBackground: colors.PAINT_BLUE,
+    appBackground: colors.LIGHT_BLUE,
     appForeground: colors.WHITE,
-    barBackground: colors.DEEP_SEA_BLUE,
+    barBackground: colors.DARK_BLUE,
     textPrimary: colors.ALMOST_BLACK,
     textPrimaryOverBackground: colors.WHITE,
     textSecondary: colors.GRAY,
