@@ -111,13 +111,13 @@ const FooterNavigation = ({
         onClick={() => handleNavigation(dashboardTabs.NOW)}
         selected={currentTab === dashboardTabs.NOW}
       >
-        Now
+        Top 4
       </NavItem>
       <NavItem
         onClick={() => handleNavigation(dashboardTabs.NEXT)}
         selected={currentTab === dashboardTabs.NEXT}
       >
-        Next
+        Backlog
       </NavItem>
       <NewTaskButtonContainer>
         <NewTaskButton onClick={() => history.push(NEW_TASK)}>
@@ -128,7 +128,7 @@ const FooterNavigation = ({
         onClick={() => handleNavigation(dashboardTabs.SCHEDULED)}
         selected={currentTab === dashboardTabs.SCHEDULED}
       >
-        Scheduled
+        Calendar
       </NavItem>
       <NavItem
         onClick={() => handleNavigation(dashboardTabs.BLOCKED)}
