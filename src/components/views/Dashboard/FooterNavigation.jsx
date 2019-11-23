@@ -3,12 +3,14 @@ import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass/styled-components';
 import invert from 'lodash/invert';
-import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from '../../../constants/paths';
-import * as dashboardTabs from '../../../constants/dashboardTabs';
-import PlusIcon from '../../icons/PlusIcon';
-import keyboardOnlyOutline from '../../style-mixins/keyboardOnlyOutline';
-import activeLighter from '../../style-mixins/activeLighter';
-import { mediaVerySmall, mediaLarge } from '../../style-mixins/mediaQueries';
+
+import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from 'constants/paths';
+import * as dashboardTabs from 'constants/dashboardTabs';
+
+import PlusIcon from 'components/icons/PlusIcon';
+import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
+import activeLighter from 'components/style-mixins/activeLighter';
+import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(DASHBOARD_TABS_TO_PATHS);
 

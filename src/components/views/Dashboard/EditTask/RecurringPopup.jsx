@@ -2,13 +2,14 @@ import React, { useState, useCallback } from 'react';
 import { Heading, Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
-import Popup from '../../../ui/Popup';
-import InputField from '../../../ui/InputField';
-import BooleanCheckbox from '../../../ui/BooleanCheckbox';
-import ButtonInline from '../../../ui/ButtonInline';
-import * as DURATION_UNITS from '../../../../constants/recurringDurationUnits';
-import * as WEEKDAYS from '../../../../constants/weekdays';
-import Dropdown from '../../../ui/Dropdown';
+import * as DURATION_UNITS from 'constants/recurringDurationUnits';
+import * as WEEKDAYS from 'constants/weekdays';
+
+import Popup from 'components/ui/Popup';
+import InputField from 'components/ui/InputField';
+import BooleanCheckbox from 'components/ui/BooleanCheckbox';
+import ButtonInline from 'components/ui/ButtonInline';
+import Dropdown from 'components/ui/Dropdown';
 
 const RowBox = styled(Box).attrs({ pb: 4 })`
   display: flex;

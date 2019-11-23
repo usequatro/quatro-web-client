@@ -2,9 +2,9 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import Dropdown from '../../../ui/Dropdown';
-import { selectTasksForDependencySelection } from '../../../../modules/tasks';
-import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';
+import Dropdown from 'components/ui/Dropdown';
+import { selectTasksForDependencySelection } from 'modules/tasks';
+import { TASK, FREE_TEXT } from 'constants/dependencyTypes';
 
 const FREE_TEXT_VALUE = '_freeText';
 

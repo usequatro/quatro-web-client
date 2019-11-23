@@ -21,18 +21,19 @@ import {
   selectTask,
   selectTaskDependencies,
   selectRecurringConfig,
-} from '../../../../modules/tasks';
-import { selectLoaded } from '../../../../modules/dashboard';
-import * as paths from '../../../../constants/paths';
+} from 'modules/tasks';
+import { selectLoaded } from 'modules/dashboard';
+import * as paths from 'constants/paths';
+
+import FullScreenPaper from 'components/ui/FullScreenPaper';
+import PapelHeader from 'components/ui/PaperHeader';
+import Loader from 'components/ui/Loader';
+import BasicMain from 'components/ui/BasicMain';
+import Button from 'components/ui/Button';
+import withLoadTasks from 'components/hoc/withLoadTasks';
+import Paragraph from 'components/ui/Paragraph';
 
 import TaskForm from './TaskForm';
-import FullScreenPaper from '../../../ui/FullScreenPaper';
-import PapelHeader from '../../../ui/PaperHeader';
-import Loader from '../../../ui/Loader';
-import BasicMain from '../../../ui/BasicMain';
-import Button from '../../../ui/Button';
-import withLoadTasks from '../../../hoc/withLoadTasks';
-import Paragraph from '../../../ui/Paragraph';
 
 const FormFlexContainer = styled.form`
   display: flex;

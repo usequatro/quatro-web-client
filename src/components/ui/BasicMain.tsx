@@ -2,7 +2,7 @@
 import styled from 'styled-components';
 // @ts-ignore
 import { Box } from 'rebass/styled-components';
-import verticalScroll from '../style-mixins/verticalScroll';
+import verticalScroll from 'components/style-mixins/verticalScroll';
 
 export default styled(Box).attrs({ as: 'main' })`
   flex-grow: 1;

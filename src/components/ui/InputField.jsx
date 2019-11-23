@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import FieldLabel from './FieldLabel';
-import FieldHelpText from './FieldHelpText';
+import FieldLabel from 'components/ui/FieldLabel';
+import FieldHelpText from 'components/ui/FieldHelpText';
 
 const Input = styled.input`
   font-family: inherit;
@@ -34,15 +34,15 @@ const Input = styled.input`
 const InputField = ({
   label, helpText, className, textarea, ...props
 }) => (
-  <Box as={label ? 'label' : 'div'} className={className}>
-    {label && (
-      <FieldLabel>{label}</FieldLabel>
-    )}
-    {helpText && (
-      <FieldHelpText>{helpText}</FieldHelpText>
-    )}
-    <Input as={textarea ? 'textarea' : 'input'} {...props} />
-  </Box>
-);
+    <Box as={label ? 'label' : 'div'} className={className}>
+      {label && (
+        <FieldLabel>{label}</FieldLabel>
+      )}
+      {helpText && (
+        <FieldHelpText>{helpText}</FieldHelpText>
+      )}
+      <Input as={textarea ? 'textarea' : 'input'} {...props} />
+    </Box>
+  );
 
 export default styled(InputField)``;

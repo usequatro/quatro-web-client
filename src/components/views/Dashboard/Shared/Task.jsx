@@ -9,14 +9,16 @@ import {
 } from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
 
-import { completeTask, selectRecurringConfig } from '../../../../modules/tasks';
-import { EDIT_TASK } from '../../../../constants/paths';
-import CheckIcon from '../../../icons/CheckIcon';
-import ButtonFunction from '../../../ui/ButtonFunction';
+import { completeTask, selectRecurringConfig } from 'modules/tasks';
+import { EDIT_TASK } from 'constants/paths';
+import { getRecurringOptionLabel } from 'util/recurrence';
+
+import CheckIcon from 'components/icons/CheckIcon';
 import BlockingTaskList from './BlockingTaskList';
-import activeLighter from '../../../style-mixins/activeLighter';
-import { mediaVerySmall } from '../../../style-mixins/mediaQueries';
-import { getRecurringOptionLabel } from '../../../../util/recurrence';
+import activeLighter from 'components/style-mixins/activeLighter';
+import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
+
+import ButtonFunction from 'components/ui/ButtonFunction';
 
 const MAX_DESCRIPTION_CHARACTERS = 200;
 

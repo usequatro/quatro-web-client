@@ -2,21 +2,21 @@ import React from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 
-import * as paths from '../../../constants/paths';
+import * as paths from 'constants/paths';
 
-import DashboardHeader from './DashboardHeader';
-import FooterNavigation from './FooterNavigation';
-import withLoadTasks from '../../hoc/withLoadTasks';
-import BasicMain from '../../ui/BasicMain';
-import LoaderWrapper from '../../ui/LoaderWrapper';
-import NewTask from './NewTask/NewTask';
-import EditTask from './EditTask';
-import Now from './Lists/Now';
-import Next from './Lists/Next';
-import Scheduled from './Lists/Scheduled';
-import Blocked from './Lists/Blocked';
-import Completed from './Lists/Completed';
-import safariBorderRadiusFix from '../../style-mixins/safariBorderRadiusFix';
+import withLoadTasks from 'components/hoc/withLoadTasks';
+import BasicMain from 'components/ui/BasicMain';
+import LoaderWrapper from 'components/ui/LoaderWrapper';
+import safariBorderRadiusFix from 'components/style-mixins/safariBorderRadiusFix';
+import DashboardHeader from 'components/views/Dashboard/DashboardHeader';
+import FooterNavigation from 'components/views/Dashboard/FooterNavigation';
+import NewTask from 'components/views/Dashboard/NewTask/NewTask';
+import EditTask from 'components/views/Dashboard/EditTask';
+import Now from 'components/views/Dashboard/Lists/Now';
+import Next from 'components/views/Dashboard/Lists/Next';
+import Scheduled from 'components/views/Dashboard/Lists/Scheduled';
+import Blocked from 'components/views/Dashboard/Lists/Blocked';
+import Completed from 'components/views/Dashboard/Lists/Completed';
 
 const DashboardMain = styled(BasicMain).attrs({
   bg: 'appForeground',

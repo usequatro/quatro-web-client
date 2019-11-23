@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import ButtonFunction from './ButtonFunction';
+import ButtonFunction from 'components/ui/ButtonFunction';
 
 // export default styled(Link)`
 //   outline-color: ${(props) => props.theme.colors.textHighlight};

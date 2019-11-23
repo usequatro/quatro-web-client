@@ -4,10 +4,11 @@ import { Link, withRouter } from 'react-router-dom';
 
 import * as firebase from 'firebase/app';
 
-import { DASHBOARD, SIGN_UP } from '../../../constants/paths';
-import InputGroup from '../../ui/InputGroup';
-import InputField from '../../ui/InputField';
-import InvisibleForm from '../../ui/InvisibleForm';
+import { DASHBOARD, SIGN_UP } from 'constants/paths';
+import InputGroup from 'components/ui/InputGroup';
+import InputField from 'components/ui/InputField';
+import InvisibleForm from 'components/ui/InvisibleForm';
+
 import SubmitButton from './SubmitButton';
 import ErrorMessage from './ErrorMessage';
 

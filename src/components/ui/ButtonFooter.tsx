@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 // @ts-ignore
 import { Box } from 'rebass/styled-components';
-import Button from './Button';
+import Button from 'components/ui/Button';
 
 const FooterContainer = styled(Box)`
   align-self: flex-end;

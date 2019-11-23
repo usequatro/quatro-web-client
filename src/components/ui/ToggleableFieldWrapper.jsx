@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 
-import BooleanCheckbox from './BooleanCheckbox';
+import BooleanCheckbox from 'components/ui/BooleanCheckbox';
 
 const Container = styled(Box).attrs({ mb: 2 })``;
 

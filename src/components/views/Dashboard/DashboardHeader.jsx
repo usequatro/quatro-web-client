@@ -5,21 +5,22 @@ import { Box } from 'rebass/styled-components';
 import { withRouter } from 'react-router-dom';
 import invert from 'lodash/invert';
 
-import StyledRouterLink from '../../ui/StyledRouterLink';
-import HeadingResponsive from '../../ui/HeadingResponsive';
-import * as paths from '../../../constants/paths';
-import CheckListIcon from '../../icons/CheckListIcon';
-import HamburgerIcon from '../../icons/HamburgerIcon';
-import ButtonFunction from '../../ui/ButtonFunction';
-import * as dashboardTabs from '../../../constants/dashboardTabs';
-import { setAccountMenuOpen } from '../../../modules/dashboard';
+import * as paths from 'constants/paths';
+import * as dashboardTabs from 'constants/dashboardTabs';
+import { setAccountMenuOpen } from 'modules/dashboard';
 import {
   selectNextTasks,
   selectScheduledTasks,
   selectBlockedTasks,
   selectCompletedTasks,
-} from '../../../modules/tasks';
-import { mediaVerySmall, mediaLarge } from '../../style-mixins/mediaQueries';
+} from 'modules/tasks';
+
+import StyledRouterLink from 'components/ui/StyledRouterLink';
+import HeadingResponsive from 'components/ui/HeadingResponsive';
+import CheckListIcon from 'components/icons/CheckListIcon';
+import HamburgerIcon from 'components/icons/HamburgerIcon';
+import ButtonFunction from 'components/ui/ButtonFunction';
+import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
 
@@ -74,10 +75,10 @@ const SectionTitleContainer = styled(HeadingResponsive)`
 `;
 
 const titles = {
-  [dashboardTabs.SCHEDULED]: 'Scheduled',
+  [dashboardTabs.SCHEDULED]: 'Calendar',
   [dashboardTabs.BLOCKED]: 'Blocked',
-  [dashboardTabs.NOW]: 'Now',
-  [dashboardTabs.NEXT]: 'Next',
+  [dashboardTabs.NOW]: 'Top 4',
+  [dashboardTabs.NEXT]: 'Backlog',
   [dashboardTabs.COMPLETED]: 'Completed',
   default: '',
 };

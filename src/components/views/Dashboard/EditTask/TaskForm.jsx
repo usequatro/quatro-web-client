@@ -3,17 +3,6 @@ import styled from 'styled-components';
 import memoize from 'lodash/memoize';
 import dayjs from 'dayjs';
 
-import InputGroup from '../../../ui/InputGroup';
-import InputField from '../../../ui/InputField';
-import Dropdown from '../../../ui/Dropdown';
-import HorizontalSelectorField from '../../../ui/HorizontalSelectorField';
-import ToggleableFieldWrapper from '../../../ui/ToggleableFieldWrapper';
-import DateTimeField from '../../../ui/DateTimeField';
-import Paragraph from '../../../ui/Paragraph';
-import BlockersSelector from './BlockersSelector';
-import ButtonInline from '../../../ui/ButtonInline';
-import RecurringPopup from './RecurringPopup';
-
 import {
   getRecurringPresetFromConfig,
   getRecurringOptionLabel,
@@ -23,7 +12,19 @@ import {
   EVERY_MONDAY_OPTION,
   WEEKDAYS_OPTION,
   CUSTOM_OPTION,
-} from '../../../../util/recurrence';
+} from 'util/recurrence';
+
+import InputGroup from 'components/ui/InputGroup';
+import InputField from 'components/ui/InputField';
+import Dropdown from 'components/ui/Dropdown';
+import HorizontalSelectorField from 'components/ui/HorizontalSelectorField';
+import ToggleableFieldWrapper from 'components/ui/ToggleableFieldWrapper';
+import DateTimeField from 'components/ui/DateTimeField';
+import Paragraph from 'components/ui/Paragraph';
+import ButtonInline from 'components/ui/ButtonInline';
+
+import BlockersSelector from './BlockersSelector';
+import RecurringPopup from './RecurringPopup';
 
 const Italic = styled.span`
   font-style: italic;
@@ -148,10 +149,10 @@ const TaskForm = ({
                 [NO_RECURRENCE_OPTION]: () => removeRecurringConfig(),
                 [EVERY_MONDAY_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_MONDAY),
                 [WEEKDAYS_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_WEEKDAY),
-                [CUSTOM_OPTION]: () => {},
+                [CUSTOM_OPTION]: () => { },
                 [OPEN_RECURRENCE_MODAL_OPTION]: () => setRecurringPopupVisible(true),
               };
-              (recurringDropdownActions[value] || (() => {}))();
+              (recurringDropdownActions[value] || (() => { }))();
             }}
           >
             <Dropdown.Option value={NO_RECURRENCE_OPTION}>

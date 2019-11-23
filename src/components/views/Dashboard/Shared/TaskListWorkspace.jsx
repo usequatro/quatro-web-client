@@ -4,11 +4,12 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-import { setRelativePrioritization } from '../../../../modules/tasks';
+import { setRelativePrioritization } from 'modules/tasks';
+import NOW_TASKS_LIMIT from 'constants/nowTasksLimit';
+import { NOW, NEXT } from 'constants/dashboardTabs';
+
+import TaskRefreshListener from 'components/views/Dashboard/TaskRefreshListener';
 import NoTasksView from './NoTasksView';
-import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
-import { NOW, NEXT } from '../../../../constants/dashboardTabs';
-import TaskRefreshListener from '../TaskRefreshListener';
 
 const duration = 250;
 const transitionStyles = {
