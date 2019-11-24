@@ -21,7 +21,6 @@ import Completed from 'components/views/Dashboard/Lists/Completed';
 const DashboardMain = styled(BasicMain).attrs({
   bg: 'appForeground',
 })`
-  border-radius: 2rem 2rem 0 0;
   ${safariBorderRadiusFix}
 `;
 const FlexContainer = styled.div`

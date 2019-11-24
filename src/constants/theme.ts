@@ -42,7 +42,11 @@ const theme = {
   // Values for lineHeight prop
   lineHeights: [],
   // Values for letterSpacing prop
-  letterSpacings: {},
+  letterSpacings: {
+    small: '0',
+    medium: '0.1px',
+    large: '0.5px',
+  },
   // Values for boxShadow prop
   shadows: {
     small: '0 0 4px rgba(0, 0, 0, .125)',
