@@ -32,7 +32,8 @@ const FooterContainer = styled(Box).attrs({
 `;
 
 const NavButton = styled.button.attrs({ type: 'primary' })`
-  color: ${({ theme, selected }) => (selected ? theme.colors.textPrimaryOverBackground : theme.colors.textHighlight)};
+  color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
+  opacity: ${({ selected }) => selected ? 1 : 0.5};
   display: flex;
   flex-basis: 0;
   flex-direction: column;
@@ -41,18 +42,27 @@ const NavButton = styled.button.attrs({ type: 'primary' })`
   background-color: transparent;
   border: none;
   width: 0; /* trickery to make it look good on small screens */
+  min-width: 55px; /* makes Top 4 appear on one line. @TODO: Find a better way to do this */
   flex-shrink: 0;
 
   ${(props) => keyboardOnlyOutline(props.theme.colors.textHighlight)};
   ${activeLighter}
 `;
 
-const NavIcon = styled.div`
-  width: 1.25rem;
-  height: 1.25rem;
+const NavIconContainer = styled.div`
+  width: 2rem;
+  height: 2rem;
   background-color: white;
   border-radius: 100%;
   margin-bottom: 0.5rem;
+  position: relative;
+`;
+
+const NavIcon = styled.div`
+  width: 50%;
+  position: absolute;
+  top: 25%;
+  left: 25%;
 `;
 
 const Label = styled.div`
@@ -75,7 +85,7 @@ const NewTaskButtonContainer = styled.div`
   align-items: center;
 
   height: 3.5rem;
-  width: 3.5rem;
+  width: 3.5rem;  
   ${mediaVerySmall} {
     height: 3rem;
     width: 3rem;
@@ -114,9 +124,11 @@ const FooterNavigation = ({
         selected={currentTab === dashboardTabs.NOW}
         onClick={() => handleNavigation(dashboardTabs.NOW)}
       >
-        <NavIcon>
-          <TopFourIcon size="fill" title="Top 4" />
-        </NavIcon>
+        <NavIconContainer>
+          <NavIcon>
+            <TopFourIcon size="fill" title="Top 4" />
+          </NavIcon>
+        </NavIconContainer>
         <Label>Top 4</Label>
       </NavButton>
 
@@ -125,9 +137,11 @@ const FooterNavigation = ({
         selected={currentTab === dashboardTabs.NEXT}
         onClick={() => handleNavigation(dashboardTabs.NEXT)}
       >
-        <NavIcon>
-          <BacklogIcon size="fill" title="Backlog" />
-        </NavIcon>
+        <NavIconContainer>
+          <NavIcon>
+            <BacklogIcon size="fill" title="Backlog" />
+          </NavIcon>
+        </NavIconContainer>
         <Label>Backlog</Label>
       </NavButton>
 
@@ -143,9 +157,11 @@ const FooterNavigation = ({
         selected={currentTab === dashboardTabs.SCHEDULED}
         onClick={() => handleNavigation(dashboardTabs.SCHEDULED)}
       >
-        <NavIcon>
-          <CalendarIcon size="fill" title="Calendar" />
-        </NavIcon>
+        <NavIconContainer>
+          <NavIcon>
+            <CalendarIcon size="fill" title="Calendar" />
+          </NavIcon>
+        </NavIconContainer>
         <Label>Calendar</Label>
       </NavButton>
 
@@ -154,9 +170,11 @@ const FooterNavigation = ({
         selected={currentTab === dashboardTabs.BLOCKED}
         onClick={() => handleNavigation(dashboardTabs.BLOCKED)}
       >
-        <NavIcon>
-          <BlockedIcon size="fill" title="Blocked" />
-        </NavIcon>
+        <NavIconContainer>
+          <NavIcon>
+            <BlockedIcon size="fill" title="Blocked" />
+          </NavIcon>
+        </NavIconContainer>
         <Label>Blocked</Label>
       </NavButton>
     </FooterContainer>
