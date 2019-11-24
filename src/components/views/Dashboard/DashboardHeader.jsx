@@ -25,6 +25,7 @@ const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
 
 // @TODO: See if we can avoid needing to hard code this height.
 const HEADER_HEIGHT = '90px';
+const HEADER_HEIGHT_VERY_SMALL = '60px';
 
 const HeaderContainer = styled(Box).attrs({
   bg: 'transparent',
@@ -34,6 +35,9 @@ const HeaderContainer = styled(Box).attrs({
   flex-shrink: 0;
   width: 100%;
   height: ${HEADER_HEIGHT};
+  ${mediaVerySmall} {
+    height: ${HEADER_HEIGHT_VERY_SMALL};
+  }
 `;
 
 const HorizontalContainer = styled(Box).attrs({
@@ -62,12 +66,16 @@ const SectionTitleContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  ${mediaVerySmall} {
+    padding: ${({ theme }) => `${theme.space[2]} 0`};
+  }
 `;
 
 const SectionTitle = styled(HeadingResponsive)`
   color: ${({ theme }) => theme.colors.textPrimary};
   letter-spacing: ${({ theme }) => theme.letterSpacings.large};
   text-align: center;
+  font-weight: bold;
 `
 
 // @TODO: Figure out a better way to style this header without needing
@@ -124,9 +132,11 @@ const DashboardHeader = ({ location }) => {
       </HeaderContainer>
 
       <SectionTitleContainer>
-        <SectionIconContainer>
-          <CurrentTabIcon size="fill" alt={titles[tab]} />
-        </SectionIconContainer>
+        {iconsByTab[tab] &&
+          <SectionIconContainer>
+            <CurrentTabIcon size="fill" alt={titles[tab]} />
+          </SectionIconContainer>
+        }
         <SectionTitle>
           {titles[tab] || titles.default}
         </SectionTitle>

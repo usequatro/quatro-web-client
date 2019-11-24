@@ -32,13 +32,8 @@ const maxHeightTransitionStyles = {
 
 const TaskContainer = styled.div`
   display: flex;
-  width: calc(100% + 2px); /* two pix to account for borders that we want to hide on the side */
-
-  border-style: solid;
-  border-color: ${(props) => props.theme.colors.borderLight};
-  border-width: ${({ state }) => (state === 'exited' ? '0' : '1px')};
-  border-radius: 2rem;
-  margin: 0 -1px 0 -1px; /* to hide side borders */
+  width: 100%;
+  margin: 0 1rem;
   background-color: ${(props) => props.theme.colors.appForeground};
 
   background-image: ${({ theme }) => (
@@ -56,16 +51,13 @@ const TaskContainer = styled.div`
 
   background-position: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0% 0%' : '100% 0%')};
   opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
-  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[5])};
-  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[5])};
+  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
   ${mediaVerySmall} {
-    padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
-    padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+    padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
+    padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
   }
-  margin-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
-  ${mediaVerySmall} {
-    margin-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
-  }
+  
   max-height: ${({ state }) => maxHeightTransitionStyles[state]};
   transition:
     background-position ${duration}ms linear,
@@ -75,7 +67,7 @@ const TaskContainer = styled.div`
     margin-bottom ${duration}ms ease-out,
     max-height ${duration}ms ease-out;
 
-  cursor: auto; /* overriding draggable that makes drag cursor */
+  cursor: pointer; /* overriding draggable that makes drag cursor */
 
   &:hover {
     background-image: ${({ theme }) => (
@@ -88,9 +80,21 @@ const TaskContainer = styled.div`
 const TextForParagraphs = styled(Text)`
   text-overflow: ellipsis;
   overflow: hidden;
+  font-family: ${({ theme }) => theme.fonts.body};
+  font-size: ${({ theme }) => theme.fontSizes[1]};
+  letter-spacing: ${({ theme }) => theme.letterSpacings.small};
 `;
 
-const TaskTitle = (props) => <Heading {...props} as="h4" fontSize={[3, 4]} mb={2} />;
+const TextForTitle = styled(Text)`
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes[3]};
+  letter-spacing: ${({ theme }) => theme.letterSpacings.medium};
+  margin-bottom: ${({ theme }) => theme.space[2]};
+  line-height: 1.5rem;
+`;
+
+const TaskTitle = (props) => <TextForTitle {...props} as="h4" fontSize={[3, 4]} mb={3} />;
 const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
 
 const TaskButtons = styled(Box)`
@@ -109,18 +113,27 @@ const CompleteButton = styled(ButtonFunction)`
 `;
 
 const DragHandle = styled.div`
-  width: ${({ theme }) => theme.space[4]};
-  min-height: ${({ theme }) => theme.space[4]};
   flex-shrink: 0;
-  ${mediaVerySmall} {
-    width: ${({ theme }) => theme.space[3]};
-    min-height: ${({ theme }) => theme.space[3]};
-  }
   cursor: ${(props) => (props.enableDragHint ? 'grab' : 'inherit')};
 `;
+
 const MainContainer = styled(Box)`
   flex-grow: 1;
   overflow: hidden;
+  padding: ${({ theme }) => `0 ${theme.space[3]}`};
+`;
+
+const RankContainer = styled.div`
+  background-color: ${({ theme }) => theme.colors.appBackground};
+  color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
+  margin-right: ${({ theme }) => theme.space[2]};
+  font-size: ${({ theme }) => theme.fontSizes[1]};
+  text-align: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  border-radius: 100%;
+  flex-shrink: 0;
 `;
 
 const stopPropagation = (event) => event.stopPropagation();
@@ -189,6 +202,10 @@ const Task = ({
     ? getRecurringOptionLabel(recurringConfig)
     : '';
 
+  const rankNumber = ranking
+    ? `${ranking}${prioritizedAheadOf ? '*' : ''}`
+    : false;
+
   return (
     <Transition
       in={!completedStart || disableAnimations}
@@ -203,14 +220,20 @@ const Task = ({
           data-ahead-of={prioritizedAheadOf}
         >
           <DragHandle enableDragHint={enableDragHint} />
+          {rankNumber &&
+            <RankContainer>
+              {rankNumber}
+            </RankContainer>
+          }
           <MainContainer>
             {/* <TaskTitle>{id}</TaskTitle> */}
             <TaskTitle>
-              <ButtonFunction variant="text">
-                {ranking
+              {/* <ButtonFunction variant="text"> */}
+              {title}
+              {/* {ranking
                   ? `# ${ranking}${prioritizedAheadOf ? '*' : ''}  -  ${title}`
-                  : title}
-              </ButtonFunction>
+                  : title} */}
+              {/* </ButtonFunction> */}
             </TaskTitle>
             {scheduledStart && (
               <TaskSubtitle mt={2}>
@@ -219,7 +242,7 @@ const Task = ({
             )}
             {due && (
               <TaskSubtitle mt={2}>
-                {`Due: ${new Date(due).toLocaleString()}`}
+                {`Due by: ${new Date(due).toLocaleString()}`}
               </TaskSubtitle>
             )}
             {recurringLabel && (
@@ -227,11 +250,11 @@ const Task = ({
                 {`Recurrence: ${recurringLabel}`}
               </TaskSubtitle>
             )}
-            {description && (
+            {/* {description && (
               <TaskSubtitle mt={2}>
                 {addLinkTags(description)}
               </TaskSubtitle>
-            )}
+            )} */}
             {completed && (
               <TaskSubtitle mt={2}>
                 {`Completed: ${new Date(completed).toLocaleString()}`}

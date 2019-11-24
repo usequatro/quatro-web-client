@@ -34,6 +34,7 @@ const FooterContainer = styled(Box).attrs({
 const NavButton = styled.button.attrs({ type: 'primary' })`
   color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
   opacity: ${({ selected }) => selected ? 1 : 0.5};
+  font-weight: ${({ selected }) => selected ? 'bold' : 'normal'};
   display: flex;
   flex-basis: 0;
   flex-direction: column;
