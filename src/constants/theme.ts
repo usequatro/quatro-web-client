@@ -14,7 +14,7 @@ const theme = {
     barBackground: colors.DARK_BLUE,
     textPrimary: colors.ALMOST_BLACK,
     textPrimaryOverBackground: colors.WHITE,
-    textSecondary: colors.GRAY,
+    textSecondary: colors.NEW_LIGHT_GRAY,
     textHighlight: colors.PAINT_BLUE,
     border: colors.SUPER_LIGHT_GRAY,
     borderLight: colors.SUPER_LIGHT_GRAY,

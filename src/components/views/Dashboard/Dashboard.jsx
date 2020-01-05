@@ -20,6 +20,7 @@ import Completed from 'components/views/Dashboard/Lists/Completed';
 
 const DashboardMain = styled(BasicMain).attrs({
   bg: 'appForeground',
+  paddingTop: '1rem',
 })`
   ${safariBorderRadiusFix}
 `;
