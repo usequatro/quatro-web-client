@@ -41,7 +41,7 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const EditTaskMain = styled(BasicMain).attrs({ p: 3, pt: 4 })``;
+const EditTaskMain = styled(BasicMain).attrs({ pt: 4 })``;
 const ContentContainer = styled(Box)`
   width: 100%;
   display: flex;

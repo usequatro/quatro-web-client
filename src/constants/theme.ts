@@ -15,6 +15,7 @@ const theme = {
     textPrimary: colors.ALMOST_BLACK,
     textPrimaryOverBackground: colors.WHITE,
     textSecondary: colors.NEW_LIGHT_GRAY,
+    textTertiary: colors.ORANGE,
     textHighlight: colors.PAINT_BLUE,
     border: colors.SUPER_LIGHT_GRAY,
     borderLight: colors.SUPER_LIGHT_GRAY,

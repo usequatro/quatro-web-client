@@ -30,6 +30,21 @@ const Italic = styled.span`
   font-style: italic;
 `;
 
+const FormContainer = styled.div`
+  text-align: center;
+`;
+
+const FieldContainer = styled.div`
+  background-color: white;
+  width: 100%;
+  padding: 1rem;
+`;
+
+// @TODO: Find a better constant in the theme to use for this color.
+const DarkFieldContainer = styled(FieldContainer)`
+  background-color: ${(props) => props.theme.colors.textSecondary};
+`
+
 const generateConsecutiveOptions = memoize((min, max) => {
   const array = Array.from(Array(max).keys());
   return array.map((value, index) => ({
@@ -73,16 +88,19 @@ const TaskForm = ({
   const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
 
   return (
-    <>
+    <FormContainer>
       <InputGroup mb={4}>
-        <InputField
-          required
-          label="Summary *"
-          helpText="What do you have to do?"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-        {taskPrioritizedAheadOfTitle && (
+        <FieldContainer>
+          <InputField
+            required
+            placeholder="What do you need to do?"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
+        </FieldContainer>
+
+        {/* @TODO: Figure out where this should go in the new design. */}
+        {/* {taskPrioritizedAheadOfTitle && (
           <Paragraph>
             {'⚠️ This task is manually prioritized to be before '}
             <Italic>{taskPrioritizedAheadOfTitle}</Italic>
@@ -91,25 +109,32 @@ const TaskForm = ({
               Clear customization
             </ButtonInline>
           </Paragraph>
-        )}
-        <HorizontalSelectorField
-          label="Impact *"
-          helpText="How important is this task?"
-          required
-          value={impact}
-          hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
-          onChange={(event, value) => setImpact(value)}
-          options={generateConsecutiveOptions(1, 7)}
-        />
-        <HorizontalSelectorField
-          label="Effort *"
-          helpText="How much effort will this task require?"
-          required
-          value={effort}
-          hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
-          onChange={(event, value) => setEffort(value)}
-          options={generateConsecutiveOptions(1, 7)}
-        />
+        )} */}
+
+        <DarkFieldContainer>
+          <HorizontalSelectorField
+            label="Impact *"
+            helpText="How important is this task?"
+            required
+            value={impact}
+            hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
+            onChange={(event, value) => setImpact(value)}
+            options={generateConsecutiveOptions(1, 7)}
+          />
+        </DarkFieldContainer>
+
+        <FieldContainer>
+          <HorizontalSelectorField
+            label="Effort *"
+            helpText="How much effort will this task require?"
+            required
+            value={effort}
+            hiddenInputProps={{ type: 'number', min: 1, max: 7 }}
+            onChange={(event, value) => setEffort(value)}
+            options={generateConsecutiveOptions(1, 7)}
+          />
+        </FieldContainer>
+
         <ToggleableFieldWrapper
           label="Due Date"
           helpText="Does it need to be complete by a certain date?"
@@ -121,6 +146,7 @@ const TaskForm = ({
             onChange={(event, newDateTime) => setDue(newDateTime)}
           />
         </ToggleableFieldWrapper>
+
         <ToggleableFieldWrapper
           label="Scheduled Start Date"
           helpText="Do you want to delay starting this task?"
@@ -132,6 +158,7 @@ const TaskForm = ({
             onChange={(event, newDateTime) => setScheduledStart(newDateTime)}
           />
         </ToggleableFieldWrapper>
+
         <ToggleableFieldWrapper
           label="Recurrence (early beta, unstable)"
           helpText="Do you need to do this multiple times?"
@@ -170,6 +197,7 @@ const TaskForm = ({
             <Dropdown.Option value={OPEN_RECURRENCE_MODAL_OPTION}>Custom...</Dropdown.Option>
           </Dropdown>
         </ToggleableFieldWrapper>
+
         <BlockersSelector
           taskId={id}
           dependencies={dependencies}
@@ -177,6 +205,7 @@ const TaskForm = ({
           removeTaskDependency={removeTaskDependency}
           createTaskDependency={createTaskDependency}
         />
+
         <InputField
           textarea
           label="Notes"
@@ -193,7 +222,7 @@ const TaskForm = ({
         initialUnit={recurringConfig ? recurringConfig.unit : undefined}
         initialActiveWeekdays={recurringConfig ? recurringConfig.activeWeekdays : undefined}
       />
-    </>
+    </FormContainer>
   );
 };
 
