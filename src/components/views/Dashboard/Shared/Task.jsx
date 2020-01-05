@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import truncate from 'lodash/truncate';
 import memoize from 'lodash/memoize';
+import format from 'date-fns/format';
 import {
   Heading, Text, Box,
 } from 'rebass/styled-components';
@@ -14,12 +15,11 @@ import { EDIT_TASK } from 'constants/paths';
 import { getRecurringOptionLabel } from 'util/recurrence';
 
 import CheckIcon from 'components/icons/CheckIcon';
-import BlockingTaskList from './BlockingTaskList';
 import activeLighter from 'components/style-mixins/activeLighter';
+import ButtonFunction from 'components/ui/ButtonFunction';
 import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
 
-import ButtonFunction from 'components/ui/ButtonFunction';
-
+import BlockingTaskList from './BlockingTaskList';
 const MAX_DESCRIPTION_CHARACTERS = 200;
 
 const duration = 300;
@@ -96,6 +96,7 @@ const TextForTitle = styled(Text)`
 
 const TaskTitle = (props) => <TextForTitle {...props} as="h4" fontSize={[3, 4]} mb={3} />;
 const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
+const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} />;
 
 const TaskButtons = styled(Box)`
   display: flex;
@@ -167,6 +168,10 @@ const addLinkTags = memoize((text) => {
     .filter(Boolean);
 });
 
+const formatDateForDisplay = date => {
+  return format(date, 'EEEE, LLLL d, p');
+};
+
 const Task = ({
   id,
   title,
@@ -237,12 +242,12 @@ const Task = ({
             </TaskTitle>
             {scheduledStart && (
               <TaskSubtitle mt={2}>
-                {`Scheduled start: ${new Date(scheduledStart).toLocaleString()}`}
+                {`Scheduled Start: ${formatDateForDisplay(new Date(scheduledStart))}`}
               </TaskSubtitle>
             )}
             {due && (
               <TaskSubtitle mt={2}>
-                {`Due by: ${new Date(due).toLocaleString()}`}
+                {`Due By: ${formatDateForDisplay(new Date(due))}`}
               </TaskSubtitle>
             )}
             {recurringLabel && (
@@ -250,14 +255,14 @@ const Task = ({
                 {`Recurrence: ${recurringLabel}`}
               </TaskSubtitle>
             )}
-            {/* {description && (
-              <TaskSubtitle mt={2}>
+            {description && (
+              <TaskDescription mt={2}>
                 {addLinkTags(description)}
-              </TaskSubtitle>
-            )} */}
+              </TaskDescription>
+            )}
             {completed && (
               <TaskSubtitle mt={2}>
-                {`Completed: ${new Date(completed).toLocaleString()}`}
+                {`Completed: ${formatDateForDisplay(new Date(completed))}`}
               </TaskSubtitle>
             )}
             {showBlocked && (
