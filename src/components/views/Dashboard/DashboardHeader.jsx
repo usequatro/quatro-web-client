@@ -62,7 +62,7 @@ const DashboardTitle = styled.div`
 `;
 const SectionTitleContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
-  padding: ${({ theme }) => `${theme.space[4]} 0`};
+  padding: ${({ theme }) => `${theme.space[3]} 0`};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,12 +122,26 @@ const DashboardHeader = ({ location }) => {
           <DashboardTitle>
             <LogoIcon size="fill" title="Aizen Logo" />
           </DashboardTitle>
-          <StyledRouterLink
-            to={paths.COMPLETED}
-            variant="textOverBackground"
-          >
-            <CheckListIcon size="small" title="Completed Tasks" />
-          </StyledRouterLink>
+
+          {/* If we're on the completed screen, link back to Top 4 */}
+          {tab === dashboardTabs.COMPLETED && (
+            <StyledRouterLink
+              to={paths.NOW}
+              variant="textOverBackground"
+            >
+              <CheckListIcon size="small" title={titles[dashboardTabs.NOW]} />
+            </StyledRouterLink>
+          )}
+
+          {/* Otherwise, link to the completed screen */}
+          {tab !== dashboardTabs.COMPLETED && (
+            <StyledRouterLink
+              to={paths.COMPLETED}
+              variant="textOverBackground"
+            >
+              <CheckListIcon size="small" title={titles[dashboardTabs.COMPLETED]} />
+            </StyledRouterLink>
+          )}
         </HorizontalContainer>
       </HeaderContainer>
 

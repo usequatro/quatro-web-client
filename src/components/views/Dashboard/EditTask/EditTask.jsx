@@ -25,6 +25,7 @@ import {
 import { selectLoaded } from 'modules/dashboard';
 import * as paths from 'constants/paths';
 
+import LeftArrowIcon from 'components/icons/LeftArrow';
 import FullScreenPaper from 'components/ui/FullScreenPaper';
 import PapelHeader from 'components/ui/PaperHeader';
 import Loader from 'components/ui/Loader';
@@ -41,12 +42,18 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const EditTaskMain = styled(BasicMain).attrs({ pt: 4 })``;
+const EditTaskMain = styled(BasicMain)``;
 const ContentContainer = styled(Box)`
   width: 100%;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+`;
+
+const IconContainer = styled.div`
+  height: 1rem;
+  width: 1rem;
+  cursor: pointer;
 `;
 
 const EditTask = ({
@@ -80,9 +87,25 @@ const EditTask = ({
         <FormFlexContainer onSubmit={onRequestClose}>
           <PapelHeader
             headline="Edit Task"
+            buttonLeft={(
+              <Button
+                variant="textOverBackground"
+                onClick={onRequestClose}
+              >
+                <IconContainer>
+                  <LeftArrowIcon size="fill" title="Back" />
+                </IconContainer>
+              </Button>
+            )}
             buttonRight={(
-              <Button variant="textOverBackground" onClick={onRequestClose}>
-                Done
+              <Button
+                variant="textOverBackground"
+                onClick={() => {
+                  dispatch(moveToTrashTask(id));
+                  onRequestClose();
+                }}
+              >
+                Delete
               </Button>
             )}
           />
@@ -141,17 +164,6 @@ const EditTask = ({
                     {`Score: ${score.toFixed(2)}${score === Infinity ? ' (it was already due)' : ''}`}
                   </Paragraph>
                 </Box>
-
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    dispatch(moveToTrashTask(id));
-                    onRequestClose();
-                  }}
-                  mb={4}
-                >
-                  Delete task
-                </Button>
               </ContentContainer>
             )}
           </EditTaskMain>

@@ -9,11 +9,7 @@ const Input = styled.input`
   font-size: inherit;
   padding: 1rem 0.5rem 1rem 0.5rem;
   width: 100%;
-  border-style: solid;
-  border-color: ${(props) => props.theme.colors.border};
-  border-width: 1px;
-  border-radius: 0.25rem;
-  outline-color: ${(props) => props.theme.colors.textHighlight};
+  border: none;
   background-color: ${(props) => (props.disabled ? props.theme.colors.disabled : props.theme.colors.inputBackground)};
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'auto')};
   -webkit-appearance: none;
@@ -27,8 +23,6 @@ const Input = styled.input`
   ::placeholder {
     color: ${(props) => props.theme.colors.placeholder};
   }
-
-  ${(props) => (props.as === 'textarea' ? 'min-height: 8rem;' : '')}
 `;
 
 const InputField = ({

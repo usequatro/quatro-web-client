@@ -83,6 +83,7 @@ const TextForParagraphs = styled(Text)`
   font-family: ${({ theme }) => theme.fonts.body};
   font-size: ${({ theme }) => theme.fontSizes[1]};
   letter-spacing: ${({ theme }) => theme.letterSpacings.small};
+  line-height: normal;
 `;
 
 const TextForTitle = styled(Text)`
@@ -91,12 +92,12 @@ const TextForTitle = styled(Text)`
   font-size: ${({ theme }) => theme.fontSizes[3]};
   letter-spacing: ${({ theme }) => theme.letterSpacings.medium};
   margin-bottom: ${({ theme }) => theme.space[2]};
-  line-height: 1.5rem;
+  line-height: 1.2rem;
 `;
 
 const TaskTitle = (props) => <TextForTitle {...props} as="h4" fontSize={[3, 4]} mb={3} />;
 const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
-const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} />;
+const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[1, 3]} mb={1} />;
 
 const TaskButtons = styled(Box)`
   display: flex;
