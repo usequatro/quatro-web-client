@@ -9,20 +9,12 @@ import styled from 'styled-components';
 import { Slider as BaseMaterialSlider } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
-import TopFourIcon from 'components/icons/TopFour';
+import RightHandIcon from 'components/icons/RightHand';
 import {
   LIGHTEST_BLUE,
   GREEN_GRAY,
   DARK_BLUE,
 } from 'constants/colors';
-
-
-const NavIcon = styled.div`
-  width: 50%;
-  position: absolute;
-  top: 25%;
-  left: 25%;
-`;
 
 const Slider = withStyles({
   // The target 
@@ -75,9 +67,7 @@ export default Slider;
 // to the Slider component when rendered as the custom slider.
 export const SliderThumb = props => (
   <div {...props}>
-    <NavIcon>
-      <TopFourIcon size="fill" />
-    </NavIcon>
+    <RightHandIcon size="fill" />
   </div>
 );
 

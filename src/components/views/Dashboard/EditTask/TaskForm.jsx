@@ -27,7 +27,7 @@ import Paragraph from 'components/ui/Paragraph';
 import ButtonInline from 'components/ui/ButtonInline';
 import Slider, { SliderThumb } from 'components/ui/Slider';
 import HeadingResponsive from 'components/ui/HeadingResponsive';
-
+import LeftHandIcon from 'components/icons/LeftHand';
 import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 import { activeOpacity } from 'components/style-mixins/activeLighter';
 
@@ -47,7 +47,14 @@ const FieldContainer = styled.div`
 `;
 
 const SliderContainer = styled.div`
+  display: flex;
   padding: 0 1rem;
+`;
+
+const SliderHandContainer = styled.div`
+  height: 40px;
+  width: 40px;
+  margin-right: 0.5rem;
 `;
 
 const FlexContainer = styled.div`
@@ -151,7 +158,7 @@ const FormContainer = styled.div`
 
 const getInitialDueDate = () => dayjs()
   .add(1, 'day')
-  .hour(17)
+  .hour(9)
   .startOf('hour')
   .valueOf();
 
@@ -175,7 +182,7 @@ const MARKS_IMPORTANT = [
   },
   {
     value: 4,
-    label: 'A lot',
+    label: 'Pretty',
   },
   {
     value: 5,
@@ -187,7 +194,7 @@ const MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP = {
   1: 'Not Very Important',
   2: 'A Little Important',
   3: 'Somewhat Important',
-  4: 'A Lot Important',
+  4: 'Pretty Important',
   5: 'Very Important',
 };
 
@@ -273,16 +280,16 @@ const TaskForm = ({
       </FieldContainer>
 
       {/* @TODO: Figure out where this should go in the new design. */}
-      {/* {taskPrioritizedAheadOfTitle && (
-          <Paragraph>
-            {'⚠️ This task is manually prioritized to be before '}
-            <Italic>{taskPrioritizedAheadOfTitle}</Italic>
-            {'.'}
-            <ButtonInline onClick={() => clearRelativePrioritization(id)}>
-              Clear customization
+      {taskPrioritizedAheadOfTitle && (
+        <Paragraph>
+          {'⚠️ This task is manually prioritized to be before '}
+          <Italic>{taskPrioritizedAheadOfTitle}</Italic>
+          {'.'}
+          <ButtonInline onClick={() => clearRelativePrioritization(id)}>
+            Clear customization
             </ButtonInline>
-          </Paragraph>
-        )} */}
+        </Paragraph>
+      )}
 
       <FieldContainer>
         <FieldTitle>How important is this task?</FieldTitle>
@@ -292,6 +299,9 @@ const TaskForm = ({
         </FieldAlertSubtitle>
 
         <SliderContainer>
+          {/* <SliderHandContainer>
+            <LeftHandIcon size="fill" />
+          </SliderHandContainer> */}
           <Slider
             min={1}
             max={5}
@@ -311,6 +321,9 @@ const TaskForm = ({
         </FieldAlertSubtitle>
 
         <SliderContainer>
+          {/* <SliderHandContainer>
+            <LeftHandIcon size="fill" />
+          </SliderHandContainer> */}
           <Slider
             min={1}
             max={5}
@@ -320,19 +333,6 @@ const TaskForm = ({
             onChange={(event, value) => debouncedSetEffort(value)}
           />
         </SliderContainer>
-      </FieldContainer>
-
-      <FieldContainer>
-        <FieldTitle>Notes</FieldTitle>
-
-        <TopPaddedContainer>
-          <InputField
-            textarea
-            placeholder="Enter notes here"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-        </TopPaddedContainer>
       </FieldContainer>
 
       <FieldContainer>
@@ -515,6 +515,19 @@ const TaskForm = ({
             createTaskDependency={createTaskDependency}
           />
         }
+      </FieldContainer>
+
+      <FieldContainer>
+        <FieldTitle>Notes</FieldTitle>
+
+        <TopPaddedContainer>
+          <InputField
+            textarea
+            placeholder="Enter notes here"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+        </TopPaddedContainer>
       </FieldContainer>
 
       <RecurringPopup

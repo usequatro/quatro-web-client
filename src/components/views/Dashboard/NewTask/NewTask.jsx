@@ -31,8 +31,8 @@ const ContentContainer = styled(Box)`
 const NewTask = ({ history }) => {
   const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
-  const [impact, setImpact] = useState('');
-  const [effort, setEffort] = useState('');
+  const [impact, setImpact] = useState(5);
+  const [effort, setEffort] = useState(1);
   const [description, setDescription] = useState('');
   const [due, setDue] = useState(null);
   const [scheduledStart, setScheduledStart] = useState(null);
