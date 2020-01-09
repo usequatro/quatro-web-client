@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import TickIcon from '../icons/TickIcon';
-import ButtonFunction from './ButtonFunction';
+import TickIcon from 'components/icons/TickIcon';
+import ButtonFunction from 'components/ui/ButtonFunction';
 
 const Container = styled(Box).attrs({
   pt: 3,

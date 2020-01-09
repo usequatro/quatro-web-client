@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
-import activeLighter from '../style-mixins/activeLighter';
-import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
+import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
+import activeLighter from 'components/style-mixins/activeLighter';
+import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 
 const ButtonFunction = styled.button.attrs((props) => ({
   type: props.type || 'button',
-}))<{ variant: string }>`
+})) <{ variant: string }>`
   background: transparent;
   border: none;
   cursor: pointer;

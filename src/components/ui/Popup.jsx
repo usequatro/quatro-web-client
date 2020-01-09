@@ -3,9 +3,9 @@ import { Transition } from 'react-transition-group';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 
-import RootPortal from './RootPortal';
-import dropShadow from '../style-mixins/dropShadow';
-import ButtonInline from './ButtonInline';
+import RootPortal from 'components/ui/RootPortal';
+import ButtonInline from 'components/ui/ButtonInline';
+import dropShadow from 'components/style-mixins/dropShadow';
 
 const duration = 125;
 

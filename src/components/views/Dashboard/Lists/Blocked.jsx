@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectBlockedTasks } from '../../../../modules/tasks';
-import { BLOCKED } from '../../../../constants/dashboardTabs';
+import { selectBlockedTasks } from 'modules/tasks';
+import { BLOCKED } from 'constants/dashboardTabs';
 
-import Task from '../Shared/Task';
-import TaskListWorkspace from '../Shared/TaskListWorkspace';
+import Task from 'components/views/Dashboard/Shared/Task';
+import TaskListWorkspace from 'components/views/Dashboard/Shared/TaskListWorkspace';
 
 const Blocked = ({ tasks }) => (
   <TaskListWorkspace

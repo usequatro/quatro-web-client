@@ -3,13 +3,14 @@ import styled from 'styled-components';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { Heading } from 'rebass/styled-components';
 
-import { SIGN_UP, LOG_IN } from '../../../constants/paths';
+import { SIGN_UP, LOG_IN } from 'constants/paths';
 
-import BasicMain from '../../ui/BasicMain';
+import BasicMain from 'components/ui/BasicMain';
+import safariBorderRadiusFix from 'components/style-mixins/safariBorderRadiusFix';
+import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
+
 import LogIn from './LogIn';
 import SignUp from './SignUp';
-import safariBorderRadiusFix from '../../style-mixins/safariBorderRadiusFix';
-import { mediaVerySmall } from '../../style-mixins/mediaQueries';
 
 const Header = styled.header`
   flex-shrink: 0;
@@ -70,7 +71,7 @@ const Registration = ({ location }) => (
   <OuterContainer>
     <Header>
       <SignUpHeading>
-          Aizen
+        Aizen
       </SignUpHeading>
       <SectionTitleContainer>
         {locationToSectionTitle[location.pathname]}

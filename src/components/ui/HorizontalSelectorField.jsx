@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import FieldLabel from './FieldLabel';
-import FieldHelpText from './FieldHelpText';
-import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
-import activeLighter from '../style-mixins/activeLighter';
-import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
+
+import FieldLabel from 'components/ui/FieldLabel';
+import FieldHelpText from 'components/ui/FieldHelpText';
+import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
+import activeLighter from 'components/style-mixins/activeLighter';
+import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 
 const Button = styled.button`
   height: 2.5rem;

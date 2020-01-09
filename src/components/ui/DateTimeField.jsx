@@ -2,8 +2,9 @@ import React from 'react';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import InputField from './InputField';
-import FieldLabel from './FieldLabel';
+
+import InputField from 'components/ui/InputField';
+import FieldLabel from 'components/ui/FieldLabel';
 
 const Container = styled(Box).attrs({ mb: 2 })``;
 const FieldsContainer = styled(Box)`

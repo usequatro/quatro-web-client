@@ -5,17 +5,19 @@ import {
   BrowserRouter, MemoryRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
-import AppStylesWrapper from './AppStylesWrapper';
-import RouterHistoryListener from './tracking/RouterHistoryListener';
-import UserLoginListener from './tracking/UserLoginListener';
-import Registration from './views/Registration/Registration';
-import RuntimeError from './views/RuntimeError';
-import AccountMenu from './views/AccountMenu/AccountMenu';
-import Dashboard from './views/Dashboard/Dashboard';
-import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
-import * as paths from '../constants/paths';
-import MAX_WIDTH from '../constants/maxWidth';
-import Notification from './ui/Notification';
+
+import * as paths from 'constants/paths';
+import MAX_WIDTH from 'constants/maxWidth';
+
+import AppStylesWrapper from 'components/AppStylesWrapper';
+import RouterHistoryListener from 'components/tracking/RouterHistoryListener';
+import UserLoginListener from 'components/tracking/UserLoginListener';
+import Registration from 'components/views/Registration/Registration';
+import RuntimeError from 'components/views/RuntimeError';
+import AccountMenu from 'components/views/AccountMenu/AccountMenu';
+import Dashboard from 'components/views/Dashboard/Dashboard';
+import withUserLoggedInCondition from 'components/hoc/withUserLoggedInCondition';
+import Notification from 'components/ui/Notification';
 
 const AppBackground = styled.div`
   background-color: ${(props) => props.theme.colors.appBackground};

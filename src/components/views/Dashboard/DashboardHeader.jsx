@@ -5,23 +5,27 @@ import { Box } from 'rebass/styled-components';
 import { withRouter } from 'react-router-dom';
 import invert from 'lodash/invert';
 
-import StyledRouterLink from '../../ui/StyledRouterLink';
-import HeadingResponsive from '../../ui/HeadingResponsive';
-import * as paths from '../../../constants/paths';
-import CheckListIcon from '../../icons/CheckListIcon';
-import HamburgerIcon from '../../icons/HamburgerIcon';
-import ButtonFunction from '../../ui/ButtonFunction';
-import * as dashboardTabs from '../../../constants/dashboardTabs';
-import { setAccountMenuOpen } from '../../../modules/dashboard';
-import {
-  selectNextTasks,
-  selectScheduledTasks,
-  selectBlockedTasks,
-  selectCompletedTasks,
-} from '../../../modules/tasks';
-import { mediaVerySmall, mediaLarge } from '../../style-mixins/mediaQueries';
+import * as paths from 'constants/paths';
+import * as dashboardTabs from 'constants/dashboardTabs';
+import { setAccountMenuOpen } from 'modules/dashboard';
+
+import StyledRouterLink from 'components/ui/StyledRouterLink';
+import HeadingResponsive from 'components/ui/HeadingResponsive';
+import CheckListIcon from 'components/icons/CheckListIcon';
+import HamburgerIcon from 'components/icons/HamburgerIcon';
+import LogoIcon from 'components/icons/Logo';
+import BacklogIcon from 'components/icons/Backlog';
+import BlockedIcon from 'components/icons/Blocked';
+import CalendarIcon from 'components/icons/Calendar';
+import TopFourIcon from 'components/icons/TopFour';
+import ButtonFunction from 'components/ui/ButtonFunction';
+import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
+
+// @TODO: See if we can avoid needing to hard code this height.
+const HEADER_HEIGHT = '90px';
+const HEADER_HEIGHT_VERY_SMALL = '60px';
 
 const HeaderContainer = styled(Box).attrs({
   bg: 'transparent',
@@ -30,6 +34,10 @@ const HeaderContainer = styled(Box).attrs({
   flex-direction: column;
   flex-shrink: 0;
   width: 100%;
+  height: ${HEADER_HEIGHT};
+  ${mediaVerySmall} {
+    height: ${HEADER_HEIGHT_VERY_SMALL};
+  }
 `;
 
 const HorizontalContainer = styled(Box).attrs({
@@ -40,6 +48,7 @@ const HorizontalContainer = styled(Box).attrs({
   align-items: center;
   flex-shrink: 0;
   width: 100%;
+  height: 100%;
 
   padding: ${({ theme }) => theme.space[5]};
   ${mediaVerySmall} {
@@ -47,78 +56,92 @@ const HorizontalContainer = styled(Box).attrs({
   }
 `;
 
-const DashboardTitle = styled(HeadingResponsive).attrs(() => ({
-  color: 'textPrimaryOverBackground',
-  fontWeight: 'body',
-}))`
+const DashboardTitle = styled.div`
   text-align: center;
-  font-family: ${(props) => props.theme.fonts.heading};
-  border: none;
-  background-color: transparent;
-  padding: 0 3rem;
-  opacity: 0.8; /* to make it lighter */
+  height: 100%;
 `;
-const SectionTitleContainer = styled(HeadingResponsive)`
-  color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
-  text-align: center;
-
-  padding-top: ${({ theme }) => theme.space[5]};
-  padding-bottom: ${({ theme }) => theme.space[5]};
+const SectionTitleContainer = styled.div`
+  background-color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
+  padding: ${({ theme }) => `${theme.space[4]} 0`};
+  display: flex;
+  align-items: center;
+  justify-content: center;
   ${mediaVerySmall} {
-    padding-top: ${({ theme }) => theme.space[2]};
-    padding-bottom: ${({ theme }) => theme.space[3]};
+    padding: ${({ theme }) => `${theme.space[2]} 0`};
   }
-  ${mediaLarge} {
-    padding-top: ${({ theme }) => theme.space[7]};
-  }
+`;
+
+const SectionTitle = styled(HeadingResponsive)`
+  color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: ${({ theme }) => theme.letterSpacings.large};
+  text-align: center;
+  font-weight: bold;
+`
+
+// @TODO: Figure out a better way to style this header without needing
+// to hard code a pixel width.
+const SectionIconContainer = styled.div`
+  width: 30px;
+  margin: ${({ theme }) => `0 ${theme.space[3]}`};
 `;
 
 const titles = {
-  [dashboardTabs.SCHEDULED]: 'Scheduled',
+  [dashboardTabs.SCHEDULED]: 'Calendar',
   [dashboardTabs.BLOCKED]: 'Blocked',
-  [dashboardTabs.NOW]: 'Now',
-  [dashboardTabs.NEXT]: 'Next',
+  [dashboardTabs.NOW]: 'Top 4',
+  [dashboardTabs.NEXT]: 'Backlog',
   [dashboardTabs.COMPLETED]: 'Completed',
   default: '',
 };
-const selectorByTab = {
-  [dashboardTabs.NOW]: () => [],
-  [dashboardTabs.NEXT]: selectNextTasks,
-  [dashboardTabs.SCHEDULED]: selectScheduledTasks,
-  [dashboardTabs.BLOCKED]: selectBlockedTasks,
-  [dashboardTabs.COMPLETED]: selectCompletedTasks,
-  default: () => [],
-};
+
+const iconsByTab = {
+  [dashboardTabs.NOW]: TopFourIcon,
+  [dashboardTabs.NEXT]: BacklogIcon,
+  [dashboardTabs.SCHEDULED]: CalendarIcon,
+  [dashboardTabs.BLOCKED]: BlockedIcon,
+  [dashboardTabs.COMPLETED]: CalendarIcon,
+  default: TopFourIcon,
+}
 
 const DashboardHeader = ({ location }) => {
   const dispatch = useDispatch();
   const tab = PATHS_TO_DASHBOARD_TABS[location.pathname];
-  const count = useSelector((state) => (selectorByTab[tab] || selectorByTab.default)(state).length);
+
+  const CurrentTabIcon = iconsByTab[tab];
 
   return (
-    <HeaderContainer>
-      <HorizontalContainer>
-        <ButtonFunction
-          onClick={() => dispatch(setAccountMenuOpen(true))}
-          variant="textOverBackground"
-        >
-          <HamburgerIcon size="small" title="Menu" />
-        </ButtonFunction>
-        <DashboardTitle>
-          Aizen
-        </DashboardTitle>
-        <StyledRouterLink
-          to={paths.COMPLETED}
-          variant="textOverBackground"
-        >
-          <CheckListIcon size="small" title="Completed Tasks" />
-        </StyledRouterLink>
-      </HorizontalContainer>
+    <div>
+      <HeaderContainer>
+        <HorizontalContainer>
+          <ButtonFunction
+            onClick={() => dispatch(setAccountMenuOpen(true))}
+            variant="textOverBackground"
+          >
+            <HamburgerIcon size="small" title="Menu" />
+          </ButtonFunction>
+          <DashboardTitle>
+            <LogoIcon size="fill" title="Aizen Logo" />
+          </DashboardTitle>
+          <StyledRouterLink
+            to={paths.COMPLETED}
+            variant="textOverBackground"
+          >
+            <CheckListIcon size="small" title="Completed Tasks" />
+          </StyledRouterLink>
+        </HorizontalContainer>
+      </HeaderContainer>
+
       <SectionTitleContainer>
-        {titles[tab] || titles.default}
-        {count && count > 0 ? ` (${count})` : ''}
+        {iconsByTab[tab] &&
+          <SectionIconContainer>
+            <CurrentTabIcon size="fill" alt={titles[tab]} />
+          </SectionIconContainer>
+        }
+        <SectionTitle>
+          {titles[tab] || titles.default}
+        </SectionTitle>
       </SectionTitleContainer>
-    </HeaderContainer>
+    </div>
   );
 };
 

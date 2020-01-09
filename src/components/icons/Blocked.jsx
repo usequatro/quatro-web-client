@@ -1,4 +1,4 @@
-import { ReactComponent } from './svg/add-icon.svg';
+import { ReactComponent } from './svg/blocked.svg';
 import withIconSize from './withIconSize';
 
 export default withIconSize(ReactComponent);

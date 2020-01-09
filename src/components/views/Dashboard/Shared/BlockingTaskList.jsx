@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 
-import { selectDependenciesBlockingGivenTask } from '../../../../modules/tasks';
-import { TASK, FREE_TEXT } from '../../../../constants/dependencyTypes';
-import activeLighter from '../../../style-mixins/activeLighter';
-import keyboardOnlyOutline from '../../../style-mixins/keyboardOnlyOutline';
+import { selectDependenciesBlockingGivenTask } from 'modules/tasks';
+import { TASK, FREE_TEXT } from 'constants/dependencyTypes';
+import activeLighter from 'components/style-mixins/activeLighter';
+import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
 
 const List = styled(Box).attrs({
   mt: 1,

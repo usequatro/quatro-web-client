@@ -3,10 +3,10 @@ import styled from 'styled-components';
 // @ts-ignore
 import { Box } from 'rebass/styled-components';
 
-import FieldLabel from './FieldLabel';
-import FieldHelpText from './FieldHelpText';
-import { activeOpacity } from '../style-mixins/activeLighter';
-import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
+import FieldLabel from 'components/ui/FieldLabel';
+import FieldHelpText from 'components/ui/FieldHelpText';
+import { activeOpacity } from 'components/style-mixins/activeLighter';
+import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 
 const Container = styled.div`
   position: relative;
@@ -83,24 +83,24 @@ type BooleanCheckboxProps = {
 const BooleanCheckbox: React.FC<BooleanCheckboxProps> = ({
   onChange, value, label, helpText, disabled,
 }) => (
-  <Label>
-    <HorizontalContainer>
-      <Container>
-        <Input
-          type="checkbox"
-          value="1"
-          checked={value}
-          disabled={disabled}
-          onChange={(event) => onChange(event, Boolean(event.target.checked))}
-        />
-        <ImprovedCheckbox checked={value} disabled={disabled} />
-      </Container>
-      <FieldLabel>{label}</FieldLabel>
-    </HorizontalContainer>
-    {helpText && (
-      <FieldHelpText>{helpText}</FieldHelpText>
-    )}
-  </Label>
-);
+    <Label>
+      <HorizontalContainer>
+        <Container>
+          <Input
+            type="checkbox"
+            value="1"
+            checked={value}
+            disabled={disabled}
+            onChange={(event) => onChange(event, Boolean(event.target.checked))}
+          />
+          <ImprovedCheckbox checked={value} disabled={disabled} />
+        </Container>
+        <FieldLabel>{label}</FieldLabel>
+      </HorizontalContainer>
+      {helpText && (
+        <FieldHelpText>{helpText}</FieldHelpText>
+      )}
+    </Label>
+  );
 
 export default BooleanCheckbox;

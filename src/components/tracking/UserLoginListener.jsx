@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import * as firebase from 'firebase/app';
 import pick from 'lodash/pick';
-import { trackUser } from '../../util/tracking';
-import { setUser } from '../../modules/session';
+import { trackUser } from 'util/tracking';
+import { setUser } from 'modules/session';
 
 const UserLoginListener = () => {
   const dispatch = useDispatch();

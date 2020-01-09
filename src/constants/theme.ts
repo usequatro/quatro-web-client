@@ -9,9 +9,9 @@ const theme = {
   ],
   // Color names that can be used in color, bg, and borderColor props
   colors: {
-    appBackground: colors.PAINT_BLUE,
+    appBackground: colors.LIGHT_BLUE,
     appForeground: colors.WHITE,
-    barBackground: colors.DEEP_SEA_BLUE,
+    barBackground: colors.DARK_BLUE,
     textPrimary: colors.ALMOST_BLACK,
     textPrimaryOverBackground: colors.WHITE,
     textSecondary: colors.GRAY,
@@ -31,8 +31,8 @@ const theme = {
   ],
   // Values for the fontFamily prop
   fonts: {
-    heading: "'Maven Pro', sans-serif;",
-    body: "'Maven Pro', sans-serif;",
+    heading: "'Work Sans', sans-serif;",
+    body: "'Work Sans', sans-serif;",
   },
   // Values for fontWeight prop
   fontWeights: {
@@ -42,7 +42,11 @@ const theme = {
   // Values for lineHeight prop
   lineHeights: [],
   // Values for letterSpacing prop
-  letterSpacings: {},
+  letterSpacings: {
+    small: '0',
+    medium: '0.1px',
+    large: '0.5px',
+  },
   // Values for boxShadow prop
   shadows: {
     small: '0 0 4px rgba(0, 0, 0, .125)',

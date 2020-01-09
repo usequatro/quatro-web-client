@@ -5,14 +5,14 @@ import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
 import { Box } from 'rebass/styled-components';
 
-import { addTask } from '../../../../modules/tasks';
+import { addTask } from 'modules/tasks';
 
-import FullScreenPaper from '../../../ui/FullScreenPaper';
-import PapelHeader from '../../../ui/PaperHeader';
-import BasicMain from '../../../ui/BasicMain';
-import ButtonFooter from '../../../ui/ButtonFooter';
-import TaskForm from '../EditTask/TaskForm';
-import Button from '../../../ui/Button';
+import FullScreenPaper from 'components/ui/FullScreenPaper';
+import PapelHeader from 'components/ui/PaperHeader';
+import BasicMain from 'components/ui/BasicMain';
+import ButtonFooter from 'components/ui/ButtonFooter';
+import TaskForm from 'components/views/Dashboard/EditTask/TaskForm';
+import Button from 'components/ui/Button';
 
 const FormFlexContainer = styled.form`
   display: flex;
