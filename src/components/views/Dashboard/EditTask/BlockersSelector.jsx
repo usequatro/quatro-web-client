@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 import uuid from 'uuid/v4';
@@ -6,7 +6,7 @@ import uuid from 'uuid/v4';
 import * as dependencyTypes from 'constants/dependencyTypes';
 import ButtonInline from 'components/ui/ButtonInline';
 import InputField from 'components/ui/InputField';
-import BooleanCheckbox from 'components/ui/BooleanCheckbox';
+// import BooleanCheckbox from 'components/ui/BooleanCheckbox';
 
 import DependencySelectorField from './DependencySelectorField';
 
@@ -26,11 +26,11 @@ const FreeTextInputField = styled(InputField)`
   margin-left: 1rem;
 `;
 
-const hasValidDependencies = (dependencies) => dependencies.reduce((memo, dependency) => (
-  memo
-  || (dependency.type === dependencyTypes.FREE_TEXT && dependency.config.value !== '')
-  || (dependency.type === dependencyTypes.TASK && dependency.config.taskId != null)
-), false);
+// const hasValidDependencies = (dependencies) => dependencies.reduce((memo, dependency) => (
+//   memo
+//   || (dependency.type === dependencyTypes.FREE_TEXT && dependency.config.value !== '')
+//   || (dependency.type === dependencyTypes.TASK && dependency.config.taskId != null)
+// ), false);
 
 const BlockersSelector = ({
   taskId, dependencies, updateTaskDependency, removeTaskDependency, createTaskDependency,
@@ -76,7 +76,7 @@ const BlockersSelector = ({
     });
   };
 
-  const [checked, setChecked] = useState(dependencies.length > 0);
+  // const [checked, setChecked] = useState(dependencies.length > 0);
 
   return (
     <BlockerContainer>

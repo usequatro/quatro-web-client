@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 import { withRouter } from 'react-router-dom';
@@ -19,7 +19,7 @@ import BlockedIcon from 'components/icons/Blocked';
 import CalendarIcon from 'components/icons/Calendar';
 import TopFourIcon from 'components/icons/TopFour';
 import ButtonFunction from 'components/ui/ButtonFunction';
-import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
+import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
 

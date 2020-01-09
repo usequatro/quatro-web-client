@@ -6,7 +6,7 @@ import truncate from 'lodash/truncate';
 import memoize from 'lodash/memoize';
 import format from 'date-fns/format';
 import {
-  Heading, Text, Box,
+  Text, Box,
 } from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
 

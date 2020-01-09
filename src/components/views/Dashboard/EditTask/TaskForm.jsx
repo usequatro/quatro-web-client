@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import memoize from 'lodash/memoize';
+// import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
 import dayjs from 'dayjs';
 import { Box } from 'rebass/styled-components';
@@ -16,18 +16,18 @@ import {
   CUSTOM_OPTION,
 } from 'util/recurrence';
 
-import InputGroup from 'components/ui/InputGroup';
+// import InputGroup from 'components/ui/InputGroup';
 import InputField from 'components/ui/InputField';
 import TransparentInputField from 'components/ui/TransparentInputField';
 import Dropdown from 'components/ui/Dropdown';
-import HorizontalSelectorField from 'components/ui/HorizontalSelectorField';
-import ToggleableFieldWrapper from 'components/ui/ToggleableFieldWrapper';
+// import HorizontalSelectorField from 'components/ui/HorizontalSelectorField';
+// import ToggleableFieldWrapper from 'components/ui/ToggleableFieldWrapper';
 import DateTimeField from 'components/ui/DateTimeField';
 import Paragraph from 'components/ui/Paragraph';
 import ButtonInline from 'components/ui/ButtonInline';
 import Slider, { SliderThumb } from 'components/ui/Slider';
 import HeadingResponsive from 'components/ui/HeadingResponsive';
-import LeftHandIcon from 'components/icons/LeftHand';
+// import LeftHandIcon from 'components/icons/LeftHand';
 import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 import { activeOpacity } from 'components/style-mixins/activeLighter';
 
@@ -51,11 +51,11 @@ const SliderContainer = styled.div`
   padding: 0 1rem;
 `;
 
-const SliderHandContainer = styled.div`
-  height: 40px;
-  width: 40px;
-  margin-right: 0.5rem;
-`;
+// const SliderHandContainer = styled.div`
+//   height: 40px;
+//   width: 40px;
+//   margin-right: 0.5rem;
+// `;
 
 const FlexContainer = styled.div`
   display: flex;

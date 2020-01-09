@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 
 // The base of this component is the Material UI Slider. It allows for
 // enough customization for our needs.
