@@ -20,7 +20,7 @@ const FormFlexContainer = styled.form`
   align-items: stretch;
   height: 100%;
 `;
-const NewTaskMain = styled(BasicMain).attrs({ p: 3, pt: 4 })``;
+const NewTaskMain = styled(BasicMain).attrs({ pt: 4 })``;
 const ContentContainer = styled(Box)`
   width: 100%;
   display: flex;
@@ -31,8 +31,8 @@ const ContentContainer = styled(Box)`
 const NewTask = ({ history }) => {
   const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
-  const [impact, setImpact] = useState('');
-  const [effort, setEffort] = useState('');
+  const [impact, setImpact] = useState(5);
+  const [effort, setEffort] = useState(1);
   const [description, setDescription] = useState('');
   const [due, setDue] = useState(null);
   const [scheduledStart, setScheduledStart] = useState(null);

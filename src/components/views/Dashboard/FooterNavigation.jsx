@@ -43,7 +43,6 @@ const NavButton = styled.button.attrs({ type: 'primary' })`
   background-color: transparent;
   border: none;
   width: 0; /* trickery to make it look good on small screens */
-  min-width: 55px; /* makes Top 4 appear on one line. @TODO: Find a better way to do this */
   flex-shrink: 0;
 
   ${(props) => keyboardOnlyOutline(props.theme.colors.textHighlight)};
@@ -71,6 +70,7 @@ const Label = styled.div`
   font-family: ${({ theme }) => theme.fonts.heading};
   font-size: ${({ theme }) => theme.fontSizes[1]};
   overflow: -webkit-paged-x; /* weird thing for safari to render labels outside width */
+  white-space: nowrap;
   ${mediaVerySmall} {
     font-size: ${({ theme }) => theme.fontSizes[0]};
   }

@@ -10,6 +10,8 @@ import BooleanCheckbox from 'components/ui/BooleanCheckbox';
 
 import DependencySelectorField from './DependencySelectorField';
 
+const BlockerContainer = styled(Box).attrs({ mt: 2 })``;
+
 const FieldsContainer = styled(Box).attrs({ mb: 3 })`
   display: flex;
   justify-content: space-between;
@@ -77,48 +79,29 @@ const BlockersSelector = ({
   const [checked, setChecked] = useState(dependencies.length > 0);
 
   return (
-    <div>
-      <BooleanCheckbox
-        onChange={(event, newChecked) => {
-          setChecked(Boolean(newChecked));
+    <BlockerContainer>
+      {dependencies.map((dependency) => (
+        <FieldsContainer key={dependency.id} dependencyType={dependency.type}>
+          <DependencySelectorField
+            selectedId={dependency.config.taskId}
+            currentTaskViewedId={taskId}
+            currentDependencyType={dependency.type}
+            onChange={(type, newId) => handleChange(dependency.id, type, newId)}
+          />
+          {dependency.type === dependencyTypes.FREE_TEXT && (
+            <FreeTextInputField
+              value={dependency.config.value}
+              onChange={(event) => handleFreeTextValueChange(dependency.id, event.target.value)}
+            />
+          )}
+          <DeleteButtonContainer>
+            <ButtonInline onClick={() => removeTaskDependency(dependency.id)}>X</ButtonInline>
+          </DeleteButtonContainer>
+        </FieldsContainer>
+      ))}
 
-          // Remove all dependencies if unchecked
-          if (!newChecked) {
-            dependencies.forEach(({ id }) => removeTaskDependency(id));
-          }
-        }}
-        value={checked}
-        label="Blockers"
-        helpText="What needs to happen before you start?"
-        disabled={hasValidDependencies(dependencies)}
-      />
-
-      {checked && (
-        <>
-          {dependencies.map((dependency) => (
-            <FieldsContainer key={dependency.id} dependencyType={dependency.type}>
-              <DependencySelectorField
-                selectedId={dependency.config.taskId}
-                currentTaskViewedId={taskId}
-                currentDependencyType={dependency.type}
-                onChange={(type, newId) => handleChange(dependency.id, type, newId)}
-              />
-              {dependency.type === dependencyTypes.FREE_TEXT && (
-                <FreeTextInputField
-                  value={dependency.config.value}
-                  onChange={(event) => handleFreeTextValueChange(dependency.id, event.target.value)}
-                />
-              )}
-              <DeleteButtonContainer>
-                <ButtonInline onClick={() => removeTaskDependency(dependency.id)}>X</ButtonInline>
-              </DeleteButtonContainer>
-            </FieldsContainer>
-          ))}
-
-          <ButtonInline onClick={handleCreate}>Add new</ButtonInline>
-        </>
-      )}
-    </div>
+      <ButtonInline onClick={handleCreate}>Add new</ButtonInline>
+    </BlockerContainer>
   );
 };
 

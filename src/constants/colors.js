@@ -1,9 +1,11 @@
 // New Color Scheme. @TODO: Clean up unused colors after porting over to new
 // style guide
 export const LIGHT_BLUE = '#7187b5';
-export const DARK_BLUE = '#00303a';
+export const DARK_BLUE = '#414D67';
 export const ORANGE = '#ff8a01';
-export const NEW_LIGHT_GRAY = '#3d717b';
+export const GREEN_GRAY = '#3D717B';
+export const NEW_LIGHT_GRAY = '#F0F2F7';
+export const LIGHTEST_BLUE = '#CFE3E6';
 
 //  Older Color Scheme
 export const WHITE = 'rgb(255, 255, 255)';
