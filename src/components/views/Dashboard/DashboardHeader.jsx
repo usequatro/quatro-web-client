@@ -120,7 +120,7 @@ const DashboardHeader = ({ location }) => {
             <HamburgerIcon size="small" title="Menu" />
           </ButtonFunction>
           <DashboardTitle>
-            <LogoIcon size="fill" title="Aizen Logo" />
+            <LogoIcon size="fill" title="Quatro Logo" />
           </DashboardTitle>
 
           {/* If we're on the completed screen, link back to Top 4 */}

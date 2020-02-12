@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch, connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
@@ -35,6 +35,7 @@ import withLoadTasks from 'components/hoc/withLoadTasks';
 import Paragraph from 'components/ui/Paragraph';
 
 import TaskForm from './TaskForm';
+import DeleteConfirmationPopup from './DeleteConfirmationPopup';
 
 const FormFlexContainer = styled.form`
   display: flex;
@@ -73,6 +74,8 @@ const EditTask = ({
 }) => {
   const dispatch = useDispatch();
 
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+
   const onUpdate = (key, value) => {
     dispatch(updateTask(id, { [key]: value }));
   };
@@ -100,17 +103,14 @@ const EditTask = ({
             buttonRight={(
               <Button
                 variant="textOverBackground"
-                onClick={() => {
-                  dispatch(moveToTrashTask(id));
-                  onRequestClose();
-                }}
+                onClick={() => setDeletePopupVisible(true)}
               >
                 Delete
               </Button>
             )}
           />
           <EditTaskMain>
-            {!loaded && (
+            {!loaded &&  (
               <Loader />
             )}
             {loaded && !id && (
@@ -167,6 +167,15 @@ const EditTask = ({
               </ContentContainer>
             )}
           </EditTaskMain>
+
+          <DeleteConfirmationPopup
+            open={deletePopupVisible}
+            onCancel={() => setDeletePopupVisible(false)}
+            onConfirm={() => {
+              dispatch(moveToTrashTask(id));
+              onRequestClose();
+            }}
+          />
         </FormFlexContainer>
       )}
     </FullScreenPaper>

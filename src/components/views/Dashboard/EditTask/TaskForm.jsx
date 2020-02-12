@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 // import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
@@ -15,6 +15,16 @@ import {
   WEEKDAYS_OPTION,
   CUSTOM_OPTION,
 } from 'util/recurrence';
+
+import {
+  MARKS_IMPORTANT,
+  MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP,
+} from 'constants/importantValues';
+
+import {
+  MARKS_EFFORT,
+  MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP,
+} from 'constants/effortValues';
 
 // import InputGroup from 'components/ui/InputGroup';
 import InputField from 'components/ui/InputField';
@@ -167,70 +177,8 @@ const OPEN_RECURRENCE_MODAL_OPTION = 'openRecurrenceModal';
 // How Important Slider constants
 const DEFAULT_IMPACT = 5;
 
-const MARKS_IMPORTANT = [
-  {
-    value: 1,
-    label: 'Not Very',
-  },
-  {
-    value: 2,
-    label: 'A little',
-  },
-  {
-    value: 3,
-    label: 'Somewhat',
-  },
-  {
-    value: 4,
-    label: 'Pretty',
-  },
-  {
-    value: 5,
-    label: 'Very',
-  },
-];
-
-const MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP = {
-  1: 'Not Very Important',
-  2: 'A Little Important',
-  3: 'Somewhat Important',
-  4: 'Pretty Important',
-  5: 'Very Important',
-};
-
 // How much effort slider constants
 const DEFAULT_EFFORT = 1;
-
-const MARKS_EFFORT = [
-  {
-    value: 1,
-    label: '1-15 mins',
-  },
-  {
-    value: 2,
-    label: '16-60 mins',
-  },
-  {
-    value: 3,
-    label: '1-2 hours',
-  },
-  {
-    value: 4,
-    label: '2-5 hours',
-  },
-  {
-    value: 5,
-    label: '1+ days',
-  },
-];
-
-const MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP = {
-  1: '15 minutes or less',
-  2: 'Less than an hour',
-  3: 'An hour or two',
-  4: 'Up to five hours',
-  5: 'More than a day',
-};
 
 const TaskForm = ({
   id,
@@ -261,6 +209,13 @@ const TaskForm = ({
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
 
+  // Refs for input focus
+  const taskNameRef = useRef(null);
+  useEffect(() => {
+    console.log(taskNameRef.current);
+    taskNameRef.current.focus();
+  }, []);
+
   // Recurring Config set up
   const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
 
@@ -273,9 +228,11 @@ const TaskForm = ({
         <TransparentInputField
           required
           textarea
+          autoFocus={true}
           placeholder="What do you need to do?"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
+          ref={taskNameRef}
         />
       </FieldContainer>
 
@@ -287,7 +244,7 @@ const TaskForm = ({
           {'.'}
           <ButtonInline onClick={() => clearRelativePrioritization(id)}>
             Clear customization
-            </ButtonInline>
+          </ButtonInline>
         </Paragraph>
       )}
 
@@ -478,7 +435,7 @@ const TaskForm = ({
             }
           }}
         >
-          
+
         </ToggleableFieldWrapper> */}
       </FieldContainer>
 

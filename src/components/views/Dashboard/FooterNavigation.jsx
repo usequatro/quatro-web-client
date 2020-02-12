@@ -85,11 +85,11 @@ const NewTaskButtonContainer = styled.div`
   justify-content: center;
   align-items: center;
 
-  height: 3.5rem;
-  width: 3.5rem;  
+  height: 4rem;
+  width: 4rem;
   ${mediaVerySmall} {
-    height: 3rem;
-    width: 3rem;
+    height: 3.5rem;
+    width: 3.5rem;
   }
 `;
 
@@ -107,6 +107,10 @@ const NewTaskButton = styled.button`
   align-items: center;
   cursor: pointer;
   border: none;
+
+  position: relative;
+  top: -1.3rem;
+  border: ${(props) => `1px solid ${props.theme.colors.barBackground}`};
 
   ${(props) => keyboardOnlyOutline(props.theme.colors.appForeground)};
   ${activeLighter}
@@ -160,10 +164,10 @@ const FooterNavigation = ({
       >
         <NavIconContainer>
           <NavIcon>
-            <CalendarIcon size="fill" title="Calendar" />
+            <CalendarIcon size="fill" title="Scheduled" />
           </NavIcon>
         </NavIconContainer>
-        <Label>Calendar</Label>
+        <Label>Scheduled</Label>
       </NavButton>
 
       {/* Blocked */}
