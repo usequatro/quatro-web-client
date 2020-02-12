@@ -32,7 +32,6 @@ const WorkspaceArea = styled.div`
   transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
 
   margin-top: ${({ theme }) => `${theme.space[2]}`};
-  border-top: ${({ theme }) => `1px solid ${theme.colors.border}`};
 `;
 
 const EndOfListSpacing = styled.div`

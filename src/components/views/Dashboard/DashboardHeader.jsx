@@ -66,6 +66,7 @@ const SectionTitleContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  border-bottom: ${({ theme }) => `1px solid ${theme.colors.border}`};
   ${mediaVerySmall} {
     padding: ${({ theme }) => `${theme.space[2]} 0`};
   }
