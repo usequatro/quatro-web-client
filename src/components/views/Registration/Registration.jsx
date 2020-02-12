@@ -71,7 +71,7 @@ const Registration = ({ location }) => (
   <OuterContainer>
     <Header>
       <SignUpHeading>
-        Aizen
+        Quatro
       </SignUpHeading>
       <SectionTitleContainer>
         {locationToSectionTitle[location.pathname]}

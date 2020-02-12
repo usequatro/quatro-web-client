@@ -16,10 +16,6 @@
             <g id="Bottom-Nav" transform="translate(0.000000, 658.000000)">
                 <g id="Nav-Options" transform="translate(27.000000, 13.000000)">
                     <g id="Add" transform="translate(145.000000, 0.000000)">
-                        <g id="Oval">
-                            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
-                            <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
-                        </g>
                         <path d="M26.5,14 C27.6045695,14 28.5,14.8954305 28.5,16 L28.5,24.5 L37,24.5 C38.1045695,24.5 39,25.3954305 39,26.5 C39,27.6045695 38.1045695,28.5 37,28.5 L28.5,28.5 L28.5,37 C28.5,38.1045695 27.6045695,39 26.5,39 C25.3954305,39 24.5,38.1045695 24.5,37 L24.5,28.5 L16,28.5 C14.8954305,28.5 14,27.6045695 14,26.5 C14,25.3954305 14.8954305,24.5 16,24.5 L24.5,24.5 L24.5,16 C24.5,14.8954305 25.3954305,14 26.5,14 Z" id="Combined-Shape" fill="#00A4C4"></path>
                     </g>
                 </g>

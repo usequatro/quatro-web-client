@@ -14,6 +14,9 @@ import { completeTask, selectRecurringConfig } from 'modules/tasks';
 import { EDIT_TASK } from 'constants/paths';
 import { getRecurringOptionLabel } from 'util/recurrence';
 
+import { MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP } from 'constants/importantValues';
+import { MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP } from 'constants/effortValues';
+
 import CheckIcon from 'components/icons/CheckIcon';
 import activeLighter from 'components/style-mixins/activeLighter';
 import ButtonFunction from 'components/ui/ButtonFunction';
@@ -33,32 +36,24 @@ const maxHeightTransitionStyles = {
 const TaskContainer = styled.div`
   display: flex;
   width: 100%;
-  margin: 0 1rem;
-  background-color: ${(props) => props.theme.colors.appForeground};
+  overflow: hidden;
 
+  background-color: ${(props) => props.theme.colors.appForeground};
   background-image: ${({ theme }) => (
     `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.appForeground} 50%)`
   )};
   background-size: 300% 100%;
-
-  padding-left: 0;
-  padding-right: ${({ theme }) => theme.space[4]};
-  ${mediaVerySmall} {
-    padding-right: ${({ theme }) => theme.space[3]};
-  }
-
-  overflow: hidden;
-
   background-position: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0% 0%' : '100% 0%')};
-  opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
+
+  margin-bottom: ${({ theme }) => `${theme.space[2]}`};
+  padding: ${({ theme }) => `0 ${theme.space[3]}`};
   padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
   padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
-  ${mediaVerySmall} {
-    padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
-    padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[2])};
-  }
-  
+
+  opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
   max-height: ${({ state }) => maxHeightTransitionStyles[state]};
+  cursor: pointer; /* overriding draggable that makes drag cursor */
+
   transition:
     background-position ${duration}ms linear,
     opacity ${duration}ms ease-out,
@@ -66,14 +61,15 @@ const TaskContainer = styled.div`
     padding-bottom ${duration}ms ease-out,
     margin-bottom ${duration}ms ease-out,
     max-height ${duration}ms ease-out;
+  }
 
-  cursor: pointer; /* overriding draggable that makes drag cursor */
+  box-shadow: ${({ theme }) => `0 5px 10px -5px ${theme.colors.placeholder}`};
 
   &:hover {
     background-image: ${({ theme }) => (
     `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.foregroundOptionHover} 50%)`
   )};
-  }
+
   ${activeLighter}
 `;
 
@@ -81,7 +77,6 @@ const TextForParagraphs = styled(Text)`
   text-overflow: ellipsis;
   overflow: hidden;
   font-family: ${({ theme }) => theme.fonts.body};
-  font-size: ${({ theme }) => theme.fontSizes[1]};
   letter-spacing: ${({ theme }) => theme.letterSpacings.small};
   line-height: normal;
 `;
@@ -91,13 +86,12 @@ const TextForTitle = styled(Text)`
   font-family: ${({ theme }) => theme.fonts.heading};
   font-size: ${({ theme }) => theme.fontSizes[3]};
   letter-spacing: ${({ theme }) => theme.letterSpacings.medium};
-  margin-bottom: ${({ theme }) => theme.space[2]};
-  line-height: 1.2rem;
+  line-height: 1.6rem;
 `;
 
 const TaskTitle = (props) => <TextForTitle {...props} as="h4" fontSize={[3, 4]} mb={3} />;
-const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[2, 4]} mb={1} color="textSecondary" />;
-const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[1, 3]} mb={1} />;
+const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[0, 1]} mb={1} color="textSecondary" />;
+const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[0, 1]} mb={1} />;
 
 const TaskButtons = styled(Box)`
   display: flex;
@@ -170,7 +164,7 @@ const addLinkTags = memoize((text) => {
 });
 
 const formatDateForDisplay = date => {
-  return format(date, 'EEEE, LLLL d, p');
+  return format(date, 'EEEE, LLL d, p');
 };
 
 const Task = ({
@@ -188,6 +182,8 @@ const Task = ({
   disableAnimations,
   prioritizedAheadOf,
   recurringConfigId,
+  impact,
+  effort,
 }) => {
   const dispatch = useDispatch();
   const [completedStart, setCompletedStart] = useState(false);
@@ -242,27 +238,35 @@ const Task = ({
               {/* </ButtonFunction> */}
             </TaskTitle>
             {scheduledStart && (
-              <TaskSubtitle mt={2}>
+              <TaskSubtitle mt={1}>
                 {`Scheduled Start: ${formatDateForDisplay(new Date(scheduledStart))}`}
               </TaskSubtitle>
             )}
             {due && (
-              <TaskSubtitle mt={2}>
+              <TaskSubtitle mt={1}>
                 {`Due By: ${formatDateForDisplay(new Date(due))}`}
               </TaskSubtitle>
             )}
+
+            {impact && effort && (
+              <TaskSubtitle mt={1}>
+                {`${MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP[impact]}, ${MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP[effort]}`}
+              </TaskSubtitle>
+            )}
+
             {recurringLabel && (
-              <TaskSubtitle mt={2}>
+              <TaskSubtitle mt={1}>
                 {`Recurrence: ${recurringLabel}`}
               </TaskSubtitle>
             )}
+
             {description && (
               <TaskDescription mt={2}>
                 {addLinkTags(description)}
               </TaskDescription>
             )}
             {completed && (
-              <TaskSubtitle mt={2}>
+              <TaskSubtitle mt={1}>
                 {`Completed: ${formatDateForDisplay(new Date(completed))}`}
               </TaskSubtitle>
             )}

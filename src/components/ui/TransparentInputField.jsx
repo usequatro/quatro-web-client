@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 import FieldLabel from 'components/ui/FieldLabel';
@@ -25,18 +25,36 @@ const Input = styled.input`
   }
 `;
 
-const InputField = ({
-  label, helpText, className, textarea, ...props
-}) => (
-    <Box as={label ? 'label' : 'div'} className={className}>
-      {label && (
-        <FieldLabel>{label}</FieldLabel>
-      )}
-      {helpText && (
-        <FieldHelpText>{helpText}</FieldHelpText>
-      )}
-      <Input as={textarea ? 'textarea' : 'input'} {...props} />
-    </Box>
-  );
+const InputField = forwardRef((
+  {
+    label,
+    helpText,
+    className,
+    textarea,
+    ...props
+  },
+  ref,
+) => (
+  <Box as={label ? 'label' : 'div'} className={className}>
+    {label && (
+      <FieldLabel>{label}</FieldLabel>
+    )}
+    {helpText && (
+      <FieldHelpText>{helpText}</FieldHelpText>
+    )}
+    <Input
+      ref={ref}
+      as={textarea ? 'textarea' : 'input'}
+
+      // Autofocus to the end of the input rather than the beginning
+      onFocus={function (e) {
+        var val = e.target.value;
+        e.target.value = '';
+        e.target.value = val;
+      }}
+
+      {...props} />
+  </Box>
+));
 
 export default styled(InputField)``;
