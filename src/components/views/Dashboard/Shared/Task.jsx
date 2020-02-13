@@ -43,9 +43,9 @@ const TaskContainer = styled.div`
   background-position: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0% 0%' : '100% 0%')};
 
   margin-bottom: ${({ theme }) => `${theme.space[2]}`};
-  padding: ${({ theme }) => `0 ${theme.space[3]}`};
-  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
-  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[3])};
+  padding: ${({ theme }) => `0 ${theme.space[4]}`};
+  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
+  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
 
   opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
   max-height: ${({ state }) => maxHeightTransitionStyles[state]};
