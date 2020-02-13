@@ -59,6 +59,8 @@ const HorizontalContainer = styled(Box).attrs({
 const DashboardTitle = styled.div`
   text-align: center;
   height: 100%;
+  position: relative;
+  top: -0.5rem;
 `;
 const SectionTitleContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
@@ -87,7 +89,7 @@ const SectionIconContainer = styled.div`
 `;
 
 const titles = {
-  [dashboardTabs.SCHEDULED]: 'Calendar',
+  [dashboardTabs.SCHEDULED]: 'Schedule',
   [dashboardTabs.BLOCKED]: 'Blocked',
   [dashboardTabs.NOW]: 'Top 4',
   [dashboardTabs.NEXT]: 'Backlog',
@@ -121,7 +123,7 @@ const DashboardHeader = ({ location }) => {
             <HamburgerIcon size="small" title="Menu" />
           </ButtonFunction>
           <DashboardTitle>
-            <LogoIcon size="fill" title="Quatro Logo" />
+            <LogoIcon size="medium" title="Quatro Logo" />
           </DashboardTitle>
 
           {/* If we're on the completed screen, link back to Top 4 */}
@@ -147,11 +149,11 @@ const DashboardHeader = ({ location }) => {
       </HeaderContainer>
 
       <SectionTitleContainer>
-        {iconsByTab[tab] &&
+        {iconsByTab[tab] && (
           <SectionIconContainer>
             <CurrentTabIcon size="fill" alt={titles[tab]} />
           </SectionIconContainer>
-        }
+        )}
         <SectionTitle>
           {titles[tab] || titles.default}
         </SectionTitle>

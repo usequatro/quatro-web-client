@@ -14,9 +14,6 @@ import { completeTask, selectRecurringConfig } from 'modules/tasks';
 import { EDIT_TASK } from 'constants/paths';
 import { getRecurringOptionLabel } from 'util/recurrence';
 
-import { MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP } from 'constants/importantValues';
-import { MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP } from 'constants/effortValues';
-
 import CheckIcon from 'components/icons/CheckIcon';
 import activeLighter from 'components/style-mixins/activeLighter';
 import ButtonFunction from 'components/ui/ButtonFunction';
@@ -182,8 +179,6 @@ const Task = ({
   disableAnimations,
   prioritizedAheadOf,
   recurringConfigId,
-  impact,
-  effort,
 }) => {
   const dispatch = useDispatch();
   const [completedStart, setCompletedStart] = useState(false);
@@ -238,35 +233,28 @@ const Task = ({
               {/* </ButtonFunction> */}
             </TaskTitle>
             {scheduledStart && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
                 {`Scheduled Start: ${formatDateForDisplay(new Date(scheduledStart))}`}
               </TaskSubtitle>
             )}
             {due && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
                 {`Due By: ${formatDateForDisplay(new Date(due))}`}
               </TaskSubtitle>
             )}
 
-            {impact && effort && (
-              <TaskSubtitle mt={1}>
-                {`${MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP[impact]}, ${MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP[effort]}`}
-              </TaskSubtitle>
-            )}
-
             {recurringLabel && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
                 {`Recurrence: ${recurringLabel}`}
               </TaskSubtitle>
             )}
-
             {description && (
               <TaskDescription mt={2}>
                 {addLinkTags(description)}
               </TaskDescription>
             )}
             {completed && (
-              <TaskSubtitle mt={1}>
+              <TaskSubtitle mt={2}>
                 {`Completed: ${formatDateForDisplay(new Date(completed))}`}
               </TaskSubtitle>
             )}
