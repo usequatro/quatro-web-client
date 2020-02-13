@@ -89,7 +89,7 @@ const SectionIconContainer = styled.div`
 `;
 
 const titles = {
-  [dashboardTabs.SCHEDULED]: 'Schedule',
+  [dashboardTabs.SCHEDULED]: 'Scheduled',
   [dashboardTabs.BLOCKED]: 'Blocked',
   [dashboardTabs.NOW]: 'Top 4',
   [dashboardTabs.NEXT]: 'Backlog',
