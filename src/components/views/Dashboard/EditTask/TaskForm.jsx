@@ -228,7 +228,6 @@ const TaskForm = ({
         <TransparentInputField
           required
           textarea
-          autoFocus={true}
           placeholder="What do you need to do?"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
