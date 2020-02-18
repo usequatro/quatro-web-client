@@ -60,7 +60,7 @@ const DashboardTitle = styled.div`
   text-align: center;
   height: 100%;
   position: relative;
-  top: -0.5rem;
+  top: -1rem;
 `;
 const SectionTitleContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
@@ -123,7 +123,7 @@ const DashboardHeader = ({ location }) => {
             <HamburgerIcon size="small" title="Menu" />
           </ButtonFunction>
           <DashboardTitle>
-            <LogoIcon size="medium" title="Quatro Logo" />
+            <LogoIcon size="large" title="Quatro Logo" />
           </DashboardTitle>
 
           {/* If we're on the completed screen, link back to Top 4 */}
