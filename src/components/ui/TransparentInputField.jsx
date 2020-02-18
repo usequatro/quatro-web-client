@@ -51,9 +51,9 @@ const InputField = forwardRef((
         var val = e.target.value;
         e.target.value = '';
         e.target.value = val;
-        // setTimeout(function() {
-        //   e.target.closest('main').scrollIntoView();
-        // }, 100);
+        setTimeout(function() {
+          e.target.closest('main').scrollIntoView();
+        }, 100);
       }}
 
       {...props} />
