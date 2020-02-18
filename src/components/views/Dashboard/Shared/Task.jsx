@@ -60,7 +60,7 @@ const TaskContainer = styled.div`
     max-height ${duration}ms ease-out;
   }
 
-  box-shadow: ${({ theme }) => `0 5px 10px -5px ${theme.colors.placeholder}`};
+  box-shadow: ${({ theme }) => `0 5px 10px -7px ${theme.colors.placeholder}`};
 
   &:hover {
     background-image: ${({ theme }) => (
