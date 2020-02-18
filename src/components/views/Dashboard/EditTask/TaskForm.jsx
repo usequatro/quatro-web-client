@@ -210,11 +210,11 @@ const TaskForm = ({
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
 
   // Refs for input focus
-  const taskNameRef = useRef(null);
-  useEffect(() => {
-    console.log(taskNameRef.current);
-    taskNameRef.current.focus();
-  }, []);
+  // const taskNameRef = useRef(null);
+  // useEffect(() => {
+  //   console.log(taskNameRef.current);
+  //   taskNameRef.current.focus();
+  // }, []);
 
   // Recurring Config set up
   const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
@@ -228,10 +228,10 @@ const TaskForm = ({
         <TransparentInputField
           required
           textarea
+          autoFocus
           placeholder="What do you need to do?"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          ref={taskNameRef}
         />
       </FieldContainer>
 

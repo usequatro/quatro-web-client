@@ -45,6 +45,17 @@ const InputField = forwardRef((
     <Input
       ref={ref}
       as={textarea ? 'textarea' : 'input'}
+
+      // Autofocus to the end of the input rather than the beginning
+      onFocus={function (e) {
+        var val = e.target.value;
+        e.target.value = '';
+        e.target.value = val;
+        // setTimeout(function() {
+        //   e.target.closest('main').scrollIntoView();
+        // }, 100);
+      }}
+
       {...props} />
   </Box>
 ));
