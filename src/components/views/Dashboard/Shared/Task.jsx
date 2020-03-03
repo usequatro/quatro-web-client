@@ -143,10 +143,11 @@ const CompleteButton = styled.button`
   cursor: pointer;
 
   // The below are textSecondary in RGBA
-  background-color: rgba(61, 113, 123, 0.1);
-  background-color: ${({ state }) => (state === 'exiting' || state === 'exited' ? 'rgba(65, 77, 103, 1)' : 'rgba(61, 113, 123, 0.1)')};
+  background-color: ${({ state, theme }) => (state === 'exiting' || state === 'exited') ? `${theme.colors.barBackground}` : `${theme.colors.lightBlue}`};
+  opacity: ${({ state }) => (state === 'exiting' || state === 'exited' ? '1' : '0.5')};
 
   transition:
+    opacity ${duration/2}ms linear,
     background-color ${duration/2}ms linear
   }
 

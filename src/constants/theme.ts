@@ -26,6 +26,7 @@ const theme = {
     error: colors.ERROR_RED,
     foregroundOptionHover: colors.ALMOST_WHITE,
     foregroundOptionActive: colors.SUPER_LIGHT_GRAY,
+    lightBlue: colors.LIGHTEST_BLUE,
   },
   // Array of numbers for use as margin and pixel values
   space: [
