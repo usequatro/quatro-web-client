@@ -40,11 +40,11 @@ const TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP = {
   },
   [SCHEDULED]: {
     img: '/empty-states/empty-state-calendar.png',
-    message: 'All clear! You don\'t have any scheduled followups, reminders, or tasks',
+    message: '<p>All clear!</p><p>You don\'t have any scheduled followups, reminders, or tasks</p>',
   },
   [BLOCKED]: {
     img: '/empty-states/empty-state-blocked.png',
-    message: 'No blockers. Good job!',
+    message: '<p>The runway is clear!</p><p>You don\'t have any dependencies blocking your tasks.</p>',
   },
   [COMPLETED]: {
     img: '/empty-states/empty-state-completed.png',
@@ -143,7 +143,7 @@ const TaskListWorkspace = ({
   if (!tasks.length && TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId]) {
     return (
       <EmptyStateContainer>
-        <EmptyStateMessage>{TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message}</EmptyStateMessage>
+        <EmptyStateMessage dangerouslySetInnerHTML={{__html: TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message}}></EmptyStateMessage>
         <EmptyStateImgContainer>
           <EmptyStateImg src={TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].img} />
         </EmptyStateImgContainer>
