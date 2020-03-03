@@ -22,7 +22,7 @@ import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
 import BlockingTaskList from './BlockingTaskList';
 const MAX_DESCRIPTION_CHARACTERS = 200;
 
-const duration = 500;
+const duration = 400;
 const sliderAnimationDelay = duration / 1.5;
 const slideUpAnimationDelay = sliderAnimationDelay + duration;
 const finalAnimationDuration = slideUpAnimationDelay + duration;
@@ -30,7 +30,7 @@ const finalAnimationDuration = slideUpAnimationDelay + duration;
 const maxHeightTransitionStyles = {
   entering: 'none',
   entered: 'none',
-  exiting: '10rem',
+  exiting: '8rem',
   exited: '0',
 };
 
