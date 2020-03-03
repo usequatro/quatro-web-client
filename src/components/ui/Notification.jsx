@@ -46,7 +46,7 @@ const NotificationBox = styled(Box).attrs({ px: 4, py: 4 })`
   max-width: calc(${maxWidth} - 2rem);
   background-color: ${({ theme, notificationType }) => (
     (notificationType === 'error' && theme.colors.error)
-    || theme.colors.appBackground
+    || theme.colors.barBackground
   )};
   display: flex;
   align-items: center;

@@ -22,53 +22,17 @@ import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
 import BlockingTaskList from './BlockingTaskList';
 const MAX_DESCRIPTION_CHARACTERS = 200;
 
-const duration = 300;
+const duration = 500;
+const sliderAnimationDelay = duration / 1.5;
+const slideUpAnimationDelay = sliderAnimationDelay + duration;
+const finalAnimationDuration = slideUpAnimationDelay + duration;
+
 const maxHeightTransitionStyles = {
   entering: 'none',
   entered: 'none',
   exiting: '10rem',
   exited: '0',
 };
-
-const TaskContainer = styled.div`
-  display: flex;
-  width: 100%;
-  overflow: hidden;
-
-  background-color: ${(props) => props.theme.colors.appForeground};
-  background-image: ${({ theme }) => (
-    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.appForeground} 50%)`
-  )};
-  background-size: 300% 100%;
-  background-position: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0% 0%' : '100% 0%')};
-
-  margin-bottom: ${({ theme }) => `${theme.space[2]}`};
-  padding: ${({ theme }) => `0 ${theme.space[4]}`};
-  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
-  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
-
-  opacity: ${({ state }) => (state === 'exited' ? '0' : '1')};
-  max-height: ${({ state }) => maxHeightTransitionStyles[state]};
-  cursor: pointer; /* overriding draggable that makes drag cursor */
-
-  transition:
-    background-position ${duration}ms linear,
-    opacity ${duration}ms ease-out,
-    padding-top ${duration}ms ease-out,
-    padding-bottom ${duration}ms ease-out,
-    margin-bottom ${duration}ms ease-out,
-    max-height ${duration}ms ease-out;
-  }
-
-  box-shadow: ${({ theme }) => `0 5px 10px -7px ${theme.colors.placeholder}`};
-
-  &:hover {
-    background-image: ${({ theme }) => (
-    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.foregroundOptionHover} 50%)`
-  )};
-
-  ${activeLighter}
-`;
 
 const TextForParagraphs = styled(Text)`
   text-overflow: ellipsis;
@@ -90,6 +54,82 @@ const TaskTitle = (props) => <TextForTitle {...props} as="h4" fontSize={[3, 4]} 
 const TaskSubtitle = (props) => <TextForParagraphs {...props} fontSize={[0, 1]} mb={1} color="textSecondary" />;
 const TaskDescription = (props) => <TextForParagraphs {...props} fontSize={[0, 1]} mb={1} />;
 
+const TaskContainer = styled.div`
+  position: relative;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  z-index: 1;
+
+  margin-bottom: ${({ theme }) => `${theme.space[2]}`};
+  padding: ${({ theme }) => `0 ${theme.space[4]}`};
+
+  background-color: ${(props) => props.theme.colors.appForeground};
+  background-image: ${({ theme }) => (
+    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.appForeground} 50%)`
+  )};
+  background-size: 300% 100%;
+  background-position: 100% 0%;
+
+
+  padding-top: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
+  padding-bottom: ${({ state, theme }) => (state === 'exited' ? '0' : theme.space[4])};
+  max-height: ${({ state }) => maxHeightTransitionStyles[state]};
+
+  cursor: pointer; /* overriding draggable that makes drag cursor */
+  box-shadow: ${({ theme }) => `0 5px 10px -7px ${theme.colors.placeholder}`};
+
+  transition:
+    background-position ${duration}ms linear,
+    opacity ${duration}ms ease-out ${slideUpAnimationDelay}ms,
+    padding-top ${duration}ms ease-out ${slideUpAnimationDelay}ms,
+    padding-bottom ${duration}ms ease-out ${slideUpAnimationDelay}ms,
+    margin-bottom ${duration}ms ease-out ${slideUpAnimationDelay}ms,
+    max-height ${duration}ms ease-out ${slideUpAnimationDelay}ms;
+  }
+
+
+  &:hover {
+    background-image: ${({ theme }) => (
+    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.foregroundOptionHover} 50%)`
+  )};
+
+  ${activeLighter}
+`;
+
+const TaskAnimationSlide = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0' : '100%')};
+
+  display: flex;
+  text-align: center;
+  align-items: center;
+
+  z-index: 2;
+  background-color: ${({ theme }) => theme.colors.barBackground};
+  width: 100%;
+
+  transition:
+    left ${duration}ms linear ${sliderAnimationDelay}ms;
+  }
+`;
+
+const TaskAnimationText = styled.h2`
+  color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
+  width: 100%;
+  font-family: ${({ theme }) => theme.fonts.heading};
+  font-size: ${({ theme }) => theme.fontSizes[6]};
+  letter-spacing: ${({ theme }) => theme.letterSpacings.medium};
+  font-weight: bolder;
+
+  opacity: ${({ state }) => (state === 'exited' ? '1' : '0')};
+  transition:
+    opacity ${duration}ms linear;
+  }
+`;
+
 const TaskButtons = styled(Box)`
   display: flex;
   flex-direction: column;
@@ -97,11 +137,19 @@ const TaskButtons = styled(Box)`
   flex-shrink: 0;
 `;
 
-const CompleteButton = styled(ButtonFunction)`
-  opacity: 0.5;
-  &:hover {
-    opacity: 1;
+const CompleteButton = styled.button`
+  padding: 1rem;
+  border-radius: 50%;
+  cursor: pointer;
+
+  // The below are textSecondary in RGBA
+  background-color: rgba(61, 113, 123, 0.1);
+  background-color: ${({ state }) => (state === 'exiting' || state === 'exited' ? 'rgba(65, 77, 103, 1)' : 'rgba(61, 113, 123, 0.1)')};
+
+  transition:
+    background-color ${duration/2}ms linear
   }
+
   ${activeLighter}
 `;
 
@@ -207,7 +255,7 @@ const Task = ({
     <Transition
       in={!completedStart || disableAnimations}
       timeout={duration}
-      onExited={() => setTimeout(onExited, duration)}
+      onExited={() => setTimeout(onExited, finalAnimationDuration)}
     >
       {(state) => (
         <TaskContainer
@@ -216,6 +264,9 @@ const Task = ({
           data-id={id}
           data-ahead-of={prioritizedAheadOf}
         >
+          <TaskAnimationSlide state={state}>
+            <TaskAnimationText state={state}>Task Completed!</TaskAnimationText>
+          </TaskAnimationSlide>
           <DragHandle enableDragHint={enableDragHint} />
           {rankNumber &&
             <RankContainer>
@@ -264,9 +315,7 @@ const Task = ({
           </MainContainer>
           <TaskButtons>
             {!completed && allowComplete && (
-              <CompleteButton variant="text">
-                <CheckIcon onClick={onComplete} size="small" title="Mark as Completed" />
-              </CompleteButton>
+              <CompleteButton state={state} onClick={onComplete} />
             )}
           </TaskButtons>
         </TaskContainer>

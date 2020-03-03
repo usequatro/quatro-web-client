@@ -63,8 +63,6 @@ const WorkspaceArea = styled.div`
 
   opacity: ${(props) => transitionStyles[props.state].opacity};
   transition: transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
-
-  margin-top: ${({ theme }) => `${theme.space[2]}`};
 `;
 
 const EmptyStateContainer = styled.div`
@@ -93,11 +91,12 @@ const EmptyStateActionBtn = styled(Button)`
   font-weight: bolder;
 `;
 
-const FieldTitle = styled(HeadingResponsive).attrs({ fontSize: [3] })`
+const EmptyStateMessage = styled(HeadingResponsive).attrs({ fontSize: [3] })`
   color: ${({ theme }) => theme.colors.textSecondary};
   letter-spacing: ${({ theme }) => theme.letterSpacings.medium}
   text-align: center;
   line-height: 1.5rem;
+  margin: ${({ theme }) => `0 ${theme.space[4]}`};
 `
 
 const EndOfListSpacing = styled.div`
@@ -114,7 +113,6 @@ const TaskListWorkspace = ({
   taskListId,
   tasks,
   renderTask,
-  noTasksMessage,
   isDragDisabled = false,
 }) => {
   const [visible, setVisible] = useState(false);
@@ -145,7 +143,7 @@ const TaskListWorkspace = ({
   if (!tasks.length && TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId]) {
     return (
       <EmptyStateContainer>
-        <FieldTitle>{TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message}</FieldTitle>
+        <EmptyStateMessage>{TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message}</EmptyStateMessage>
         <EmptyStateImgContainer>
           <EmptyStateImg src={TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].img} />
         </EmptyStateImgContainer>
