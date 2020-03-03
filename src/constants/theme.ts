@@ -73,6 +73,12 @@ const theme = {
       backgroundColor: 'transparent',
       boxShadow: 'inset 0 0 0 2px',
       outlineColor: colors.PAINT_BLUE,
+      fontWeight: 'bold',
+    },
+    pill: {
+      color: colors.WHITE,
+      backgroundColor: colors.DARK_BLUE,
+      outlineColor: colors.DARK_BLUE,
       fontWeight: 'normal',
     },
     outlineOverBackground: {
