@@ -101,7 +101,7 @@ const TaskAnimationSlide = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
-  left: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0' : '100%')};
+  left: ${({ state }) => (state === 'exited' || state === 'exiting' ? '0' : '-100%')};
 
   display: flex;
   text-align: center;
@@ -145,6 +145,10 @@ const CompleteButton = styled.button`
   // The below are textSecondary in RGBA
   background-color: ${({ state, theme }) => (state === 'exiting' || state === 'exited') ? `${theme.colors.barBackground}` : `${theme.colors.lightBlue}`};
   opacity: ${({ state }) => (state === 'exiting' || state === 'exited' ? '1' : '0.5')};
+
+  &:hover {
+    opacity: 0.9;
+  }
 
   transition:
     opacity ${duration/2}ms linear,
