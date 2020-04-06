@@ -34,6 +34,9 @@ import Button from 'components/ui/Button';
 import withLoadTasks from 'components/hoc/withLoadTasks';
 import Paragraph from 'components/ui/Paragraph';
 
+import withMixpanel from 'components/hoc/withMixpanel';
+import { TASK_UPDATED, TASK_DELETED } from 'constants/mixpanelTrackingEvents';
+
 import TaskForm from './TaskForm';
 import DeleteConfirmationPopup from './DeleteConfirmationPopup';
 
@@ -71,6 +74,7 @@ const EditTask = ({
   associatedRecurringConfig,
   taskPrioritizedAheadOfTitle,
   dependencyIds,
+  mixpanel,
 }) => {
   const dispatch = useDispatch();
 
@@ -78,6 +82,11 @@ const EditTask = ({
 
   const onUpdate = (key, value) => {
     dispatch(updateTask(id, { [key]: value }));
+    // mixpanel.track(TASK_UPDATED, {
+    //   taskId: id,
+    //   field: key,
+    //   value,
+    // });
   };
 
   const dependencyDescriptors = useSelector((state) => (
@@ -173,6 +182,7 @@ const EditTask = ({
             onCancel={() => setDeletePopupVisible(false)}
             onConfirm={() => {
               dispatch(moveToTrashTask(id));
+              mixpanel.track(TASK_DELETED, { taskId: id });
               onRequestClose();
             }}
           />
@@ -197,7 +207,7 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export default withLoadTasks(
+export default withMixpanel(withLoadTasks(
   connect(mapStateToProps)(EditTask),
   'default',
-);
+));

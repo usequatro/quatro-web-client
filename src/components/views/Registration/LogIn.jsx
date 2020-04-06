@@ -8,11 +8,14 @@ import { DASHBOARD, SIGN_UP } from 'constants/paths';
 import InputGroup from 'components/ui/InputGroup';
 import InputField from 'components/ui/InputField';
 import InvisibleForm from 'components/ui/InvisibleForm';
+import withMixpanel from 'components/hoc/withMixpanel';
+
+import { USER_LOGGED_IN } from 'constants/mixpanelTrackingEvents';
 
 import SubmitButton from './SubmitButton';
 import ErrorMessage from './ErrorMessage';
 
-const LogIn = ({ history }) => {
+const LogIn = ({ history, mixpanel }) => {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -25,6 +28,7 @@ const LogIn = ({ history }) => {
       .then(() => {
         console.log('[LogIn] User authenticated, redirecting.');
         history.push(DASHBOARD);
+        mixpanel.track(USER_LOGGED_IN);
       })
       .catch((error) => {
         console.error(error);
@@ -71,4 +75,4 @@ const LogIn = ({ history }) => {
   );
 };
 
-export default withRouter(LogIn);
+export default withMixpanel(withRouter(LogIn));

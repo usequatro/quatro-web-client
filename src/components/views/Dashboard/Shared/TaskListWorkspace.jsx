@@ -19,6 +19,10 @@ import { NEW_TASK } from 'constants/paths';
 import HeadingResponsive from 'components/ui/HeadingResponsive';
 import Button from 'components/ui/Button';
 import TaskRefreshListener from 'components/views/Dashboard/TaskRefreshListener';
+
+import withMixpanel from 'components/hoc/withMixpanel';
+import { TASK_MANUALLY_ARRANGED } from 'constants/mixpanelTrackingEvents';
+
 import NoTasksView from './NoTasksView';
 
 const duration = 250;
@@ -110,6 +114,7 @@ const DraggableDiv = styled.div`
 
 const TaskListWorkspace = ({
   history,
+  mixpanel,
   taskListId,
   tasks,
   renderTask,
@@ -137,6 +142,9 @@ const TaskListWorkspace = ({
           destination.index + offset,
         ),
       );
+
+      console.log('manual arranging');
+      mixpanel.track(TASK_MANUALLY_ARRANGED, { taskId: draggableId });
     }
   }, [dispatch, taskListId]);
 
@@ -201,4 +209,4 @@ const TaskListWorkspace = ({
   );
 };
 
-export default withRouter(TaskListWorkspace);
+export default withMixpanel(withRouter(TaskListWorkspace));

@@ -19,6 +19,9 @@ import activeLighter from 'components/style-mixins/activeLighter';
 import ButtonFunction from 'components/ui/ButtonFunction';
 import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
 
+import withMixpanel from 'components/hoc/withMixpanel';
+import { TASK_COMPLETED } from 'constants/mixpanelTrackingEvents';
+
 import BlockingTaskList from './BlockingTaskList';
 const MAX_DESCRIPTION_CHARACTERS = 200;
 
@@ -228,6 +231,7 @@ const Task = ({
   due,
   completed,
   history,
+  mixpanel,
   ranking,
   disableAnimations,
   prioritizedAheadOf,
@@ -239,6 +243,9 @@ const Task = ({
   const onComplete = (event) => {
     event.stopPropagation();
     setCompletedStart(true);
+    mixpanel.track(TASK_COMPLETED, {
+      taskId: id,
+    });
   };
   const onExited = () => {
     dispatch(completeTask(id));
@@ -329,4 +336,4 @@ const Task = ({
   );
 };
 
-export default withRouter(Task);
+export default withMixpanel(withRouter(Task));

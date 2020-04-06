@@ -3,6 +3,7 @@
  */
 
 import get from 'lodash/get';
+
 import createReducer from '../util/createReducer';
 import { RESET } from './reset';
 

@@ -5,12 +5,19 @@ import pick from 'lodash/pick';
 import { trackUser } from 'util/tracking';
 import { setUser } from 'modules/session';
 
-const UserLoginListener = () => {
+const UserLoginListener = ({ mixpanel }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       const userId = user === null ? null : user.uid;
       trackUser(userId);
+
+      if (userId) {
+        mixpanel.identify(userId);
+        mixpanel.people.set({
+          $email: user.email,
+        });
+      }
 
       const reduxUser = user !== null ? pick(user, [
         'uid',

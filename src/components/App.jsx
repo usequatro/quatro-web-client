@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import isElectron from 'is-electron';
+import mixpanel from 'mixpanel-browser';
+import { MixpanelProvider } from 'react-mixpanel';
 import {
   BrowserRouter, MemoryRouter, Switch, Route, Redirect,
 } from 'react-router-dom';
@@ -42,33 +44,38 @@ const [Router, routerProps] = isElectron() || isAppFullScreenMode()
 const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);
 const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 
+// Initialize MixPanel with our Key
+mixpanel.init(process.env.REACT_APP_MIXPANEL_KEY);
+
 export default () => (
   <AppStylesWrapper>
     <AppBackground>
       <RuntimeError>
-        <UserLoginListener />
-        <Router {...routerProps}>
-          <RouterHistoryListener />
-          <Div100vh style={{ width: '100%', height: '100rvh' }}>
-            <Switch>
-              <Redirect exact from="/" to={paths.SIGN_UP} />
-              <RouteLoggedOut path={[paths.SIGN_UP, paths.LOG_IN]} component={Registration} />
-              <RouteLoggedIn
-                path={[paths.DASHBOARD, paths.NEW_TASK]}
-                render={() => (
-                  <>
-                    <AccountMenu />
-                    <Dashboard />
-                  </>
-                )}
-              />
+        <MixpanelProvider mixpanel={mixpanel}>
+          <UserLoginListener mixpanel={mixpanel} />
+          <Router {...routerProps}>
+            <RouterHistoryListener />
+            <Div100vh style={{ width: '100%', height: '100rvh' }}>
+              <Switch>
+                <Redirect exact from="/" to={paths.SIGN_UP} />
+                <RouteLoggedOut path={[paths.SIGN_UP, paths.LOG_IN]} component={Registration} />
+                <RouteLoggedIn
+                  path={[paths.DASHBOARD, paths.NEW_TASK]}
+                  render={() => (
+                    <>
+                      <AccountMenu />
+                      <Dashboard />
+                    </>
+                  )}
+                />
 
-              {/* fallback */}
-              <Redirect to={paths.SIGN_UP} />
-            </Switch>
-            <Notification />
-          </Div100vh>
-        </Router>
+                {/* fallback */}
+                <Redirect to={paths.SIGN_UP} />
+              </Switch>
+              <Notification />
+            </Div100vh>
+          </Router>
+        </MixpanelProvider>
       </RuntimeError>
     </AppBackground>
   </AppStylesWrapper>

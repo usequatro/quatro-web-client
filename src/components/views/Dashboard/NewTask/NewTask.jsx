@@ -14,6 +14,9 @@ import ButtonFooter from 'components/ui/ButtonFooter';
 import TaskForm from 'components/views/Dashboard/EditTask/TaskForm';
 import Button from 'components/ui/Button';
 
+import withMixpanel from 'components/hoc/withMixpanel';
+import { TASK_CREATED } from 'constants/mixpanelTrackingEvents';
+
 const FormFlexContainer = styled.form`
   display: flex;
   flex-direction: column;
@@ -28,7 +31,7 @@ const ContentContainer = styled(Box)`
   flex-shrink: 0;
 `;
 
-const NewTask = ({ history }) => {
+const NewTask = ({ history, mixpanel }) => {
   const [temporaryId, setTemporaryId] = useState('');
   const [title, setTitle] = useState('');
   const [impact, setImpact] = useState(5);
@@ -56,6 +59,7 @@ const NewTask = ({ history }) => {
       scheduledStart,
     };
     dispatch(addTask(newTask, dependencies, recurringConfig, history));
+    mixpanel.track(TASK_CREATED);
   };
 
   const onUpdateTaskDependency = (id, updatedDependency) => {
@@ -132,4 +136,4 @@ const NewTask = ({ history }) => {
   );
 };
 
-export default withRouter(NewTask);
+export default withMixpanel(withRouter(NewTask));
