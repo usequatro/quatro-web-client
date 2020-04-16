@@ -59,7 +59,11 @@ const NewTask = ({ history, mixpanel }) => {
       scheduledStart,
     };
     dispatch(addTask(newTask, dependencies, recurringConfig, history));
-    mixpanel.track(TASK_CREATED);
+    mixpanel.track(TASK_CREATED, {
+      hasBlockers: dependencies.length > 0,
+      hasScheduledStart: !!scheduledStart,
+      hasDueDate: !!due,
+    });
   };
 
   const onUpdateTaskDependency = (id, updatedDependency) => {
