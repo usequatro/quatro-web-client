@@ -33,6 +33,8 @@ In the Frontend, we break them down into 3 entities: `tasks`, `taskDependencies`
 
 ## How to deploy changes
 
+First, make sure you have an `.env` file. This file contains production environment variables. Ask another contributor for a copy.
+
 1. Run `npm run build-and-deploy`.
 
 There's a slack integration configured (see [messageSlack.sh](./messageSlack.sh)) so the Quatro worksplace #deploys channel will be notified.
