@@ -1,4 +1,4 @@
-# Aizen Frontend App
+# Quatro Frontend App
 
 ## Local set up
 
@@ -35,7 +35,7 @@ In the Frontend, we break them down into 3 entities: `tasks`, `taskDependencies`
 
 1. Run `npm run build-and-deploy`.
 
-There's a slack integration configured (see [messageSlack.sh](./messageSlack.sh)) so the Aizen worksplace #deploys channel will be notified.
+There's a slack integration configured (see [messageSlack.sh](./messageSlack.sh)) so the Quatro worksplace #deploys channel will be notified.
 
 ## Technical To Do's
 
