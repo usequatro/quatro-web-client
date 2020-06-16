@@ -40,6 +40,15 @@ import { TASK_UPDATED, TASK_DELETED } from 'constants/mixpanelTrackingEvents';
 import TaskForm from './TaskForm';
 import DeleteConfirmationPopup from './DeleteConfirmationPopup';
 
+import AppBar from '@material-ui/core/AppBar';
+import { makeStyles } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
+import AlarmIcon from '@material-ui/icons/Alarm';
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
+
 const FormFlexContainer = styled.form`
   display: flex;
   flex-direction: column;
@@ -79,6 +88,48 @@ const EditTask = ({
   const dispatch = useDispatch();
 
   const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  const [startDateConfirmed, setStartDateConfirmed] = useState(scheduledStart || false);
+  const [dueDateConfirmed, setDueDateConfirmed] = useState(due || false);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [openDueDate, setOpenDueDate] = useState(false);
+
+  const handleOpenStartDate = () => {
+    setOpenStartDate(true);
+  };
+
+  const handleCloseStartDate = () => {
+    setOpenStartDate(false);
+  };
+
+  const handleConfirmStartDate = () => {
+    setStartDateConfirmed(true);
+    setOpenStartDate(false);
+  };
+
+  const handleCancelStartDate = () => {
+    setStartDateConfirmed(false);
+    setOpenStartDate(false);
+    onUpdate('scheduledStart', null);
+  };
+
+  const handleOpenDueDate = () => {
+    setOpenDueDate(true);
+  };
+
+  const handleCloseDueDate = () => {
+    setOpenDueDate(false);
+  };
+
+  const handleConfirmDueDate = () => {
+    setDueDateConfirmed(true);
+    setOpenDueDate(false);
+  };
+
+  const handleCancelDueDate = () => {
+    setDueDateConfirmed(false);
+    setOpenDueDate(false);
+    onUpdate('due', null);
+  };
 
   const onUpdate = (key, value) => {
     dispatch(updateTask(id, { [key]: value }));
@@ -93,10 +144,55 @@ const EditTask = ({
     selectTaskDependencies(state, dependencyIds)
   ));
 
+  const useStyles = makeStyles((theme) => ({
+    appBar: {
+      top: 'auto',
+      bottom: 0,
+      backgroundColor:'white',
+      color: theme.palette.text.primary,
+    },
+    grow: {
+      flexGrow: 1,
+    },
+    iconButtonLabel: {
+      fontSize: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    root: {
+      borderRadius: '30%',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootOther: {
+      borderRadius: '30%',
+      margin: '.1em',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootClicked: {
+      backgroundColor: '#414D67',
+      color: 'white',
+      borderRadius: '30%',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootOtherClicked: {
+      backgroundColor: '#414D67',
+      color: 'white',
+      borderRadius: '30%',
+      margin: '.1em',
+      padding: '.3em',
+      width: '3em'
+    }
+  }));
+
+  const classes = useStyles();
+
   return (
     <FullScreenPaper onCloseCustom={(history) => dispatch(navigateToTabForTask(id, history))}>
       {(onRequestClose) => (
-        <FormFlexContainer onSubmit={onRequestClose}>
+        <FormFlexContainer>
           <PapelHeader
             headline="Edit Task"
             buttonLeft={(
@@ -166,6 +262,16 @@ const EditTask = ({
                     }
                   }}
                   removeRecurringConfig={() => dispatch(removeTaskRecurringConfig(id))}
+                  handleConfirmStartDate={handleConfirmStartDate}
+                  openStartDate={openStartDate}
+                  handleOpenStartDate={handleOpenStartDate}
+                  handleCloseStartDate={handleCloseStartDate}
+                  handleConfirmDueDate={handleConfirmDueDate}
+                  handleCancelStartDate={handleCancelStartDate}
+                  openDueDate={openDueDate}
+                  handleOpenDueDate={handleOpenDueDate}
+                  handleCloseDueDate={handleCloseDueDate}
+                  handleCancelDueDate={handleCancelDueDate}
                 />
 
                 <Box mb={4}>
@@ -176,6 +282,41 @@ const EditTask = ({
               </ContentContainer>
             )}
           </EditTaskMain>
+
+          <AppBar position="fixed" color="primary" className={classes.appBar}>
+            <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenStartDate}
+              classes={{label: classes.iconButtonLabel, root: startDateConfirmed ? classes.rootClicked : classes.root}}
+            >
+              <CalendarTodayIcon />
+              <small>Start Date</small>
+            </IconButton>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenDueDate}
+              classes={{label: classes.iconButtonLabel, root: dueDateConfirmed ? classes.rootOtherClicked : classes.rootOther}}
+            >
+              <AlarmIcon />
+              <small>Due Date</small>
+            </IconButton>
+            <IconButton
+              edge="start"
+              color="inherit"
+              classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
+            >
+              <NoteAddOutlinedIcon />
+              <small>Notes</small>
+            </IconButton>
+            <div className={classes.grow} />
+            <IconButton edge="end" color="inherit" onClick={onRequestClose}>
+              <ArrowForwardIosIcon />
+            </IconButton>
+            </Toolbar>
+          </AppBar>
 
           <DeleteConfirmationPopup
             open={deletePopupVisible}
