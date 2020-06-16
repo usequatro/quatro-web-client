@@ -10,12 +10,21 @@ import { addTask } from 'modules/tasks';
 import FullScreenPaper from 'components/ui/FullScreenPaper';
 import PapelHeader from 'components/ui/PaperHeader';
 import BasicMain from 'components/ui/BasicMain';
-import ButtonFooter from 'components/ui/ButtonFooter';
 import TaskForm from 'components/views/Dashboard/EditTask/TaskForm';
 import Button from 'components/ui/Button';
 
 import withMixpanel from 'components/hoc/withMixpanel';
 import { TASK_CREATED } from 'constants/mixpanelTrackingEvents';
+
+// Material Imports
+import AppBar from '@material-ui/core/AppBar';
+import { makeStyles } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
+import AlarmIcon from '@material-ui/icons/Alarm';
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
 
 const FormFlexContainer = styled.form`
   display: flex;
@@ -41,6 +50,48 @@ const NewTask = ({ history, mixpanel }) => {
   const [scheduledStart, setScheduledStart] = useState(null);
   const [dependencies, setDependencies] = useState([]);
   const [recurringConfig, setRecurringConfig] = useState(null);
+  const [startDateConfirmed, setStartDateConfirmed] = useState(false);
+  const [dueDateConfirmed, setDueDateConfirmed] = useState(false);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [openDueDate, setOpenDueDate] = useState(false);
+
+  const handleOpenStartDate = () => {
+    setOpenStartDate(true);
+  };
+
+  const handleCloseStartDate = () => {
+    setOpenStartDate(false);
+  };
+
+  const handleCancelStartDate = () => {
+    setStartDateConfirmed(false);
+    setOpenStartDate(false);
+    setScheduledStart(null);
+  };
+
+  const handleConfirmStartDate = () => {
+    setStartDateConfirmed(true);
+    setOpenStartDate(false);
+  };
+
+  const handleOpenDueDate = () => {
+    setOpenDueDate(true);
+  };
+
+  const handleCloseDueDate = () => {
+    setOpenDueDate(false);
+  };
+
+  const handleCancelDueDate = () => {
+    setDueDateConfirmed(false);
+    setOpenDueDate(false);
+    setDue(null);
+  };
+
+  const handleConfirmDueDate = () => {
+    setDueDateConfirmed(true);
+    setOpenDueDate(false);
+  };
 
   useEffect(() => {
     setTemporaryId(`_${uuid()}`);
@@ -90,10 +141,55 @@ const NewTask = ({ history, mixpanel }) => {
     ]);
   };
 
+  const useStyles = makeStyles((theme) => ({
+    appBar: {
+      top: 'auto',
+      bottom: 0,
+      backgroundColor:'white',
+      color: theme.palette.text.primary,
+    },
+    grow: {
+      flexGrow: 1,
+    },
+    iconButtonLabel: {
+      fontSize: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    root: {
+      borderRadius: '30%',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootOther: {
+      borderRadius: '30%',
+      margin: '.1em',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootClicked: {
+      backgroundColor: '#414D67',
+      color: 'white',
+      borderRadius: '30%',
+      padding: '.3em',
+      width: '3em'
+    },
+    rootOtherClicked: {
+      backgroundColor: '#414D67',
+      color: 'white',
+      borderRadius: '30%',
+      margin: '.1em',
+      padding: '.3em',
+      width: '3em'
+    }
+  }));
+
+  const classes = useStyles();
+
   return (
     <FullScreenPaper>
       {(onRequestClose) => (
-        <FormFlexContainer onSubmit={createTask}>
+        <FormFlexContainer>
           <PapelHeader
             headline="Create Task"
             buttonRight={(
@@ -125,15 +221,60 @@ const NewTask = ({ history, mixpanel }) => {
                 recurringConfig={recurringConfig}
                 setRecurringConfig={(newRecurringConfig) => setRecurringConfig(newRecurringConfig)}
                 removeRecurringConfig={() => setRecurringConfig(null)}
+                handleConfirmStartDate={handleConfirmStartDate}
+                openStartDate={openStartDate}
+                handleOpenStartDate={handleOpenStartDate}
+                handleCloseStartDate={handleCloseStartDate}
+                handleCancelStartDate={handleCancelStartDate}
+                handleConfirmDueDate={handleConfirmDueDate}
+                openDueDate={openDueDate}
+                handleOpenDueDate={handleOpenDueDate}
+                handleCloseDueDate={handleCloseDueDate}
+                handleCancelDueDate={handleCancelDueDate}
               />
             </ContentContainer>
           </NewTaskMain>
 
-          <ButtonFooter.Container>
+          <AppBar position="fixed" color="primary" className={classes.appBar}>
+            <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenStartDate}
+              classes={{label: classes.iconButtonLabel, root: startDateConfirmed ? classes.rootClicked : classes.root}}
+            >
+              <CalendarTodayIcon />
+              <small>Start Date</small>
+            </IconButton>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenDueDate}
+              classes={{label: classes.iconButtonLabel, root: dueDateConfirmed ? classes.rootOtherClicked : classes.rootOther}}
+            >
+              <AlarmIcon />
+              <small>Due Date</small>
+            </IconButton>
+            <IconButton
+              edge="start"
+              color="inherit"
+              classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
+            >
+              <NoteAddOutlinedIcon />
+              <small>Notes</small>
+            </IconButton>
+            <div className={classes.grow} />
+            <IconButton edge="end" color="inherit" onClick={createTask}>
+              <ArrowForwardIosIcon />
+            </IconButton>
+            </Toolbar>
+          </AppBar>
+
+          {/*<ButtonFooter.Container>
             <ButtonFooter.Button type="submit" variant="primary">
               Create Task
             </ButtonFooter.Button>
-          </ButtonFooter.Container>
+          </ButtonFooter.Container>*/}
         </FormFlexContainer>
       )}
     </FullScreenPaper>
