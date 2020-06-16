@@ -32,7 +32,6 @@ import TransparentInputField from 'components/ui/TransparentInputField';
 import Dropdown from 'components/ui/Dropdown';
 // import HorizontalSelectorField from 'components/ui/HorizontalSelectorField';
 // import ToggleableFieldWrapper from 'components/ui/ToggleableFieldWrapper';
-import DateTimeField from 'components/ui/DateTimeField';
 import Paragraph from 'components/ui/Paragraph';
 import ButtonInline from 'components/ui/ButtonInline';
 import Slider, { SliderThumb } from 'components/ui/Slider';
@@ -43,6 +42,24 @@ import { activeOpacity } from 'components/style-mixins/activeLighter';
 
 import BlockersSelector from './BlockersSelector';
 import RecurringPopup from './RecurringPopup';
+
+
+import ReplayIcon from '@material-ui/icons/Replay';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker
+} from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import Calendar from 'react-calendar';
+import Modal from '@material-ui/core/Modal';
+import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 
 const Italic = styled.span`
   font-style: italic;
@@ -166,6 +183,61 @@ const FormContainer = styled.div`
   }
 `;
 
+const useStyles = makeStyles((theme) => ({
+  calendar: {
+    width: '100%',
+    maxWidth: 360,
+    border: '0px'
+  },
+  modal: {
+    display:'flex',
+    alignItems:'center',
+    justifyContent:'center'
+  },
+  modalDiv: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor:'white'
+  },
+  button: {
+    width: '100%',
+    maxWidth: 350,
+    height: '90%'
+  },
+  timePicker: {
+    width: '100%',
+    maxWidth: 350,
+    margin: 0
+  },
+  repeatModal: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: 'white',
+  },
+  listHeaders: {
+    display: 'flex',
+    flexDirection: 'row',
+    padding: 0
+  },
+  paperPrimary: {
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    color: theme.palette.text.primary,
+  },
+  paperSecondaryLeft: {
+    padding: theme.spacing(2),
+    'float':'left',
+    color: theme.palette.text.secondary,
+    fontSize: '.5em'
+  },
+  paperSecondaryRight: {
+    padding: theme.spacing(2),
+    color: theme.palette.text.secondary,
+    'float': 'right',
+    fontSize: '.5em'
+  },
+}));
+
 const getInitialDueDate = () => dayjs()
   .add(1, 'day')
   .hour(9)
@@ -203,11 +275,98 @@ const TaskForm = ({
   recurringConfig,
   setRecurringConfig,
   removeRecurringConfig,
+  openStartDate,
+  handleOpenStartDate,
+  handleCloseStartDate,
+  handleCancelStartDate,
+  openDueDate,
+  handleOpenDueDate,
+  handleCloseDueDate,
+  handleConfirmStartDate,
+  handleConfirmDueDate,
+  handleCancelDueDate
 }) => {
   // Visiblity Flags
+
+  // If dateToUse is not null, use that date, otherwise
+  // fallback to creating a new date object and adding
+  // the daysToAdd value to it
+  const dateHandler = (dateToUse, daysToAdd) => {
+    if(dateToUse !== null) {
+      return new Date(dateToUse);
+    } else {
+      const today = new Date();
+      return new Date(
+        today.getFullYear(), today.getMonth(), today.getDate() + daysToAdd, 9, 0, 0
+      );
+    }
+  };
+
   const [recurringOptionsVisible, setRecurringOptionsVisible] = useState(!!recurringConfig);
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
+  const [selectedStartDate, setSelectedStartDate] = useState(dateHandler(scheduledStart, 1));
+  const [selectedStartTime, setSelectedStartTime] = useState(dateHandler(scheduledStart, 1));
+  const [selectedDueDate, setSelectedDueDate] = useState(dateHandler(due, 2));
+  const [selectedDueTime, setSelectedDueTime] = useState(dateHandler(due, 2));
+  const [openRepeat, setOpenRepeat] = useState(false);
+
+  const handleStartTimeChange = (time) => {
+    setSelectedStartTime(time);
+
+    var datetime = new Date(
+      selectedStartDate.getFullYear(), selectedStartDate.getMonth(),
+      selectedStartDate.getDate(), time.getHours(), time.getMinutes(),
+      time.getSeconds()
+    );
+    setScheduledStart(datetime.getTime());
+  };
+
+  const handleStartDateChange = (date) => {
+    setSelectedStartDate(date);
+
+    var datetime = new Date(
+      date.getFullYear(), date.getMonth(), date.getDate(),
+      selectedStartTime.getHours(), selectedStartTime.getMinutes(),
+      selectedStartTime.getSeconds()
+    );
+    setScheduledStart(datetime.getTime());
+  };
+
+  const handleDueTimeChange = (time) => {
+    setSelectedDueTime(time);
+
+    var datetime = new Date(
+      selectedDueDate.getFullYear(), selectedDueDate.getMonth(),
+      selectedDueDate.getDate(), time.getHours(), time.getMinutes(),
+      time.getSeconds()
+    );
+    setDue(datetime.getTime());
+  };
+
+  const handleDueDateChange = (date) => {
+    setSelectedDueDate(date);
+
+    var datetime = new Date(
+      date.getFullYear(), date.getMonth(), date.getDate(),
+      selectedDueTime.getHours(), selectedDueTime.getMinutes(),
+      selectedDueTime.getSeconds()
+    );
+    setDue(datetime.getTime());
+  };
+
+  const handleOpenRepeat = () => {
+    setOpenRepeat(true);
+  };
+
+  const handleCloseRepeat = () => {
+    setOpenRepeat(false);
+  };
+
+  const handleSetRecurringInModal = (value) => {
+    setRecurringConfig(value);
+    setOpenRepeat(false);
+  };
 
   // Refs for input focus
   // const taskNameRef = useRef(null);
@@ -222,13 +381,14 @@ const TaskForm = ({
   const debouncedSetImpact = debounce(setImpact, 100);
   const debouncedSetEffort = debounce(setEffort, 100);
 
+  const classes = useStyles();
+
   return (
     <FormContainer>
       <FieldContainer>
         <TransparentInputField
           required
           textarea
-          // autoFocus
           placeholder="What do you need to do?"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
@@ -298,153 +458,6 @@ const TaskForm = ({
               <CheckboxInput
                 type="checkbox"
                 value="1"
-                checked={due != null && due !== ''}
-                onChange={event => setDue(event.target.checked ? getInitialDueDate() : null)}
-              />
-              <Checkbox
-                checked={due != null && due !== ''}
-              />
-            </CheckboxContainer>
-
-            <CheckboxFieldTitle>Is there a due date?</CheckboxFieldTitle>
-          </FlexContainer>
-        </CheckboxLabel>
-
-        {due != null && due !== '' &&
-          <DateTimeField
-            value={due}
-            onChange={(event, newDateTime) => setDue(newDateTime)}
-          />
-        }
-
-        {/* <ToggleableFieldWrapper
-          defaultChecked={due != null && due !== ''}
-          onChange={(event, checked) => setDue(checked ? getInitialDueDate() : null)}
-        >
-          <DateTimeField
-            value={due}
-            onChange={(event, newDateTime) => setDue(newDateTime)}
-          />
-        </ToggleableFieldWrapper> */}
-      </FieldContainer>
-
-      <FieldContainer>
-        <CheckboxLabel>
-          <FlexContainer>
-            <CheckboxContainer>
-              <CheckboxInput
-                type="checkbox"
-                value="1"
-                checked={scheduledStart != null && scheduledStart !== ''}
-                onChange={event => setScheduledStart(event.target.checked ? getInitialDueDate() : null)}
-              />
-              <Checkbox
-                checked={scheduledStart != null && scheduledStart !== ''}
-              />
-            </CheckboxContainer>
-
-            <CheckboxFieldTitle>Is there a scheduled start date?</CheckboxFieldTitle>
-          </FlexContainer>
-        </CheckboxLabel>
-
-        {scheduledStart != null && scheduledStart !== '' &&
-          <DateTimeField
-            value={scheduledStart}
-            onChange={(event, newDateTime) => setScheduledStart(newDateTime)}
-          />
-        }
-
-        {/* <ToggleableFieldWrapper
-          label="Scheduled Start Date"
-          helpText="Do you want to delay starting this task?"
-          defaultChecked={scheduledStart != null && scheduledStart !== ''}
-          onChange={(event, checked) => setScheduledStart(checked ? getInitialDueDate() : null)}
-        >
-          <DateTimeField
-            value={scheduledStart}
-            onChange={(event, newDateTime) => setScheduledStart(newDateTime)}
-          />
-        </ToggleableFieldWrapper> */}
-      </FieldContainer>
-
-      <FieldContainer>
-        <CheckboxLabel>
-          <FlexContainer>
-            <CheckboxContainer>
-              <CheckboxInput
-                type="checkbox"
-                value="1"
-                checked={recurringOptionsVisible}
-                onChange={event => {
-                  if (!event.target.checked && recurringConfig) {
-                    removeRecurringConfig();
-                  }
-                  setRecurringOptionsVisible(event.target.checked);
-                }}
-              />
-              <Checkbox
-                checked={recurringOptionsVisible}
-              />
-            </CheckboxContainer>
-
-            <CheckboxFieldTitle>[Beta] Does this task recur?</CheckboxFieldTitle>
-          </FlexContainer>
-        </CheckboxLabel>
-
-        {recurringOptionsVisible &&
-          <TopPaddedContainer>
-            <Dropdown
-              value={selectedRecurringOption}
-              onChange={(event, value) => {
-                const recurringDropdownActions = {
-                  [NO_RECURRENCE_OPTION]: () => removeRecurringConfig(),
-                  [EVERY_MONDAY_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_MONDAY),
-                  [WEEKDAYS_OPTION]: () => setRecurringConfig(RECURRING_CONFIG_EVERY_WEEKDAY),
-                  [CUSTOM_OPTION]: () => { },
-                  [OPEN_RECURRENCE_MODAL_OPTION]: () => setRecurringPopupVisible(true),
-                };
-                (recurringDropdownActions[value] || (() => { }))();
-              }}
-            >
-              <Dropdown.Option value={NO_RECURRENCE_OPTION}>
-                {selectedRecurringOption === NO_RECURRENCE_OPTION ? '' : 'Not recurring'}
-              </Dropdown.Option>
-              <Dropdown.Option value={EVERY_MONDAY_OPTION}>Every Monday</Dropdown.Option>
-              <Dropdown.Option value={WEEKDAYS_OPTION}>
-                Every weekday (Monday to Friday)
-            </Dropdown.Option>
-              {recurringConfig && selectedRecurringOption === CUSTOM_OPTION && (
-                <Dropdown.Option value={CUSTOM_OPTION}>
-                  {getRecurringOptionLabel(recurringConfig)}
-                </Dropdown.Option>
-              )}
-              <Dropdown.Option value={OPEN_RECURRENCE_MODAL_OPTION}>Custom...</Dropdown.Option>
-            </Dropdown>
-          </TopPaddedContainer>
-        }
-
-
-        {/* <ToggleableFieldWrapper
-          label="Recurrence (early beta, unstable)"
-          helpText="Do you need to do this multiple times?"
-          defaultChecked={selectedRecurringOption !== ''}
-          onChange={(event, checked) => {
-            if (!checked && recurringConfig) {
-              removeRecurringConfig();
-            }
-          }}
-        >
-
-        </ToggleableFieldWrapper> */}
-      </FieldContainer>
-
-      <FieldContainer>
-        <CheckboxLabel>
-          <FlexContainer>
-            <CheckboxContainer>
-              <CheckboxInput
-                type="checkbox"
-                value="1"
                 checked={blockersVisible}
                 onChange={event => {
                   if (!event.target.checked) {
@@ -485,6 +498,139 @@ const TaskForm = ({
           />
         </TopPaddedContainer>
       </FieldContainer>
+
+      <Modal
+        open={openStartDate}
+        onClose={handleCloseStartDate}
+        aria-labelledby="date-modal"
+        className={classes.modal}
+      >
+        <div className={classes.modalDiv}>
+          <Grid container justify="center" spacing={0} className={classes.headerGrid}>
+            <Grid item xs={3}>
+              <Button className={classes.paperSecondaryLeft} onClick={handleCancelStartDate}>Cancel</Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper elevation={0} className={classes.paperPrimary}>Start Date</Paper>
+            </Grid>
+            <Grid item xs={3}>
+              <Button className={classes.paperSecondaryRight} onClick={handleConfirmStartDate}>Done</Button>
+            </Grid>
+          </Grid>
+          <Divider />
+          <Calendar
+            className={classes.calendar}
+            value={selectedStartDate}
+            onChange={handleStartDateChange}
+          />
+
+          <List component="time-and-repeat" aria-label="">
+            <ListItem button>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <KeyboardTimePicker
+                  margin="normal"
+                  id="time-picker"
+                  label="Time"
+                  value={selectedStartTime}
+                  onChange={handleStartTimeChange}
+                  KeyboardButtonProps={{
+                    'aria-label': 'change time',
+                  }}
+                  className={classes.timePicker}
+                />
+              </MuiPickersUtilsProvider>
+            </ListItem>
+            <ListItem button>
+              <Button
+                variant="contained"
+                className={classes.button}
+                startIcon={<ReplayIcon />}
+                onClick={handleOpenRepeat}
+              >
+                Repeat
+              </Button>
+            </ListItem>
+          </List>
+          <Modal
+            open={openRepeat}
+            onClose={handleCloseRepeat}
+            aria-labelledby="repeat-modal"
+            className={classes.modal}
+          >
+            <div className={classes.repeatModal}>
+              <Grid container justify="center" spacing={0} className={classes.headerGrid}>
+                <Grid item xs={3}>
+                  <Button className={classes.paperSecondaryLeft} onClick={handleCloseRepeat}>Cancel</Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper elevation={0} className={classes.paperPrimary}>Repeat</Paper>
+                </Grid>
+                <Grid item xs={3}>
+                  <Button className={classes.paperSecondaryRight} onClick={handleCloseRepeat}>Done</Button>
+                </Grid>
+              </Grid>
+              <Divider />
+              <br />
+              <List component="nav" aria-label="">
+                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_MONDAY)}>
+                  <ListItemText primary="Every Monday" />
+                </ListItem>
+                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_WEEKDAY)}>
+                  <ListItemText primary="Every weekday (Monday to Friday)" />
+                </ListItem>
+                <ListItem button onClick={() => setRecurringPopupVisible(true)}>
+                  <ListItemText primary="Custom..." />
+                </ListItem>
+              </List>
+            </div>
+          </Modal>
+        </div>
+      </Modal>
+
+      <Modal
+        open={openDueDate}
+        onClose={handleCloseDueDate}
+        aria-labelledby="date-modal"
+        className={classes.modal}
+      >
+        <div className={classes.modalDiv}>
+          <Grid container justify="center" spacing={0} className={classes.headerGrid}>
+            <Grid item xs={3}>
+              <Button className={classes.paperSecondaryLeft} onClick={handleCancelDueDate}>Cancel</Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper elevation={0} className={classes.paperPrimary}>Due Date</Paper>
+            </Grid>
+            <Grid item xs={3}>
+              <Button className={classes.paperSecondaryRight} onClick={handleConfirmDueDate}>Done</Button>
+            </Grid>
+          </Grid>
+          <Divider />
+          <Calendar
+            className={classes.calendar}
+            value={selectedDueDate}
+            onChange={handleDueDateChange}
+          />
+
+          <List component="time-and-repeat" aria-label="">
+            <ListItem button>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <KeyboardTimePicker
+                  margin="normal"
+                  id="time-picker"
+                  label="Time"
+                  value={selectedDueTime}
+                  onChange={handleDueTimeChange}
+                  KeyboardButtonProps={{
+                    'aria-label': 'change time',
+                  }}
+                  className={classes.timePicker}
+                />
+              </MuiPickersUtilsProvider>
+            </ListItem>
+          </List>
+        </div>
+      </Modal>
 
       <RecurringPopup
         open={recurringPopupVisible}
