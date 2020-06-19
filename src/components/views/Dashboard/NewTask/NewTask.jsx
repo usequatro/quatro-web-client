@@ -12,7 +12,7 @@ import PapelHeader from 'components/ui/PaperHeader';
 import BasicMain from 'components/ui/BasicMain';
 import TaskForm from 'components/views/Dashboard/EditTask/TaskForm';
 import Button from 'components/ui/Button';
-
+import Paragraph from 'components/ui/Paragraph';
 import withMixpanel from 'components/hoc/withMixpanel';
 import { TASK_CREATED } from 'constants/mixpanelTrackingEvents';
 
@@ -23,7 +23,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
 import AlarmIcon from '@material-ui/icons/Alarm';
-import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import NavigationIcon from '@material-ui/icons/Navigation';
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
 
 const FormFlexContainer = styled.form`
@@ -54,6 +54,8 @@ const NewTask = ({ history, mixpanel }) => {
   const [dueDateConfirmed, setDueDateConfirmed] = useState(false);
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openDueDate, setOpenDueDate] = useState(false);
+  const [startDateLabel, setStartDateLabel] = useState('\u00A0');
+  const [dueDateLabel, setDueDateLabel] = useState('\u00A0');
 
   const handleOpenStartDate = () => {
     setOpenStartDate(true);
@@ -67,11 +69,13 @@ const NewTask = ({ history, mixpanel }) => {
     setStartDateConfirmed(false);
     setOpenStartDate(false);
     setScheduledStart(null);
+    setStartDateLabel('\u00A0');
   };
 
-  const handleConfirmStartDate = () => {
+  const handleConfirmStartDate = (datetime) => {
     setStartDateConfirmed(true);
     setOpenStartDate(false);
+    setStartDateLabel(datetime.toLocaleDateString("en-US"));
   };
 
   const handleOpenDueDate = () => {
@@ -86,11 +90,13 @@ const NewTask = ({ history, mixpanel }) => {
     setDueDateConfirmed(false);
     setOpenDueDate(false);
     setDue(null);
+    setDueDateLabel('\u00A0');
   };
 
-  const handleConfirmDueDate = () => {
+  const handleConfirmDueDate = (datetime) => {
     setDueDateConfirmed(true);
     setOpenDueDate(false);
+    setDueDateLabel(datetime.toLocaleDateString("en-US"));
   };
 
   useEffect(() => {
@@ -147,6 +153,7 @@ const NewTask = ({ history, mixpanel }) => {
       bottom: 0,
       backgroundColor:'white',
       color: theme.palette.text.primary,
+      maxWidth: '600px'
     },
     grow: {
       flexGrow: 1,
@@ -157,30 +164,30 @@ const NewTask = ({ history, mixpanel }) => {
       flexDirection: 'column',
     },
     root: {
-      borderRadius: '30%',
-      padding: '.3em',
-      width: '3em'
-    },
-    rootOther: {
-      borderRadius: '30%',
-      margin: '.1em',
-      padding: '.3em',
-      width: '3em'
+      borderRadius: '40%',
+      width: '30px',
+      height: '30px'
     },
     rootClicked: {
       backgroundColor: '#414D67',
       color: 'white',
-      borderRadius: '30%',
-      padding: '.3em',
-      width: '3em'
+      borderRadius: '40%',
+      width: '30px',
+      height: '30px'
     },
-    rootOtherClicked: {
-      backgroundColor: '#414D67',
-      color: 'white',
-      borderRadius: '30%',
-      margin: '.1em',
-      padding: '.3em',
-      width: '3em'
+    smallIcon: {
+      width: '20px',
+      height: '30px'
+    },
+    doneIcon: {
+      'transform': 'rotate(90deg)',
+      color: '#7187b5',
+      width: '30px',
+      height: '35px'
+    },
+    dateLabel: {
+      marginTop: '2px',
+      fontSize: '8px'
     }
   }));
 
@@ -231,41 +238,57 @@ const NewTask = ({ history, mixpanel }) => {
                 handleOpenDueDate={handleOpenDueDate}
                 handleCloseDueDate={handleCloseDueDate}
                 handleCancelDueDate={handleCancelDueDate}
+                setStartDateLabel={setStartDateLabel}
+                setDueDateLabel={setDueDateLabel}
               />
+
+              <Box mb={6}></Box>
             </ContentContainer>
           </NewTaskMain>
 
-          <AppBar position="fixed" color="primary" className={classes.appBar}>
+          <AppBar position="static" color="primary" className={classes.appBar}>
             <Toolbar>
             <IconButton
               edge="start"
               color="inherit"
               onClick={handleOpenStartDate}
-              classes={{label: classes.iconButtonLabel, root: startDateConfirmed ? classes.rootClicked : classes.root}}
+              classes={{label: classes.iconButtonLabel}}
             >
-              <CalendarTodayIcon />
+              <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
+                <CalendarTodayIcon className={classes.smallIcon} />
+              </div>
               <small>Start Date</small>
+              <small className={classes.dateLabel}>{startDateLabel}</small>
             </IconButton>
             <IconButton
               edge="start"
               color="inherit"
               onClick={handleOpenDueDate}
-              classes={{label: classes.iconButtonLabel, root: dueDateConfirmed ? classes.rootOtherClicked : classes.rootOther}}
+              classes={{label: classes.iconButtonLabel}}
             >
-              <AlarmIcon />
+              <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
+                <AlarmIcon className={classes.smallIcon} />
+              </div>
               <small>Due Date</small>
+              <small className={classes.dateLabel}>{dueDateLabel}</small>
             </IconButton>
-            <IconButton
+{/*            <IconButton
               edge="start"
               color="inherit"
               classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
             >
               <NoteAddOutlinedIcon />
               <small>Notes</small>
-            </IconButton>
+            </IconButton>*/}
             <div className={classes.grow} />
-            <IconButton edge="end" color="inherit" onClick={createTask}>
-              <ArrowForwardIosIcon />
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={createTask}
+              classes={{label: classes.iconButtonLabel}}
+            >
+              <NavigationIcon className={classes.doneIcon} />
+              <small>Done</small>
             </IconButton>
             </Toolbar>
           </AppBar>
