@@ -60,6 +60,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import 'react-calendar/dist/Calendar.css';
+import IconButton from '@material-ui/core/IconButton';
+// import Dialog from '@material-ui/core/Dialog';
 
 const Italic = styled.span`
   font-style: italic;
@@ -180,6 +183,9 @@ const FormContainer = styled.div`
     ${Checkbox}::after {
       border-color: ${(props) => props.theme.colors.lightBackground};
     }
+  },
+  .react-calendar__tile--active: {
+    background: 'white'
   }
 `;
 
@@ -187,7 +193,28 @@ const useStyles = makeStyles((theme) => ({
   calendar: {
     width: '100%',
     maxWidth: 360,
-    border: '0px'
+    border: '0px',
+    '& .react-calendar__tile--active': {
+      background: '#414D67',
+      display: 'inline-block',
+      'border-radius': '50%',
+      height: '3em'
+    },
+    '& .react-calendar__tile--active:enabled:hover': {
+      background: '#414D67',
+    },
+    '& .react-calendar__tile--active:enabled:focus': {
+      background: '#414D67'
+    },
+    '& .react-calendar__tile--now': {
+      display: 'inline-block',
+      'border-radius': '50%',
+      height: '3em',
+      background: '#EDF3F4'
+    },
+    '& .react-calendar__tile': {
+      height: '3em'
+    }
   },
   modal: {
     display:'flex',
@@ -202,7 +229,13 @@ const useStyles = makeStyles((theme) => ({
   button: {
     width: '100%',
     maxWidth: 350,
-    height: '90%'
+    height: '90%',
+    justifyContent: 'space-between',
+    fontSize: '10px',
+    backgroundColor: 'white'
+  },
+  iconButtonLabel: {
+    fontSize: '15px'
   },
   timePicker: {
     width: '100%',
@@ -236,6 +269,9 @@ const useStyles = makeStyles((theme) => ({
     'float': 'right',
     fontSize: '.5em'
   },
+  repeatText: {
+    marginLeft: '10px'
+  }
 }));
 
 const getInitialDueDate = () => dayjs()
@@ -284,7 +320,9 @@ const TaskForm = ({
   handleCloseDueDate,
   handleConfirmStartDate,
   handleConfirmDueDate,
-  handleCancelDueDate
+  handleCancelDueDate,
+  setStartDateLabel,
+  setDueDateLabel
 }) => {
   // Visiblity Flags
 
@@ -310,49 +348,48 @@ const TaskForm = ({
   const [selectedDueDate, setSelectedDueDate] = useState(dateHandler(due, 2));
   const [selectedDueTime, setSelectedDueTime] = useState(dateHandler(due, 2));
   const [openRepeat, setOpenRepeat] = useState(false);
+  const [recurringLabel, setRecurringLabel] = useState('');
 
   const handleStartTimeChange = (time) => {
     setSelectedStartTime(time);
-
-    var datetime = new Date(
-      selectedStartDate.getFullYear(), selectedStartDate.getMonth(),
-      selectedStartDate.getDate(), time.getHours(), time.getMinutes(),
-      time.getSeconds()
-    );
-    setScheduledStart(datetime.getTime());
   };
 
   const handleStartDateChange = (date) => {
     setSelectedStartDate(date);
+  };
 
+  const handleDoneStartDate = () => {
     var datetime = new Date(
-      date.getFullYear(), date.getMonth(), date.getDate(),
-      selectedStartTime.getHours(), selectedStartTime.getMinutes(),
+      selectedStartDate.getFullYear(),
+      selectedStartDate.getMonth(),
+      selectedStartDate.getDate(),
+      selectedStartTime.getHours(),
+      selectedStartTime.getMinutes(),
       selectedStartTime.getSeconds()
     );
     setScheduledStart(datetime.getTime());
+    handleConfirmStartDate(datetime);
   };
 
   const handleDueTimeChange = (time) => {
     setSelectedDueTime(time);
-
-    var datetime = new Date(
-      selectedDueDate.getFullYear(), selectedDueDate.getMonth(),
-      selectedDueDate.getDate(), time.getHours(), time.getMinutes(),
-      time.getSeconds()
-    );
-    setDue(datetime.getTime());
   };
 
   const handleDueDateChange = (date) => {
     setSelectedDueDate(date);
+  };
 
+  const handleDoneDueDate = () => {
     var datetime = new Date(
-      date.getFullYear(), date.getMonth(), date.getDate(),
-      selectedDueTime.getHours(), selectedDueTime.getMinutes(),
+      selectedDueDate.getFullYear(),
+      selectedDueDate.getMonth(),
+      selectedDueDate.getDate(),
+      selectedDueTime.getHours(),
+      selectedDueTime.getMinutes(),
       selectedDueTime.getSeconds()
     );
     setDue(datetime.getTime());
+    handleConfirmDueDate(datetime);
   };
 
   const handleOpenRepeat = () => {
@@ -363,8 +400,9 @@ const TaskForm = ({
     setOpenRepeat(false);
   };
 
-  const handleSetRecurringInModal = (value) => {
+  const handleSetRecurringInModal = (value, label) => {
     setRecurringConfig(value);
+    setRecurringLabel(label);
     setOpenRepeat(false);
   };
 
@@ -508,13 +546,13 @@ const TaskForm = ({
         <div className={classes.modalDiv}>
           <Grid container justify="center" spacing={0} className={classes.headerGrid}>
             <Grid item xs={3}>
-              <Button className={classes.paperSecondaryLeft} onClick={handleCancelStartDate}>Cancel</Button>
+              <Button className={classes.paperSecondaryLeft} onClick={handleCancelStartDate}>Clear</Button>
             </Grid>
             <Grid item xs={6}>
               <Paper elevation={0} className={classes.paperPrimary}>Start Date</Paper>
             </Grid>
             <Grid item xs={3}>
-              <Button className={classes.paperSecondaryRight} onClick={handleConfirmStartDate}>Done</Button>
+              <Button className={classes.paperSecondaryRight} onClick={handleDoneStartDate}>Done</Button>
             </Grid>
           </Grid>
           <Divider />
@@ -542,12 +580,16 @@ const TaskForm = ({
             </ListItem>
             <ListItem button>
               <Button
-                variant="contained"
                 className={classes.button}
-                startIcon={<ReplayIcon />}
+                startIcon={
+                  <IconButton edge="start" color="inherit" classes={{label: classes.iconButtonLabel}}>
+                    <ReplayIcon />
+                    <small className={classes.repeatText}>Repeat</small>
+                  </IconButton>
+                }
                 onClick={handleOpenRepeat}
               >
-                Repeat
+                {recurringLabel}
               </Button>
             </ListItem>
           </List>
@@ -560,7 +602,7 @@ const TaskForm = ({
             <div className={classes.repeatModal}>
               <Grid container justify="center" spacing={0} className={classes.headerGrid}>
                 <Grid item xs={3}>
-                  <Button className={classes.paperSecondaryLeft} onClick={handleCloseRepeat}>Cancel</Button>
+                  <Button className={classes.paperSecondaryLeft} onClick={() => handleSetRecurringInModal(null, '')}>Clear</Button>
                 </Grid>
                 <Grid item xs={6}>
                   <Paper elevation={0} className={classes.paperPrimary}>Repeat</Paper>
@@ -572,10 +614,10 @@ const TaskForm = ({
               <Divider />
               <br />
               <List component="nav" aria-label="">
-                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_MONDAY)}>
+                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_MONDAY, 'Every Monday')}>
                   <ListItemText primary="Every Monday" />
                 </ListItem>
-                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_WEEKDAY)}>
+                <ListItem button onClick={() => handleSetRecurringInModal(RECURRING_CONFIG_EVERY_WEEKDAY, 'Every weekday')}>
                   <ListItemText primary="Every weekday (Monday to Friday)" />
                 </ListItem>
                 <ListItem button onClick={() => setRecurringPopupVisible(true)}>
@@ -596,13 +638,13 @@ const TaskForm = ({
         <div className={classes.modalDiv}>
           <Grid container justify="center" spacing={0} className={classes.headerGrid}>
             <Grid item xs={3}>
-              <Button className={classes.paperSecondaryLeft} onClick={handleCancelDueDate}>Cancel</Button>
+              <Button className={classes.paperSecondaryLeft} onClick={handleCancelDueDate}>Clear</Button>
             </Grid>
             <Grid item xs={6}>
               <Paper elevation={0} className={classes.paperPrimary}>Due Date</Paper>
             </Grid>
             <Grid item xs={3}>
-              <Button className={classes.paperSecondaryRight} onClick={handleConfirmDueDate}>Done</Button>
+              <Button className={classes.paperSecondaryRight} onClick={handleDoneDueDate}>Done</Button>
             </Grid>
           </Grid>
           <Divider />
@@ -635,7 +677,7 @@ const TaskForm = ({
       <RecurringPopup
         open={recurringPopupVisible}
         onClose={() => setRecurringPopupVisible(false)}
-        onDone={(value) => setRecurringConfig(value)}
+        onDone={(value) => handleSetRecurringInModal(value, 'Custom')}
         initialAmount={recurringConfig ? recurringConfig.amount : undefined}
         initialUnit={recurringConfig ? recurringConfig.unit : undefined}
         initialActiveWeekdays={recurringConfig ? recurringConfig.activeWeekdays : undefined}
