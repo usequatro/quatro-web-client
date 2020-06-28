@@ -194,10 +194,11 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     maxWidth: 360,
     border: '0px',
+    padding: '.3em',
     '& .react-calendar__tile--active': {
       background: '#414D67',
       display: 'inline-block',
-      'border-radius': '50%',
+      'border-radius': '10%',
       height: '3em'
     },
     '& .react-calendar__tile--active:enabled:hover': {
@@ -208,7 +209,7 @@ const useStyles = makeStyles((theme) => ({
     },
     '& .react-calendar__tile--now': {
       display: 'inline-block',
-      'border-radius': '50%',
+      'border-radius': '10%',
       height: '3em',
       background: '#EDF3F4'
     },
