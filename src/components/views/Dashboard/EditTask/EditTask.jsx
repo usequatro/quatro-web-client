@@ -177,6 +177,9 @@ const EditTask = ({
       width: '30px',
       height: '30px'
     },
+    smallLabel: {
+      paddingTop: '.5em'
+    },
     smallIcon: {
       width: '20px',
       height: '30px'
@@ -302,7 +305,7 @@ const EditTask = ({
               <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
                 <CalendarTodayIcon className={classes.smallIcon} />
               </div>
-              <small>Start Date</small>
+              <small className={classes.smallLabel}>Start Date</small>
               <small className={classes.dateLabel}>{startDateLabel}</small>
             </IconButton>
             <IconButton
@@ -314,7 +317,7 @@ const EditTask = ({
               <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
                 <AlarmIcon className={classes.smallIcon} />
               </div>
-              <small>Due Date</small>
+              <small className={classes.smallLabel}>Due Date</small>
               <small className={classes.dateLabel}>{dueDateLabel}</small>
             </IconButton>
 {/*            <IconButton
