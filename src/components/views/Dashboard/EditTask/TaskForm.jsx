@@ -271,6 +271,11 @@ const useStyles = makeStyles((theme) => ({
   },
   repeatText: {
     marginLeft: '10px'
+  },
+  repeatButton: {
+    "&:hover": {
+      backgroundColor: "transparent"
+    }
   }
 }));
 
@@ -582,7 +587,7 @@ const TaskForm = ({
               <Button
                 className={classes.button}
                 startIcon={
-                  <IconButton edge="start" color="inherit" classes={{label: classes.iconButtonLabel}}>
+                  <IconButton edge="start" color="inherit" classes={{root: classes.repeatButton, label: classes.iconButtonLabel}}>
                     <ReplayIcon />
                     <small className={classes.repeatText}>Repeat</small>
                   </IconButton>
