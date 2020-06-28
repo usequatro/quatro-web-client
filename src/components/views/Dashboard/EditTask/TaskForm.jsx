@@ -215,6 +215,9 @@ const useStyles = makeStyles((theme) => ({
     },
     '& .react-calendar__tile': {
       height: '3em'
+    },
+    '& .react-calendar__navigation__label': {
+      'font-weight': 'bold'
     }
   },
   modal: {
@@ -262,13 +265,15 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     'float':'left',
     color: theme.palette.text.secondary,
-    fontSize: '.5em'
+    fontSize: '.8em',
+    'text-transform': 'none'
   },
   paperSecondaryRight: {
     padding: theme.spacing(2),
     color: theme.palette.text.secondary,
     'float': 'right',
-    fontSize: '.5em'
+    fontSize: '.8em',
+    'text-transform': 'none'
   },
   repeatText: {
     marginLeft: '10px'
