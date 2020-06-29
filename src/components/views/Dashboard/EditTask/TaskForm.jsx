@@ -223,12 +223,20 @@ const useStyles = makeStyles((theme) => ({
   modal: {
     display:'flex',
     alignItems:'center',
-    justifyContent:'center'
+    justifyContent:'center',
+    outline: 0,
+    '&:hover': {
+      outline: 'none'
+    }
   },
   modalDiv: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor:'white'
+    backgroundColor:'white',
+    outline: 0,
+    '&:hover': {
+      outline: 'none'
+    }
   },
   button: {
     width: '100%',
