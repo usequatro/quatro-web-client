@@ -15,7 +15,7 @@ const Container = styled.div`
   margin: 0 0.5rem -1px 0;
   flex-shrink: 0;
 `;
-const ImprovedCheckbox = styled.div<{ checked: boolean, disabled?: boolean }>`
+const ImprovedCheckbox = styled.div`
   display: inline-block;
   position: absolute;
   top: 0;
@@ -72,35 +72,27 @@ const Label = styled(Box).attrs({
   padding: 0.5rem 0;
 `;
 
-type BooleanCheckboxProps = {
-  onChange: Function,
-  value: boolean,
-  label: string,
-  helpText?: string,
-  disabled?: boolean,
-};
-
-const BooleanCheckbox: React.FC<BooleanCheckboxProps> = ({
+const BooleanCheckbox = ({
   onChange, value, label, helpText, disabled,
 }) => (
-    <Label>
-      <HorizontalContainer>
-        <Container>
-          <Input
-            type="checkbox"
-            value="1"
-            checked={value}
-            disabled={disabled}
-            onChange={(event) => onChange(event, Boolean(event.target.checked))}
-          />
-          <ImprovedCheckbox checked={value} disabled={disabled} />
-        </Container>
-        <FieldLabel>{label}</FieldLabel>
-      </HorizontalContainer>
-      {helpText && (
-        <FieldHelpText>{helpText}</FieldHelpText>
-      )}
-    </Label>
-  );
+  <Label>
+    <HorizontalContainer>
+      <Container>
+        <Input
+          type="checkbox"
+          value="1"
+          checked={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event, Boolean(event.target.checked))}
+        />
+        <ImprovedCheckbox checked={value} disabled={disabled} />
+      </Container>
+      <FieldLabel>{label}</FieldLabel>
+    </HorizontalContainer>
+    {helpText && (
+      <FieldHelpText>{helpText}</FieldHelpText>
+    )}
+  </Label>
+);
 
 export default BooleanCheckbox;

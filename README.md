@@ -29,7 +29,6 @@ In the Frontend, we break them down into 3 entities: `tasks`, `taskDependencies`
 ## Things to keep in mind
 
 1. Before deploying changes, test on mobile, with the app saved as full screen web app in the homepage.
-2. As of 2019 Q4, the electron implementation is functional to use it as a desktop app, but the self-upgrading isn't implemented.
 
 ## How to deploy changes
 

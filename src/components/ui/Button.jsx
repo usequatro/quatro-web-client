@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-// @ts-ignore
 import { Button } from 'rebass/styled-components';
 import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
 import activeLighter from 'components/style-mixins/activeLighter';
