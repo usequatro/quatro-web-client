@@ -2,13 +2,11 @@
  * File to interact with Firebase's Firestore database
  */
 
-import * as firebase from 'firebase/app';
+import { getFirestore } from '../firebase';
 
 const TASKS = 'tasks';
 const RECURRING_CONFIGS = 'recurringConfigs';
 const logPrefix = '[api]';
-
-const getFirestore = () => firebase.firestore();
 
 const excludeId = (entity) => {
   const { id, ...rest } = entity;

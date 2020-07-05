@@ -30,6 +30,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
+    "dotenv-cli": "^3.2.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.0",
@@ -40,7 +41,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "./build.sh",
+    "build-prod": "react-scripts build",
+    "build-dev": "dotenv -e .env.development react-scripts build",
     "build-and-deploy": "npm run build && firebase deploy --only hosting",
     "test": "react-scripts test --env=jsdom",
     "lint": "eslint --ext .jsx,.js ."

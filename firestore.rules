@@ -3,11 +3,11 @@ service cloud.firestore {
     // match /{document=**} {
     //   allow read, write;
     // }
-    
+
     function isSignedIn() {
       return request.auth != null;
     }
-    function isUser(userId) {
+    function isCurrentUser(userId) {
       return request.auth.uid == userId;
     }
 
@@ -19,10 +19,15 @@ service cloud.firestore {
     function incomingData() {
       return request.resource.data;
     }
-    
+
     match /tasks/{id} {
-    	allow create: if isSignedIn() && isUser(incomingData().userId);
-    	allow read, list, update, delete: if isSignedIn() && isUser(existingData().userId);   
+      allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
+    }
+
+    match /recurringConfigs/{id} {
+      allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
   }
 }

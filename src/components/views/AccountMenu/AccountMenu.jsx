@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Text } from 'rebass/styled-components';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import * as firebase from 'firebase/app';
 import { Transition } from 'react-transition-group';
 
+import { getAuth } from '../../../firebase';
 import { selectAccountMenuOpen, setAccountMenuOpen } from '../../../modules/dashboard';
 import { resetReduxState } from '../../../modules/reset';
 import { selectUserDisplayName, selectUserEmail } from '../../../modules/session';
@@ -111,7 +111,7 @@ const AccountMenu = ({ history }) => {
   const [visible, setVisible] = useState(accountMenuOpen);
 
   const onLogOut = () => {
-    firebase.auth().signOut()
+    getAuth().signOut()
       .then(() => {
         history.push(LOG_IN);
         dispatch(resetReduxState());
