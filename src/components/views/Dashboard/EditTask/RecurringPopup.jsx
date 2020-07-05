@@ -40,10 +40,15 @@ const RecurringPopup = ({
 }) => {
   const [durationUnit, setDurationUnit] = useState(initialUnit);
   const [durationAmount, setDurationAmount] = useState(initialAmount);
-  const [activeWeekdays, setActiveWeekdays] = useState(Object.values(WEEKDAYS).reduce((memo, weekday) => ({
-    ...memo,
-    [weekday]: (initialActiveWeekdays || {})[weekday] || false,
-  }), {}));
+  const [activeWeekdays, setActiveWeekdays] = useState(
+    Object.values(WEEKDAYS).reduce(
+      (memo, weekday) => ({
+        ...memo,
+        [weekday]: (initialActiveWeekdays || {})[weekday] || false,
+      }),
+      {},
+    ),
+  );
 
   const setActiveWeekday = (weekday, active) => {
     setActiveWeekdays({ ...activeWeekdays, [weekday]: Boolean(active) });

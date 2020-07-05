@@ -24,3 +24,5 @@ dist
 
 # Editors
 .idea
+.vscode
+*.code-workspace
