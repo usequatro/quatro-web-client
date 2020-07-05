@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 // @ts-ignore
 import { Button } from 'rebass/styled-components';
-import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
-import activeLighter from 'components/style-mixins/activeLighter';
-import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
+import keyboardOnlyOutline from '../style-mixins/keyboardOnlyOutline';
+import activeLighter from '../style-mixins/activeLighter';
+import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 export default styled(Button).attrs((props) => ({
   type: props.type || 'button', // convenient to have it here, we can forget about it.

@@ -1,14 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectCompletedTasks } from 'modules/tasks';
-import { COMPLETED } from 'constants/dashboardTabs';
+import { selectCompletedTasks } from '../../../../modules/tasks';
+import { COMPLETED } from '../../../../constants/dashboardTabs';
 
-import withLoadTasks from 'components/hoc/withLoadTasks';
-import LoaderWrapper from 'components/ui/LoaderWrapper';
+import withLoadTasks from '../../../hoc/withLoadTasks';
+import LoaderWrapper from '../../../ui/LoaderWrapper';
 
-import Task from 'components/views/Dashboard/Shared/Task';
-import TaskListWorkspace from 'components/views/Dashboard/Shared/TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Completed = ({ tasks, loaded }) => (
   <LoaderWrapper loading={!loaded}>

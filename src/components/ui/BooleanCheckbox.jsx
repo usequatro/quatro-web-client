@@ -3,10 +3,10 @@ import styled from 'styled-components';
 // @ts-ignore
 import { Box } from 'rebass/styled-components';
 
-import FieldLabel from 'components/ui/FieldLabel';
-import FieldHelpText from 'components/ui/FieldHelpText';
-import { activeOpacity } from 'components/style-mixins/activeLighter';
-import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
+import FieldLabel from './FieldLabel';
+import FieldHelpText from './FieldHelpText';
+import { activeOpacity } from '../style-mixins/activeLighter';
+import colorSmoothTransitions from '../style-mixins/colorSmoothTransitions';
 
 const Container = styled.div`
   position: relative;

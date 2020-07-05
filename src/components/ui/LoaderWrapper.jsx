@@ -1,5 +1,5 @@
 import React from 'react';
-import Loader from 'components/ui/Loader';
+import Loader from './Loader';
 
 export default ({ loading, children }) => (
   <>

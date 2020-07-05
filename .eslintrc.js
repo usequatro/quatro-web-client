@@ -1,21 +1,28 @@
 module.exports = {
-  "env": {
-    "browser": true,
-    "es6": true,
+  env: {
+    browser: true,
+    es6: true,
   },
-  "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true,
-      "jsx": true,
+  parserOptions: {
+    ecmaFeatures: {
+      experimentalObjectRestSpread: true,
+      jsx: true,
     },
-    "sourceType": "module",
+    sourceType: "module",
   },
-  "extends": [
+  extends: [
     "eslint:recommended",
-    "react-app",
     "airbnb"
   ],
-  "rules": {
+  overrides: [
+    // Override for test files to support jest syntax
+    {
+      files: ['**/*.test.js', '**/*.test.jsx'],
+      env: { jest: true },
+      plugins: ['jest'],
+    }
+  ],
+  rules: {
     "react/prop-types": "off",
     "jsx-a11y/label-has-associated-control": [ 2, {
     //   "labelComponents": ["CustomInputLabel"],

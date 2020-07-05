@@ -836,7 +836,7 @@ export const moveToTrashTask = (taskId) => (dispatch, getState) => {
       }
       return undefined;
     })
-    .catch((error:Error) => {
+    .catch((error) => {
       console.warn(error);
       dispatch(hideNotification(notificationUid));
       dispatch(showNetworkErrorNotification());

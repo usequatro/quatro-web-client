@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 
 // import { resumeDashboardActivity } from '../../../modules/dashboard';
 
-
 const TaskRefreshListener = () => {
   const dispatch = useDispatch();
 

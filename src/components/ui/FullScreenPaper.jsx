@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass/styled-components';
 import Div100vh from 'react-div-100vh';
-import MAX_WIDTH from 'constants/maxWidth';
-import RootPortal from 'components/ui/RootPortal';
+import MAX_WIDTH from '../../constants/maxWidth';
+import RootPortal from './RootPortal';
 
 const duration = 125;
 
