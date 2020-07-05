@@ -40,6 +40,15 @@ import { TASK_UPDATED, TASK_DELETED } from 'constants/mixpanelTrackingEvents';
 import TaskForm from './TaskForm';
 import DeleteConfirmationPopup from './DeleteConfirmationPopup';
 
+import AppBar from '@material-ui/core/AppBar';
+import { makeStyles } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
+import AlarmIcon from '@material-ui/icons/Alarm';
+import NavigationIcon from '@material-ui/icons/Navigation';
+import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
+
 const FormFlexContainer = styled.form`
   display: flex;
   flex-direction: column;
@@ -79,6 +88,54 @@ const EditTask = ({
   const dispatch = useDispatch();
 
   const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  const [startDateConfirmed, setStartDateConfirmed] = useState(scheduledStart || false);
+  const [dueDateConfirmed, setDueDateConfirmed] = useState(due || false);
+  const [openStartDate, setOpenStartDate] = useState(false);
+  const [openDueDate, setOpenDueDate] = useState(false);
+  const [startDateLabel, setStartDateLabel] = useState(scheduledStart ? new Date(scheduledStart).toLocaleDateString("en-US") : '\u00A0');
+  const [dueDateLabel, setDueDateLabel] = useState(due ? new Date(due).toLocaleDateString("en-US") : '\u00A0');
+
+  const handleOpenStartDate = () => {
+    setOpenStartDate(true);
+  };
+
+  const handleCloseStartDate = () => {
+    setOpenStartDate(false);
+  };
+
+  const handleConfirmStartDate = (datetime) => {
+    setStartDateConfirmed(true);
+    setOpenStartDate(false);
+    setStartDateLabel(datetime.toLocaleDateString("en-US"));
+  };
+
+  const handleCancelStartDate = () => {
+    setStartDateConfirmed(false);
+    setOpenStartDate(false);
+    onUpdate('scheduledStart', null);
+    setStartDateLabel('\u00A0');
+  };
+
+  const handleOpenDueDate = () => {
+    setOpenDueDate(true);
+  };
+
+  const handleCloseDueDate = () => {
+    setOpenDueDate(false);
+  };
+
+  const handleConfirmDueDate = (datetime) => {
+    setDueDateConfirmed(true);
+    setOpenDueDate(false);
+    setDueDateLabel(datetime.toLocaleDateString("en-US"));
+  };
+
+  const handleCancelDueDate = () => {
+    setDueDateConfirmed(false);
+    setOpenDueDate(false);
+    onUpdate('due', null);
+    setDueDateLabel('\u00A0');
+  };
 
   const onUpdate = (key, value) => {
     dispatch(updateTask(id, { [key]: value }));
@@ -93,10 +150,58 @@ const EditTask = ({
     selectTaskDependencies(state, dependencyIds)
   ));
 
+  const useStyles = makeStyles((theme) => ({
+    appBar: {
+      top: 'auto',
+      bottom: 0,
+      backgroundColor:'white',
+      color: theme.palette.text.primary,
+    },
+    grow: {
+      flexGrow: 1,
+    },
+    iconButtonLabel: {
+      fontSize: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    root: {
+      borderRadius: '40%',
+      width: '30px',
+      height: '30px'
+    },
+    rootClicked: {
+      backgroundColor: '#414D67',
+      color: 'white',
+      borderRadius: '40%',
+      width: '30px',
+      height: '30px'
+    },
+    smallLabel: {
+      paddingTop: '.5em'
+    },
+    smallIcon: {
+      width: '20px',
+      height: '30px'
+    },
+    doneIcon: {
+      'transform': 'rotate(90deg)',
+      color: '#7187b5',
+      width: '30px',
+      height: '35px'
+    },
+    dateLabel: {
+      marginTop: '2px',
+      fontSize: '8px'
+    }
+  }));
+
+  const classes = useStyles();
+
   return (
     <FullScreenPaper onCloseCustom={(history) => dispatch(navigateToTabForTask(id, history))}>
       {(onRequestClose) => (
-        <FormFlexContainer onSubmit={onRequestClose}>
+        <FormFlexContainer>
           <PapelHeader
             headline="Edit Task"
             buttonLeft={(
@@ -166,6 +271,18 @@ const EditTask = ({
                     }
                   }}
                   removeRecurringConfig={() => dispatch(removeTaskRecurringConfig(id))}
+                  handleConfirmStartDate={handleConfirmStartDate}
+                  openStartDate={openStartDate}
+                  handleOpenStartDate={handleOpenStartDate}
+                  handleCloseStartDate={handleCloseStartDate}
+                  handleConfirmDueDate={handleConfirmDueDate}
+                  handleCancelStartDate={handleCancelStartDate}
+                  openDueDate={openDueDate}
+                  handleOpenDueDate={handleOpenDueDate}
+                  handleCloseDueDate={handleCloseDueDate}
+                  handleCancelDueDate={handleCancelDueDate}
+                  setStartDateLabel={setStartDateLabel}
+                  setDueDateLabel={setDueDateLabel}
                 />
 
                 <Box mb={4}>
@@ -176,6 +293,53 @@ const EditTask = ({
               </ContentContainer>
             )}
           </EditTaskMain>
+
+          <AppBar position="static" color="primary" className={classes.appBar}>
+            <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenStartDate}
+              classes={{label: classes.iconButtonLabel}}
+            >
+              <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
+                <CalendarTodayIcon className={classes.smallIcon} />
+              </div>
+              <small className={classes.smallLabel}>Start Date</small>
+              <small className={classes.dateLabel}>{startDateLabel}</small>
+            </IconButton>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleOpenDueDate}
+              classes={{label: classes.iconButtonLabel}}
+            >
+              <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
+                <AlarmIcon className={classes.smallIcon} />
+              </div>
+              <small className={classes.smallLabel}>Due Date</small>
+              <small className={classes.dateLabel}>{dueDateLabel}</small>
+            </IconButton>
+{/*            <IconButton
+              edge="start"
+              color="inherit"
+              classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
+            >
+              <NoteAddOutlinedIcon />
+              <small>Notes</small>
+            </IconButton>
+*/}         <div className={classes.grow} />
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={onRequestClose}
+              classes={{label: classes.iconButtonLabel}}
+            >
+              <NavigationIcon className={classes.doneIcon} />
+              <small>Done</small>
+            </IconButton>
+            </Toolbar>
+          </AppBar>
 
           <DeleteConfirmationPopup
             open={deletePopupVisible}
