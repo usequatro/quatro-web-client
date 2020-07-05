@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import theme from 'constants/theme';
+import theme from '../constants/theme';
 
 const Reset = createGlobalStyle`
     /* http://meyerweb.com/eric/tools/css/reset/

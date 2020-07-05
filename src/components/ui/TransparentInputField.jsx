@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import FieldLabel from 'components/ui/FieldLabel';
-import FieldHelpText from 'components/ui/FieldHelpText';
+import FieldLabel from './FieldLabel';
+import FieldHelpText from './FieldHelpText';
 
 const Input = styled.input`
   font-family: inherit;
@@ -56,7 +56,8 @@ const InputField = forwardRef((
       //   }, 100);
       // }}
 
-      {...props} />
+      {...props}
+    />
   </Box>
 ));
 

@@ -10,19 +10,14 @@ import {
 } from 'rebass/styled-components';
 import { Transition } from 'react-transition-group';
 
-import { completeTask, selectRecurringConfig } from 'modules/tasks';
-import { EDIT_TASK } from 'constants/paths';
-import { getRecurringOptionLabel } from 'util/recurrence';
-
-import CheckIcon from 'components/icons/CheckIcon';
-import activeLighter from 'components/style-mixins/activeLighter';
-import ButtonFunction from 'components/ui/ButtonFunction';
-import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
-
-import withMixpanel from 'components/hoc/withMixpanel';
-import { TASK_COMPLETED } from 'constants/mixpanelTrackingEvents';
-
+import { completeTask, selectRecurringConfig } from '../../../../modules/tasks';
+import { EDIT_TASK } from '../../../../constants/paths';
+import { getRecurringOptionLabel } from '../../../../util/recurrence';
+import activeLighter from '../../../style-mixins/activeLighter';
+import withMixpanel from '../../../hoc/withMixpanel';
+import { TASK_COMPLETED } from '../../../../constants/mixpanelTrackingEvents';
 import BlockingTaskList from './BlockingTaskList';
+
 const MAX_DESCRIPTION_CHARACTERS = 200;
 
 const duration = 400;
@@ -89,13 +84,14 @@ const TaskContainer = styled.div`
     padding-bottom ${duration}ms ease-out ${slideUpAnimationDelay}ms,
     margin-bottom ${duration}ms ease-out ${slideUpAnimationDelay}ms,
     max-height ${duration}ms ease-out ${slideUpAnimationDelay}ms;
-  }
-
 
   &:hover {
-    background-image: ${({ theme }) => (
-    `linear-gradient(30deg, ${theme.colors.appBackground} 49%, ${theme.colors.foregroundOptionHover} 50%)`
-  )};
+    background-image: linear-gradient(
+      30deg,
+      ${({ theme }) => theme.colors.appBackground} 49%,
+      ${({ theme }) => theme.colors.foregroundOptionHover} 50%
+    );
+  }
 
   ${activeLighter}
 `;
@@ -114,9 +110,7 @@ const TaskAnimationSlide = styled.div`
   background-color: ${({ theme }) => theme.colors.barBackground};
   width: 100%;
 
-  transition:
-    left ${duration}ms linear ${sliderAnimationDelay}ms;
-  }
+  transition: left ${duration}ms linear ${sliderAnimationDelay}ms;
 `;
 
 const TaskAnimationText = styled.h2`
@@ -130,7 +124,6 @@ const TaskAnimationText = styled.h2`
   opacity: ${({ state }) => (state === 'exited' ? '1' : '0')};
   transition:
     opacity ${duration}ms linear;
-  }
 `;
 
 const TaskButtons = styled(Box)`
@@ -146,7 +139,7 @@ const CompleteButton = styled.button`
   cursor: pointer;
 
   // The below are textSecondary in RGBA
-  background-color: ${({ state, theme }) => (state === 'exiting' || state === 'exited') ? `${theme.colors.barBackground}` : `${theme.colors.lightBlue}`};
+  background-color: ${({ state, theme }) => ((state === 'exiting' || state === 'exited') ? `${theme.colors.barBackground}` : `${theme.colors.lightBlue}`)};
   opacity: ${({ state }) => (state === 'exiting' || state === 'exited' ? '1' : '0.5')};
 
   &:hover {
@@ -154,9 +147,8 @@ const CompleteButton = styled.button`
   }
 
   transition:
-    opacity ${duration/2}ms linear,
-    background-color ${duration/2}ms linear
-  }
+    opacity ${duration / 2}ms linear,
+    background-color ${duration / 2}ms linear;
 
   ${activeLighter}
 `;
@@ -216,9 +208,7 @@ const addLinkTags = memoize((text) => {
     .filter(Boolean);
 });
 
-const formatDateForDisplay = date => {
-  return format(date, 'EEEE, LLL d, p');
-};
+const formatDateForDisplay = (date) => format(date, 'EEEE, LLL d, p');
 
 const Task = ({
   id,
@@ -280,11 +270,12 @@ const Task = ({
             <TaskAnimationText state={state}>Task Completed!</TaskAnimationText>
           </TaskAnimationSlide>
           <DragHandle enableDragHint={enableDragHint} />
-          {rankNumber &&
+          {rankNumber
+            && (
             <RankContainer>
               {rankNumber}
             </RankContainer>
-          }
+            )}
           <MainContainer>
             {/* <TaskTitle>{id}</TaskTitle> */}
             <TaskTitle>

@@ -8,7 +8,7 @@ const TASKS = 'tasks';
 const RECURRING_CONFIGS = 'recurringConfigs';
 const logPrefix = '[api]';
 
-const db = firebase.firestore();
+const getFirestore = () => firebase.firestore();
 
 const excludeId = (entity) => {
   const { id, ...rest } = entity;
@@ -17,10 +17,10 @@ const excludeId = (entity) => {
 
 export const createTask = (task) => {
   console.log(`${logPrefix} createTask`, task); // eslint-disable-line no-console
-  return db.collection(TASKS).add(excludeId(task));
+  return getFirestore().collection(TASKS).add(excludeId(task));
 };
 
-// export const deleteTask = taskId => db.collection(TASKS).delete(taskId);
+// export const deleteTask = taskId => getFirestore().collection(TASKS).delete(taskId);
 
 export const fetchTasks = (
   userId,
@@ -31,7 +31,7 @@ export const fetchTasks = (
     completed: [completedOperator = '==', completedValue = null] = [],
   } = fetchParams || {};
 
-  return db.collection(TASKS)
+  return getFirestore().collection(TASKS)
     .where('userId', '==', userId)
     .where('trashed', '==', null)
     .where('completed', completedOperator, completedValue)
@@ -46,7 +46,7 @@ export const fetchTasks = (
     });
 };
 
-const parseTaskResults = (querySnapshot : firebase.firestore.QuerySnapshot) => (
+const parseTaskResults = (querySnapshot) => (
   querySnapshot.docs.map((doc) => ({
     ...doc.data(),
     id: doc.id,
@@ -55,7 +55,7 @@ const parseTaskResults = (querySnapshot : firebase.firestore.QuerySnapshot) => (
 
 export const fetchNonCompletedTasks = (userId) => {
   console.log(`${logPrefix} fetchNonCompletedTasks`, userId); // eslint-disable-line no-console
-  return db.collection(TASKS)
+  return getFirestore().collection(TASKS)
     .where('userId', '==', userId)
     .where('trashed', '==', null)
     .where('completed', '==', null)
@@ -69,7 +69,7 @@ export const fetchNonCompletedTasks = (userId) => {
 
 export const fetchCompletedTasks = (userId) => {
   console.log(`${logPrefix} fetchCompletedTasks`, userId); // eslint-disable-line no-console
-  return db.collection(TASKS)
+  return getFirestore().collection(TASKS)
     .where('userId', '==', userId)
     .where('trashed', '==', null)
     .where('completed', '>', 0)
@@ -83,7 +83,7 @@ export const fetchCompletedTasks = (userId) => {
 
 export const updateTask = (taskId, updates) => {
   console.log(`${logPrefix} updateTask`, taskId, updates); // eslint-disable-line no-console
-  return db.collection(TASKS).doc(taskId).set(
+  return getFirestore().collection(TASKS).doc(taskId).set(
     excludeId(updates),
     { merge: true },
   );
@@ -91,9 +91,9 @@ export const updateTask = (taskId, updates) => {
 
 export const updateTaskBatch = (updatesByTaskId) => {
   console.log(`${logPrefix} updateTaskBatch`, updatesByTaskId); // eslint-disable-line no-console
-  const batch = db.batch();
+  const batch = getFirestore().batch();
   Object.keys(updatesByTaskId).forEach((taskId) => {
-    const taskRef = db.collection(TASKS).doc(taskId);
+    const taskRef = getFirestore().collection(TASKS).doc(taskId);
     const updates = excludeId(updatesByTaskId[taskId]);
     batch.update(taskRef, updates);
   });
@@ -102,7 +102,7 @@ export const updateTaskBatch = (updatesByTaskId) => {
 
 export const fetchRecurringConfigs = (userId) => {
   console.log(`${logPrefix} fetchRecurringConfigs`, userId); // eslint-disable-line no-console
-  return db.collection(RECURRING_CONFIGS)
+  return getFirestore().collection(RECURRING_CONFIGS)
     .where('userId', '==', userId)
     .get()
     .then((querySnapshot) => {
@@ -117,12 +117,12 @@ export const fetchRecurringConfigs = (userId) => {
 
 export const createRecurringConfig = (recurringConfig) => {
   console.log(`${logPrefix} createRecurringConfig`, recurringConfig); // eslint-disable-line no-console
-  return db.collection(RECURRING_CONFIGS).add(excludeId(recurringConfig));
+  return getFirestore().collection(RECURRING_CONFIGS).add(excludeId(recurringConfig));
 };
 
 export const updateRecurringConfig = (id, updates) => {
   console.log(`${logPrefix} updateTask`, id, updates); // eslint-disable-line no-console
-  return db.collection(RECURRING_CONFIGS).doc(id).set(
+  return getFirestore().collection(RECURRING_CONFIGS).doc(id).set(
     excludeId(updates),
     { merge: true },
   )
@@ -131,5 +131,5 @@ export const updateRecurringConfig = (id, updates) => {
 
 export const deleteRecurringConfig = (id) => {
   console.log(`${logPrefix} deleteRecurringConfig`, id); // eslint-disable-line no-console
-  return db.collection(RECURRING_CONFIGS).doc(id).delete();
+  return getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
 };

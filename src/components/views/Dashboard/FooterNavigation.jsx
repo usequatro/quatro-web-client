@@ -4,18 +4,18 @@ import { withRouter } from 'react-router-dom';
 import { Box } from 'rebass/styled-components';
 import invert from 'lodash/invert';
 
-import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from 'constants/paths';
-import * as dashboardTabs from 'constants/dashboardTabs';
+import { DASHBOARD_TABS_TO_PATHS, NEW_TASK } from '../../../constants/paths';
+import * as dashboardTabs from '../../../constants/dashboardTabs';
 
-import BacklogIcon from 'components/icons/Backlog';
-import BlockedIcon from 'components/icons/Blocked';
-import CalendarIcon from 'components/icons/Calendar';
-import PlusIcon from 'components/icons/PlusIcon';
-import TopFourIcon from 'components/icons/TopFour';
+import BacklogIcon from '../../icons/Backlog';
+import BlockedIcon from '../../icons/Blocked';
+import CalendarIcon from '../../icons/Calendar';
+import PlusIcon from '../../icons/PlusIcon';
+import TopFourIcon from '../../icons/TopFour';
 
-import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
-import activeLighter from 'components/style-mixins/activeLighter';
-import { mediaVerySmall, mediaLarge } from 'components/style-mixins/mediaQueries';
+import keyboardOnlyOutline from '../../style-mixins/keyboardOnlyOutline';
+import activeLighter from '../../style-mixins/activeLighter';
+import { mediaVerySmall, mediaLarge } from '../../style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(DASHBOARD_TABS_TO_PATHS);
 
@@ -33,8 +33,8 @@ const FooterContainer = styled(Box).attrs({
 
 const NavButton = styled.button.attrs({ type: 'primary' })`
   color: ${({ theme }) => theme.colors.textPrimaryOverBackground};
-  opacity: ${({ selected }) => selected ? 1 : 0.5};
-  font-weight: ${({ selected }) => selected ? 'bold' : 'normal'};
+  opacity: ${({ selected }) => (selected ? 1 : 0.5)};
+  font-weight: ${({ selected }) => (selected ? 'bold' : 'normal')};
   display: flex;
   flex-basis: 0;
   flex-direction: column;

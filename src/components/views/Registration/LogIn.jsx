@@ -4,13 +4,12 @@ import { Link, withRouter } from 'react-router-dom';
 
 import * as firebase from 'firebase/app';
 
-import { DASHBOARD, SIGN_UP } from 'constants/paths';
-import InputGroup from 'components/ui/InputGroup';
-import InputField from 'components/ui/InputField';
-import InvisibleForm from 'components/ui/InvisibleForm';
-import withMixpanel from 'components/hoc/withMixpanel';
-
-import { USER_LOGGED_IN } from 'constants/mixpanelTrackingEvents';
+import { DASHBOARD, SIGN_UP } from '../../../constants/paths';
+import { USER_LOGGED_IN } from '../../../constants/mixpanelTrackingEvents';
+import InputGroup from '../../ui/InputGroup';
+import InputField from '../../ui/InputField';
+import InvisibleForm from '../../ui/InvisibleForm';
+import withMixpanel from '../../hoc/withMixpanel';
 
 import SubmitButton from './SubmitButton';
 import ErrorMessage from './ErrorMessage';

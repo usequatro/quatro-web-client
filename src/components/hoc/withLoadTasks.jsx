@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { loadDashboardTasks as loadDashboardTasksAction, selectLoaded } from 'modules/dashboard';
-import { selectUserLoggedIn } from 'modules/session';
+import { loadDashboardTasks as loadDashboardTasksAction, selectLoaded } from '../../modules/dashboard';
+import { selectUserLoggedIn } from '../../modules/session';
 
 export default (Component, view) => {
   const mapDispatchToProps = {

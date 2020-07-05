@@ -3,11 +3,10 @@ import styled from 'styled-components';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { Heading } from 'rebass/styled-components';
 
-import { SIGN_UP, LOG_IN } from 'constants/paths';
-
-import BasicMain from 'components/ui/BasicMain';
-import safariBorderRadiusFix from 'components/style-mixins/safariBorderRadiusFix';
-import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
+import { SIGN_UP, LOG_IN } from '../../../constants/paths';
+import BasicMain from '../../ui/BasicMain';
+import safariBorderRadiusFix from '../../style-mixins/safariBorderRadiusFix';
+import { mediaVerySmall } from '../../style-mixins/mediaQueries';
 
 import LogIn from './LogIn';
 import SignUp from './SignUp';

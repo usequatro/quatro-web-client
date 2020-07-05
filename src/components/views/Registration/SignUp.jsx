@@ -3,10 +3,10 @@ import { Text, Box } from 'rebass/styled-components';
 import { Link, withRouter } from 'react-router-dom';
 import * as firebase from 'firebase/app';
 
-import { DASHBOARD, LOG_IN } from 'constants/paths';
-import InputGroup from 'components/ui/InputGroup';
-import InputField from 'components/ui/InputField';
-import InvisibleForm from 'components/ui/InvisibleForm';
+import { DASHBOARD, LOG_IN } from '../../../constants/paths';
+import InputGroup from '../../ui/InputGroup';
+import InputField from '../../ui/InputField';
+import InvisibleForm from '../../ui/InvisibleForm';
 
 import SubmitButton from './SubmitButton';
 import ErrorMessage from './ErrorMessage';

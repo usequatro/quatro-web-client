@@ -5,17 +5,6 @@ import { withRouter } from 'react-router-dom';
 import uuid from 'uuid/v4';
 import { Box } from 'rebass/styled-components';
 
-import { addTask } from 'modules/tasks';
-
-import FullScreenPaper from 'components/ui/FullScreenPaper';
-import PapelHeader from 'components/ui/PaperHeader';
-import BasicMain from 'components/ui/BasicMain';
-import TaskForm from 'components/views/Dashboard/EditTask/TaskForm';
-import Button from 'components/ui/Button';
-import Paragraph from 'components/ui/Paragraph';
-import withMixpanel from 'components/hoc/withMixpanel';
-import { TASK_CREATED } from 'constants/mixpanelTrackingEvents';
-
 // Material Imports
 import AppBar from '@material-ui/core/AppBar';
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,7 +13,16 @@ import IconButton from '@material-ui/core/IconButton';
 import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
 import AlarmIcon from '@material-ui/icons/Alarm';
 import NavigationIcon from '@material-ui/icons/Navigation';
-import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
+
+import { addTask } from '../../../../modules/tasks';
+
+import FullScreenPaper from '../../../ui/FullScreenPaper';
+import PapelHeader from '../../../ui/PaperHeader';
+import BasicMain from '../../../ui/BasicMain';
+import TaskForm from '../EditTask/TaskForm';
+import Button from '../../../ui/Button';
+import withMixpanel from '../../../hoc/withMixpanel';
+import { TASK_CREATED } from '../../../../constants/mixpanelTrackingEvents';
 
 const FormFlexContainer = styled.form`
   display: flex;
@@ -75,7 +73,7 @@ const NewTask = ({ history, mixpanel }) => {
   const handleConfirmStartDate = (datetime) => {
     setStartDateConfirmed(true);
     setOpenStartDate(false);
-    setStartDateLabel(datetime.toLocaleDateString("en-US"));
+    setStartDateLabel(datetime.toLocaleDateString('en-US'));
   };
 
   const handleOpenDueDate = () => {
@@ -96,7 +94,7 @@ const NewTask = ({ history, mixpanel }) => {
   const handleConfirmDueDate = (datetime) => {
     setDueDateConfirmed(true);
     setOpenDueDate(false);
-    setDueDateLabel(datetime.toLocaleDateString("en-US"));
+    setDueDateLabel(datetime.toLocaleDateString('en-US'));
   };
 
   useEffect(() => {
@@ -151,9 +149,9 @@ const NewTask = ({ history, mixpanel }) => {
     appBar: {
       top: 'auto',
       bottom: 0,
-      backgroundColor:'white',
+      backgroundColor: 'white',
       color: theme.palette.text.primary,
-      maxWidth: '600px'
+      maxWidth: '600px',
     },
     grow: {
       flexGrow: 1,
@@ -166,32 +164,32 @@ const NewTask = ({ history, mixpanel }) => {
     root: {
       borderRadius: '40%',
       width: '30px',
-      height: '30px'
+      height: '30px',
     },
     rootClicked: {
       backgroundColor: '#414D67',
       color: 'white',
       borderRadius: '40%',
       width: '30px',
-      height: '30px'
+      height: '30px',
     },
     smallLabel: {
-      paddingTop: '.5em'
+      paddingTop: '.5em',
     },
     smallIcon: {
       width: '20px',
-      height: '30px'
+      height: '30px',
     },
     doneIcon: {
-      'transform': 'rotate(90deg)',
+      transform: 'rotate(90deg)',
       color: '#7187b5',
       width: '30px',
-      height: '35px'
+      height: '35px',
     },
     dateLabel: {
       marginTop: '2px',
-      fontSize: '8px'
-    }
+      fontSize: '8px',
+    },
   }));
 
   const classes = useStyles();
@@ -245,62 +243,62 @@ const NewTask = ({ history, mixpanel }) => {
                 setDueDateLabel={setDueDateLabel}
               />
 
-              <Box mb={6}></Box>
+              <Box mb={6} />
             </ContentContainer>
           </NewTaskMain>
 
           <AppBar position="static" color="primary" className={classes.appBar}>
             <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleOpenStartDate}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
-                <CalendarTodayIcon className={classes.smallIcon} />
-              </div>
-              <small className={classes.smallLabel}>Start Date</small>
-              <small className={classes.dateLabel}>{startDateLabel}</small>
-            </IconButton>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleOpenDueDate}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
-                <AlarmIcon className={classes.smallIcon} />
-              </div>
-              <small className={classes.smallLabel}>Due Date</small>
-              <small className={classes.dateLabel}>{dueDateLabel}</small>
-            </IconButton>
-{/*            <IconButton
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleOpenStartDate}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
+                  <CalendarTodayIcon className={classes.smallIcon} />
+                </div>
+                <small className={classes.smallLabel}>Start Date</small>
+                <small className={classes.dateLabel}>{startDateLabel}</small>
+              </IconButton>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleOpenDueDate}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
+                  <AlarmIcon className={classes.smallIcon} />
+                </div>
+                <small className={classes.smallLabel}>Due Date</small>
+                <small className={classes.dateLabel}>{dueDateLabel}</small>
+              </IconButton>
+              {/*            <IconButton
               edge="start"
               color="inherit"
               classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
             >
               <NoteAddOutlinedIcon />
               <small>Notes</small>
-            </IconButton>*/}
-            <div className={classes.grow} />
-            <IconButton
-              edge="end"
-              color="inherit"
-              onClick={createTask}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <NavigationIcon className={classes.doneIcon} />
-              <small>Done</small>
-            </IconButton>
+            </IconButton> */}
+              <div className={classes.grow} />
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={createTask}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <NavigationIcon className={classes.doneIcon} />
+                <small>Done</small>
+              </IconButton>
             </Toolbar>
           </AppBar>
 
-          {/*<ButtonFooter.Container>
+          {/* <ButtonFooter.Container>
             <ButtonFooter.Button type="submit" variant="primary">
               Create Task
             </ButtonFooter.Button>
-          </ButtonFooter.Container>*/}
+          </ButtonFooter.Container> */}
         </FormFlexContainer>
       )}
     </FullScreenPaper>

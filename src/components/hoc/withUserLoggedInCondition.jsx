@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
-import { selectUserLoggedIn } from 'modules/session';
+import { selectUserLoggedIn } from '../../modules/session';
 
 const withUserLoggedInCondition = (userLoggedInCondition, fallbackRoute) => (Component) => {
   const WithUserLoggedInCondition = ({ ...props }) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
-import FieldLabel from 'components/ui/FieldLabel';
+import FieldLabel from './FieldLabel';
 
 const Container = styled(Box)`
   width: 100%;
@@ -39,19 +39,19 @@ const Option = styled.option`
 const Dropdown = ({
   label, value, onChange, children, className,
 }) => (
-    <Container as={label ? 'label' : 'div'} className={className}>
-      {label && (
-        <FieldLabel>{label}</FieldLabel>
-      )}
-      <Select
-        onChange={(event) => onChange(event, event.target.value)}
-        value={value === null ? '' : value}
-      >
-        <Option value="" disabled />
-        {children}
-      </Select>
-    </Container>
-  );
+  <Container as={label ? 'label' : 'div'} className={className}>
+    {label && (
+      <FieldLabel>{label}</FieldLabel>
+    )}
+    <Select
+      onChange={(event) => onChange(event, event.target.value)}
+      value={value === null ? '' : value}
+    >
+      <Option value="" disabled />
+      {children}
+    </Select>
+  </Container>
+);
 
 Dropdown.Option = ({ value, children }) => (
   <Option key={value} value={value}>

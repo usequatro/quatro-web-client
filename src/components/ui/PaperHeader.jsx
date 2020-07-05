@@ -2,7 +2,7 @@ import React from 'react';
 import { Box } from 'rebass/styled-components';
 import styled from 'styled-components';
 
-import HeadingResponsive from 'components/ui/HeadingResponsive';
+import HeadingResponsive from './HeadingResponsive';
 
 const PaperHeaderContainer = styled(Box).attrs({
   px: 3,
