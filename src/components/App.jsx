@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import isElectron from 'is-electron';
 import mixpanel from 'mixpanel-browser';
 import { MixpanelProvider } from 'react-mixpanel';
 import {
@@ -37,7 +36,7 @@ const AppBackground = styled.div`
 // In Safari, when saving the website to home.
 const isAppFullScreenMode = () => ('standalone' in window.navigator) && window.navigator.standalone;
 
-const [Router, routerProps] = isElectron() || isAppFullScreenMode()
+const [Router, routerProps] = isAppFullScreenMode()
   ? [MemoryRouter, { initialEntries: ['/'], initialIndex: 0 }]
   : [BrowserRouter, {}];
 
