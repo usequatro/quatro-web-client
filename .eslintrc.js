@@ -13,8 +13,7 @@ module.exports = {
   "extends": [
     "eslint:recommended",
     "react-app",
-    "airbnb",
-    "plugin:import/typescript"
+    "airbnb"
   ],
   "rules": {
     "react/prop-types": "off",

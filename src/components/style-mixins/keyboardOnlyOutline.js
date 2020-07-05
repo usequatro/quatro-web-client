@@ -4,7 +4,7 @@
  *
  * @param color
  */
-const keyboardOnlyOutline = (color: string) => `
+const keyboardOnlyOutline = (color) => `
   outline-width: 0;
   &:focus-visible {
     outline-width: 3px;

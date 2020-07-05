@@ -1,18 +1,16 @@
 import styled from 'styled-components';
+// @ts-ignore
+import { Button } from 'rebass/styled-components';
 import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
 import activeLighter from 'components/style-mixins/activeLighter';
 import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
 
-const ButtonFunction = styled.button.attrs((props) => ({
-  type: props.type || 'button',
-})) <{ variant: string }>`
-  background: transparent;
-  border: none;
+export default styled(Button).attrs((props) => ({
+  type: props.type || 'button', // convenient to have it here, we can forget about it.
+  variant: props.variant || 'text', // default
+  p: 0,
+}))`
   cursor: pointer;
-  font-size: inherit;
-  padding: 0;
-  color: ${({ theme, variant }) => theme.buttons[variant].color};
-  text-align: left;
 
   ${({ theme, variant }) => keyboardOnlyOutline(theme.buttons[variant].outlineColor)};
 
@@ -20,5 +18,3 @@ const ButtonFunction = styled.button.attrs((props) => ({
 
   transition: ${colorSmoothTransitions};
 `;
-
-export default ButtonFunction;

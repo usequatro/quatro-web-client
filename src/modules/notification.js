@@ -20,44 +20,41 @@ const INITIAL_STATE = {
   type: '',
 };
 
-type NotificationParams = {
-  uid: string,
-  message: string,
-  type: string,
-  callbackButton?: string,
-};
+// type NotificationParams = {
+//   uid: string,
+//   message: string,
+//   type: string,
+//   callbackButton?: string,
+// };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [SHOW]: (state:S, action: { payload: NotificationParams }) => ({
+  [SHOW]: (state, action) => ({
     ...state,
     uid: action.payload.uid,
     message: action.payload.message,
     callbackButton: action.payload.callbackButton,
     type: action.payload.type,
   }),
-  [HIDE]: (state:S) => ({
+  [HIDE]: (state) => ({
     ...state,
     uid: null,
   }),
 });
 
-type S = ReturnType<typeof reducer>;
-interface AS { notification: S };
-
 // Selectors
 
-export const selectUid = (state:AS) => state[NAMESPACE].uid;
-export const selectMessage = (state:AS) => state[NAMESPACE].message;
-export const selectCallbackButton = (state:AS) => state[NAMESPACE].callbackButton;
-export const selectType = (state:AS) => state[NAMESPACE].type;
+export const selectUid = (state) => state[NAMESPACE].uid;
+export const selectMessage = (state) => state[NAMESPACE].message;
+export const selectCallbackButton = (state) => state[NAMESPACE].callbackButton;
+export const selectType = (state) => state[NAMESPACE].type;
 
 // Actions
 const duration = 3000;
 
-const callbacks:{ [key:string]:Function|undefined } = {};
-const timeouts: { [key:string]:ReturnType<typeof setTimeout> } = {};
+const callbacks = {};
+const timeouts = {};
 
-export const hideNotification = (uid:string) => (dispatch:Function, getState:Function) => {
+export const hideNotification = (uid) => (dispatch, getState) => {
   clearInterval(timeouts[uid]);
   delete timeouts[uid];
   delete callbacks[uid];
@@ -70,17 +67,12 @@ export const hideNotification = (uid:string) => (dispatch:Function, getState:Fun
   }
 };
 
-type OptionalNotificationParams = {
-  callbackButton?: string,
-  callbackFunction?: Function,
-};
-
 const showNotification = (
-  type:string,
-  message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
+  type,
+  message,
+  { callbackButton, callbackFunction } = {},
 ) => (
-  (dispatch:Function) => {
+  (dispatch) => {
     const uid = `${Math.round(Math.random() * 10000)}`;
     callbacks[uid] = callbackFunction;
 
@@ -103,22 +95,22 @@ const showNotification = (
 );
 
 export const showInfoNotification = (
-  message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
+  message,
+  { callbackButton, callbackFunction },
 ) => (
   showNotification('info', message, { callbackButton, callbackFunction })
 );
 
 export const showErrorNotification = (
-  message:string,
-  { callbackButton, callbackFunction }:OptionalNotificationParams = {},
+  message,
+  { callbackButton, callbackFunction },
 ) => (
   showNotification('error', message, { callbackButton, callbackFunction })
 );
 
 export const showNetworkErrorNotification = () => showErrorNotification('Error');
 
-export const runNotificationCallback = (uid:string) => (dispatch:Function) => {
+export const runNotificationCallback = (uid) => (dispatch) => {
   const callbackFunction = callbacks[uid];
   if (callbackFunction) {
     dispatch(callbackFunction());

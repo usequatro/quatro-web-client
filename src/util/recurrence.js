@@ -3,9 +3,7 @@ import isEqual from 'lodash/isEqual';
 import * as WEEKDAYS from '../constants/weekdays';
 import * as DURATION_UNITS from '../constants/recurringDurationUnits';
 
-import { RecurringConfig, ActiveWeekdays, OptionalKeys } from '../types';
-
-export const RECURRING_CONFIG_EVERY_MONDAY:OptionalKeys<RecurringConfig> = {
+export const RECURRING_CONFIG_EVERY_MONDAY = {
   unit: DURATION_UNITS.WEEK,
   amount: 1,
   activeWeekdays: {
@@ -18,7 +16,7 @@ export const RECURRING_CONFIG_EVERY_MONDAY:OptionalKeys<RecurringConfig> = {
     [WEEKDAYS.SUNDAY]: false,
   },
 };
-export const RECURRING_CONFIG_EVERY_WEEKDAY:OptionalKeys<RecurringConfig> = {
+export const RECURRING_CONFIG_EVERY_WEEKDAY = {
   unit: DURATION_UNITS.WEEK,
   amount: 1,
   activeWeekdays: {
@@ -44,33 +42,33 @@ const RECURRENCE_PRESET_LABELS = {
   [CUSTOM_OPTION]: undefined,
 };
 
-export const getRecurringPresetFromConfig = (recurringConfig:RecurringConfig) => {
+export const getRecurringPresetFromConfig = (recurringConfig) => {
   if (!recurringConfig || isEqual(recurringConfig, {})) {
     return NO_RECURRENCE_OPTION;
   }
-  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_MONDAY.unit &&
-    recurringConfig.amount === RECURRING_CONFIG_EVERY_MONDAY.amount &&
-    isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_MONDAY.activeWeekdays)
+  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_MONDAY.unit
+    && recurringConfig.amount === RECURRING_CONFIG_EVERY_MONDAY.amount
+    && isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_MONDAY.activeWeekdays)
   ) {
     return EVERY_MONDAY_OPTION;
   }
-  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_WEEKDAY.unit &&
-    recurringConfig.amount === RECURRING_CONFIG_EVERY_WEEKDAY.amount &&
-    isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_WEEKDAY.activeWeekdays)
+  if (recurringConfig.unit === RECURRING_CONFIG_EVERY_WEEKDAY.unit
+    && recurringConfig.amount === RECURRING_CONFIG_EVERY_WEEKDAY.amount
+    && isEqual(recurringConfig.activeWeekdays, RECURRING_CONFIG_EVERY_WEEKDAY.activeWeekdays)
   ) {
     return WEEKDAYS_OPTION;
   }
   return CUSTOM_OPTION;
 };
 
-const omitOne = (amount:number) => amount !== 1 ? `${amount} ` : '';
-const pluralize = (unit:string, amount:number) => amount !== 1 ? `${unit}s` : unit;
+const omitOne = (amount) => (amount !== 1 ? `${amount} ` : '');
+const pluralize = (unit, amount) => (amount !== 1 ? `${unit}s` : unit);
 
-const filterActiveWeekdays = (activeWeekdays : ActiveWeekdays) => Object.entries(activeWeekdays)
-  .filter(([weekdayCode, active]) => active)
-  .map(([weekdayCode, active]) => weekdayCode);
+const filterActiveWeekdays = (activeWeekdays) => Object.entries(activeWeekdays)
+  .filter(([, active]) => active)
+  .map(([weekdayCode]) => weekdayCode);
 
-export const getRecurringOptionLabel = (recurringConfig:RecurringConfig) => {
+export const getRecurringOptionLabel = (recurringConfig) => {
   const preset = getRecurringPresetFromConfig(recurringConfig);
   if (RECURRENCE_PRESET_LABELS[preset]) {
     return RECURRENCE_PRESET_LABELS[preset];
@@ -79,9 +77,9 @@ export const getRecurringOptionLabel = (recurringConfig:RecurringConfig) => {
   const customMessage = `
     Every ${omitOne(recurringConfig.amount)}${pluralize(recurringConfig.unit, recurringConfig.amount)}
     ${recurringConfig.unit === DURATION_UNITS.WEEK && recurringConfig.activeWeekdays
-      ? `on ${filterActiveWeekdays(recurringConfig.activeWeekdays).join(', ')}`
-      : ''
-    }
+    ? `on ${filterActiveWeekdays(recurringConfig.activeWeekdays).join(', ')}`
+    : ''
+}
   `;
 
   return customMessage;

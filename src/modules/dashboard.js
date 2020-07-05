@@ -7,7 +7,6 @@ import uniq from 'lodash/uniq';
 import createReducer from '../util/createReducer';
 import { loadTasks, resetTasks, loadRecurringConfigs } from './tasks';
 import { RESET } from './reset';
-import { Task } from '../types';
 
 export const NAMESPACE = 'dashboard';
 
@@ -32,8 +31,8 @@ const INITIAL_STATE = {
 
 export const reducer = createReducer(INITIAL_STATE, {
   [SET_LOAD_FLAGS]: (
-    state:S,
-    { payload: { loading, loaded, view } }:{payload:{loading:boolean, loaded:boolean, view:string}},
+    state,
+    { payload: { loading, loaded, view } },
   ) => ({
     ...state,
     [view]: {
@@ -43,8 +42,8 @@ export const reducer = createReducer(INITIAL_STATE, {
     },
   }),
   [SET_ACCOUNT_MENU_OPEN]: (
-    state:S,
-    { payload: accountMenuOpen }:{payload: boolean},
+    state,
+    { payload: accountMenuOpen },
   ) => ({
     ...state,
     accountMenuOpen,
@@ -52,34 +51,31 @@ export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
-type S = ReturnType<typeof reducer>;
-interface AS { dashboard: S };
-
 // Selectors
 
-export const selectLoading = (state:AS, view:string) => state[NAMESPACE][view].loading;
-export const selectLoaded = (state:AS, view:string) => state[NAMESPACE][view].loaded;
-export const selectAccountMenuOpen = (state:AS) => state[NAMESPACE].accountMenuOpen;
+export const selectLoading = (state, view) => state[NAMESPACE][view].loading;
+export const selectLoaded = (state, view) => state[NAMESPACE][view].loaded;
+export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
 
 // Actions
 
-const setLoadFlags = (view: string, { loading, loaded }:{ loading:boolean, loaded:boolean }) => ({
+const setLoadFlags = (view, { loading, loaded }) => ({
   type: SET_LOAD_FLAGS,
   payload: { view, loading, loaded },
 });
 
-export const loadDashboardTasks = (view = 'default') => (dispatch:Function) => {
+export const loadDashboardTasks = (view = 'default') => (dispatch) => {
   dispatch(setLoadFlags(view, { loading: true, loaded: false }));
 
   dispatch(loadTasks(view === 'completed'))
-    .then((tasks:Task[]) => {
+    .then((tasks) => {
       const recurringConfigIds = uniq(tasks.map((t) => t.recurringConfigId).filter(Boolean));
-      return dispatch(loadRecurringConfigs(recurringConfigIds as string[]));
+      return dispatch(loadRecurringConfigs(recurringConfigIds));
     })
     .then(() => {
       dispatch(setLoadFlags(view, { loading: false, loaded: true }));
     })
-    .catch((error:Error) => {
+    .catch((error) => {
       console.error(error);
       dispatch(setLoadFlags(view, { loading: false, loaded: false }));
     });
@@ -89,7 +85,7 @@ export const resumeDashboardActivity = (() => {
   let lastTime = Date.now();
   const timeout = 1000 * 60 * 30; // 30 minutes;
 
-  return () => (dispatch:Function) => {
+  return () => (dispatch) => {
     const now = Date.now();
     if (now > lastTime + timeout) {
       console.log('[resumeDashboardActivity] Refreshing tasks due to resumed activity');
@@ -99,7 +95,7 @@ export const resumeDashboardActivity = (() => {
   };
 })();
 
-export const setAccountMenuOpen = (accountMenuOpen:boolean) => ({
+export const setAccountMenuOpen = (accountMenuOpen) => ({
   type: SET_ACCOUNT_MENU_OPEN,
   payload: accountMenuOpen,
 });

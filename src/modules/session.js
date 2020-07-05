@@ -21,7 +21,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [SET_USER]: (state: S, { payload: user }: { payload: object }) => ({
+  [SET_USER]: (state, { payload: user }) => ({
     ...state,
     userLoggedIn: user !== null, // Needs to be null, false or true.
     user,
@@ -29,19 +29,16 @@ export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
-type S = ReturnType<typeof reducer>;
-interface AS { session: S };
-
 // Selectors
 
-export const selectUserId = (state: AS) => get(state[NAMESPACE].user, 'uid');
-export const selectUserEmail = (state: AS) => get(state[NAMESPACE].user, 'email', '');
-export const selectUserDisplayName = (state: AS) => get(state[NAMESPACE].user, 'displayName', '');
-export const selectUserLoggedIn = (state: AS) => state[NAMESPACE].userLoggedIn;
+export const selectUserId = (state) => get(state[NAMESPACE].user, 'uid');
+export const selectUserEmail = (state) => get(state[NAMESPACE].user, 'email', '');
+export const selectUserDisplayName = (state) => get(state[NAMESPACE].user, 'displayName', '');
+export const selectUserLoggedIn = (state) => state[NAMESPACE].userLoggedIn;
 
 // Actions
 
-export const setUser = (user: object | null) => ({
+export const setUser = (user) => ({
   type: SET_USER,
   payload: user,
 });
