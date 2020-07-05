@@ -19,18 +19,14 @@ const UserLoginListener = ({ mixpanel }) => {
         });
       }
 
-      const reduxUser = user !== null ? pick(user, [
-        'uid',
-        'displayName',
-        'photoURL',
-        'email',
-        'emailVerified',
-      ]) : null;
+      const reduxUser = user !== null
+        ? pick(user, ['uid', 'displayName', 'photoURL', 'email', 'emailVerified'])
+        : null;
       dispatch(setUser(reduxUser));
     });
 
     return unsubscribe;
-  }, [dispatch]);
+  }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 };

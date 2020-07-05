@@ -77,7 +77,7 @@ const Notification = ({
       setRendered(true);
       setTimeout(() => setVisible(true), 20);
     }
-  }, [uid]);
+  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onClickButton = (event) => {
     event.stopPropagation();
