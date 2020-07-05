@@ -13,7 +13,6 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ### Libraries the code uses
 * React
 * Redux
-* TypeScript (not everywhere though)
 * Styled Components
 * Rebass: basic UI library that can be extended
 * React Router

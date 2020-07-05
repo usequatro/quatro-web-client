@@ -1,4 +1,3 @@
-
 export const activeOpacity = 0.5;
 
 export default `
