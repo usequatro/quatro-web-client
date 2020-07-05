@@ -1,5 +1,7 @@
 # Quatro Frontend App
 
+![CI](https://github.com/guillermodlpa/quatro-frontend/workflows/CI/badge.svg)
+
 ## Local set up
 
 1. Clone the repo
@@ -11,11 +13,12 @@
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`src`](./src).
 
 ### Libraries the code uses
-* React
-* Redux
-* Styled Components
-* Rebass: basic UI library that can be extended
-* React Router
+
+- React
+- Redux
+- Styled Components
+- Rebass: basic UI library that can be extended
+- React Router
 
 ### Data structures
 
