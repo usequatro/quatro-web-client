@@ -41,9 +41,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: npm run build-prod
 
-      - name: Build
-        run: npm run build
-
       - name: Deploy to Firebase Hosting
         run: firebase deploy --only hosting --non-interactive --token ${{ secrets.FIREBASE_TOKEN }} -m "RunID ${{ github.run_id }} Commit SHA ${{ github.sha }}"
         env:
