@@ -19,7 +19,6 @@ yarn-error.log*
 firebase-debug.log
 
 # env
-.env
 .env.local
 
 # electron builds
