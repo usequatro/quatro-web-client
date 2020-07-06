@@ -2,6 +2,13 @@
 
 ![CI](https://github.com/guillermodlpa/quatro-frontend/workflows/CI/badge.svg)
 
+## Environments
+
+1. **Dev**. Firebase project ID `quatro-dev-88030`
+2. **Prod**. Firebase project ID `tasket-project`
+
+Use Firebase's CLI to toggle between them with `firebase use`.
+
 ## Local set up
 
 1. Clone the repo

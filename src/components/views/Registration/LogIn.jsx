@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Text, Box } from 'rebass/styled-components';
 import { Link, withRouter } from 'react-router-dom';
 
-import * as firebase from 'firebase/app';
-
+import { getAuth } from '../../../firebase';
 import { DASHBOARD, SIGN_UP } from '../../../constants/paths';
 import { USER_LOGGED_IN } from '../../../constants/mixpanelTrackingEvents';
 import InputGroup from '../../ui/InputGroup';
@@ -23,7 +22,7 @@ const LogIn = ({ history, mixpanel }) => {
   const onLogIn = (event) => {
     event.preventDefault();
     setSubmitting(true);
-    firebase.auth().signInWithEmailAndPassword(emailAddress, password)
+    getAuth().signInWithEmailAndPassword(emailAddress, password)
       .then(() => {
         console.log('[LogIn] User authenticated, redirecting.');
         history.push(DASHBOARD);

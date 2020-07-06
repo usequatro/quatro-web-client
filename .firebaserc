@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "tasket-project"
+    "prod": "tasket-project",
+    "dev": "quatro-dev-88030"
   }
 }

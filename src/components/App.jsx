@@ -1,12 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import mixpanel from 'mixpanel-browser';
-import { MixpanelProvider } from 'react-mixpanel';
-import {
-  BrowserRouter, MemoryRouter, Switch, Route, Redirect,
-} from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Switch, Route, Redirect } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 
+import mixpanel from '../util/mixpanel';
+import { MixpanelProvider } from './tracking/MixpanelContext';
 import * as paths from '../constants/paths';
 import MAX_WIDTH from '../constants/maxWidth';
 
@@ -34,7 +32,7 @@ const AppBackground = styled.div`
 `;
 
 // In Safari, when saving the website to home.
-const isAppFullScreenMode = () => ('standalone' in window.navigator) && window.navigator.standalone;
+const isAppFullScreenMode = () => 'standalone' in window.navigator && window.navigator.standalone;
 
 const [Router, routerProps] = isAppFullScreenMode()
   ? [MemoryRouter, { initialEntries: ['/'], initialIndex: 0 }]
