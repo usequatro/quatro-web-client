@@ -12,13 +12,13 @@
     "firebase": "^6.4.0",
     "lodash": "^4.17.15",
     "mixpanel-browser": "^2.38.0",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^11.0.5",
     "react-calendar": "^3.1.0",
     "react-datepicker": "^3.0.0",
     "react-div-100vh": "^0.3.8",
     "react-dom": "^16.13.1",
-    "react-mixpanel": "^1.0.5",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.1",
@@ -33,6 +33,7 @@
     "dotenv-cli": "^3.2.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.18.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
@@ -41,12 +42,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "./build.sh",
+    "build": "./scripts/build.sh",
     "build-prod": "react-scripts build",
     "build-dev": "dotenv -e .env.development react-scripts build",
     "build-and-deploy": "npm run build && firebase deploy --only hosting",
     "test": "react-scripts test --env=jsdom",
-    "lint": "eslint --ext .jsx,.js ."
+    "lint": "eslint --ext .jsx,.js src"
   },
   "engines": {
     "yarn": "YARN NO LONGER USED - use npm instead."

@@ -23,7 +23,6 @@ const UserLoginListener = ({ mixpanel }) => {
         }
       }
 
-      // eslint-disable-next-line operator-linebreak
       const reduxUser =
         user !== null
           ? pick(user, ['uid', 'displayName', 'photoURL', 'email', 'emailVerified'])

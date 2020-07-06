@@ -5,17 +5,13 @@
   },
   "hosting": {
     "public": "build",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
       }
     ],
-    "postdeploy": "./messageSlack.sh \"Deployer\" \"Application deployed\""
+    "postdeploy": "./scripts/notifyDeploy.sh"
   }
 }

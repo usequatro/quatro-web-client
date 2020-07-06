@@ -10,7 +10,7 @@ module.exports = {
     },
     sourceType: 'module',
   },
-  extends: ['eslint:recommended', 'airbnb', 'plugin:react-hooks/recommended'],
+  extends: ['eslint:recommended', 'airbnb', 'plugin:react-hooks/recommended', 'prettier'],
   overrides: [
     // Override for test files to support jest syntax
     {

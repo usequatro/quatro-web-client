@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-// import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
 import { Box } from 'rebass/styled-components';
 
