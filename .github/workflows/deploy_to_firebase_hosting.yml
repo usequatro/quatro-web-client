@@ -33,6 +33,14 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
+      - name: Build for development environment
+        if: github.ref == 'refs/heads/develop'
+        run: npm run build-dev
+
+      - name: Build for production environment
+        if: github.ref == 'refs/heads/master'
+        run: npm run build-prod
+
       - name: Build
         run: npm run build
 
