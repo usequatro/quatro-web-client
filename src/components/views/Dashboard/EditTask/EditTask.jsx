@@ -6,6 +6,14 @@ import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 import get from 'lodash/get';
 
+import AppBar from '@material-ui/core/AppBar';
+import { makeStyles } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
+import AlarmIcon from '@material-ui/icons/Alarm';
+import NavigationIcon from '@material-ui/icons/Navigation';
+
 import {
   selectUndeletedTask,
   updateTask,
@@ -21,33 +29,24 @@ import {
   selectTask,
   selectTaskDependencies,
   selectRecurringConfig,
-} from 'modules/tasks';
-import { selectLoaded } from 'modules/dashboard';
-import * as paths from 'constants/paths';
+} from '../../../../modules/tasks';
+import { selectLoaded } from '../../../../modules/dashboard';
+import * as paths from '../../../../constants/paths';
 
-import LeftArrowIcon from 'components/icons/LeftArrow';
-import FullScreenPaper from 'components/ui/FullScreenPaper';
-import PapelHeader from 'components/ui/PaperHeader';
-import Loader from 'components/ui/Loader';
-import BasicMain from 'components/ui/BasicMain';
-import Button from 'components/ui/Button';
-import withLoadTasks from 'components/hoc/withLoadTasks';
-import Paragraph from 'components/ui/Paragraph';
+import LeftArrowIcon from '../../../icons/LeftArrow';
+import FullScreenPaper from '../../../ui/FullScreenPaper';
+import PapelHeader from '../../../ui/PaperHeader';
+import Loader from '../../../ui/Loader';
+import BasicMain from '../../../ui/BasicMain';
+import Button from '../../../ui/Button';
+import withLoadTasks from '../../../hoc/withLoadTasks';
+import Paragraph from '../../../ui/Paragraph';
 
-import withMixpanel from 'components/hoc/withMixpanel';
-import { TASK_UPDATED, TASK_DELETED } from 'constants/mixpanelTrackingEvents';
+import withMixpanel from '../../../hoc/withMixpanel';
+import { TASK_DELETED } from '../../../../constants/mixpanelTrackingEvents';
 
 import TaskForm from './TaskForm';
 import DeleteConfirmationPopup from './DeleteConfirmationPopup';
-
-import AppBar from '@material-ui/core/AppBar';
-import { makeStyles } from '@material-ui/core/styles';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
-import AlarmIcon from '@material-ui/icons/Alarm';
-import NavigationIcon from '@material-ui/icons/Navigation';
-import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined';
 
 const FormFlexContainer = styled.form`
   display: flex;
@@ -92,8 +91,17 @@ const EditTask = ({
   const [dueDateConfirmed, setDueDateConfirmed] = useState(due || false);
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openDueDate, setOpenDueDate] = useState(false);
-  const [startDateLabel, setStartDateLabel] = useState(scheduledStart ? new Date(scheduledStart).toLocaleDateString("en-US") : '\u00A0');
-  const [dueDateLabel, setDueDateLabel] = useState(due ? new Date(due).toLocaleDateString("en-US") : '\u00A0');
+  const [startDateLabel, setStartDateLabel] = useState(scheduledStart ? new Date(scheduledStart).toLocaleDateString('en-US') : '\u00A0');
+  const [dueDateLabel, setDueDateLabel] = useState(due ? new Date(due).toLocaleDateString('en-US') : '\u00A0');
+
+  const onUpdate = (key, value) => {
+    dispatch(updateTask(id, { [key]: value }));
+    // mixpanel.track(TASK_UPDATED, {
+    //   taskId: id,
+    //   field: key,
+    //   value,
+    // });
+  };
 
   const handleOpenStartDate = () => {
     setOpenStartDate(true);
@@ -106,7 +114,7 @@ const EditTask = ({
   const handleConfirmStartDate = (datetime) => {
     setStartDateConfirmed(true);
     setOpenStartDate(false);
-    setStartDateLabel(datetime.toLocaleDateString("en-US"));
+    setStartDateLabel(datetime.toLocaleDateString('en-US'));
   };
 
   const handleCancelStartDate = () => {
@@ -127,7 +135,7 @@ const EditTask = ({
   const handleConfirmDueDate = (datetime) => {
     setDueDateConfirmed(true);
     setOpenDueDate(false);
-    setDueDateLabel(datetime.toLocaleDateString("en-US"));
+    setDueDateLabel(datetime.toLocaleDateString('en-US'));
   };
 
   const handleCancelDueDate = () => {
@@ -135,15 +143,6 @@ const EditTask = ({
     setOpenDueDate(false);
     onUpdate('due', null);
     setDueDateLabel('\u00A0');
-  };
-
-  const onUpdate = (key, value) => {
-    dispatch(updateTask(id, { [key]: value }));
-    // mixpanel.track(TASK_UPDATED, {
-    //   taskId: id,
-    //   field: key,
-    //   value,
-    // });
   };
 
   const dependencyDescriptors = useSelector((state) => (
@@ -154,7 +153,7 @@ const EditTask = ({
     appBar: {
       top: 'auto',
       bottom: 0,
-      backgroundColor:'white',
+      backgroundColor: 'white',
       color: theme.palette.text.primary,
     },
     grow: {
@@ -168,32 +167,32 @@ const EditTask = ({
     root: {
       borderRadius: '40%',
       width: '30px',
-      height: '30px'
+      height: '30px',
     },
     rootClicked: {
       backgroundColor: '#414D67',
       color: 'white',
       borderRadius: '40%',
       width: '30px',
-      height: '30px'
+      height: '30px',
     },
     smallLabel: {
-      paddingTop: '.5em'
+      paddingTop: '.5em',
     },
     smallIcon: {
       width: '20px',
-      height: '30px'
+      height: '30px',
     },
     doneIcon: {
-      'transform': 'rotate(90deg)',
+      transform: 'rotate(90deg)',
       color: '#7187b5',
       width: '30px',
-      height: '35px'
+      height: '35px',
     },
     dateLabel: {
       marginTop: '2px',
-      fontSize: '8px'
-    }
+      fontSize: '8px',
+    },
   }));
 
   const classes = useStyles();
@@ -224,7 +223,7 @@ const EditTask = ({
             )}
           />
           <EditTaskMain>
-            {!loaded &&  (
+            {!loaded && (
               <Loader />
             )}
             {loaded && !id && (
@@ -296,31 +295,31 @@ const EditTask = ({
 
           <AppBar position="static" color="primary" className={classes.appBar}>
             <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleOpenStartDate}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
-                <CalendarTodayIcon className={classes.smallIcon} />
-              </div>
-              <small className={classes.smallLabel}>Start Date</small>
-              <small className={classes.dateLabel}>{startDateLabel}</small>
-            </IconButton>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleOpenDueDate}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
-                <AlarmIcon className={classes.smallIcon} />
-              </div>
-              <small className={classes.smallLabel}>Due Date</small>
-              <small className={classes.dateLabel}>{dueDateLabel}</small>
-            </IconButton>
-{/*            <IconButton
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleOpenStartDate}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <div className={startDateConfirmed ? classes.rootClicked : classes.root}>
+                  <CalendarTodayIcon className={classes.smallIcon} />
+                </div>
+                <small className={classes.smallLabel}>Start Date</small>
+                <small className={classes.dateLabel}>{startDateLabel}</small>
+              </IconButton>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={handleOpenDueDate}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <div className={dueDateConfirmed ? classes.rootClicked : classes.root}>
+                  <AlarmIcon className={classes.smallIcon} />
+                </div>
+                <small className={classes.smallLabel}>Due Date</small>
+                <small className={classes.dateLabel}>{dueDateLabel}</small>
+              </IconButton>
+              {/*            <IconButton
               edge="start"
               color="inherit"
               classes={{label: classes.iconButtonLabel, root: classes.rootOther}}
@@ -328,16 +327,18 @@ const EditTask = ({
               <NoteAddOutlinedIcon />
               <small>Notes</small>
             </IconButton>
-*/}         <div className={classes.grow} />
-            <IconButton
-              edge="end"
-              color="inherit"
-              onClick={onRequestClose}
-              classes={{label: classes.iconButtonLabel}}
-            >
-              <NavigationIcon className={classes.doneIcon} />
-              <small>Done</small>
-            </IconButton>
+*/}
+              {' '}
+              <div className={classes.grow} />
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={onRequestClose}
+                classes={{ label: classes.iconButtonLabel }}
+              >
+                <NavigationIcon className={classes.doneIcon} />
+                <small>Done</small>
+              </IconButton>
             </Toolbar>
           </AppBar>
 

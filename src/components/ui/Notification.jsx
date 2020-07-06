@@ -4,7 +4,7 @@ import { Transition } from 'react-transition-group';
 import { Box } from 'rebass/styled-components';
 import { connect } from 'react-redux';
 
-import HeadingResponsive from 'components/ui/HeadingResponsive';
+import HeadingResponsive from './HeadingResponsive';
 import {
   selectUid,
   selectMessage,
@@ -12,11 +12,11 @@ import {
   selectType,
   runNotificationCallback as runNotificationCallbackAction,
   hideNotification as hideNotificationAction,
-} from 'modules/notification';
-import Button from 'components/ui/Button';
-import RootPortal from 'components/ui/RootPortal';
-import maxWidth from 'constants/maxWidth';
-import dropShadow from 'components/style-mixins/dropShadow';
+} from '../../modules/notification';
+import Button from './Button';
+import RootPortal from './RootPortal';
+import maxWidth from '../../constants/maxWidth';
+import dropShadow from '../style-mixins/dropShadow';
 
 const duration = 125;
 const transitionStyles = {

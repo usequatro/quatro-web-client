@@ -4,63 +4,50 @@
   "private": true,
   "dependencies": {
     "@date-io/date-fns": "^1.3.13",
-    "@material-ui/core": "^4.8.2",
+    "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/pickers": "^3.2.10",
-    "date-fns": "^2.8.1",
-    "dayjs": "^1.8.15",
-    "electron-is-dev": "^1.1.0",
-    "eslint-config-airbnb": "^18.0.1",
+    "date-fns": "^2.14.0",
+    "dayjs": "^1.8.29",
     "firebase": "^6.4.0",
-    "is-electron": "^2.2.0",
     "lodash": "^4.17.15",
-    "mixpanel-browser": "^2.35.0",
-    "react": "^16.9.0",
+    "mixpanel-browser": "^2.38.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.13.1",
     "react-beautiful-dnd": "^11.0.5",
     "react-calendar": "^3.1.0",
     "react-datepicker": "^3.0.0",
-    "react-div-100vh": "^0.3.4",
-    "react-dom": "^16.9.0",
-    "react-mixpanel": "^1.0.5",
-    "react-redux": "^7.1.0",
-    "react-router-dom": "^5.0.1",
-    "react-scripts": "^3.1.1",
-    "react-transition-group": "^4.2.2",
-    "rebass": "^4.0.5",
-    "redux": "^4.0.4",
+    "react-div-100vh": "^0.3.8",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^3.4.1",
+    "react-transition-group": "^4.4.1",
+    "rebass": "^4.0.7",
+    "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "styled-components": "^4.3.2",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.18",
-    "@types/lodash": "^4.14.137",
-    "@types/node": "^12.7.2",
-    "@types/react": "^16.9.2",
-    "@types/react-dom": "^16.9.0",
-    "@types/react-redux": "^7.1.2",
-    "@types/rebass": "^4.0.0",
-    "@types/uuid": "^3.4.5",
-    "electron": "^5.0.6",
-    "electron-builder": "^20.44.4",
-    "eslint": "^6.2.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.14.3",
-    "typescript": "^3.5.3"
+    "dotenv-cli": "^3.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.3",
+    "eslint-plugin-react-hooks": "^4.0.5"
   },
-  "homepage": "/",
-  "main": "./public/electron.js",
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "./scripts/build.sh",
+    "build-prod": "react-scripts build",
+    "build-dev": "dotenv -e .env.development react-scripts build",
     "build-and-deploy": "npm run build && firebase deploy --only hosting",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "electron-start": "electron .",
-    "electron-pack": "electron-builder --dir",
-    "electron-dist": "npm run build && electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "lint": "eslint --ext .jsx,.js src"
   },
   "engines": {
     "yarn": "YARN NO LONGER USED - use npm instead."
@@ -76,29 +63,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "build": {
-    "appId": "com.tasket.app",
-    "files": [
-      "./dist/**/*"
-    ],
-    "directories": {
-      "buildResources": "build",
-      "output": "dist"
-    },
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 240,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    }
   }
 }

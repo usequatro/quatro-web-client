@@ -5,25 +5,21 @@ import styled from 'styled-components';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { withRouter } from 'react-router-dom';
 
-import { setRelativePrioritization } from 'modules/tasks';
-import NOW_TASKS_LIMIT from 'constants/nowTasksLimit';
+import { setRelativePrioritization } from '../../../../modules/tasks';
+import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 import {
   NOW,
   NEXT,
   SCHEDULED,
   BLOCKED,
   COMPLETED,
-} from 'constants/dashboardTabs';
-import { NEW_TASK } from 'constants/paths';
-
-import HeadingResponsive from 'components/ui/HeadingResponsive';
-import Button from 'components/ui/Button';
-import TaskRefreshListener from 'components/views/Dashboard/TaskRefreshListener';
-
-import withMixpanel from 'components/hoc/withMixpanel';
-import { TASK_MANUALLY_ARRANGED } from 'constants/mixpanelTrackingEvents';
-
-import NoTasksView from './NoTasksView';
+} from '../../../../constants/dashboardTabs';
+import { NEW_TASK } from '../../../../constants/paths';
+import HeadingResponsive from '../../../ui/HeadingResponsive';
+import Button from '../../../ui/Button';
+import TaskRefreshListener from '../TaskRefreshListener';
+import withMixpanel from '../../../hoc/withMixpanel';
+import { TASK_MANUALLY_ARRANGED } from '../../../../constants/mixpanelTrackingEvents';
 
 const duration = 250;
 const transitionStyles = {
@@ -97,11 +93,11 @@ const EmptyStateActionBtn = styled(Button)`
 
 const EmptyStateMessage = styled(HeadingResponsive).attrs({ fontSize: [3] })`
   color: ${({ theme }) => theme.colors.textSecondary};
-  letter-spacing: ${({ theme }) => theme.letterSpacings.medium}
+  letter-spacing: ${({ theme }) => theme.letterSpacings.medium};
   text-align: center;
   line-height: 1.5rem;
-  margin: ${({ theme }) => `0 ${theme.space[4]}`};
-`
+  margin: 0 ${({ theme }) => theme.space[4]};
+`;
 
 const EndOfListSpacing = styled.div`
   width: 100%;
@@ -146,21 +142,22 @@ const TaskListWorkspace = ({
       console.log('manual arranging');
       mixpanel.track(TASK_MANUALLY_ARRANGED, { taskId: draggableId });
     }
-  }, [dispatch, taskListId]);
+  }, [dispatch, mixpanel, taskListId]);
 
   if (!tasks.length && TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId]) {
     return (
       <EmptyStateContainer>
-        <EmptyStateMessage dangerouslySetInnerHTML={{__html: TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message}}></EmptyStateMessage>
+        <EmptyStateMessage dangerouslySetInnerHTML={{ __html: TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].message }} />
         <EmptyStateImgContainer>
           <EmptyStateImg src={TASK_LIST_ID_TO_EMPTY_STATE_IMG_MAP[taskListId].img} />
         </EmptyStateImgContainer>
 
-        {taskListId === NOW &&
+        {taskListId === NOW
+          && (
           <EmptyStateActionBtn variant="pill" onClick={() => history.push(NEW_TASK)}>
             Get Started!
           </EmptyStateActionBtn>
-        }
+          )}
       </EmptyStateContainer>
     );
   }

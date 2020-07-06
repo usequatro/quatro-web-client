@@ -1,0 +1,47 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [master, develop]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install firebase tools
+        run: sudo npm install -g firebase-tools
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Use development Firebase
+        if: github.ref == 'refs/heads/develop'
+        run: firebase use quatro-dev-88030 --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Use production Firebase
+        if: github.ref == 'refs/heads/master'
+        run: firebase use tasket-project --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Build for development environment
+        if: github.ref == 'refs/heads/develop'
+        run: npm run build-dev
+
+      - name: Build for production environment
+        if: github.ref == 'refs/heads/master'
+        run: npm run build-prod
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting --non-interactive --token ${{ secrets.FIREBASE_TOKEN }} -m "RunID ${{ github.run_id }} Commit SHA ${{ github.sha }}"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

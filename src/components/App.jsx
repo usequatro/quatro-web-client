@@ -1,25 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
-import isElectron from 'is-electron';
-import mixpanel from 'mixpanel-browser';
-import { MixpanelProvider } from 'react-mixpanel';
-import {
-  BrowserRouter, MemoryRouter, Switch, Route, Redirect,
-} from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Switch, Route, Redirect } from 'react-router-dom';
 import Div100vh from 'react-div-100vh';
 
-import * as paths from 'constants/paths';
-import MAX_WIDTH from 'constants/maxWidth';
+import mixpanel from '../util/mixpanel';
+import { MixpanelProvider } from './tracking/MixpanelContext';
+import * as paths from '../constants/paths';
+import MAX_WIDTH from '../constants/maxWidth';
 
-import AppStylesWrapper from 'components/AppStylesWrapper';
-import RouterHistoryListener from 'components/tracking/RouterHistoryListener';
-import UserLoginListener from 'components/tracking/UserLoginListener';
-import Registration from 'components/views/Registration/Registration';
-import RuntimeError from 'components/views/RuntimeError';
-import AccountMenu from 'components/views/AccountMenu/AccountMenu';
-import Dashboard from 'components/views/Dashboard/Dashboard';
-import withUserLoggedInCondition from 'components/hoc/withUserLoggedInCondition';
-import Notification from 'components/ui/Notification';
+import AppStylesWrapper from './AppStylesWrapper';
+import RouterHistoryListener from './tracking/RouterHistoryListener';
+import UserLoginListener from './tracking/UserLoginListener';
+import Registration from './views/Registration/Registration';
+import RuntimeError from './views/RuntimeError';
+import AccountMenu from './views/AccountMenu/AccountMenu';
+import Dashboard from './views/Dashboard/Dashboard';
+import withUserLoggedInCondition from './hoc/withUserLoggedInCondition';
+import Notification from './ui/Notification';
 
 const AppBackground = styled.div`
   background-color: ${(props) => props.theme.colors.appBackground};
@@ -35,9 +32,9 @@ const AppBackground = styled.div`
 `;
 
 // In Safari, when saving the website to home.
-const isAppFullScreenMode = () => ('standalone' in window.navigator) && window.navigator.standalone;
+const isAppFullScreenMode = () => 'standalone' in window.navigator && window.navigator.standalone;
 
-const [Router, routerProps] = isElectron() || isAppFullScreenMode()
+const [Router, routerProps] = isAppFullScreenMode()
   ? [MemoryRouter, { initialEntries: ['/'], initialIndex: 0 }]
   : [BrowserRouter, {}];
 

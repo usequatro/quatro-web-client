@@ -1,5 +1,14 @@
 # Quatro Frontend App
 
+![CI](https://github.com/guillermodlpa/quatro-frontend/workflows/CI/badge.svg)
+
+## Environments
+
+1. **Dev**. Firebase project ID `quatro-dev-88030`
+2. **Prod**. Firebase project ID `tasket-project`
+
+Use Firebase's CLI to toggle between them with `firebase use`.
+
 ## Local set up
 
 1. Clone the repo
@@ -11,12 +20,12 @@
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`src`](./src).
 
 ### Libraries the code uses
-* React
-* Redux
-* TypeScript (not everywhere though)
-* Styled Components
-* Rebass: basic UI library that can be extended
-* React Router
+
+- React
+- Redux
+- Styled Components
+- Rebass: basic UI library that can be extended
+- React Router
 
 ### Data structures
 
@@ -29,7 +38,6 @@ In the Frontend, we break them down into 3 entities: `tasks`, `taskDependencies`
 ## Things to keep in mind
 
 1. Before deploying changes, test on mobile, with the app saved as full screen web app in the homepage.
-2. As of 2019 Q4, the electron implementation is functional to use it as a desktop app, but the self-upgrading isn't implemented.
 
 ## How to deploy changes
 

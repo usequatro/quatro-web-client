@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectNextTasks } from 'modules/tasks';
-import { NEXT } from 'constants/dashboardTabs';
-import NOW_TASKS_LIMIT from 'constants/nowTasksLimit';
+import { selectNextTasks } from '../../../../modules/tasks';
+import { NEXT } from '../../../../constants/dashboardTabs';
+import NOW_TASKS_LIMIT from '../../../../constants/nowTasksLimit';
 
-import Task from 'components/views/Dashboard/Shared/Task';
-import TaskListWorkspace from 'components/views/Dashboard/Shared/TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Next = ({ tasks }) => (
   <TaskListWorkspace

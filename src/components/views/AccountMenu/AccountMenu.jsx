@@ -3,20 +3,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Text } from 'rebass/styled-components';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import * as firebase from 'firebase/app';
 import { Transition } from 'react-transition-group';
 
-import { selectAccountMenuOpen, setAccountMenuOpen } from 'modules/dashboard';
-import { resetReduxState } from 'modules/reset';
-import { selectUserDisplayName, selectUserEmail } from 'modules/session';
-import { LOG_IN, DASHBOARD } from 'constants/paths';
-import RefreshIcon from 'components/icons/RefreshIcon';
-import ButtonFunctionality from 'components/ui/ButtonFunction';
-import keyboardOnlyOutline from 'components/style-mixins/keyboardOnlyOutline';
-import activeLighter from 'components/style-mixins/activeLighter';
-import dropShadow from 'components/style-mixins/dropShadow';
-import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
-import verticalScroll from 'components/style-mixins/verticalScroll';
+import { getAuth } from '../../../firebase';
+import { selectAccountMenuOpen, setAccountMenuOpen } from '../../../modules/dashboard';
+import { resetReduxState } from '../../../modules/reset';
+import { selectUserDisplayName, selectUserEmail } from '../../../modules/session';
+import { LOG_IN, DASHBOARD } from '../../../constants/paths';
+import RefreshIcon from '../../icons/RefreshIcon';
+import ButtonFunctionality from '../../ui/ButtonFunction';
+import keyboardOnlyOutline from '../../style-mixins/keyboardOnlyOutline';
+import activeLighter from '../../style-mixins/activeLighter';
+import dropShadow from '../../style-mixins/dropShadow';
+import { mediaVerySmall } from '../../style-mixins/mediaQueries';
+import verticalScroll from '../../style-mixins/verticalScroll';
 
 const duration = 250;
 
@@ -111,7 +111,7 @@ const AccountMenu = ({ history }) => {
   const [visible, setVisible] = useState(accountMenuOpen);
 
   const onLogOut = () => {
-    firebase.auth().signOut()
+    getAuth().signOut()
       .then(() => {
         history.push(LOG_IN);
         dispatch(resetReduxState());

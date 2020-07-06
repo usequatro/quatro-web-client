@@ -5,21 +5,21 @@ import { Box } from 'rebass/styled-components';
 import { withRouter } from 'react-router-dom';
 import invert from 'lodash/invert';
 
-import * as paths from 'constants/paths';
-import * as dashboardTabs from 'constants/dashboardTabs';
-import { setAccountMenuOpen } from 'modules/dashboard';
+import * as paths from '../../../constants/paths';
+import * as dashboardTabs from '../../../constants/dashboardTabs';
+import { setAccountMenuOpen } from '../../../modules/dashboard';
 
-import StyledRouterLink from 'components/ui/StyledRouterLink';
-import HeadingResponsive from 'components/ui/HeadingResponsive';
-import CheckListIcon from 'components/icons/CheckListIcon';
-import HamburgerIcon from 'components/icons/HamburgerIcon';
-import LogoIcon from 'components/icons/Logo';
-import BacklogIcon from 'components/icons/Backlog';
-import BlockedIcon from 'components/icons/Blocked';
-import CalendarIcon from 'components/icons/Calendar';
-import TopFourIcon from 'components/icons/TopFour';
-import ButtonFunction from 'components/ui/ButtonFunction';
-import { mediaVerySmall } from 'components/style-mixins/mediaQueries';
+import StyledRouterLink from '../../ui/StyledRouterLink';
+import HeadingResponsive from '../../ui/HeadingResponsive';
+import CheckListIcon from '../../icons/CheckListIcon';
+import HamburgerIcon from '../../icons/HamburgerIcon';
+import LogoIcon from '../../icons/Logo';
+import BacklogIcon from '../../icons/Backlog';
+import BlockedIcon from '../../icons/Blocked';
+import CalendarIcon from '../../icons/Calendar';
+import TopFourIcon from '../../icons/TopFour';
+import ButtonFunction from '../../ui/ButtonFunction';
+import { mediaVerySmall } from '../../style-mixins/mediaQueries';
 
 const PATHS_TO_DASHBOARD_TABS = invert(paths.DASHBOARD_TABS_TO_PATHS);
 
@@ -79,7 +79,7 @@ const SectionTitle = styled(HeadingResponsive)`
   letter-spacing: ${({ theme }) => theme.letterSpacings.large};
   text-align: center;
   font-weight: bold;
-`
+`;
 
 // @TODO: Figure out a better way to style this header without needing
 // to hard code a pixel width.
@@ -104,7 +104,7 @@ const iconsByTab = {
   [dashboardTabs.BLOCKED]: BlockedIcon,
   [dashboardTabs.COMPLETED]: CalendarIcon,
   default: TopFourIcon,
-}
+};
 
 const DashboardHeader = ({ location }) => {
   const dispatch = useDispatch();

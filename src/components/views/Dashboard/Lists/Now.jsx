@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectNowTasks } from 'modules/tasks';
-import { NOW } from 'constants/dashboardTabs';
+import { selectNowTasks } from '../../../../modules/tasks';
+import { NOW } from '../../../../constants/dashboardTabs';
 
-import Task from 'components/views/Dashboard/Shared/Task';
-import TaskListWorkspace from 'components/views/Dashboard/Shared/TaskListWorkspace';
+import Task from '../Shared/Task';
+import TaskListWorkspace from '../Shared/TaskListWorkspace';
 
 const Now = ({ tasks }) => (
   <TaskListWorkspace

@@ -1,53 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-// import memoize from 'lodash/memoize';
 import debounce from 'lodash/debounce';
-import dayjs from 'dayjs';
 import { Box } from 'rebass/styled-components';
-
-import {
-  getRecurringPresetFromConfig,
-  getRecurringOptionLabel,
-  RECURRING_CONFIG_EVERY_MONDAY,
-  RECURRING_CONFIG_EVERY_WEEKDAY,
-  NO_RECURRENCE_OPTION,
-  EVERY_MONDAY_OPTION,
-  WEEKDAYS_OPTION,
-  CUSTOM_OPTION,
-} from 'util/recurrence';
-
-import {
-  MARKS_IMPORTANT,
-  MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP,
-} from 'constants/importantValues';
-
-import {
-  MARKS_EFFORT,
-  MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP,
-} from 'constants/effortValues';
-
-// import InputGroup from 'components/ui/InputGroup';
-import InputField from 'components/ui/InputField';
-import TransparentInputField from 'components/ui/TransparentInputField';
-import Dropdown from 'components/ui/Dropdown';
-// import HorizontalSelectorField from 'components/ui/HorizontalSelectorField';
-// import ToggleableFieldWrapper from 'components/ui/ToggleableFieldWrapper';
-import Paragraph from 'components/ui/Paragraph';
-import ButtonInline from 'components/ui/ButtonInline';
-import Slider, { SliderThumb } from 'components/ui/Slider';
-import HeadingResponsive from 'components/ui/HeadingResponsive';
-// import LeftHandIcon from 'components/icons/LeftHand';
-import colorSmoothTransitions from 'components/style-mixins/colorSmoothTransitions';
-import { activeOpacity } from 'components/style-mixins/activeLighter';
-
-import BlockersSelector from './BlockersSelector';
-import RecurringPopup from './RecurringPopup';
-
 
 import ReplayIcon from '@material-ui/icons/Replay';
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker
+  KeyboardTimePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import Calendar from 'react-calendar';
@@ -62,13 +21,37 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import 'react-calendar/dist/Calendar.css';
 import IconButton from '@material-ui/core/IconButton';
-// import Dialog from '@material-ui/core/Dialog';
+
+import {
+  RECURRING_CONFIG_EVERY_MONDAY,
+  RECURRING_CONFIG_EVERY_WEEKDAY,
+} from '../../../../util/recurrence';
+
+import {
+  MARKS_IMPORTANT,
+  MARKS_IMPORTANT_VALUE_TO_DISPLAY_LABEL_MAP,
+} from '../../../../constants/importantValues';
+
+import {
+  MARKS_EFFORT,
+  MARKS_EFFORT_VALUE_TO_DISPLAY_LABEL_MAP,
+} from '../../../../constants/effortValues';
+
+import InputField from '../../../ui/InputField';
+import TransparentInputField from '../../../ui/TransparentInputField';
+import Paragraph from '../../../ui/Paragraph';
+import ButtonInline from '../../../ui/ButtonInline';
+import Slider, { SliderThumb } from '../../../ui/Slider';
+import HeadingResponsive from '../../../ui/HeadingResponsive';
+import colorSmoothTransitions from '../../../style-mixins/colorSmoothTransitions';
+import { activeOpacity } from '../../../style-mixins/activeLighter';
+
+import BlockersSelector from './BlockersSelector';
+import RecurringPopup from './RecurringPopup';
 
 const Italic = styled.span`
   font-style: italic;
 `;
-
-
 
 const FieldContainer = styled.div`
   background-color: white;
@@ -94,10 +77,10 @@ const FlexContainer = styled.div`
 
 const FieldTitle = styled(HeadingResponsive).attrs({ fontSize: [3] })`
   color: ${({ theme }) => theme.colors.textPrimary};
-  letter-spacing: ${({ theme }) => theme.letterSpacings.large}
+  letter-spacing: ${({ theme }) => theme.letterSpacings.large};
   text-align: center;
   font-weight: bold;
-`
+`;
 
 const CheckboxFieldTitle = styled(FieldTitle)`
   margin-left: 0.5rem;
@@ -183,8 +166,8 @@ const FormContainer = styled.div`
     ${Checkbox}::after {
       border-color: ${(props) => props.theme.colors.lightBackground};
     }
-  },
-  .react-calendar__tile--active: {
+  }
+  .react-calendar__tile--active {
     background: 'white'
   }
 `;
@@ -199,44 +182,44 @@ const useStyles = makeStyles((theme) => ({
       background: '#414D67',
       display: 'inline-block',
       'border-radius': '10%',
-      height: '3em'
+      height: '3em',
     },
     '& .react-calendar__tile--active:enabled:hover': {
       background: '#414D67',
     },
     '& .react-calendar__tile--active:enabled:focus': {
-      background: '#414D67'
+      background: '#414D67',
     },
     '& .react-calendar__tile--now': {
       display: 'inline-block',
       'border-radius': '10%',
       height: '3em',
-      background: '#EDF3F4'
+      background: '#EDF3F4',
     },
     '& .react-calendar__tile': {
-      height: '3em'
+      height: '3em',
     },
     '& .react-calendar__navigation__label': {
-      'font-weight': 'bold'
-    }
+      'font-weight': 'bold',
+    },
   },
   modal: {
-    display:'flex',
-    alignItems:'center',
-    justifyContent:'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     outline: 0,
     '&:hover': {
-      outline: 'none'
-    }
+      outline: 'none',
+    },
   },
   modalDiv: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor:'white',
+    backgroundColor: 'white',
     outline: 0,
     '&:hover': {
-      outline: 'none'
-    }
+      outline: 'none',
+    },
   },
   button: {
     width: '100%',
@@ -244,15 +227,15 @@ const useStyles = makeStyles((theme) => ({
     height: '90%',
     justifyContent: 'space-between',
     fontSize: '10px',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   iconButtonLabel: {
-    fontSize: '15px'
+    fontSize: '15px',
   },
   timePicker: {
     width: '100%',
     maxWidth: 350,
-    margin: 0
+    margin: 0,
   },
   repeatModal: {
     width: '100%',
@@ -262,7 +245,7 @@ const useStyles = makeStyles((theme) => ({
   listHeaders: {
     display: 'flex',
     flexDirection: 'row',
-    padding: 0
+    padding: 0,
   },
   paperPrimary: {
     padding: theme.spacing(2),
@@ -271,35 +254,27 @@ const useStyles = makeStyles((theme) => ({
   },
   paperSecondaryLeft: {
     padding: theme.spacing(2),
-    'float':'left',
+    float: 'left',
     color: theme.palette.text.secondary,
     fontSize: '.8em',
-    'text-transform': 'none'
+    'text-transform': 'none',
   },
   paperSecondaryRight: {
     padding: theme.spacing(2),
     color: theme.palette.text.secondary,
-    'float': 'right',
+    float: 'right',
     fontSize: '.8em',
-    'text-transform': 'none'
+    'text-transform': 'none',
   },
   repeatText: {
-    marginLeft: '10px'
+    marginLeft: '10px',
   },
   repeatButton: {
-    "&:hover": {
-      backgroundColor: "transparent"
-    }
-  }
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+  },
 }));
-
-const getInitialDueDate = () => dayjs()
-  .add(1, 'day')
-  .hour(9)
-  .startOf('hour')
-  .valueOf();
-
-const OPEN_RECURRENCE_MODAL_OPTION = 'openRecurrenceModal';
 
 // How Important Slider constants
 const DEFAULT_IMPACT = 5;
@@ -329,19 +304,14 @@ const TaskForm = ({
   clearRelativePrioritization,
   recurringConfig,
   setRecurringConfig,
-  removeRecurringConfig,
   openStartDate,
-  handleOpenStartDate,
   handleCloseStartDate,
   handleCancelStartDate,
   openDueDate,
-  handleOpenDueDate,
   handleCloseDueDate,
   handleConfirmStartDate,
   handleConfirmDueDate,
   handleCancelDueDate,
-  setStartDateLabel,
-  setDueDateLabel
 }) => {
   // Visiblity Flags
 
@@ -349,17 +319,15 @@ const TaskForm = ({
   // fallback to creating a new date object and adding
   // the daysToAdd value to it
   const dateHandler = (dateToUse, daysToAdd) => {
-    if(dateToUse !== null) {
+    if (dateToUse !== null) {
       return new Date(dateToUse);
-    } else {
-      const today = new Date();
-      return new Date(
-        today.getFullYear(), today.getMonth(), today.getDate() + daysToAdd, 9, 0, 0
-      );
     }
+    const today = new Date();
+    return new Date(
+      today.getFullYear(), today.getMonth(), today.getDate() + daysToAdd, 9, 0, 0,
+    );
   };
 
-  const [recurringOptionsVisible, setRecurringOptionsVisible] = useState(!!recurringConfig);
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
   const [selectedStartDate, setSelectedStartDate] = useState(dateHandler(scheduledStart, 1));
@@ -378,13 +346,13 @@ const TaskForm = ({
   };
 
   const handleDoneStartDate = () => {
-    var datetime = new Date(
+    const datetime = new Date(
       selectedStartDate.getFullYear(),
       selectedStartDate.getMonth(),
       selectedStartDate.getDate(),
       selectedStartTime.getHours(),
       selectedStartTime.getMinutes(),
-      selectedStartTime.getSeconds()
+      selectedStartTime.getSeconds(),
     );
     setScheduledStart(datetime.getTime());
     handleConfirmStartDate(datetime);
@@ -399,13 +367,13 @@ const TaskForm = ({
   };
 
   const handleDoneDueDate = () => {
-    var datetime = new Date(
+    const datetime = new Date(
       selectedDueDate.getFullYear(),
       selectedDueDate.getMonth(),
       selectedDueDate.getDate(),
       selectedDueTime.getHours(),
       selectedDueTime.getMinutes(),
-      selectedDueTime.getSeconds()
+      selectedDueTime.getSeconds(),
     );
     setDue(datetime.getTime());
     handleConfirmDueDate(datetime);
@@ -432,9 +400,6 @@ const TaskForm = ({
   //   taskNameRef.current.focus();
   // }, []);
 
-  // Recurring Config set up
-  const selectedRecurringOption = getRecurringPresetFromConfig(recurringConfig);
-
   const debouncedSetImpact = debounce(setImpact, 100);
   const debouncedSetEffort = debounce(setEffort, 100);
 
@@ -457,7 +422,7 @@ const TaskForm = ({
         <Paragraph>
           {'⚠️ This task is manually prioritized to be before '}
           <Italic>{taskPrioritizedAheadOfTitle}</Italic>
-          {'.'}
+          .
           <ButtonInline onClick={() => clearRelativePrioritization(id)}>
             Clear customization
           </ButtonInline>
@@ -516,9 +481,9 @@ const TaskForm = ({
                 type="checkbox"
                 value="1"
                 checked={blockersVisible}
-                onChange={event => {
+                onChange={(event) => {
                   if (!event.target.checked) {
-                    dependencies.forEach(({ id }) => removeTaskDependency(id));
+                    dependencies.forEach(({ depId }) => removeTaskDependency(depId));
                   }
                   setBlockersVisible(event.target.checked);
                 }}
@@ -532,7 +497,8 @@ const TaskForm = ({
           </FlexContainer>
         </CheckboxLabel>
 
-        {blockersVisible &&
+        {blockersVisible
+          && (
           <BlockersSelector
             taskId={id}
             dependencies={dependencies}
@@ -540,7 +506,7 @@ const TaskForm = ({
             removeTaskDependency={removeTaskDependency}
             createTaskDependency={createTaskDependency}
           />
-        }
+          )}
       </FieldContainer>
 
       <FieldContainer>
@@ -600,12 +566,12 @@ const TaskForm = ({
             <ListItem button>
               <Button
                 className={classes.button}
-                startIcon={
-                  <IconButton edge="start" color="inherit" classes={{root: classes.repeatButton, label: classes.iconButtonLabel}}>
+                startIcon={(
+                  <IconButton edge="start" color="inherit" classes={{ root: classes.repeatButton, label: classes.iconButtonLabel }}>
                     <ReplayIcon />
                     <small className={classes.repeatText}>Repeat</small>
                   </IconButton>
-                }
+                )}
                 onClick={handleOpenRepeat}
               >
                 {recurringLabel}

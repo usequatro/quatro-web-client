@@ -3,10 +3,10 @@ import styled from 'styled-components';
 import { Box } from 'rebass/styled-components';
 import uuid from 'uuid/v4';
 
-import * as dependencyTypes from 'constants/dependencyTypes';
-import ButtonInline from 'components/ui/ButtonInline';
-import InputField from 'components/ui/InputField';
-// import BooleanCheckbox from 'components/ui/BooleanCheckbox';
+import * as dependencyTypes from '../../../../constants/dependencyTypes';
+import ButtonInline from '../../../ui/ButtonInline';
+import InputField from '../../../ui/InputField';
+// import BooleanCheckbox from '../../../ui/BooleanCheckbox';
 
 import DependencySelectorField from './DependencySelectorField';
 

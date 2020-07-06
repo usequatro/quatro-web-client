@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Text, Box } from 'rebass/styled-components';
 import { Link, withRouter } from 'react-router-dom';
-import * as firebase from 'firebase/app';
 
-import { DASHBOARD, LOG_IN } from 'constants/paths';
-import InputGroup from 'components/ui/InputGroup';
-import InputField from 'components/ui/InputField';
-import InvisibleForm from 'components/ui/InvisibleForm';
+import { getAuth } from '../../../firebase';
+import { DASHBOARD, LOG_IN } from '../../../constants/paths';
+import InputGroup from '../../ui/InputGroup';
+import InputField from '../../ui/InputField';
+import InvisibleForm from '../../ui/InvisibleForm';
 
 import SubmitButton from './SubmitButton';
 import ErrorMessage from './ErrorMessage';
@@ -22,7 +22,7 @@ const SignUp = ({ history }) => {
     event.preventDefault();
     setSubmitting(true);
     // https://firebase.google.com/docs/reference/js/firebase.auth.Auth.html?authuser=0#create-user-with-email-and-password
-    firebase.auth().createUserWithEmailAndPassword(emailAddress, password)
+    getAuth().createUserWithEmailAndPassword(emailAddress, password)
       .then(({ user }) => {
         console.log('[SignUp] User registered, updating information.');
         if (user == null) {
