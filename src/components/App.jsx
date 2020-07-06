@@ -41,9 +41,6 @@ const [Router, routerProps] = isAppFullScreenMode()
 const RouteLoggedOut = withUserLoggedInCondition(false, paths.DASHBOARD)(Route);
 const RouteLoggedIn = withUserLoggedInCondition(true, paths.LOG_IN)(Route);
 
-// Initialize MixPanel with our Key
-mixpanel.init(process.env.REACT_APP_MIXPANEL_KEY);
-
 export default () => (
   <AppStylesWrapper>
     <AppBackground>
