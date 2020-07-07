@@ -5,10 +5,7 @@ import { Box } from 'rebass/styled-components';
 
 import ReplayIcon from '@material-ui/icons/Replay';
 import ScheduleIcon from '@material-ui/icons/Schedule';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-} from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import Calendar from 'react-calendar';
 import Modal from '@material-ui/core/Modal';
@@ -361,7 +358,6 @@ const TaskForm = ({
     }
   };
 
-  const [recurringOptionsVisible, setRecurringOptionsVisible] = useState(!!recurringConfig);
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
   const [selectedStartDate, setSelectedStartDate] = useState(dateHandler(scheduledStart, 1));
