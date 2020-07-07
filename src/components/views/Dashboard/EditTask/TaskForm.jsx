@@ -4,10 +4,8 @@ import debounce from 'lodash/debounce';
 import { Box } from 'rebass/styled-components';
 
 import ReplayIcon from '@material-ui/icons/Replay';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-} from '@material-ui/pickers';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import Calendar from 'react-calendar';
 import Modal from '@material-ui/core/Modal';
@@ -48,6 +46,13 @@ import { activeOpacity } from '../../../style-mixins/activeLighter';
 
 import BlockersSelector from './BlockersSelector';
 import RecurringPopup from './RecurringPopup';
+
+
+// timepicker stuff
+import 'rc-time-picker/assets/index.css';
+import TimePicker from 'rc-time-picker';
+import moment from 'moment';
+
 
 const Italic = styled.span`
   font-style: italic;
@@ -233,14 +238,31 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '15px',
   },
   timePicker: {
+    marginLeft: '6em',
+    width: '100%',
+    border: 0
+  },
+  timePickerPopup: {
+    'z-index': 1301
+  },
+  timeDiv: {
+    display: 'inline-flex',
     width: '100%',
     maxWidth: 350,
     margin: 0,
+  },
+  timeLabel: {
+    paddingTop: '.2em'
   },
   repeatModal: {
     width: '100%',
     maxWidth: 360,
     backgroundColor: 'white',
+  },
+  repeatIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    paddingLeft: '4px'
   },
   listHeaders: {
     display: 'flex',
@@ -328,12 +350,20 @@ const TaskForm = ({
     );
   };
 
+  const timeHandler = (dateToUse) => {
+    if(dateToUse !== null) {
+      return moment(dateToUse);
+    } else {
+      return moment('09:00', 'HH:mm');
+    }
+  };
+
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
   const [blockersVisible, setBlockersVisible] = useState(dependencies.length > 0);
   const [selectedStartDate, setSelectedStartDate] = useState(dateHandler(scheduledStart, 1));
-  const [selectedStartTime, setSelectedStartTime] = useState(dateHandler(scheduledStart, 1));
+  const [selectedStartTime, setSelectedStartTime] = useState(timeHandler(scheduledStart));
   const [selectedDueDate, setSelectedDueDate] = useState(dateHandler(due, 2));
-  const [selectedDueTime, setSelectedDueTime] = useState(dateHandler(due, 2));
+  const [selectedDueTime, setSelectedDueTime] = useState(timeHandler(due));
   const [openRepeat, setOpenRepeat] = useState(false);
   const [recurringLabel, setRecurringLabel] = useState('');
 
@@ -350,10 +380,11 @@ const TaskForm = ({
       selectedStartDate.getFullYear(),
       selectedStartDate.getMonth(),
       selectedStartDate.getDate(),
-      selectedStartTime.getHours(),
-      selectedStartTime.getMinutes(),
-      selectedStartTime.getSeconds(),
+      selectedStartTime.hour(),
+      selectedStartTime.minutes(),
+      selectedStartTime.seconds()
     );
+
     setScheduledStart(datetime.getTime());
     handleConfirmStartDate(datetime);
   };
@@ -371,9 +402,9 @@ const TaskForm = ({
       selectedDueDate.getFullYear(),
       selectedDueDate.getMonth(),
       selectedDueDate.getDate(),
-      selectedDueTime.getHours(),
-      selectedDueTime.getMinutes(),
-      selectedDueTime.getSeconds(),
+      selectedDueTime.hour(),
+      selectedDueTime.minutes(),
+      selectedDueTime.seconds()
     );
     setDue(datetime.getTime());
     handleConfirmDueDate(datetime);
@@ -550,17 +581,22 @@ const TaskForm = ({
           <List component="time-and-repeat" aria-label="">
             <ListItem button>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardTimePicker
-                  margin="normal"
-                  id="time-picker"
-                  label="Time"
-                  value={selectedStartTime}
-                  onChange={handleStartTimeChange}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change time',
-                  }}
-                  className={classes.timePicker}
-                />
+                <div className={classes.timeDiv}>
+                  <div className={classes.repeatIcon}>
+                    <ScheduleIcon />
+                    <small className={classes.repeatText}>Time</small>
+                  </div>
+                  <TimePicker
+                    id='startTimePicker'
+                    showSecond={false}
+                    defaultValue={selectedStartTime}
+                    onChange={handleStartTimeChange}
+                    format={'h:mm a'}
+                    use12Hours
+                    className={classes.timePicker}
+                    popupClassName={classes.timePickerPopup}
+                  />
+                </div>
               </MuiPickersUtilsProvider>
             </ListItem>
             <ListItem button>
@@ -642,17 +678,22 @@ const TaskForm = ({
           <List component="time-and-repeat" aria-label="">
             <ListItem button>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardTimePicker
-                  margin="normal"
-                  id="time-picker"
-                  label="Time"
-                  value={selectedDueTime}
-                  onChange={handleDueTimeChange}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change time',
-                  }}
-                  className={classes.timePicker}
-                />
+                <div className={classes.timeDiv}>
+                  <div className={classes.repeatIcon}>
+                    <ScheduleIcon />
+                    <small className={classes.repeatText}>Time</small>
+                  </div>
+                  <TimePicker
+                    id='dueTimePicker'
+                    showSecond={false}
+                    defaultValue={selectedDueTime}
+                    onChange={handleDueTimeChange}
+                    format={'h:mm a'}
+                    use12Hours
+                    className={classes.timePicker}
+                    popupClassName={classes.timePickerPopup}
+                  />
+                </div>
               </MuiPickersUtilsProvider>
             </ListItem>
           </List>
