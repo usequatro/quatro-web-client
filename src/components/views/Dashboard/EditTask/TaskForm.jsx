@@ -20,6 +20,11 @@ import Paper from '@material-ui/core/Paper';
 import 'react-calendar/dist/Calendar.css';
 import IconButton from '@material-ui/core/IconButton';
 
+// timepicker stuff
+import 'rc-time-picker/assets/index.css';
+import TimePicker from 'rc-time-picker';
+import moment from 'moment';
+
 import {
   RECURRING_CONFIG_EVERY_MONDAY,
   RECURRING_CONFIG_EVERY_WEEKDAY,
@@ -46,12 +51,6 @@ import { activeOpacity } from '../../../style-mixins/activeLighter';
 
 import BlockersSelector from './BlockersSelector';
 import RecurringPopup from './RecurringPopup';
-
-
-// timepicker stuff
-import 'rc-time-picker/assets/index.css';
-import TimePicker from 'rc-time-picker';
-import moment from 'moment';
 
 
 const Italic = styled.span`
@@ -353,9 +352,8 @@ const TaskForm = ({
   const timeHandler = (dateToUse) => {
     if(dateToUse !== null) {
       return moment(dateToUse);
-    } else {
-      return moment('09:00', 'HH:mm');
     }
+    return moment('09:00', 'HH:mm');
   };
 
   const [recurringPopupVisible, setRecurringPopupVisible] = useState(false);
@@ -591,7 +589,7 @@ const TaskForm = ({
                     showSecond={false}
                     defaultValue={selectedStartTime}
                     onChange={handleStartTimeChange}
-                    format={'h:mm a'}
+                    format="h:mm a"
                     use12Hours
                     className={classes.timePicker}
                     popupClassName={classes.timePickerPopup}
@@ -688,7 +686,7 @@ const TaskForm = ({
                     showSecond={false}
                     defaultValue={selectedDueTime}
                     onChange={handleDueTimeChange}
-                    format={'h:mm a'}
+                    format="h:mm a"
                     use12Hours
                     className={classes.timePicker}
                     popupClassName={classes.timePickerPopup}
