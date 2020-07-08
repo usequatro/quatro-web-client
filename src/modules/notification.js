@@ -96,14 +96,14 @@ const showNotification = (
 
 export const showInfoNotification = (
   message,
-  { callbackButton, callbackFunction },
+  { callbackButton, callbackFunction } = {},
 ) => (
   showNotification('info', message, { callbackButton, callbackFunction })
 );
 
 export const showErrorNotification = (
   message,
-  { callbackButton, callbackFunction },
+  { callbackButton, callbackFunction } = {},
 ) => (
   showNotification('error', message, { callbackButton, callbackFunction })
 );

@@ -15,6 +15,8 @@ Use Firebase's CLI to toggle between them with `firebase use`.
 2. Run `npm install`.
 3. Run `npm run start`.
 
+For linting and formatting, make sure you have ESLint and Prettier enabled on your code editor.
+
 ## Deployment
 
 Continuous deployment is wired with GitHub Actions:
