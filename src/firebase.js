@@ -1,5 +1,6 @@
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+import 'firebase/storage';
 import 'firebase/firestore';
 
 /**
@@ -35,6 +36,54 @@ export const getFirestore = () => getFirebase().firestore();
  * @return {firebase.auth.Auth}
  */
 export const getAuth = () => getFirebase().auth();
+
+/**
+ * @return {firebase.storage.Storage}
+ */
+export const getStorage = () => getFirebase().storage();
+
+export const sendEmailVerification = async () => {
+  const user = getAuth().currentUser;
+  if (!user) {
+    throw new Error("Can't send email verification since user isn't logged in");
+  }
+  // @doc: https://firebase.google.com/docs/reference/js/firebase.User#sendemailverification
+  return user.sendEmailVerification();
+};
+
+export const updateUserProfile = async ({ displayName, photoURL }) =>
+  Promise.resolve(getAuth().currentUser)
+    .then((user) => {
+      if (!user) {
+        throw new Error('No logged in user');
+      }
+      return user.updateProfile({ displayName, photoURL });
+    });
+
+export const updateUserEmail = async (email) => Promise.resolve(getAuth().currentUser)
+  .then((user) => {
+    if (!user) {
+      throw new Error('No logged in user');
+    }
+    return user.updateEmail(email);
+  });
+
+export const updateUserPassword = async (newPassword) => Promise.resolve(getAuth().currentUser)
+  .then((user) => {
+    if (!user) {
+      throw new Error('No logged in user');
+    }
+    return user.updatePassword(newPassword);
+  });
+
+export const reauthenticateUser = async (currentPassword) => Promise.resolve(getAuth().currentUser)
+  .then((user) => {
+    if (!user) {
+      throw new Error('No logged in user');
+    }
+    const credential = getFirebase().auth.EmailAuthProvider.credential(user.email, currentPassword);
+    return user.reauthenticateWithCredential(credential);
+  });
 
 // And yes, my friend,  we initialize you the moment you're loaded
 getFirebase();

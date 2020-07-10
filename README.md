@@ -44,8 +44,9 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 - React
 - Redux
-- Styled Components
-- Rebass: basic UI library that can be extended
+- Material-UI
+- Redux Saga (for effects)
+- Styled Components (but Material-UI styling is preferred)
 - React Router
 
 ### Data structures
@@ -53,5 +54,3 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 The easiest way to see the data structures is by opening the Redux Dev Tools while using the app.
 
 In Firebase, we keep tasks represented with 2 entities: `tasks` and `recurringConfigs`. The best way to see this structures is to open [Firestore's console](https://console.firebase.google.com/project/tasket-project/database).
-
-In the Frontend, we break them down into 3 entities: `tasks`, `taskDependencies` and `recurringConfigs` since it's easier to manipulate this way.
