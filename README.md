@@ -9,11 +9,30 @@
 
 Use Firebase's CLI to toggle between them with `firebase use`.
 
-## Local set up
+## Libraries
+
+This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`src`](./src).
+
+Libraries used:
+
+- React.
+- Redux: for global state management. (redux-thunk)
+- Material-UI: for UI components and styling.
+- Redux Saga: for side effects, like triggering autosave.
+- React Router: for navigation.
+- Date-fns: for date and time manipulation.
+
+## Local development
 
 1. Clone the repo
-2. Run `npm install`.
-3. Run `npm run start`.
+1. Clone the file `.env.development` into `.env.local` and adapt it as needed, e.g., remove the Mixpanel ID to disable tracking.
+1. Run `npm install`
+1. Run `npm run start`
+
+Libraries for development
+
+- ESLint. Recommended to use VSCode with ESLint's plugin.
+- Prettier. Recommended to use VSCode with Prettier's plugin and enable _Editor: Format On Save_.
 
 For linting and formatting, make sure you have ESLint and Prettier enabled on your code editor.
 
@@ -36,20 +55,7 @@ First, make sure you have an `.env` file. This file contains production environm
 npm run build-and-deploy
 ```
 
-## Implementation details
-
-This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`src`](./src).
-
-### Libraries the code uses
-
-- React.
-- Redux: for global state management. (redux-thunk)
-- Material-UI: for UI components and styling.
-- Redux Saga: for side effects, like triggering autosave.
-- React Router: for navigation.
-- Date-fns: for date and time manipulation.
-
-### Data structures
+## Project documnetation
 
 The easiest way to see the data structures is by opening the Redux Dev Tools while using the app.
 

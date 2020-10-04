@@ -7,7 +7,6 @@ import { Provider as ReactReduxProvider } from 'react-redux';
 
 import UserLoginListener from './UserLoginListener';
 import ErrorBoundary from './ErrorBoundary';
-import StyleGlobalReset from './StyleGlobalReset';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
 import AppRouting from './AppRouting';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
@@ -27,7 +26,6 @@ const App = () => (
   <ReactReduxProvider store={store}>
     <MaterialThemeProvider theme={muiTheme}>
       <ErrorBoundary>
-        <StyleGlobalReset />
         <CssBaseline />
         <Router {...routerProps}>
           <UserLoginListener />
