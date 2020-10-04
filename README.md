@@ -42,12 +42,12 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Libraries the code uses
 
-- React
-- Redux
-- Material-UI
-- Redux Saga (for effects)
-- Styled Components (but Material-UI styling is preferred)
-- React Router
+- React.
+- Redux: for global state management. (redux-thunk)
+- Material-UI: for UI components and styling.
+- Redux Saga: for side effects, like triggering autosave.
+- React Router: for navigation.
+- Date-fns: for date and time manipulation.
 
 ### Data structures
 
