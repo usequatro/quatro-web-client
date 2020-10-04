@@ -1,13 +1,31 @@
 import { combineReducers } from 'redux';
-import { reducer as tasksReducer, NAMESPACE as tasksNamespace } from './tasks';
-import { reducer as notificationReducer, NAMESPACE as notificationNamespace } from './notification';
+import { all } from 'redux-saga/effects';
+import { reducer as tasksReducer, namespace as tasksNamespace } from './tasks';
+import {
+  reducer as recurringConfigsReducer,
+  namespace as recurringConfigsNamespace,
+} from './recurringConfigs';
 import { reducer as dashboardReducer, NAMESPACE as dashboardNamespace } from './dashboard';
 import { reducer as sessionReducer, NAMESPACE as sessionNamespace } from './session';
+import { reducer as taskFormReducer, NAMESPACE as taskFormNamespace } from './taskForm';
+import { reducer as registrationReducer, NAMESPACE as registrationNamespace } from './registration';
+import {
+  reducer as unsavedChangesReducer,
+  NAMESPACE as unsavedChangesNamespace,
+  sagas as unsavedChangesSagas,
+} from './unsavedChanges';
 
 // eslint-disable-next-line import/prefer-default-export
 export const reducer = combineReducers({
   [dashboardNamespace]: dashboardReducer,
   [tasksNamespace]: tasksReducer,
-  [notificationNamespace]: notificationReducer,
+  [recurringConfigsNamespace]: recurringConfigsReducer,
   [sessionNamespace]: sessionReducer,
+  [taskFormNamespace]: taskFormReducer,
+  [unsavedChangesNamespace]: unsavedChangesReducer,
+  [registrationNamespace]: registrationReducer,
 });
+
+export const sagas = function* rootSaga() {
+  yield all([...unsavedChangesSagas]);
+};

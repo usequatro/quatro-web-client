@@ -1,436 +1,115 @@
 /**
- * Namespace for the data structures to represent tasks
+ * Namespace to keep information of the current session, like user details.
  */
 
 import sortBy from 'lodash/sortBy';
-import omit from 'lodash/omit';
-import uniq from 'lodash/uniq';
-import mapValues from 'lodash/mapValues';
+import cond from 'lodash/cond';
+import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
-import findIndex from 'lodash/findIndex';
-import invert from 'lodash/invert';
-import uuid from 'uuid/v4';
+import { createSelector } from 'reselect';
 
-import createReducer from '../util/createReducer';
-import { trackTaskCreated, taskTaskCompleted } from '../util/tracking';
-import isRequired from '../util/isRequired';
-import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
-import { TASK, FREE_TEXT } from '../constants/dependencyTypes';
-import {
-  showInfoNotification,
-  showErrorNotification,
-  showNetworkErrorNotification,
-  hideNotification,
-} from './notification';
+import calculateTaskScore from '../utils/calculateTaskScore';
+import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
 import { selectUserId } from './session';
+import { fetchListTasks } from '../utils/apiClient';
+import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
-import { DASHBOARD_TABS_TO_PATHS } from '../constants/paths';
-import * as apiClient from '../util/apiClient';
+import * as blockerTypes from '../constants/blockerTypes';
+import { selectRecurringConfigIdByMostRecentTaskId, deleteRecurringConfig } from './recurringConfigs';
+import { TASK_DELETED, TASK_COMPLETED, TASK_UNDO_COMPLETE, TASK_MANUALLY_ARRANGED } from '../constants/mixpanelEvents';
 
 export const NAMESPACE = 'tasks';
 
-const TASK_KEY_DEFAULTS = {
-  effort: null,
-  impact: null,
-  description: '',
-  due: null,
-  scheduledStart: null,
-  completed: null,
-  trashed: null,
-  dependencyIds: [],
-  recurringConfigId: null,
-};
-const TASK_KEYS_FOR_REDUX = {
-  id: true,
-  title: true,
-  effort: true,
-  impact: true,
-  description: true,
-  created: true,
-  due: true,
-  scheduledStart: true,
-  completed: true,
-  score: true,
-  trashed: true,
-  userId: true,
-  prioritizedAheadOf: true,
-  dependencyIds: true,
-  recurringConfigId: true,
-};
-const TASK_KEYS_FOR_API = {
-  title: true,
-  effort: true,
-  impact: true,
-  description: true,
-  created: true,
-  due: true,
-  scheduledStart: true,
-  completed: true,
-  trashed: true,
-  userId: true,
-  blockedBy: true,
-  prioritizedAheadOf: true,
-  recurringConfigId: true,
-};
-
-// Utilities
-
-const generateId = (prefix = '_') => `${prefix}${uuid()}`;
-// const isTemporaryId = id => /^_/.test(id);
-
-const filterTaskKeys = (task, keys) => {
-  const filteredTask = Object.entries(task).reduce((memo, [key, value]) => {
-    if (!keys[key]) {
-      console.warn(`[tasks] Unknown key "${key}" with value "${value}" in task ${task.id}`);
-      return memo;
-    }
-    return { ...memo, [key]: value };
-  }, {});
-  return filteredTask;
-};
-
-const filterTaskForRedux = (task) => (
-  filterTaskKeys(task, TASK_KEYS_FOR_REDUX)
-);
-const filterTaskForApi = (task) => (
-  filterTaskKeys(task, TASK_KEYS_FOR_API)
-);
-
-const normalizeBase = (value, from, to) => (value * to) / from;
-const convertMillisecondsToDays = (time) => time / (1000 * 60 * 60 * 24);
-const getDaysDue = (due) => convertMillisecondsToDays(Math.max(due - Date.now(), 0));
-
-const calculateScore = (impact, effort, due) => {
-  if (!Number.isInteger(impact) || !Number.isInteger(effort)) {
-    return 0;
-  }
-  const normalizedImpact = normalizeBase(impact, 7, 10);
-  const normalizedEffort = normalizeBase(effort, 7, 10);
-
-  const weightenedImpact = normalizedImpact ** 1.5;
-  const weightenedEffort = normalizedEffort ** 1;
-
-  // https://www.wolframalpha.com/input/?i=plot+2%2Fx
-  const daysUntilFactor = due
-    ? 1 + 2 / Math.min(getDaysDue(due), 10000)
-    : 1;
-
-  return (weightenedImpact / weightenedEffort) * daysUntilFactor;
-};
-const addScore = (task) => ({
-  ...task,
-  score: calculateScore(task.impact, task.effort, task.due),
-});
-
-const toInt = (value, fallback) => (
-  !Number.isNaN(Number.parseInt(value, 10))
-    ? Number.parseInt(value, 10)
-    : fallback
-);
-
 // Action types
 
-const SET_TASKS = `${NAMESPACE}/SET_TASKS`;
-const ADD_TASK = `${NAMESPACE}/ADD_TASK`;
-const REMOVE_TASK_FROM_ALL_IDS = `${NAMESPACE}/REMOVE_TASK_FROM_ALL_IDS`;
-const UPDATE_TASK = `${NAMESPACE}/UPDATE_TASK`;
-const UPDATE_TASK_BATCH = `${NAMESPACE}/UPDATE_TASK_BATCH`;
-const RESET_TASKS = `${NAMESPACE}/RESET_TASKS`;
-const UPDATE_TASK_DEPENDENCY = `${NAMESPACE}/UPDATE_TASK_DEPENDENCY`;
-const REMOVE_TASK_DEPENDENCY = `${NAMESPACE}/REMOVE_TASK_DEPENDENCY`;
-const CREATE_TASK_DEPENDENCY = `${NAMESPACE}/CREATE_TASK_DEPENDENCY`;
-const SET_RECURRING_CONFIGS = `${NAMESPACE}/SET_RECURRING_CONFIGS`;
-const CREATE_RECURRING_CONFIG = `${NAMESPACE}/CREATE_RECURRING_CONFIG`;
-const UPDATE_RECURRING_CONFIG = `${NAMESPACE}/UPDATE_RECURRING_CONFIG`;
-const REMOVE_RECURRING_CONFIG = `${NAMESPACE}/REMOVE_RECURRING_CONFIG`;
+const ADD = `${NAMESPACE}/ADD`;
+const SET_MULTIPLE = `${NAMESPACE}/SET_MULTIPLE`;
+export const UPDATE = `${NAMESPACE}/UPDATE`;
+const DELETE = `${NAMESPACE}/DELETE`;
 
 // Reducers
 
 const INITIAL_STATE = {
-  tasks: {
-    byId: {},
-    allIds: [],
-  },
-  taskDependencies: {
-    byId: {},
-    allIds: [],
-  },
-  recurringConfigs: {
-    byId: {},
-    allIds: [],
-  },
+  allIds: [],
+  byId: {},
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [UPDATE_TASK]: (
-    state,
-    { payload: { taskId, updates } },
-  ) => ({
-    ...state,
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        [taskId]: filterTaskForRedux(addScore({
-          ...state.tasks.byId[taskId],
-          ...updates,
-        })),
-      },
-    },
-  }),
-  [UPDATE_TASK_BATCH]: (
-    state,
-    { payload: { updatesByTaskId } },
-  ) => ({
-    ...state,
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        ...mapValues(updatesByTaskId, (updates, taskId) => (
-          filterTaskKeys(addScore({
-            ...state.tasks.byId[taskId],
-            ...updates,
-          }), TASK_KEYS_FOR_REDUX)
-        )),
-      },
-    },
-  }),
-  [SET_TASKS]: (
-    state,
-    action,
-  ) => ({
-    ...state,
-    tasks: {
-      allIds: uniq([
-        ...state.tasks.allIds,
-        ...action.payload.tasks.allIds,
-      ]),
-      byId: {
-        ...state.tasks.byId,
-        ...mapValues(action.payload.tasks.byId, (task) => (
-          filterTaskKeys(addScore(task), TASK_KEYS_FOR_REDUX)
-        )),
-      },
-    },
-    taskDependencies: {
-      allIds: [
-        ...state.taskDependencies.allIds,
-        ...action.payload.taskDependencies.allIds,
-      ],
-      byId: {
-        ...state.taskDependencies.byId,
-        ...action.payload.taskDependencies.byId,
-      },
-    },
-  }),
-  [ADD_TASK]: (state, action) => ({
-    ...state,
-    tasks: {
-      allIds: [...state.tasks.allIds, action.payload.task.id],
-      byId: {
-        ...state.tasks.byId,
-        [action.payload.task.id]: filterTaskKeys(
-          addScore(action.payload.task),
-          TASK_KEYS_FOR_REDUX,
-        ),
-      },
-    },
-  }),
-  [REMOVE_TASK_FROM_ALL_IDS]: (state, { payload: taskId }) => ({
-    ...state,
-    tasks: {
-      ...state.tasks,
-      allIds: state.tasks.allIds.filter((id) => id !== taskId),
-    },
-  }),
   [RESET]: () => ({ ...INITIAL_STATE }),
-  [RESET_TASKS]: () => ({ ...INITIAL_STATE }),
-  [UPDATE_TASK_DEPENDENCY]: (
-    state,
-    { payload: { id, updates } },
-  ) => ({
+  [ADD]: (state, { payload: { id, task } }) => ({
     ...state,
-    taskDependencies: {
-      ...state.taskDependencies,
-      byId: {
-        ...state.taskDependencies.byId,
-        [id]: {
-          ...state.taskDependencies.byId[id],
-          ...updates,
-        },
-      },
-    },
+    allIds: [...state.allIds, id],
+    byId: { ...state.byId, [id]: task },
   }),
-  [REMOVE_TASK_DEPENDENCY]: (
-    state,
-    { payload: { dependencyId, taskId } },
-  ) => ({
+  [SET_MULTIPLE]: (state, { payload }) => ({
     ...state,
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        [taskId]: {
-          ...state.tasks.byId[taskId],
-          dependencyIds: state.tasks.byId[taskId].dependencyIds.filter((id) => id !== dependencyId),
-        },
-      },
-    },
-    taskDependencies: {
-      ...state.taskDependencies,
-      allIds: state.taskDependencies.allIds.filter((id) => id !== dependencyId),
-    },
+    allIds: payload.map(([id]) => id),
+    byId: payload.reduce(
+      (memo, [id, task]) => ({
+        ...memo,
+        [id]: task,
+      }),
+      {},
+    ),
   }),
-  [CREATE_TASK_DEPENDENCY]: (
-    state,
-    { payload: dependency },
-  ) => ({
+  [UPDATE]: (state, { payload: { id, updates } }) => ({
     ...state,
-    taskDependencies: {
-      ...state.taskDependencies,
-      allIds: [...state.taskDependencies.allIds, dependency.id],
-      byId: {
-        ...state.taskDependencies.byId,
-        [dependency.id]: {
-          ...dependency,
-        },
-      },
-    },
-    tasks: {
-      ...state.tasks,
-      byId: {
-        ...state.tasks.byId,
-        [dependency.taskId]: {
-          ...state.tasks.byId[dependency.taskId],
-          dependencyIds: [
-            ...state.tasks.byId[dependency.taskId].dependencyIds,
-            dependency.id,
-          ],
-        },
-      },
-    },
+    byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
   }),
-  [SET_RECURRING_CONFIGS]: (
-    state,
-    { payload },
-  ) => ({
+  [DELETE]: (state, { payload: { id } }) => ({
     ...state,
-    recurringConfigs: {
-      allIds: uniq([
-        ...state.recurringConfigs.allIds,
-        ...payload.allIds,
-      ]),
-      byId: {
-        ...state.recurringConfigs.byId,
-        ...payload.byId,
-      },
-    },
-  }),
-  [UPDATE_RECURRING_CONFIG]: (
-    state,
-    { payload },
-  ) => ({
-    ...state,
-    recurringConfigs: {
-      ...state.recurringConfigs,
-      byId: {
-        ...state.recurringConfigs.byId,
-        [payload.id]: {
-          ...state.recurringConfigs.byId[payload.id],
-          ...payload.updates,
-        },
-      },
-    },
-  }),
-  [CREATE_RECURRING_CONFIG]: (
-    state,
-    { payload },
-  ) => ({
-    ...state,
-    recurringConfigs: {
-      ...state.recurringConfigs,
-      allIds: [
-        ...state.recurringConfigs.allIds,
-        payload.id,
-      ],
-      byId: {
-        ...state.recurringConfigs.byId,
-        [payload.id]: payload.properties,
-      },
-    },
-  }),
-  [REMOVE_RECURRING_CONFIG]: (
-    state,
-    { payload },
-  ) => ({
-    ...state,
-    recurringConfigs: {
-      ...state.recurringConfigs,
-      allIds: state.recurringConfigs.allIds.filter((id) => id !== payload),
-      byId: omit(state.recurringConfigs.byId, payload),
-    },
+    allIds: state.allIds.filter((tid) => tid !== id),
+    byId: { ...state.byId, [id]: null },
   }),
 });
 
 // Selectors
 
-export const selectTask = (state, id) => state[NAMESPACE].tasks.byId[id];
+export const namespace = 'tasks';
+export const selectTask = (state, id) => state[namespace].byId[id];
+export const selectTaskTitle = (state, id) => get(selectTask(state, id), 'title');
+export const selectTaskDescription = (state, id) => get(selectTask(state, id), 'description');
+export const selectTaskScore = (state, id) => get(selectTask(state, id), 'score');
+export const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed');
+export const selectTaskScheduledStart = (state, id) => get(selectTask(state, id), 'scheduledStart');
+export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
+export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
+export const selectTaskPrioritizedAheadOf = (state, id) =>
+  get(selectTask(state, id), 'prioritizedAheadOf');
 
-const selectNonTrashedTasks = (state) => (
-  state[NAMESPACE].tasks.allIds
-    .map((id) => state[NAMESPACE].tasks.byId[id])
-    .filter((task) => task.trashed == null)
-);
+export const selectAllTasks = (state) =>
+  state[namespace].allIds.map((id) => [id, state[namespace].byId[id]]);
 
-const selectTaskDependency = (state, id) => state[NAMESPACE].taskDependencies.byId[id];
+const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
+  const now = Date.now();
+  const upcomingTasks = allTasks.filter(
+    ([, task]) => task.scheduledStart == null || task.scheduledStart <= now,
+  );
+  return upcomingTasks;
+});
 
-const isDependencyApplicable = (state, dependency) => {
-  if (dependency.type === TASK) {
-    const dependencyTask = selectTask(state, dependency.config.taskId);
-    return dependencyTask && dependencyTask.completed == null;
-  }
-  return true;
-};
+export const selectAllTasksOrderedAlphabetically = createSelector(selectAllTasks, (allTasks) => {
+  return sortBy(allTasks, ([, task]) => `${task.title}`.toLowerCase());
+});
 
-const isNewUnsavedDependency = (dependency) => (
-  dependency.type === TASK && dependency.config.taskId === null
-);
-
-export const selectTaskDependencies = (state, ids = null) => (
-  (ids || state[NAMESPACE].taskDependencies.allIds)
-    .map((id) => selectTaskDependency(state, id))
-    .filter((dependency) => (
-      isDependencyApplicable(state, dependency)
-    || isNewUnsavedDependency(dependency)
-    ))
-);
-
-const selectIsTaskBlocked = (state, taskId) => {
-  const task = selectTask(state, taskId);
-  const dependencies = task.dependencyIds.map((id) => selectTaskDependency(state, id));
-  const nonCompletedDependencies = dependencies
-    .filter((dependency) => isDependencyApplicable(state, dependency));
-  return nonCompletedDependencies.length > 0;
-};
-
-const applyRelativePrioritization = (tasks) => {
-  const taskBaseToAheadOf = tasks.reduce((memo, task) => {
+/**
+ * @param {[string, Object]} tasks
+ * @return {[string, Object]}
+ */
+const sortByCustomPrioritization = (tasks) => {
+  const taskBaseToAheadOf = tasks.reduce((memo, [id, task]) => {
     if (task.prioritizedAheadOf) {
       return {
         ...memo,
-        [task.prioritizedAheadOf]: [
-          ...(memo[task.prioritizedAheadOf] || []),
-          task.id,
-        ],
+        [task.prioritizedAheadOf]: [...(memo[task.prioritizedAheadOf] || []), id],
       };
     }
     return memo;
   }, {});
 
-  const topTaskIds = tasks.filter((task) => !task.prioritizedAheadOf).map((task) => task.id);
+  const topTaskIds = tasks.filter(([, task]) => !task.prioritizedAheadOf).map(([id]) => id);
 
   let updatedTasksIds = topTaskIds;
   const maxIterations = 10;
@@ -448,9 +127,16 @@ const applyRelativePrioritization = (tasks) => {
     iterations += 1;
   } while (updatedTasksIds.length < tasks.length && iterations < maxIterations);
 
-  const taskIdsMissing = difference(tasks.map((task) => task.id), updatedTasksIds);
+  if (iterations === maxIterations) {
+    // eslint-disable-next-line no-console
+    console.warn('Max iterations for custom prioritization reached');
+  }
+
+  const allTaskIds = tasks.map(([id]) => id);
+  const taskIdsMissing = difference(allTaskIds, updatedTasksIds);
 
   if (taskIdsMissing.length) {
+    // eslint-disable-next-line no-console
     console.warn('Failed to prioritize all tasks.', taskIdsMissing);
   }
 
@@ -458,622 +144,221 @@ const applyRelativePrioritization = (tasks) => {
     ? [...updatedTasksIds, ...taskIdsMissing]
     : updatedTasksIds;
 
-  const tasksById = keyBy(tasks, 'id');
-  return prioritizedTaskIds
-    .map((id) => tasksById[id]);
+  const tasksById = keyBy(tasks, '0');
+  return prioritizedTaskIds.map((id) => tasksById[id]);
 };
 
-const selectNonCompletedTasks = (state) => (
-  selectNonTrashedTasks(state)
-    .filter((task) => task.completed == null)
+const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomingTasks) => {
+  const tasksByScore = sortBy(upcomingTasks, '1.score').reverse();
+  const tasksWithCustomPrioritization = sortByCustomPrioritization(tasksByScore);
+  return tasksWithCustomPrioritization;
+});
+
+const selectAllUpcomingTaskIdsAsMap = createSelector(selectAllUpcomingTasks, (tasks) =>
+  tasks.reduce(
+    (memo, [id]) => ({
+      ...memo,
+      [id]: true,
+    }),
+    {},
+  ),
 );
 
-const selectUpcomingSortedTasks = (state) => {
+const filterActiveBlockerDescriptors = (blockedBy, allTaskIdsMap) => {
+  const filterFunction = cond([
+    [(blockerDescriptor) => blockerDescriptor.type === blockerTypes.FREE_TEXT, () => true],
+    [
+      (blockerDescriptor) => blockerDescriptor.type === blockerTypes.TASK,
+      (blockerDescriptor) => {
+        const blockerTaskId = blockerDescriptor.config.taskId;
+        return Boolean(allTaskIdsMap[blockerTaskId]);
+      },
+    ],
+    [() => true, () => false],
+  ]);
+  return blockedBy.filter(filterFunction);
+};
+
+export const selectTaskActiveBlockerDescriptors = (state, id) => {
+  const allTaskIdsMap = selectAllUpcomingTaskIdsAsMap(state);
+  const blockedBy = selectTaskBlockedBy(state, id);
+  return filterActiveBlockerDescriptors(blockedBy || [], allTaskIdsMap);
+};
+
+export const selectNowTasks = createSelector(
+  [selectUpcomingSortedTasks, selectAllUpcomingTaskIdsAsMap],
+  (tasks, taskIdsMap) =>
+    tasks
+      // exclude blocked ones
+      .filter(
+        ([, task]) => filterActiveBlockerDescriptors(task.blockedBy || [], taskIdsMap).length === 0,
+      )
+      // limit
+      .slice(0, NOW_TASKS_LIMIT),
+);
+
+export const selectBacklogTasks = createSelector(
+  [selectUpcomingSortedTasks, selectAllUpcomingTaskIdsAsMap],
+  (tasks, taskIdsMap) =>
+    tasks
+      // exclude blocked ones
+      .filter(
+        ([, task]) => filterActiveBlockerDescriptors(task.blockedBy || [], taskIdsMap).length === 0,
+      )
+      // limit
+      .slice(NOW_TASKS_LIMIT),
+);
+
+export const selectHasMoveToBacklog = createSelector(selectBacklogTasks, tasks => tasks.length > 1);
+
+export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
-  const tasks = selectNonCompletedTasks(state)
-    .filter((task) => task.scheduledStart == null || task.scheduledStart <= now)
-    .filter((task) => !selectIsTaskBlocked(state, task.id));
-  const tasksSortedByScore = sortBy(tasks, 'score').reverse();
-  return applyRelativePrioritization(tasksSortedByScore);
-};
+  const scheduledTasks = allTasks.filter(
+    ([, task]) => task.scheduledStart != null && task.scheduledStart > now,
+  );
+  return sortBy(scheduledTasks, 'scheduledStart');
+});
 
-export const selectNowTasks = (state) => {
-  const sortedTasks = selectUpcomingSortedTasks(state);
-  return sortedTasks.slice(0, NOW_TASKS_LIMIT);
-};
-export const selectNextTasks = (state) => {
-  const sortedTasks = selectUpcomingSortedTasks(state);
-  return sortedTasks.slice(NOW_TASKS_LIMIT);
-};
-export const selectBlockedTasks = (state) => {
-  const tasks = selectNonCompletedTasks(state);
-  const blockedTasks = tasks.filter(({ id }) => selectIsTaskBlocked(state, id));
-  return sortBy(blockedTasks, 'score').reverse();
-};
-export const selectScheduledTasks = (state) => {
-  const now = Date.now();
-  const tasks = selectNonCompletedTasks(state)
-    .filter((task) => task.scheduledStart != null && task.scheduledStart > now);
-  return sortBy(tasks, 'scheduledStart');
-};
-export const selectCompletedTasks = (state) => {
-  const tasks = state[NAMESPACE].tasks.allIds
-    .map((id) => state[NAMESPACE].tasks.byId[id])
-    .filter((task) => task.completed != null);
-  return sortBy(tasks, 'completed').reverse();
-};
-export const selectDependenciesBlockingGivenTask = (state, blockedTaskId) => {
-  const task = selectTask(state, blockedTaskId);
-  const { dependencyIds } = task;
-
-  const dependencies = (dependencyIds || []).map((id) => selectTaskDependency(state, id));
-
-  const dependenciesAndTasks = dependencies.reduce((memo, dependency) => {
-    if (dependency.type === FREE_TEXT) {
-      return [
-        ...memo,
-        [dependency, null],
-      ];
-    } if (dependency.type === TASK) {
-      const dependencyTask = selectTask(state, dependency.config.taskId);
-      if (dependencyTask) {
-        return [
-          ...memo,
-          [dependency, dependencyTask],
-        ];
-      }
-      return memo;
-    }
-    throw new Error(`Dependency type not supported ${dependency.type}`);
-  }, []);
-
-  return dependenciesAndTasks;
-};
-export const selectUndeletedTask = (state, id) => {
-  const task = selectTask(state, id);
-  return !task || task.trashed ? undefined : task;
-};
-export const selectTasksForDependencySelection = (state, id) => (
-  selectNonCompletedTasks(state)
-    .filter((task) => task.id !== id)
-);
-const selectTasksPrioritizedAheadOf = (state, id) => (
-  selectNonCompletedTasks(state)
-    .filter((task) => task.prioritizedAheadOf === id)
+export const selectBlockedTasks = createSelector(
+  [selectAllUpcomingTasks, selectAllUpcomingTaskIdsAsMap],
+  (tasks, taskIdsMap) => {
+    const blockedTasks = tasks.filter(
+      ([, task]) => filterActiveBlockerDescriptors(task.blockedBy, taskIdsMap).length > 0,
+    );
+    return sortBy(blockedTasks, 'score').reverse();
+  },
 );
 
-const containsTaskId = (tasks, id) => tasks.filter((task) => task.id === id).length > 0;
+const selectTasksPrioritizedAheadOf = (state, id) =>
+  selectAllTasks(state).filter((task) => task.prioritizedAheadOf === id);
 
-export const selectSectionForTask = (state, taskId) => {
-  const task = selectTask(state, taskId);
-  switch (true) {
-    case task.completed != null:
-      return dashboardTabs.COMPLETED;
-    case containsTaskId(selectNowTasks(state), taskId):
-      return dashboardTabs.NOW;
-    case containsTaskId(selectNextTasks(state), taskId):
-      return dashboardTabs.NEXT;
-    case containsTaskId(selectBlockedTasks(state), taskId):
-      return dashboardTabs.BLOCKED;
-    case containsTaskId(selectScheduledTasks(state), taskId):
-      return dashboardTabs.SCHEDULED;
-    default:
-      return undefined;
-  }
-};
-
-export const selectRecurringConfig = (state, id) => state[NAMESPACE].recurringConfigs.byId[id];
-
-const selectUncompletedTasksWithRecurringConfigId = (state, rcId) => {
-  const nonCompletedTasks = selectNonCompletedTasks(state);
-  return nonCompletedTasks.filter(({ recurringConfigId }) => recurringConfigId === rcId);
-};
+export const selectTaskDashboardTab = (state, taskId) =>
+  cond([
+    [() => selectNowTasks(state).find(([id]) => id === taskId), () => dashboardTabs.NOW],
+    [() => selectBacklogTasks(state).find(([id]) => id === taskId), () => dashboardTabs.BACKLOG],
+    [
+      () => selectScheduledTasks(state).find(([id]) => id === taskId),
+      () => dashboardTabs.SCHEDULED,
+    ],
+    [() => selectBlockedTasks(state).find(([id]) => id === taskId), () => dashboardTabs.BLOCKED],
+    [() => true, () => undefined],
+  ])();
 
 // Actions
 
-const normalizeTasks = (rawTasks) => {
-  const tasksAllIds = rawTasks.map((task) => task.id);
-  const tasksById = rawTasks.reduce((memo, { blockedBy, ...task }) => ({
-    ...memo,
-    [task.id]: {
-      id: task.id,
-      dependencyIds: [],
-      ...task,
-    },
-  }), {});
-
-  const tasks = {
-    allIds: tasksAllIds,
-    byId: tasksById,
-  };
-
-  const taskDependencies = {
-    byId: {},
-    allIds: [],
-  };
-
-  rawTasks.forEach(({ id, blockedBy }) => {
-    (blockedBy || []).forEach((dependency) => {
-      const dependencyId = generateId();
-      const dependencyWithBackwardsRelationship = {
-        id: dependencyId,
-        taskId: id,
-        ...dependency,
-      };
-
-      taskDependencies.allIds.push(dependencyId);
-      taskDependencies.byId[dependencyId] = dependencyWithBackwardsRelationship;
-
-      tasksById[id].dependencyIds.push(dependencyId);
-    });
-  });
-
-  return { tasks, taskDependencies };
-};
-
-const serializeTask = (state, id) => {
-  const normalizedTask = selectTask(state, id);
-  const {
-    dependencyIds,
-    id: taskId,
-    score,
-    ...restData
-  } = normalizedTask;
-
-  const blockedBy = dependencyIds
-    .map((dependencyId) => selectTaskDependency(state, dependencyId))
-    .map((dependency) => omit(dependency, ['id', 'taskId']));
-
-  const serializedTask = {
-    ...restData,
-    blockedBy,
-  };
-
-  return serializedTask;
-};
-
-export const setTasks = (tasks) => {
-  const parsedTasks = tasks.map((task) => {
-    const impact = toInt(task.impact, null);
-    const effort = toInt(task.effort, null);
-    return {
-      ...task,
-      blockedBy: (task.blockedBy || []).filter(Boolean),
-      impact,
-      effort,
-      id: `${task.id}`,
-    };
-  });
-  const normalizedEntities = normalizeTasks(parsedTasks);
-  return {
-    type: SET_TASKS,
-    payload: { ...normalizedEntities },
-  };
-};
-
-const normalizeRecurringConfigs = (recurringConfigs) => (
-  recurringConfigs.reduce((memo, rc) => (rc === null || !rc.id ? memo : {
-    allIds: [
-      ...memo.allIds,
-      rc.id,
-    ],
-    byId: {
-      ...memo.byId,
-      [rc.id]: rc,
-    },
-  }), { allIds: [], byId: {} })
-);
-
-export const setRecurringConfigs = (recurringConfigs) => {
-  const normalizedEntities = normalizeRecurringConfigs(recurringConfigs);
-  return {
-    type: SET_RECURRING_CONFIGS,
-    payload: { ...normalizedEntities },
-  };
-};
-
-export const updateTaskRecurringConfig = (taskId, updates) => (dispatch, getState) => {
-  const state = getState();
-  const task = selectTask(state, taskId);
-
-  const { recurringConfigId } = task;
-
-  if (!recurringConfigId) {
-    throw new Error("Tried to update recurring config but task doesn't have recurring config id");
-  }
-
-  dispatch({
-    type: UPDATE_RECURRING_CONFIG,
-    payload: {
-      id: recurringConfigId,
-      updates,
-    },
-  });
-
-  const recurringConfig = selectRecurringConfig(getState(), recurringConfigId);
-  apiClient.updateRecurringConfig(recurringConfigId, recurringConfig);
-};
-
-export const updateTask = (taskId, updates) => (dispatch, getState) => {
-  dispatch({
-    type: UPDATE_TASK,
-    payload: { taskId, updates },
-  });
-
-  // If the task has a recurring config associated, we should update its reference date.
-  if ({}.hasOwnProperty.call(updates, 'scheduledStart')) {
-    const state = getState();
-    const task = selectTask(state, taskId);
-    const recurringConfig = task.recurringConfigId
-      ? selectRecurringConfig(state, task.recurringConfigId)
-      : null;
-    if (recurringConfig) {
-      dispatch(updateTaskRecurringConfig(taskId, {
-        referenceDate: updates.scheduledStart || Date.now(),
-      }));
-    }
-  }
-
-  return apiClient.updateTask(taskId, filterTaskForApi(updates));
-};
-export const updateTaskBatch = (updatesByTaskId) => (dispatch) => {
-  dispatch({
-    type: UPDATE_TASK_BATCH,
-    payload: { updatesByTaskId },
-  });
-  return apiClient.updateTaskBatch(
-    mapValues(updatesByTaskId, (updates) => filterTaskForApi(updates)),
-  );
-};
-
-export const setRelativePrioritization = (sourceTaskId, sourceIndex, destinationIndex) => (
-  (dispatch, getState) => {
-    const realDestinationIndex = sourceIndex < destinationIndex
-      ? destinationIndex + 1
-      : destinationIndex;
-
-    const state = getState();
-    const allTasks = selectUpcomingSortedTasks(state);
-
-    if (realDestinationIndex >= allTasks.length || !allTasks[realDestinationIndex]) {
-      dispatch(showErrorNotification('Operation not supported'));
-      return;
-    }
-
-    const targetTaskId = allTasks[realDestinationIndex].id;
-
-    if (targetTaskId === sourceTaskId) {
-      return; // nothing to do on this case, the task is already where it needs to be.
-    }
-
-    // If there are other tasks depending on the one that is going to be moved,
-    // we're going to associate them to the next one, so that they stay on the same spot.
-    const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
-    const taskAfter = allTasks[sourceIndex + 1];
-
-    const updatesByTaskId = {
-      [sourceTaskId]: { prioritizedAheadOf: targetTaskId },
-      ...tasksPrioritizedBefore.reduce((memo, task) => ({
-        ...memo,
-        [task.id]: { prioritizedAheadOf: taskAfter.id },
-      }), {}),
-    };
-
-    dispatch(updateTaskBatch(updatesByTaskId));
-  }
-);
-
-const updateRelativePrioritizationToNext = (taskId, offset) => (dispatch, getState) => {
-  const state = getState();
-
-  const tasksRelativelyPrioritized = selectTasksPrioritizedAheadOf(state, taskId);
-  const allOriginalTasks = tasksRelativelyPrioritized.length
-    ? selectUpcomingSortedTasks(state)
-    : [];
-  const taskIndex = findIndex(allOriginalTasks, (task) => task.id === taskId);
-  const newTaskIndex = taskIndex + offset;
-  const newTaskAfter = allOriginalTasks[newTaskIndex];
-
-  tasksRelativelyPrioritized.forEach((task) => {
-    dispatch(updateTask(task.id, {
-      prioritizedAheadOf: newTaskAfter ? newTaskAfter.id : null,
-    }));
-  });
-
-  // return undo.
-  return () => () => {
-    tasksRelativelyPrioritized.forEach((task) => {
-      dispatch(updateTask(task.id, {
-        prioritizedAheadOf: task.prioritizedAheadOf,
-      }));
-    });
-  };
-};
-
-const removeRecurringConfig = (recurringConfigId) => (dispatch) => {
-  dispatch({
-    type: REMOVE_RECURRING_CONFIG,
-    payload: recurringConfigId,
-  });
-  return apiClient.deleteRecurringConfig(recurringConfigId);
-};
-
-export const removeTaskRecurringConfig = (taskId) => (dispatch, getState) => {
-  const state = getState();
-  const task = selectTask(state, taskId);
-  const { recurringConfigId } = task;
-
-  if (recurringConfigId == null) {
-    throw new Error("Tried to remove recurring config but task isn't recurring");
-  }
-
-  dispatch(updateTask(taskId, { recurringConfigId: null }));
-  dispatch(removeRecurringConfig(recurringConfigId));
-};
-
-export const moveToTrashTask = (taskId) => (dispatch, getState) => {
-  const task = selectTask(getState(), taskId);
-
-  // Relative prioritization: Any task that was set to go before this one should now go after next.
-  dispatch(updateRelativePrioritizationToNext(taskId, +1));
-
-  dispatch({
-    type: REMOVE_TASK_FROM_ALL_IDS,
-    payload: taskId,
-  });
-
-  const notificationUid = dispatch(showInfoNotification('Task deleted'));
-  return dispatch(updateTask(taskId, { trashed: Date.now() }))
-    .then(() => {
-      if (task.recurringConfigId) {
-        const otherTasksOnSameRecurringConfig = selectUncompletedTasksWithRecurringConfigId(
-          getState(),
-          task.recurringConfigId,
-        );
-        if (otherTasksOnSameRecurringConfig.length === 0) {
-          return dispatch(removeRecurringConfig(task.recurringConfigId));
-        }
-      }
-      return undefined;
-    })
-    .catch((error) => {
-      console.warn(error);
-      dispatch(hideNotification(notificationUid));
-      dispatch(showNetworkErrorNotification());
-    });
-};
-
-export const removeTaskFromAllIds = (taskId) => ({
-  type: REMOVE_TASK_FROM_ALL_IDS,
-  payload: taskId,
-});
-
-export const undoCompletedTask = (taskId) => (dispatch) => (
-  dispatch(updateTask(taskId, { completed: null }))
-);
-
-export const completeTask = (taskId) => (dispatch, getState) => {
-  const task = selectTask(getState(), taskId);
-
-  // Relative prioritization: Any task that was set to go before this one should now go after next.
-  const undoPrioritizationChange = dispatch(updateRelativePrioritizationToNext(taskId, +1));
-
-  const notificationUid = dispatch(showInfoNotification('Task complete', {
-    callbackButton: 'Undo',
-    callbackFunction: () => () => {
-      dispatch(undoCompletedTask(taskId));
-      dispatch(undoPrioritizationChange());
-    },
-  }));
-
-  return dispatch(updateTask(taskId, { completed: Date.now() }))
-    .then(() => {
-      taskTaskCompleted(task.title);
-    })
-    .catch((error) => {
-      console.warn(error);
-      dispatch(hideNotification(notificationUid));
-      dispatch(showNetworkErrorNotification());
-    });
-};
-
-export const loadRecurringConfigs = (ids) => (dispatch, getState) => {
+export const loadTasks = () => async (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);
   if (!userId) {
-    throw new Error('[loadRecurringConfigs] No userId');
+    throw new Error('[tasks:loadTasks] No userId');
   }
-  return apiClient.fetchRecurringConfigs(userId)
-    .then((recurringConfigs) => {
-      const idsMap = invert(ids);
-      const filteredRecurringConfigs = recurringConfigs.filter(({ id }) => !!idsMap[id]);
-      dispatch(setRecurringConfigs(filteredRecurringConfigs));
-    });
-};
-
-export const loadTasks = (completed) => (dispatch, getState) => {
-  const state = getState();
-  const userId = selectUserId(state);
-  if (!userId) {
-    throw new Error('[loadTasks] No userId');
-  }
-  const fetcher = completed
-    ? apiClient.fetchCompletedTasks
-    : apiClient.fetchNonCompletedTasks;
-
-  return fetcher(userId)
-    .then((tasks) => {
-      dispatch(setTasks(tasks));
-      return tasks;
-    });
-};
-
-export const resetTasks = () => ({ type: RESET_TASKS });
-
-export const persistTask = (id) => (dispatch, getState) => {
-  const state = getState();
-  const serializedTask = serializeTask(state, id);
-  return apiClient.updateTask(
+  const results = await fetchListTasks(userId);
+  const resultsWithScore = results.map(([id, task]) => [
     id,
-    filterTaskForApi(serializedTask),
-  );
-};
-
-export const updateTaskDependency = (id, updates) => (dispatch, getState) => {
-  dispatch({
-    type: UPDATE_TASK_DEPENDENCY,
-    payload: {
-      id,
-      updates,
+    {
+      ...task,
+      score: calculateTaskScore(task.impact, task.effort, task.due),
     },
-  });
-  const state = getState();
-  const dependency = selectTaskDependency(state, id);
-  return dispatch(persistTask(dependency.taskId));
+  ]);
+  dispatch({ type: SET_MULTIPLE, payload: resultsWithScore });
+  return results;
 };
 
-export const removeTaskDependency = (id) => (dispatch, getState) => {
-  const state = getState();
-  const dependency = selectTaskDependency(state, id);
-
-  dispatch({
-    type: REMOVE_TASK_DEPENDENCY,
-    payload: {
-      taskId: dependency.taskId,
-      dependencyId: id,
+export const addTask = (id, task) => ({
+  type: ADD,
+  payload: {
+    id,
+    task: {
+      ...task,
+      score: calculateTaskScore(task.impact, task.effort, task.due),
     },
-  });
-
-  return dispatch(persistTask(dependency.taskId));
-};
-
-// create doesn't save to the API at the moment because for adding it needs to be modified
-export const createTaskDependency = (dependency) => ({
-  type: CREATE_TASK_DEPENDENCY,
-  payload: dependency,
+  },
 });
 
-export const navigateToTabForTask = (taskId, history) => (dispatch, getState) => {
-  const tab = selectSectionForTask(getState(), taskId);
-  if (tab && DASHBOARD_TABS_TO_PATHS[tab]) {
-    history.push(DASHBOARD_TABS_TO_PATHS[tab]);
+export const updateTask = (id, updates) => ({ type: UPDATE, payload: { id, updates } });
+
+export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
+  dispatch,
+  getState,
+  { mixpanel },
+) => {
+  const state = getState();
+
+  const allTasks = [...selectNowTasks(state), ...selectBacklogTasks(state)];
+  const sourceTaskId = get(allTasks, [sourceIndex, '0']);
+  if (!sourceTaskId) {
+    throw new Error(`No source task found with index ${sourceIndex}`);
   }
-};
 
-export const clearRelativePrioritization = (taskId) => updateTask(taskId, {
-  prioritizedAheadOf: null,
-});
+  if (destinationIndex >= allTasks.length || !allTasks[destinationIndex]) {
+    throw new Error(`Movement not supported with destination index ${destinationIndex}`);
+  }
 
-export const createTaskRecurringConfig = (taskId, properties) => (dispatch, getState) => {
-  const state = getState();
-  const task = selectTask(state, taskId);
+  const targetTaskId = get(allTasks, [destinationIndex, '0']);
+  if (!targetTaskId) {
+    throw new Error(`No target task found for destination index ${destinationIndex}`);
+  }
 
-  const temporaryId = `_${uuid()}`;
+  if (targetTaskId === sourceTaskId) {
+    // eslint-disable-next-line no-console
+    console.log('Nothing to do, target and source are the same');
+    return; // nothing to do on this case, the task is already where it needs to be.
+  }
 
-  // Important to add the reference date for all recurring tasks that happen every few days/weeks.
-  const propertiesWithReferenceDate = {
-    ...properties,
-    referenceDate: task.scheduledStart || Date.now(),
-  };
+  const sourceTask = get(allTasks, [sourceIndex, '1']);
+  if (sourceTask.prioritizedAheadOf === targetTaskId) {
+    // eslint-disable-next-line no-console
+    console.log('Nothing to do, task is already prioritized ahead of that one');
+    return;
+  }
 
-  dispatch({
-    type: CREATE_RECURRING_CONFIG,
-    payload: {
-      id: temporaryId,
-      properties: propertiesWithReferenceDate,
-    },
+  // If there are other tasks depending on the one that is going to be moved,
+  // we're going to associate them to the next one, so that they stay on the same spot.
+  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
+  const taskAfter = allTasks[sourceIndex + 1];
+
+  dispatch(updateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId }));
+  tasksPrioritizedBefore.forEach((task) => {
+    dispatch(updateTask(task.id, { prioritizedAheadOf: taskAfter.id }));
   });
 
-  apiClient.createRecurringConfig({
-    ...propertiesWithReferenceDate,
-    userId: selectUserId(state),
-  })
-    .then(({ id: finalRecurringConfigId }) => {
-      dispatch({
-        type: CREATE_RECURRING_CONFIG,
-        payload: {
-          id: finalRecurringConfigId,
-          properties: propertiesWithReferenceDate,
-        },
-      });
-      dispatch(updateTask(taskId, { recurringConfigId: finalRecurringConfigId }));
-      dispatch({
-        type: REMOVE_RECURRING_CONFIG,
-        payload: temporaryId,
-      });
-    });
+  mixpanel.track(TASK_MANUALLY_ARRANGED);
 };
 
-export const addTask = (
-  newTask,
-  dependencies,
-  recurringConfig,
-  history,
-) => (dispatch, getState) => {
-  const {
-    temporaryId = isRequired('temporaryId'),
-    title = isRequired('title'),
-    effort = isRequired('effort'),
-    impact = isRequired('impact'),
-    description = isRequired('description'),
-    ...restAttributes
-  } = newTask;
+export const clearRelativePrioritization = (id) => updateTask(id, { prioritizedAheadOf: null });
 
+export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
+  dispatch(updateTask(id, { completed: Date.now() }));
+
+  const timeout = setTimeout(() => {
+    dispatch({ type: DELETE, payload: { id } });
+    mixpanel.track(TASK_COMPLETED);
+  }, 1000);
+
+  // Return function to cancel the completion
+  return () => {
+    clearTimeout(timeout);
+    dispatch(updateTask(id, { completed: null }));
+  }
+}
+
+export const undoCompleteTask = (id, task) => (dispatch, _, { mixpanel }) => {
+  dispatch(addTask(id, task));
+  dispatch(updateTask(id, { completed: null }));
+
+  mixpanel.track(TASK_UNDO_COMPLETE);
+}
+
+export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
+  dispatch(updateTask(id, { trashed: Date.now() }));
+  dispatch({ type: DELETE, payload: { id } });
+
+  // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
+  const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
+  if (recurringConfigId) {
+    dispatch(deleteRecurringConfig(recurringConfigId));
+  }
 
-  const task = {
-    ...TASK_KEY_DEFAULTS,
-    ...restAttributes,
-    id: temporaryId,
-    title,
-    effort,
-    impact,
-    description,
-    completed: null,
-    created: Date.now(),
-    userId: selectUserId(state),
-    dependencyIds: dependencies.map(({ id }) => id),
-  };
-
-  dispatch({
-    type: ADD_TASK,
-    payload: {
-      task: filterTaskKeys(task, TASK_KEYS_FOR_REDUX),
-    },
-  });
-  dependencies.map((dependency) => dispatch(createTaskDependency(dependency)));
-
-  dispatch(navigateToTabForTask(temporaryId, history));
-
-  const taskWithoutId = omit(task, ['id']);
-  return apiClient.createTask(filterTaskForApi(taskWithoutId))
-    .then(({ id: finalId }) => {
-      dispatch(removeTaskFromAllIds(temporaryId));
-      dispatch({
-        type: ADD_TASK,
-        payload: {
-          task: {
-            ...task,
-            id: finalId,
-          },
-        },
-      });
-      dependencies.forEach((dependency) => {
-        dispatch(updateTaskDependency(dependency.id, {
-          ...dependency,
-          taskId: finalId,
-        }));
-      });
-
-      if (recurringConfig) {
-        dispatch(createTaskRecurringConfig(finalId, recurringConfig));
-      }
-
-      trackTaskCreated(task.title);
-    })
-    .catch((error) => {
-      console.warn(error);
-      dispatch(showNetworkErrorNotification());
-      dispatch(removeTaskFromAllIds(temporaryId));
-    });
-};
+  mixpanel.track(TASK_DELETED);
+}
