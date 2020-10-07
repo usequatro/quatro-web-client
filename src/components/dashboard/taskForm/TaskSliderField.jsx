@@ -18,6 +18,9 @@ const QuatroSlider = withStyles((theme) => ({
     color: theme.palette.common.white,
     border: `solid 1px ${theme.palette.secondary.main}`,
   },
+  markLabel: {
+    top: '40px',
+  },
 }))(Slider);
 
 // eslint-disable-next-line react/prop-types
@@ -51,7 +54,13 @@ const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) =>
     <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
       {label}
     </Typography>
-    <Typography gutterBottom color="primary" variant="body1" component="p">
+    <Typography
+      gutterBottom
+      color="primary"
+      variant="body1"
+      style={{ marginBottom: '1rem' }}
+      component="p"
+    >
       {getValueText(value)}
     </Typography>
     <Box px={3}>
