@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import parse from 'date-fns/parse'
-import formatFunction from 'date-fns/format'
+import parse from 'date-fns/parse';
+import formatFunction from 'date-fns/format';
 
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
@@ -40,7 +41,10 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'auto',
   },
   buttonLabel: {
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  dateTime: {
+    marginLeft: '10rem',
   },
 }));
 
@@ -57,7 +61,7 @@ const parseSafe = (value, format, fallback) => {
   } catch (error) {
     return fallback;
   }
-}
+};
 
 const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
   const classes = useStyles();
@@ -87,18 +91,22 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
   return (
     <>
       <Button
+        fullWidth
         startIcon={<QueryBuilderRoundedIcon />}
+        endIcon={<ArrowForwardIosIcon />}
         onClick={() => setOpen(true)}
         ref={anchor}
         classes={{
           label: classes.buttonLabel,
         }}
       >
-        {dateTime
-          ? formatFunction(dateTime, format)
-          : displayFallback}
+        <Typography align="flex-start" component="p" variant="p">
+          Time
+        </Typography>
+        <Box className={classes.dateTime}>
+          {dateTime ? formatFunction(dateTime, format) : displayFallback}
+        </Box>
       </Button>
-
       <Popover
         open={open}
         onClose={handleChangesDone}
@@ -171,7 +179,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
         </Box>
       </Popover>
     </>
-  )
+  );
 };
 
 TimePicker.propTypes = {

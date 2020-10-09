@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
 import DialogContent from '@material-ui/core/DialogContent';
+import Divider from '@material-ui/core/Divider';
 
 import DateFnsUtils from '@date-io/date-fns';
 import { Calendar, MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -61,7 +62,7 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
           />
         </Box>
       </DialogContent>
-
+      <Divider light />
       <DialogActions>
         <Box flexGrow={1}>
           <LabeledIconButton
@@ -97,10 +98,10 @@ DateTimeDialog.propTypes = {
   value: PropTypes.number,
   onChangeCommitted: PropTypes.func.isRequired,
   initialDate: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-}
+};
 
 DateTimeDialog.defaultProps = {
   value: null,
-}
+};
 
 export default DateTimeDialog;
