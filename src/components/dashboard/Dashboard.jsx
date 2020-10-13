@@ -8,8 +8,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Hidden from '@material-ui/core/Hidden';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles} from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';
+import Box from '@material-ui/core/Box';
 
 import BottomToolbar from './navigation/BottomToolbar';
 import NavigationSidebar from './navigation/NavigationSidebar';
@@ -49,7 +50,25 @@ const useStyles = makeStyles((theme) => ({
   navigationBackdrop: {
     zIndex: theme.zIndex.drawer - 1,
   },
+  xsPosition: {
+    [theme.breakpoints.down('xs')]: {
+      bottom: 120,
+    },
+  },
+  snackbarStyle:{
+    background: theme.palette.background.secondary,
+    borderRadius: 30,
+    color:'white',
+  }
 }));
+
+const ColorButton = withStyles(() => ({
+  root: {
+    borderRadius: 30,
+    borderColor: '#ffff',
+    color: '#ffff',
+  },
+}))(Button);
 
 const tabsShowingTaskList = [
   dashboardTabs.NOW,
@@ -144,19 +163,26 @@ const Dashboard = () => {
         <TaskDialog />
 
         <Snackbar
+          className={classes.xsPosition}
+          ContentProps={{
+          className:classes.snackbarStyle
+          }}
           open={snackbarData.open}
-        >
-          <>
-            <div>
-              <p>🎉 Task Completed!</p>
-              <Button 
-                onClick={() => {
-                  dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
-                }}
-                variant="contained">Undo</Button>
-            </div>
-          </>
-        </Snackbar>
+          message=" 🎉 Task Completed!"
+          action={(
+            <Box display="flex" flexDirection="row" m={1}> 
+            <ColorButton 
+              size="small"
+              onClick={() => {
+              dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+              }}
+              variant="outlined"
+            >
+               Undo
+            </ColorButton>
+            </Box>
+          )}
+        />
       </div>
     </div>
   );
