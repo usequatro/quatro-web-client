@@ -7,12 +7,10 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
 import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import Hidden from '@material-ui/core/Hidden';
 import { makeStyles, withStyles} from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import Box from '@material-ui/core/Box';
 
-import BottomToolbar from './navigation/BottomToolbar';
 import NavigationSidebar from './navigation/NavigationSidebar';
 import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
@@ -166,9 +164,10 @@ const Dashboard = () => {
           {renderContent()}
         </Paper>
 
-        <Hidden smUp>
+         {/* uncomment for bringing back bottom nav on mobile */}
+         {/* <Hidden smUp>
           <BottomToolbar />
-        </Hidden>
+         </Hidden>  */}
 
         <TaskDialog />
 
@@ -180,8 +179,8 @@ const Dashboard = () => {
           open={snackbarData.open}
           message={snackbarData.message}
           action={(
-            <Box display="flex" flexDirection="row" m={1}> 
-            <ColorButton 
+            <Box display="flex" flexDirection="row" m={1}>
+            <ColorButton
               size="small"
               onClick={() => {
                 dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
