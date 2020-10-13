@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 import TaskView from './TaskView';
 import {
+  selectTask,
   selectTaskTitle,
   selectTaskDescription,
   selectTaskScore,
@@ -14,9 +15,13 @@ import {
   completeTask,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setEditTaskDialogId } from '../../../modules/dashboard';
+import {
+  setEditTaskDialogId,
+  setSnackbarData
+} from '../../../modules/dashboard';
 
 const Task = ({ id, position, component, highlighted, showBlockers }) => {
+  const task = useSelector(state => selectTask(state, id));
   const title = useSelector(state => selectTaskTitle(state, id));
   const description = useSelector(state => selectTaskDescription(state, id));
   const score = useSelector(state => selectTaskScore(state, id));
@@ -29,9 +34,14 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
   const dispatch = useDispatch();
   const handleClick = useCallback(() => dispatch(setEditTaskDialogId(id)), [id, dispatch]);
 
+  const showSnackbar = (tid) => {    
+    dispatch(setSnackbarData({ open: true, id: tid, task: task}));
+  };
+
   const cancelCompletion = useRef();
   const handleComplete = useCallback((tid) => {
     if (!completed) {
+      showSnackbar(tid);
       cancelCompletion.current = dispatch(completeTask(tid));
     } else if (cancelCompletion) {
       cancelCompletion.current();

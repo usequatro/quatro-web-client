@@ -5,9 +5,11 @@ import cond from 'lodash/cond';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
+import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Hidden from '@material-ui/core/Hidden';
 import { makeStyles } from '@material-ui/core/styles';
+import Snackbar from '@material-ui/core/Snackbar';
 
 import BottomToolbar from './navigation/BottomToolbar';
 import NavigationSidebar from './navigation/NavigationSidebar';
@@ -21,7 +23,9 @@ import {
   loadDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
+  selectSnackbarData
 } from '../../modules/dashboard';
+import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
@@ -71,6 +75,7 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const dashboardReadyForInitialFetch = useSelector(selectDashboadReadyForInitialFetch);
+  const snackbarData = useSelector(selectSnackbarData);
   const activeTab = useSelector(selectDashboardActiveTab);
 
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
@@ -137,6 +142,21 @@ const Dashboard = () => {
         </Hidden>
 
         <TaskDialog />
+
+        <Snackbar
+          open={snackbarData.open}
+        >
+          <>
+            <div>
+              <p>🎉 Task Completed!</p>
+              <Button 
+                onClick={() => {
+                  dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+                }}
+                variant="contained">Undo</Button>
+            </div>
+          </>
+        </Snackbar>
       </div>
     </div>
   );

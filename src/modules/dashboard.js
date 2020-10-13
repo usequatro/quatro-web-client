@@ -23,6 +23,7 @@ const ERROR = 'error';
 
 const SET_STATUS = `${NAMESPACE}/SET_STATUS`;
 const SET_ACCOUNT_MENU_OPEN = `${NAMESPACE}/SET_ACCOUNT_MENU_OPEN`;
+const SET_SNACKBAR_DATA = `${NAMESPACE}/SET_SNACKBAR_DATA`;
 const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
 const SET_NEW_TASK_DIALOG_OPEN = `${NAMESPACE}/SET_NEW_TASK_DIALOG_OPEN`;
 const SET_EDIT_TASK_DIALOG_ID = `${NAMESPACE}/SET_EDIT_TASK_DIALOG_ID`;
@@ -37,6 +38,7 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
+  snackbarData: {open: false, id: null, task: null}
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -47,6 +49,10 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_ACCOUNT_MENU_OPEN]: (state, { payload: accountMenuOpen }) => ({
     ...state,
     accountMenuOpen,
+  }),
+  [SET_SNACKBAR_DATA]: (state, { payload: snackbarData }) => ({
+    ...state,
+    snackbarData,
   }),
   [SET_ACTIVE_TAB]: (state, { payload }) => ({ ...state, activeTab: payload }),
   [SET_NEW_TASK_DIALOG_OPEN]: (state, { payload }) => ({ ...state, newTaskDialogOpen: payload }),
@@ -60,6 +66,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 export const selectDashboadReadyForInitialFetch = (state) => state[NAMESPACE].status === INITIAL;
 export const selectDashboadIsFetching = (state) => state[NAMESPACE].status === LOADING;
 export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
+export const selectSnackbarData = (state) => state[NAMESPACE].snackbarData;
 export const selectDashboardActiveTab = (state) => state[NAMESPACE].activeTab;
 export const selectNewTaskDialogOpen = (state) => state[NAMESPACE].newTaskDialogOpen;
 export const selectEditTaskDialogId = (state) => state[NAMESPACE].editTaskDialogId;
@@ -70,6 +77,11 @@ export const selectHighlightedTaskId = (state) => state[NAMESPACE].highlightedTa
 export const setAccountMenuOpen = (accountMenuOpen) => ({
   type: SET_ACCOUNT_MENU_OPEN,
   payload: accountMenuOpen,
+});
+
+export const setSnackbarData = (snackbarData) => ({
+  type: SET_SNACKBAR_DATA,
+  payload: snackbarData,
 });
 
 export const setDashboardActiveTab = (tab) => ({
