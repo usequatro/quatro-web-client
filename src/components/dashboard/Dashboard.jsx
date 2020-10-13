@@ -24,7 +24,8 @@ import {
   loadDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
-  selectSnackbarData
+  selectSnackbarData,
+  setSnackbarData
 } from '../../modules/dashboard';
 import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
@@ -94,7 +95,6 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const dashboardReadyForInitialFetch = useSelector(selectDashboadReadyForInitialFetch);
-  const snackbarData = useSelector(selectSnackbarData);
   const activeTab = useSelector(selectDashboardActiveTab);
 
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
@@ -108,6 +108,16 @@ const Dashboard = () => {
       setNavigationOpen(false);
     }
   }, [location.pathname, navigationOpen, previousPathname]);
+
+  // Snackbar
+  const snackbarData = useSelector(selectSnackbarData);
+  useEffect(() => {
+    if (snackbarData.open) {
+      setTimeout(() => {
+        dispatch(setSnackbarData({ open: false, message:"", id: null, task: null}));
+      }, 5000);
+    }
+  }, [snackbarData])
 
   useEffect(() => {
     window.onbeforeunload =
@@ -168,13 +178,14 @@ const Dashboard = () => {
           className:classes.snackbarStyle
           }}
           open={snackbarData.open}
-          message=" 🎉 Task Completed!"
+          message={snackbarData.message}
           action={(
             <Box display="flex" flexDirection="row" m={1}> 
             <ColorButton 
               size="small"
               onClick={() => {
-              dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+                dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+                dispatch(setSnackbarData({ open: false, message:"", id: null, task: null}));
               }}
               variant="outlined"
             >

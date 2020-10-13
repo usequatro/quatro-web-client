@@ -38,7 +38,7 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
-  snackbarData: {open: false, id: null, task: null}
+  snackbarData: { open: false, message: "", id: null, task: null }
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
