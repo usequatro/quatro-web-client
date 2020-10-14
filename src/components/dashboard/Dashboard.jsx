@@ -117,7 +117,7 @@ const Dashboard = () => {
         dispatch(resetSnackbar());
       }, 5000);
     }
-  }, [snackbarData])
+  }, [dispatch, snackbarData])
 
   useEffect(() => {
     window.onbeforeunload =

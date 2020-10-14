@@ -34,14 +34,14 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
   const dispatch = useDispatch();
   const handleClick = useCallback(() => dispatch(setEditTaskDialogId(id)), [id, dispatch]);
 
-  const showSnackbar = (tid) => {   
+  const showSnackbar = useCallback((tid) => {
     dispatch(setSnackbarData({
       open: true,
       message:"🎉 Task Completed!",
       id: tid,
       task
     }));
-  };
+  },[dispatch, task]);
 
   const cancelCompletion = useRef();
   const handleComplete = useCallback((tid) => {
@@ -51,7 +51,7 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
     } else if (cancelCompletion) {
       cancelCompletion.current();
     }
-  }, [dispatch, completed]);
+  }, [dispatch, completed, showSnackbar]);
 
   return (
     <TaskView
