@@ -24,6 +24,7 @@ const ERROR = 'error';
 const SET_STATUS = `${NAMESPACE}/SET_STATUS`;
 const SET_ACCOUNT_MENU_OPEN = `${NAMESPACE}/SET_ACCOUNT_MENU_OPEN`;
 const SET_SNACKBAR_DATA = `${NAMESPACE}/SET_SNACKBAR_DATA`;
+const RESET_SNACKBAR = `${NAMESPACE}/RESET_SNACKBAR`;
 const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
 const SET_NEW_TASK_DIALOG_OPEN = `${NAMESPACE}/SET_NEW_TASK_DIALOG_OPEN`;
 const SET_EDIT_TASK_DIALOG_ID = `${NAMESPACE}/SET_EDIT_TASK_DIALOG_ID`;
@@ -54,6 +55,10 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     snackbarData,
   }),
+  [RESET_SNACKBAR]: (state) => ({
+    ...state,
+    snackbarData: INITIAL_STATE.snackbarData,
+  }),
   [SET_ACTIVE_TAB]: (state, { payload }) => ({ ...state, activeTab: payload }),
   [SET_NEW_TASK_DIALOG_OPEN]: (state, { payload }) => ({ ...state, newTaskDialogOpen: payload }),
   [SET_EDIT_TASK_DIALOG_ID]: (state, { payload }) => ({ ...state, editTaskDialogId: payload }),
@@ -81,6 +86,11 @@ export const setAccountMenuOpen = (accountMenuOpen) => ({
 
 export const setSnackbarData = (snackbarData) => ({
   type: SET_SNACKBAR_DATA,
+  payload: snackbarData,
+});
+
+export const resetSnackbar = (snackbarData) => ({
+  type: RESET_SNACKBAR,
   payload: snackbarData,
 });
 

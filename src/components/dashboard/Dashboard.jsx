@@ -25,7 +25,7 @@ import {
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
-  setSnackbarData
+  resetSnackbar
 } from '../../modules/dashboard';
 import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
@@ -114,7 +114,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (snackbarData.open) {
       setTimeout(() => {
-        dispatch(setSnackbarData({ open: false, message:"", id: null, task: null}));
+        dispatch(resetSnackbar());
       }, 5000);
     }
   }, [snackbarData])
@@ -185,7 +185,7 @@ const Dashboard = () => {
               size="small"
               onClick={() => {
                 dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
-                dispatch(setSnackbarData({ open: false, message:"", id: null, task: null}));
+                dispatch(resetSnackbar());
               }}
               variant="outlined"
             >

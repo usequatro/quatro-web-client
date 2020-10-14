@@ -34,8 +34,13 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
   const dispatch = useDispatch();
   const handleClick = useCallback(() => dispatch(setEditTaskDialogId(id)), [id, dispatch]);
 
-  const showSnackbar = (tid) => {    
-    dispatch(setSnackbarData({ open: true, message:"🎉 Task Completed!", id: tid, task: task}));
+  const showSnackbar = (tid) => {   
+    dispatch(setSnackbarData({
+      open: true,
+      message:"🎉 Task Completed!",
+      id: tid,
+      task
+    }));
   };
 
   const cancelCompletion = useRef();
