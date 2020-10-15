@@ -203,7 +203,7 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
                   window.location.reload();
                 }}
               >
-                Logout
+                Log out
               </MenuItem>
             </Menu>
           </Box>
