@@ -171,7 +171,7 @@ const getBlockerTitle = cond([
 
 const RepeatButtonDisabledTooltip = ({ mounted, children }) =>
   mounted ? (
-    <Tooltip title="Add a Start Date first" enterDelay={0}>
+    <Tooltip title="Add a Start Date to enable" enterDelay={0}>
       <span>{children}</span>
     </Tooltip>
   ) : (
