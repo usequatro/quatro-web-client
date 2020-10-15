@@ -7,45 +7,19 @@ import { withStyles } from '@material-ui/core/styles';
 
 const QuatroSlider = withStyles((theme) => ({
   thumb: {
-    width: '2rem',
-    height: '2rem',
-    marginTop: '-1rem',
-    marginLeft: '-1rem',
-    fontSize: '1.3rem',
+    width: '1.3rem',
+    height: '1.3rem',
+    marginTop: '-0.6rem',
+    marginLeft: '-0.7rem',
     // emoji alignment
     paddingTop: '3px',
     paddingLeft: '1px',
     color: theme.palette.common.white,
-    border: `solid 1px ${theme.palette.secondary.main}`,
+    border: `solid 1px ${theme.palette.primary.light}`,
   },
 }))(Slider);
 
 // eslint-disable-next-line react/prop-types
-const QuatroSliderThumbnal = ({ style, className, ...props }) => (
-  <>
-    {/* HACK! We render 2 thumbnails. The first is a fake at the beginning of the slider */}
-    <span
-      {...props}
-      tabIndex={-1}
-      style={{ ...(style || {}), left: 0 }}
-      className={(className || '')
-        .split(' ') // eslint-disable-line react/prop-types
-        .filter((c) => !/focusVisible|active/.test(c))
-        .join(' ')}
-    >
-      <span role="img" aria-label="Indicator" style={{ transform: 'scale(-1, 1)' }}>
-        🤚
-      </span>
-    </span>
-
-    <span {...props} className={className} style={style}>
-      <span role="img" aria-label="Indicator">
-        🤚
-      </span>
-    </span>
-  </>
-);
-
 const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) => (
   <>
     <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
@@ -69,7 +43,6 @@ const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) =>
           // console.log(values, newValue);
           onChange(newValue);
         }}
-        ThumbComponent={QuatroSliderThumbnal}
       />
     </Box>
   </>
