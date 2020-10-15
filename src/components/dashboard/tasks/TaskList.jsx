@@ -136,7 +136,8 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-      <Hidden xsDown>
+     {/* uncomment for bringing back bottom nav on mobile */}
+      {/* <Hidden xsDown> */}
         <Tooltip title="Create task (Space bar)" enterDelay={1000}>
           <Fab
             aria-label="Create task"
@@ -147,7 +148,7 @@ const TaskList = forwardRef((_, ref) => {
             <AddIcon fontSize="large" />
           </Fab>
         </Tooltip>
-      </Hidden>
+      {/* </Hidden> */}
     </Box>
   );
 });

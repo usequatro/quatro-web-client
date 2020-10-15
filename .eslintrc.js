@@ -27,5 +27,6 @@ module.exports = {
     'max-len': 'warn',
     'react-hooks/exhaustive-deps': 'warn',
     'react/jsx-indent': 'off', // prettier handles
+    'react/jsx-wrap-multilines': 'off', // prettier handles
   },
 };

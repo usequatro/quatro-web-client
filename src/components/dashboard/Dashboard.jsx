@@ -7,12 +7,10 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
 import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import Hidden from '@material-ui/core/Hidden';
-import { makeStyles, withStyles} from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import Box from '@material-ui/core/Box';
 
-import BottomToolbar from './navigation/BottomToolbar';
 import NavigationSidebar from './navigation/NavigationSidebar';
 import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
@@ -25,7 +23,7 @@ import {
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
-  resetSnackbar
+  resetSnackbar,
 } from '../../modules/dashboard';
 import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
@@ -56,11 +54,11 @@ const useStyles = makeStyles((theme) => ({
       bottom: 120,
     },
   },
-  snackbarStyle:{
+  snackbarStyle: {
     background: theme.palette.background.secondary,
     borderRadius: 30,
-    color:'white',
-  }
+    color: 'white',
+  },
 }));
 
 const ColorButton = withStyles(() => ({
@@ -117,7 +115,7 @@ const Dashboard = () => {
         dispatch(resetSnackbar());
       }, 5000);
     }
-  }, [dispatch, snackbarData])
+  }, [dispatch, snackbarData]);
 
   useEffect(() => {
     window.onbeforeunload =
@@ -166,33 +164,34 @@ const Dashboard = () => {
           {renderContent()}
         </Paper>
 
-        <Hidden smUp>
+        {/* uncomment for bringing back bottom nav on mobile */}
+        {/* <Hidden smUp>
           <BottomToolbar />
-        </Hidden>
+         </Hidden>  */}
 
         <TaskDialog />
 
         <Snackbar
           className={classes.xsPosition}
           ContentProps={{
-          className:classes.snackbarStyle
+            className: classes.snackbarStyle,
           }}
           open={snackbarData.open}
           message={snackbarData.message}
-          action={(
-            <Box display="flex" flexDirection="row" m={1}> 
-            <ColorButton 
-              size="small"
-              onClick={() => {
-                dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
-                dispatch(resetSnackbar());
-              }}
-              variant="outlined"
-            >
-               Undo
-            </ColorButton>
+          action={
+            <Box display="flex" flexDirection="row" m={1}>
+              <ColorButton
+                size="small"
+                onClick={() => {
+                  dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+                  dispatch(resetSnackbar());
+                }}
+                variant="outlined"
+              >
+                Undo
+              </ColorButton>
             </Box>
-          )}
+          }
         />
       </div>
     </div>
