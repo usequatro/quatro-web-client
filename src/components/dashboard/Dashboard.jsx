@@ -5,9 +5,12 @@ import cond from 'lodash/cond';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
+import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Hidden from '@material-ui/core/Hidden';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles} from '@material-ui/core/styles';
+import Snackbar from '@material-ui/core/Snackbar';
+import Box from '@material-ui/core/Box';
 
 import BottomToolbar from './navigation/BottomToolbar';
 import NavigationSidebar from './navigation/NavigationSidebar';
@@ -21,7 +24,10 @@ import {
   loadDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
+  selectSnackbarData,
+  resetSnackbar
 } from '../../modules/dashboard';
+import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
@@ -45,7 +51,25 @@ const useStyles = makeStyles((theme) => ({
   navigationBackdrop: {
     zIndex: theme.zIndex.drawer - 1,
   },
+  xsPosition: {
+    [theme.breakpoints.down('xs')]: {
+      bottom: 120,
+    },
+  },
+  snackbarStyle:{
+    background: theme.palette.background.secondary,
+    borderRadius: 30,
+    color:'white',
+  }
 }));
+
+const ColorButton = withStyles(() => ({
+  root: {
+    borderRadius: 30,
+    borderColor: '#ffff',
+    color: '#ffff',
+  },
+}))(Button);
 
 const tabsShowingTaskList = [
   dashboardTabs.NOW,
@@ -84,6 +108,16 @@ const Dashboard = () => {
       setNavigationOpen(false);
     }
   }, [location.pathname, navigationOpen, previousPathname]);
+
+  // Snackbar
+  const snackbarData = useSelector(selectSnackbarData);
+  useEffect(() => {
+    if (snackbarData.open) {
+      setTimeout(() => {
+        dispatch(resetSnackbar());
+      }, 5000);
+    }
+  }, [dispatch, snackbarData])
 
   useEffect(() => {
     window.onbeforeunload =
@@ -137,6 +171,29 @@ const Dashboard = () => {
         </Hidden>
 
         <TaskDialog />
+
+        <Snackbar
+          className={classes.xsPosition}
+          ContentProps={{
+          className:classes.snackbarStyle
+          }}
+          open={snackbarData.open}
+          message={snackbarData.message}
+          action={(
+            <Box display="flex" flexDirection="row" m={1}> 
+            <ColorButton 
+              size="small"
+              onClick={() => {
+                dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
+                dispatch(resetSnackbar());
+              }}
+              variant="outlined"
+            >
+               Undo
+            </ColorButton>
+            </Box>
+          )}
+        />
       </div>
     </div>
   );
