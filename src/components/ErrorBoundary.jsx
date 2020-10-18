@@ -22,8 +22,10 @@ class ErrorBoundary extends React.Component {
       return (
         <Box>
           <Typography>
-            {'There\'s been an error '}
-            <a href="/" target="_self">Reload app</a>
+            {"There's been an error "}
+            <a href="/" target="_self">
+              Reload app
+            </a>
           </Typography>
         </Box>
       );

@@ -6,7 +6,9 @@ import { selectRecurringConfigByMostRecentTaskId } from '../../../modules/recurr
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 
 const TaskRecurringLabel = memo(({ id }) => {
-  const recurringConfig = useSelector((state) => selectRecurringConfigByMostRecentTaskId(state, id));
+  const recurringConfig = useSelector((state) =>
+    selectRecurringConfigByMostRecentTaskId(state, id),
+  );
   return recurringConfig ? getUserFacingRecurringText(recurringConfig) : '';
 });
 

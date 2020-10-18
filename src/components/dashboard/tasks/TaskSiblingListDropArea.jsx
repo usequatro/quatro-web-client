@@ -33,10 +33,13 @@ const TaskSiblingListDropArea = ({ isDraggingOver, title }) => {
 
   return (
     <Zoom in>
-      <div className={[
-        classes.droppablePlaceholderArea,
-        isDraggingOver && classes.droppableDraggingOver,
-      ].filter(Boolean).join(' ')}
+      <div
+        className={[
+          classes.droppablePlaceholderArea,
+          isDraggingOver && classes.droppableDraggingOver,
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
         <div className={classes.droppableInnerContainer}>
           <Typography color="primary" variant="h6" component="p">
@@ -45,8 +48,8 @@ const TaskSiblingListDropArea = ({ isDraggingOver, title }) => {
         </div>
       </div>
     </Zoom>
-  )
-}
+  );
+};
 
 TaskSiblingListDropArea.propTypes = {
   title: PropTypes.string.isRequired,

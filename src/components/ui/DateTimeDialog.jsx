@@ -27,11 +27,7 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      aria-labelledby={id}
-    >
+    <Dialog open={open} onClose={onClose} aria-labelledby={id}>
       <DialogTitle id={id}>{label}</DialogTitle>
 
       <DialogContent>

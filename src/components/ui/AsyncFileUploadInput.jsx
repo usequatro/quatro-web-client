@@ -21,7 +21,7 @@ const AsyncFileUploadInput = forwardRef(
 
     const onImageChange = (event) => {
       if (event.target.files[0]) {
-        if (event.target.files[0].size > (maxSizeMB * 1024 * 1024)) {
+        if (event.target.files[0].size > maxSizeMB * 1024 * 1024) {
           onError({ code: ERROR_IMAGE_SIZE });
           return;
         }

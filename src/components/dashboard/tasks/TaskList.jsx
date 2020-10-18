@@ -87,47 +87,55 @@ const TaskList = forwardRef((_, ref) => {
       {cond([
         [() => fetching, () => <LoadingState />],
         [() => taskIds.length === 0, () => <EmptyState tab={tab} />],
-        [() => true, () => (
-          <>
-            <MenuList disablePadding>
-              <Sortable
-                id={`sortable-${tab}`}
-                enabled={showPosition}
-                dropAreaHeight={DROP_AREA_HEIGHT}
-                itemIds={taskIds}
-                indexOffset={positionOffset}
-                renderItem={(id, index) => (
-                  <Task
-                    key={id}
-                    id={id}
-                    component={MenuItem}
-                    highlighted={id === highlighedTaskId}
-                    position={showPosition ? index + 1 + positionOffset : undefined}
-                    // For performance, we indicate if the task should load blockers from the top
-                    showBlockers={tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED}
-                  />
-                )}
-                renderDropAreaStart={
-                  tab === dashboardTabs.BACKLOG
-                    ? (isDraggingOver) => (
-                        <TaskSiblingListDropArea
-                          isDraggingOver={isDraggingOver}
-                          title="Move to top 4"
-                        />
-                      )
-                    : null
-                }
-                renderDropAreaEnd={
-                  tab === dashboardTabs.NOW && hasMoveToBacklog
-                    ? (isDraggingOver) => (
-                        <TaskSiblingListDropArea isDraggingOver={isDraggingOver} title="Backlog" />
-                      )
-                    : null
-                }
-              />
-            </MenuList>
-          </>
-        )],
+        [
+          () => true,
+          () => (
+            <>
+              <MenuList disablePadding>
+                <Sortable
+                  id={`sortable-${tab}`}
+                  enabled={showPosition}
+                  dropAreaHeight={DROP_AREA_HEIGHT}
+                  itemIds={taskIds}
+                  indexOffset={positionOffset}
+                  renderItem={(id, index) => (
+                    <Task
+                      key={id}
+                      id={id}
+                      component={MenuItem}
+                      highlighted={id === highlighedTaskId}
+                      position={showPosition ? index + 1 + positionOffset : undefined}
+                      // For performance, we indicate if the task should load blockers from the top
+                      showBlockers={
+                        tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
+                      }
+                    />
+                  )}
+                  renderDropAreaStart={
+                    tab === dashboardTabs.BACKLOG
+                      ? (isDraggingOver) => (
+                          <TaskSiblingListDropArea
+                            isDraggingOver={isDraggingOver}
+                            title="Move to top 4"
+                          />
+                        )
+                      : null
+                  }
+                  renderDropAreaEnd={
+                    tab === dashboardTabs.NOW && hasMoveToBacklog
+                      ? (isDraggingOver) => (
+                          <TaskSiblingListDropArea
+                            isDraggingOver={isDraggingOver}
+                            title="Backlog"
+                          />
+                        )
+                      : null
+                  }
+                />
+              </MenuList>
+            </>
+          ),
+        ],
       ])()}
 
       {/* spacing for the mobile bottom toolbar */}
@@ -136,18 +144,18 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-     {/* uncomment for bringing back bottom nav on mobile */}
+      {/* uncomment for bringing back bottom nav on mobile */}
       {/* <Hidden xsDown> */}
-        <Tooltip title="Create task (Space bar)" enterDelay={1000}>
-          <Fab
-            aria-label="Create task"
-            color="default"
-            className={classes.fab}
-            onClick={() => dispatch(setNewTaskDialogOpen(true))}
-          >
-            <AddIcon fontSize="large" />
-          </Fab>
-        </Tooltip>
+      <Tooltip title="Create task (Space bar)" enterDelay={1000}>
+        <Fab
+          aria-label="Create task"
+          color="default"
+          className={classes.fab}
+          onClick={() => dispatch(setNewTaskDialogOpen(true))}
+        >
+          <AddIcon fontSize="large" />
+        </Fab>
+      </Tooltip>
       {/* </Hidden> */}
     </Box>
   );

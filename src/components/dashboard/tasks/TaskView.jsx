@@ -109,10 +109,13 @@ const TaskView = ({
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const handleCompleteClick = useCallback((event) => {
-    event.stopPropagation();
-    onComplete(id);
-  }, [id, onComplete]);
+  const handleCompleteClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onComplete(id);
+    },
+    [id, onComplete],
+  );
 
   return (
     <Paper
