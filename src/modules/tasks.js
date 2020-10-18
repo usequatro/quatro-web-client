@@ -17,8 +17,16 @@ import { fetchListTasks } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
-import { selectRecurringConfigIdByMostRecentTaskId, deleteRecurringConfig } from './recurringConfigs';
-import { TASK_DELETED, TASK_COMPLETED, TASK_UNDO_COMPLETE, TASK_MANUALLY_ARRANGED } from '../constants/mixpanelEvents';
+import {
+  selectRecurringConfigIdByMostRecentTaskId,
+  deleteRecurringConfig,
+} from './recurringConfigs';
+import {
+  TASK_DELETED,
+  TASK_COMPLETED,
+  TASK_UNDO_COMPLETE,
+  TASK_MANUALLY_ARRANGED,
+} from '../constants/mixpanelEvents';
 
 export const NAMESPACE = 'tasks';
 
@@ -28,6 +36,7 @@ const ADD = `${NAMESPACE}/ADD`;
 const SET_MULTIPLE = `${NAMESPACE}/SET_MULTIPLE`;
 export const UPDATE = `${NAMESPACE}/UPDATE`;
 export const DELETE = `${NAMESPACE}/DELETE`;
+const REMOVE_FROM_LIST = `${NAMESPACE}/REMOVE_FROM_LIST`;
 
 // Reducers
 
@@ -59,6 +68,11 @@ export const reducer = createReducer(INITIAL_STATE, {
     byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
   }),
   [DELETE]: (state, { payload: { id } }) => ({
+    ...state,
+    allIds: state.allIds.filter((tid) => tid !== id),
+    byId: { ...state.byId, [id]: null },
+  }),
+  [REMOVE_FROM_LIST]: (state, { payload: { id } }) => ({
     ...state,
     allIds: state.allIds.filter((tid) => tid !== id),
     byId: { ...state.byId, [id]: null },
@@ -209,7 +223,10 @@ export const selectBacklogTasks = createSelector(
       .slice(NOW_TASKS_LIMIT),
 );
 
-export const selectHasMoveToBacklog = createSelector(selectBacklogTasks, tasks => tasks.length > 1);
+export const selectHasMoveToBacklog = createSelector(
+  selectBacklogTasks,
+  (tasks) => tasks.length > 1,
+);
 
 export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
@@ -331,7 +348,7 @@ export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
   dispatch(updateTask(id, { completed: Date.now() }));
 
   const timeout = setTimeout(() => {
-    dispatch({ type: DELETE, payload: { id } });
+    dispatch({ type: REMOVE_FROM_LIST, payload: { id } });
     mixpanel.track(TASK_COMPLETED);
   }, 1000);
 
@@ -339,15 +356,15 @@ export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
   return () => {
     clearTimeout(timeout);
     dispatch(updateTask(id, { completed: null }));
-  }
-}
+  };
+};
 
 export const undoCompleteTask = (id, task) => (dispatch, _, { mixpanel }) => {
   dispatch(addTask(id, task));
   dispatch(updateTask(id, { completed: null }));
 
   mixpanel.track(TASK_UNDO_COMPLETE);
-}
+};
 
 export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   dispatch({ type: DELETE, payload: { id } });
@@ -360,4 +377,4 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   }
 
   mixpanel.track(TASK_DELETED);
-}
+};
