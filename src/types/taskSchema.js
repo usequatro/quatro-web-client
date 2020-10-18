@@ -17,7 +17,6 @@ export const taskSchema = Joi.object({
 
   // these can be empty and we add defaults
   completed: Joi.number().allow(null).default(null),
-  trashed: Joi.number().allow(null).default(null),
   prioritizedAheadOf: Joi.string().allow(null).default(null),
   blockedBy: Joi.array()
     .items(
