@@ -31,13 +31,10 @@ const NavigationSidebarContent = () => {
   return (
     <>
       <List disablePadding>
-        <ListItem
-          button
-          component={Link}
-          to={paths.NOW}
-          selected={activeTab === dashboardTabs.NOW}
-        >
-          <ListItemIcon><HomeRoundedIcon /></ListItemIcon>
+        <ListItem button component={Link} to={paths.NOW} selected={activeTab === dashboardTabs.NOW}>
+          <ListItemIcon>
+            <HomeRoundedIcon />
+          </ListItemIcon>
           <ListItemText primary="Top 4" />
         </ListItem>
         <ListItem
@@ -46,7 +43,9 @@ const NavigationSidebarContent = () => {
           to={paths.BACKLOG}
           selected={activeTab === dashboardTabs.BACKLOG}
         >
-          <ListItemIcon><HorizontalSplitRoundedIcon /></ListItemIcon>
+          <ListItemIcon>
+            <HorizontalSplitRoundedIcon />
+          </ListItemIcon>
           <ListItemText primary="Backlog" />
         </ListItem>
         <ListItem
@@ -55,7 +54,9 @@ const NavigationSidebarContent = () => {
           to={paths.SCHEDULED}
           selected={activeTab === dashboardTabs.SCHEDULED}
         >
-          <ListItemIcon><CalendarTodayRoundedIcon /></ListItemIcon>
+          <ListItemIcon>
+            <CalendarTodayRoundedIcon />
+          </ListItemIcon>
           <ListItemText primary="Scheduled" />
         </ListItem>
         <ListItem
@@ -64,7 +65,9 @@ const NavigationSidebarContent = () => {
           to={paths.BLOCKED}
           selected={activeTab === dashboardTabs.BLOCKED}
         >
-          <ListItemIcon><BlockRoundedIcon /></ListItemIcon>
+          <ListItemIcon>
+            <BlockRoundedIcon />
+          </ListItemIcon>
           <ListItemText primary="Blocked" />
         </ListItem>
         <ListItem
@@ -73,7 +76,9 @@ const NavigationSidebarContent = () => {
           to={paths.COMPLETED}
           selected={activeTab === dashboardTabs.COMPLETED}
         >
-          <ListItemIcon><DoneAllRoundedIcon /></ListItemIcon>
+          <ListItemIcon>
+            <DoneAllRoundedIcon />
+          </ListItemIcon>
           <ListItemText primary="Completed" />
         </ListItem>
       </List>

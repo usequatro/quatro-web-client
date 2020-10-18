@@ -20,10 +20,7 @@ const emptyStateCopy = {
     'All clear!',
     'You don’t have any scheduled meetings, follow-ups, reminders, or tasks.',
   ],
-  [dashboardTabs.NOW]: [
-    'Great job!',
-    'Your task list and headspace are clear.',
-  ],
+  [dashboardTabs.NOW]: ['Great job!', 'Your task list and headspace are clear.'],
   [dashboardTabs.BLOCKED]: [
     'The runway is clear!',
     "You don't have any dependencies blocking your tasks.",
@@ -76,7 +73,9 @@ const EmptyState = ({ tab }) => {
           />
 
           {(emptyStateCopy[currentTab] || []).map((text) => (
-            <Typography gutterBottom key={text} align="center" color="secondary">{text}</Typography>
+            <Typography gutterBottom key={text} align="center" color="secondary">
+              {text}
+            </Typography>
           ))}
         </div>
       </Fade>

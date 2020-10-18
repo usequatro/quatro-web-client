@@ -84,7 +84,8 @@ const Registration = ({ mode }) => {
       return;
     }
     setSubmitting(true);
-    getAuth().signInWithEmailAndPassword(emailAddress, password)
+    getAuth()
+      .signInWithEmailAndPassword(emailAddress, password)
       .then(() => {
         dispatch(setRegistrationEmail(''));
         history.push(paths.DASHBOARD);
@@ -102,7 +103,8 @@ const Registration = ({ mode }) => {
       return;
     }
     setSubmitting(true);
-    getAuth().createUserWithEmailAndPassword(emailAddress, password)
+    getAuth()
+      .createUserWithEmailAndPassword(emailAddress, password)
       .then(() => {
         dispatch(setRegistrationEmail(''));
         history.push(paths.DASHBOARD);
@@ -137,24 +139,31 @@ const Registration = ({ mode }) => {
 
   return (
     <div className={classes.container}>
-      <Typography variant="h2" component="h1" className={classes.appName}>Quatro</Typography>
+      <Typography variant="h2" component="h1" className={classes.appName}>
+        Quatro
+      </Typography>
       <Fade in>
         <Typography variant="h4" component="h2" className={classes.viewName}>
-          {{
-          [LOG_IN]: 'Log in',
-          [SIGN_UP]: 'Sign up',
-          [RECOVER_PASSWORD]: 'Recover password',
-        }[mode]}
+          {
+            {
+              [LOG_IN]: 'Log in',
+              [SIGN_UP]: 'Sign up',
+              [RECOVER_PASSWORD]: 'Recover password',
+            }[mode]
+          }
         </Typography>
       </Fade>
 
       <Grow in>
         <Paper className={classes.paper}>
-          <form onSubmit={{
-            [LOG_IN]: handleLogIn,
-            [SIGN_UP]: handleSignUp,
-            [RECOVER_PASSWORD]: handleRecoverPassword,
-          }[mode]}
+          <form
+            onSubmit={
+              {
+                [LOG_IN]: handleLogIn,
+                [SIGN_UP]: handleSignUp,
+                [RECOVER_PASSWORD]: handleRecoverPassword,
+              }[mode]
+            }
           >
             <TextField
               label="Email address"
@@ -188,11 +197,13 @@ const Registration = ({ mode }) => {
                   submitting ? <CircularProgress thickness={8} size="1rem" color="inherit" /> : null
                 }
               >
-                {{
-              [LOG_IN]: 'Log in',
-              [SIGN_UP]: 'Sign up',
-              [RECOVER_PASSWORD]: 'Recover',
-            }[mode]}
+                {
+                  {
+                    [LOG_IN]: 'Log in',
+                    [SIGN_UP]: 'Sign up',
+                    [RECOVER_PASSWORD]: 'Recover',
+                  }[mode]
+                }
               </Button>
             </Box>
 
@@ -200,25 +211,33 @@ const Registration = ({ mode }) => {
               {mode === LOG_IN && (
                 <Typography align="center">
                   {"Don't have an account yet? "}
-                  <MuiLink component={RouterLink} to={paths.SIGN_UP}>Sign up</MuiLink>
+                  <MuiLink component={RouterLink} to={paths.SIGN_UP}>
+                    Sign up
+                  </MuiLink>
                 </Typography>
               )}
               {mode === LOG_IN && (
                 <Typography align="center">
-                  {"Forgot password? "}
-                  <MuiLink component={RouterLink} to={paths.RECOVER_PASSWORD}>Recover</MuiLink>
+                  {'Forgot password? '}
+                  <MuiLink component={RouterLink} to={paths.RECOVER_PASSWORD}>
+                    Recover
+                  </MuiLink>
                 </Typography>
               )}
               {mode === SIGN_UP && (
                 <Typography align="center">
-                  {"Already have an account? "}
-                  <MuiLink component={RouterLink} to={paths.LOG_IN}>Log in</MuiLink>
+                  {'Already have an account? '}
+                  <MuiLink component={RouterLink} to={paths.LOG_IN}>
+                    Log in
+                  </MuiLink>
                 </Typography>
               )}
               {mode === RECOVER_PASSWORD && (
                 <Typography align="center">
-                  {"Go back to "}
-                  <MuiLink component={RouterLink} to={paths.LOG_IN}>log in</MuiLink>
+                  {'Go back to '}
+                  <MuiLink component={RouterLink} to={paths.LOG_IN}>
+                    log in
+                  </MuiLink>
                 </Typography>
               )}
             </Box>

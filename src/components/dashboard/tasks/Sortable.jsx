@@ -67,17 +67,13 @@ const Sortable = ({
     const destinationIndex = cond([
       [() => /-top$/.test(destination.droppableId), () => -1],
       [() => /-bottom$/.test(destination.droppableId), () => itemIds.length + 1],
-      [() => true, () => (
-        source.index < destination.index ? destination.index + 1 : destination.index
-      )],
+      [
+        () => true,
+        () => (source.index < destination.index ? destination.index + 1 : destination.index),
+      ],
     ])();
 
-    dispatch(
-      setRelativePrioritization(
-        source.index + indexOffset,
-        destinationIndex + indexOffset,
-      ),
-    );
+    dispatch(setRelativePrioritization(source.index + indexOffset, destinationIndex + indexOffset));
   };
 
   return (
@@ -89,7 +85,7 @@ const Sortable = ({
       <Droppable droppableId={`droppable-${id}-main`}>
         {(droppableProvided) => (
           <div {...droppableProvided.droppableProps} ref={droppableProvided.innerRef}>
-            {(itemIds).map((itemId, index) => (
+            {itemIds.map((itemId, index) => (
               <Draggable
                 key={itemId}
                 draggableId={`draggable-${id}-${itemId}`}
