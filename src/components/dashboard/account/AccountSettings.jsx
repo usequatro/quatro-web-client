@@ -267,7 +267,7 @@ const AccountSettings = () => {
         <PasswordTextField
           fullWidth
           label="Change password"
-          autoComplete="off"
+          autoComplete="new-password"
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
           margin="normal"
