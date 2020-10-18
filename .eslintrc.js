@@ -20,20 +20,13 @@ module.exports = {
     },
   ],
   rules: {
-    'react/prop-types': 'off',
-    'jsx-a11y/label-has-associated-control': [
-      2,
-      {
-        //   "labelComponents": ["CustomInputLabel"],
-        labelAttributes: ['label'],
-        controlComponents: ['BooleanCheckbox'],
-        depth: 3,
-      },
-    ],
+    'react/prop-types': 'warn',
     'jsx-a11y/label-has-for': 'off', // this rule was deprecated.
     'react/jsx-props-no-spreading': 'off',
     'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
     'max-len': 'warn',
-    'react-hooks/exhaustive-deps': ['error'],
+    'react-hooks/exhaustive-deps': 'warn',
+    'react/jsx-indent': 'off', // prettier handles
+    'react/jsx-wrap-multilines': 'off', // prettier handles
   },
 };
