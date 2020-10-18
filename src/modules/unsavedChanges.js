@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 
 import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
-import { UPDATE as UPDATE_TASK } from './tasks';
+import { UPDATE as UPDATE_TASK, DELETE as DELETE_TASK } from './tasks';
 import {
   UPDATE as UPDATE_RECURRING_CONFIG,
   DELETE as DELETE_RECURRING_CONFIG,
@@ -119,6 +119,16 @@ function* addTaskChanges({ payload: { id, updates } }) {
   });
 }
 
+function* addTaskDeletions({ payload: { id } }) {
+  if (!id) {
+    throw new Error('Invalid task deletion action payload');
+  }
+  yield put({
+    type: ADD_CHANGES,
+    payload: { byTaskId: { [id]: null } },
+  });
+}
+
 function* addRecurringConfigChanges({ payload: { id, updates } }) {
   if (!id || !updates) {
     throw new Error('Invalid recurring config add changes action payload');
@@ -182,6 +192,10 @@ function* watchTaskChangesMade() {
   yield takeEvery(UPDATE_TASK, addTaskChanges);
 }
 
+function* watchTaskDeletions() {
+  yield takeEvery(DELETE_TASK, addTaskDeletions);
+}
+
 function* watchRecurringConfigChangesMade() {
   yield takeEvery(UPDATE_RECURRING_CONFIG, addRecurringConfigChanges);
 }
@@ -198,6 +212,7 @@ export function* watchAutosave() {
 
 export const sagas = [
   watchTaskChangesMade(),
+  watchTaskDeletions(),
   watchRecurringConfigChangesMade(),
   watchRecurringConfigDeletions(),
   watchAutosave(),

@@ -27,7 +27,7 @@ export const NAMESPACE = 'tasks';
 const ADD = `${NAMESPACE}/ADD`;
 const SET_MULTIPLE = `${NAMESPACE}/SET_MULTIPLE`;
 export const UPDATE = `${NAMESPACE}/UPDATE`;
-const DELETE = `${NAMESPACE}/DELETE`;
+export const DELETE = `${NAMESPACE}/DELETE`;
 
 // Reducers
 
@@ -350,7 +350,6 @@ export const undoCompleteTask = (id, task) => (dispatch, _, { mixpanel }) => {
 }
 
 export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
-  dispatch(updateTask(id, { trashed: Date.now() }));
   dispatch({ type: DELETE, payload: { id } });
 
   // If there's a recurring config associated, we clear it too so it stops repeating

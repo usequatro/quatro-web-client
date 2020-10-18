@@ -25,7 +25,6 @@ export const fetchListTasks = (userId) =>
   getFirestore()
     .collection(TASKS)
     .where('userId', '==', userId)
-    .where('trashed', '==', null)
     .where('completed', '==', null)
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
@@ -49,7 +48,6 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
   let query = getFirestore()
     .collection(TASKS)
     .where('userId', '==', userId)
-    .where('trashed', '==', null)
     .where('completed', '>', 0)
     .limit(COMPLETED_TASKS_PAGE_SIZE)
     .orderBy('completed', 'desc');
