@@ -8,7 +8,9 @@ const RouterChangeTracker = ({ history }) => {
       trackRouteChange(location.pathname);
     });
 
-    return () => { unlisten(); };
+    return () => {
+      unlisten();
+    };
   }, [history]);
 
   return null;

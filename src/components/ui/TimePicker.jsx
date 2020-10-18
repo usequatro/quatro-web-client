@@ -49,7 +49,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const hours = ['12', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'];
-const minutes = Array(60).fill('').map((e, i) => `${i < 10 ? '0' : ''}${i}`);
+const minutes = Array(60)
+  .fill('')
+  .map((e, i) => `${i < 10 ? '0' : ''}${i}`);
 const amPm = ['AM', 'PM'];
 
 const parseSafe = (value, format, fallback) => {
@@ -79,12 +81,14 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
     setCurrentAmPm(formatFunction(dateTime, 'a'));
   }, [dateTime]);
 
-  const displayFallback = format.replace(/h/ig, '-').replace(/m/ig, '-').replace(/a/ig, '--');
+  const displayFallback = format.replace(/h/gi, '-').replace(/m/gi, '-').replace(/a/gi, '--');
 
   const handleChangesDone = () => {
-    onChangeCommitted(currentHour && currentMinute && currentAmPm
-      ? parseSafe(`${currentHour}:${currentMinute} ${currentAmPm}`, 'hh:mm a', null)
-      : null);
+    onChangeCommitted(
+      currentHour && currentMinute && currentAmPm
+        ? parseSafe(`${currentHour}:${currentMinute} ${currentAmPm}`, 'hh:mm a', null)
+        : null,
+    );
     setOpen(false);
   };
 
@@ -123,11 +127,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
       >
         <Box className={classes.currentValueContainer}>
           <Typography align="center" component="p" variant="h6">
-            {currentHour || '--'}
-            :
-            {currentMinute || '--'}
-            {' '}
-            {currentAmPm || '--'}
+            {`${currentHour || '--'}:${currentMinute || '--'} ${currentAmPm || '--'}`}
           </Typography>
         </Box>
 

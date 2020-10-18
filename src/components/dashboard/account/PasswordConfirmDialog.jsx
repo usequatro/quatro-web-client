@@ -10,11 +10,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 import PasswordTextField from '../../ui/PasswordTextField';
 
-export default function PasswordConfirmDialog({
-  open,
-  onClose,
-  onConfirm,
-}) {
+export default function PasswordConfirmDialog({ open, onClose, onConfirm }) {
   const [password, setPassword] = useState('');
   const handleConfirm = () => onConfirm(password);
 
@@ -22,9 +18,7 @@ export default function PasswordConfirmDialog({
     <Dialog open={open} onClose={onClose} aria-labelledby="password-confirm-title">
       <DialogTitle id="password-confirm-title">Before moving on</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          Please confirm your current password to save changes
-        </DialogContentText>
+        <DialogContentText>Please confirm your current password to save changes</DialogContentText>
 
         <PasswordTextField
           label="Current password"

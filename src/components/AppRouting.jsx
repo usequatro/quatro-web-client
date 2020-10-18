@@ -14,23 +14,29 @@ const AppRouting = () => {
 
   return cond([
     [() => userIsLoggedIn === null, () => <FullScreenLoader background="common.white" />],
-    [() => userIsLoggedIn === false, () => (
-      <Switch>
-        <Redirect exact from="/" to={paths.SIGN_UP} />
-        <Route path={paths.LOG_IN} component={LogIn} />
-        <Route path={paths.SIGN_UP} component={SignUp} />
-        <Route path={paths.RECOVER_PASSWORD} component={RecoverPassword} />
-        {/* fallback */}
-        <Redirect to={paths.SIGN_UP} />
-      </Switch>
-    )],
-    [() => userIsLoggedIn === true, () => (
-      <Switch>
-        <Route path={[paths.DASHBOARD, paths.ACCOUNT_SETTINGS]} component={Dashboard} />
-        {/* fallback */}
-        <Redirect to={paths.NOW} />
-      </Switch>
-    )],
+    [
+      () => userIsLoggedIn === false,
+      () => (
+        <Switch>
+          <Redirect exact from="/" to={paths.SIGN_UP} />
+          <Route path={paths.LOG_IN} component={LogIn} />
+          <Route path={paths.SIGN_UP} component={SignUp} />
+          <Route path={paths.RECOVER_PASSWORD} component={RecoverPassword} />
+          {/* fallback */}
+          <Redirect to={paths.SIGN_UP} />
+        </Switch>
+      ),
+    ],
+    [
+      () => userIsLoggedIn === true,
+      () => (
+        <Switch>
+          <Route path={[paths.DASHBOARD, paths.ACCOUNT_SETTINGS]} component={Dashboard} />
+          {/* fallback */}
+          <Redirect to={paths.NOW} />
+        </Switch>
+      ),
+    ],
   ])();
 };
 

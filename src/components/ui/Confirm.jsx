@@ -17,7 +17,7 @@ const Confirm = ({ renderDialog, onConfirm, renderContent }) => {
       event.stopPropagation();
     }
     setOpen(false);
-  }
+  };
 
   const handleClick = (event) => {
     if (event) {
@@ -31,8 +31,8 @@ const Confirm = ({ renderDialog, onConfirm, renderContent }) => {
       {renderDialog(open, handleConfirm, handleCancel)}
       {renderContent(handleClick)}
     </>
-  )
-}
+  );
+};
 
 Confirm.propTypes = {
   renderDialog: PropTypes.func.isRequired,
