@@ -100,7 +100,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
           label: classes.buttonLabel,
         }}
       >
-        <Typography align="flex-start" component="p" variant="p">
+        <Typography component="p">
           Time
         </Typography>
         <Box className={classes.dateTime}>
