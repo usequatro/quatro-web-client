@@ -19,7 +19,7 @@ const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
       validator(entity)
         .then((validEntity) => [id, validEntity])
         .catch((error) => {
-          console.error(error, entity); // eslint-disable-line no-console
+          console.error(error, id, entity); // eslint-disable-line no-console
           throw error;
         }),
     ),
