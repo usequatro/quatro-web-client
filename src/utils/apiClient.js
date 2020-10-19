@@ -9,6 +9,26 @@ const TASKS = 'tasks';
 const RECURRING_CONFIGS = 'recurringConfigs';
 
 /**
+ * @param {Array<Array>} entities - [[id, task], ...]
+ * @param {Function} validator
+ * @return {Promise<Array>}
+ */
+const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
+  Promise.allSettled(
+    entities.map(([id, entity]) =>
+      validator(entity)
+        .then((validEntity) => [id, validEntity])
+        .catch((error) => {
+          console.error(error, entity); // eslint-disable-line no-console
+          throw error;
+        }),
+    ),
+  ).then((values) =>
+    // Unwrap the result of Promise.allSettled
+    values.filter(({ status }) => status === 'fulfilled').map(({ value }) => value),
+  );
+
+/**
  * @param {Object} task
  * @return {Promise<firebase.firestore.DocumentReference>}
  */
@@ -28,14 +48,7 @@ export const fetchListTasks = (userId) =>
     .where('completed', '==', null)
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) =>
-      Promise.all(
-        results.map(async ([id, entity]) => {
-          const validEntity = await validateTaskSchema(entity);
-          return [id, validEntity];
-        }),
-      ),
-    );
+    .then((results) => validateEntitiesFilteringOutInvalidOnes(results, validateTaskSchema));
 
 export const COMPLETED_TASKS_PAGE_SIZE = 15;
 
@@ -60,14 +73,7 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
   return query
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) =>
-      Promise.all(
-        results.map(async ([id, entity]) => {
-          const validEntity = await validateTaskSchema(entity);
-          return [id, validEntity];
-        }),
-      ),
-    );
+    .then((results) => validateEntitiesFilteringOutInvalidOnes(results, validateTaskSchema));
 };
 
 /**
@@ -149,12 +155,7 @@ export const fetchListRecurringConfigs = (userId) =>
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
     .then((results) =>
-      Promise.all(
-        results.map(async ([id, entity]) => {
-          const validEntity = await validateRecurringConfigSchema(entity);
-          return [id, validEntity];
-        }),
-      ),
+      validateEntitiesFilteringOutInvalidOnes(results, validateRecurringConfigSchema),
     );
 
 /**
