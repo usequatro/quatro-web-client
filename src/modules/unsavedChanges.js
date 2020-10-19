@@ -43,7 +43,13 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...Object.entries(changesByTaskId || {}).reduce(
         (memo, [id, taskChanges]) => ({
           ...memo,
-          [id]: taskChanges,
+          [id]:
+            taskChanges === null
+              ? null
+              : {
+                  ...(state.byTaskId[id] || {}),
+                  ...taskChanges,
+                },
         }),
         {},
       ),
@@ -53,7 +59,13 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...Object.entries(changesByRecurringConfigId || {}).reduce(
         (memo, [id, recurringConfigChanges]) => ({
           ...memo,
-          [id]: recurringConfigChanges,
+          [id]:
+            recurringConfigChanges === null
+              ? null
+              : {
+                  ...(state.byRecurringConfigId[id] || {}),
+                  ...recurringConfigChanges,
+                },
         }),
         {},
       ),
@@ -70,7 +82,13 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...Object.entries(changesByTaskId || {}).reduce(
         (memo, [id, taskChanges]) => ({
           ...memo,
-          [id]: taskChanges,
+          [id]:
+            taskChanges === null
+              ? null
+              : {
+                  ...(state.byTaskId[id] || {}),
+                  ...taskChanges,
+                },
         }),
         {},
       ),
@@ -80,7 +98,13 @@ export const reducer = createReducer(INITIAL_STATE, {
       ...Object.entries(changesByRecurringConfigId || {}).reduce(
         (memo, [id, recurringConfigChanges]) => ({
           ...memo,
-          [id]: recurringConfigChanges,
+          [id]:
+            recurringConfigChanges === null
+              ? null
+              : {
+                  ...(state.byRecurringConfigId[id] || {}),
+                  ...recurringConfigChanges,
+                },
         }),
         {},
       ),
