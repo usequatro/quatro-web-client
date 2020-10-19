@@ -95,7 +95,7 @@ const BlockerSelectionDialog = ({
           value={searchTerm}
           label="Search task"
           onChange={(event) => setSearchTerm(event.target.value)}
-          endAdornment={<SearchRoundedIcon />}
+          InputProps={{ endAdornment: <SearchRoundedIcon /> }}
         />
       </DialogContent>
 
