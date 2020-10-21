@@ -1,7 +1,6 @@
 /**
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
-
 import createReducer from '../utils/createReducer';
 import { loadTasks, addTask, selectTaskDashboardTab } from './tasks';
 import { loadRecurringConfigs } from './recurringConfigs';
@@ -39,7 +38,14 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
-  snackbarData: { open: false, message: "", id: null, task: null }
+  snackbarData: {
+    open: false,
+    message: '',
+    id: null,
+    task: null,
+    buttonText: '',
+    buttonAction: null,
+  },
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -168,9 +174,20 @@ export const createTask = (
     created: Date.now(),
     source: SOURCES.USER,
   };
+  const showSnackbar = (tid, task_) => {
+    dispatch(
+      setSnackbarData({
+        open: true,
+        message: '🎉 Your task has been successfully created',
+        id: tid,
+        task: task_,
+      }),
+    );
+  };
 
   return apiClient.fetchCreateTask(task).then(({ id }) => {
     dispatch(addTask(id, task));
+    showSnackbar(id, task);
 
     mixpanel.track(TASK_CREATED, {
       hasBlockers: blockedBy.length > 0,
