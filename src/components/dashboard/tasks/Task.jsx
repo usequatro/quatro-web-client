@@ -16,7 +16,7 @@ import {
   undoCompleteTask
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setEditTaskDialogId, setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
+import { setEditTaskDialogId, setSnackbarData } from '../../../modules/dashboard';
 
 const Task = ({ id, position, component, highlighted, showBlockers }) => {
   const task = useSelector((state) => selectTask(state, id));
@@ -42,10 +42,9 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
           message: '🎉 Task Completed!',
           id: tid,
           task,
-          buttonText:'Undo',
+          buttonText: 'Undo',
           buttonAction: function action() {
             dispatch(undoCompleteTask(tid, task));
-            dispatch(resetSnackbar());
           }
         }),
       );

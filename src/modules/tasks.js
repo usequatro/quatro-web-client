@@ -1,7 +1,6 @@
 /**
  * Namespace to keep information of the current session, like user details.
  */
-
 import sortBy from 'lodash/sortBy';
 import cond from 'lodash/cond';
 import get from 'lodash/get';
@@ -17,6 +16,7 @@ import { fetchListTasks } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
+
 import {
   selectRecurringConfigIdByMostRecentTaskId,
   deleteRecurringConfig,
@@ -261,8 +261,37 @@ export const selectTaskDashboardTab = (state, taskId) =>
     [() => true, () => undefined],
   ])();
 
-// Actions
+export const tabTasks = (props) => {
+  switch (props) {
+    case dashboardTabs.NOW:
+      return {
+        text: 'Top 4',
+        link: dashboardTabs.NOW,
+      };
+    case dashboardTabs.BACKLOG:
+      return {
+        text: dashboardTabs.BACKLOG,
+        link: dashboardTabs.BACKLOG,
+      };
+    case dashboardTabs.SCHEDULED:
+      return {
+        text: dashboardTabs.SCHEDULED,
+        link: dashboardTabs.SCHEDULED,
+      };
+    case dashboardTabs.BLOCKED:
+      return {
+        text: dashboardTabs.BLOCKED,
+        link: dashboardTabs.BLOCKED,
+      };
+    default:
+      return {
+        text: 'Top 4',
+        link: dashboardTabs.NOW,
+      };
+  }
+};
 
+// Actions
 export const loadTasks = () => async (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);

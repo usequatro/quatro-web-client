@@ -2,7 +2,7 @@
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
 import createReducer from '../utils/createReducer';
-import { loadTasks, addTask, selectTaskDashboardTab } from './tasks';
+import { loadTasks, addTask, selectTaskDashboardTab, tabTasks } from './tasks';
 import { loadRecurringConfigs } from './recurringConfigs';
 import { selectUserId } from './session';
 import { RESET } from './reset';
@@ -45,6 +45,7 @@ const INITIAL_STATE = {
     task: null,
     buttonText: '',
     buttonAction: null,
+    buttonLink: null,
   },
 };
 
@@ -175,12 +176,17 @@ export const createTask = (
     source: SOURCES.USER,
   };
   const showSnackbar = (tid, task_) => {
+    const stateTask = getState();
+    const tabTask = selectTaskDashboardTab(stateTask, tid);
+    const selectTab = tabTasks(tabTask);
     dispatch(
       setSnackbarData({
         open: true,
-        message: '🎉 Your task has been successfully created',
+        message: 'Your task has been successfully created and added to your',
         id: tid,
         task: task_,
+        buttonText: selectTab.text,
+        buttonLink: selectTab.link,
       }),
     );
   };
@@ -188,19 +194,19 @@ export const createTask = (
   return apiClient.fetchCreateTask(task).then(({ id }) => {
     dispatch(addTask(id, task));
     showSnackbar(id, task);
-
     mixpanel.track(TASK_CREATED, {
       hasBlockers: blockedBy.length > 0,
       hasScheduledStart: !!scheduledStart,
       hasDueDate: !!due,
     });
 
-    const updatedState = getState();
-    const tab = selectTaskDashboardTab(updatedState, id);
-    if (tab) {
-      dispatch(setDashboardActiveTab(tab));
-      dispatch(setHighlighedTask(id));
-    }
+    // For autoupdating the new task tab
+    // const updatedState = getState();
+    // const tasktab = selectTaskDashboardTab(updatedState, id);
+    // if (tab) {
+    //   dispatch(setDashboardActiveTab(tasktab));
+    //   dispatch(setHighlighedTask(id));
+    // }
 
     return id;
   });

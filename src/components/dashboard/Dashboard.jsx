@@ -22,7 +22,6 @@ import {
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
-  resetSnackbar,
 } from '../../modules/dashboard';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
@@ -89,6 +88,8 @@ const Dashboard = () => {
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
   const savingUnsavedChanges = useSelector(selectUnsavedChangesSaving);
 
+  const snackbarData = useSelector(selectSnackbarData);
+
   const [navigationOpen, setNavigationOpen] = useState(false);
   // Close drawer when route changes
   const previousPathname = usePrevious(location.pathname);
@@ -97,16 +98,6 @@ const Dashboard = () => {
       setNavigationOpen(false);
     }
   }, [location.pathname, navigationOpen, previousPathname]);
-
-  // Snackbar
-  const snackbarData = useSelector(selectSnackbarData);
-  useEffect(() => {
-    if (snackbarData.open) {
-      setTimeout(() => {
-        dispatch(resetSnackbar());
-      }, 5000);
-    }
-  }, [dispatch, snackbarData]);
 
   useEffect(() => {
     window.onbeforeunload =
@@ -163,10 +154,7 @@ const Dashboard = () => {
         <TaskDialog />
 
         <SnackbarNotification
-          open={snackbarData.open}
-          buttonText={snackbarData.buttonText}
-          message={snackbarData.message}
-          buttonAction={snackbarData.buttonAction}
+          {...snackbarData}
         />
       </div>
     </div>
