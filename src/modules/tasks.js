@@ -233,7 +233,7 @@ export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) =>
   const scheduledTasks = allTasks.filter(
     ([, task]) => task.scheduledStart != null && task.scheduledStart > now,
   );
-  return sortBy(scheduledTasks, 'scheduledStart');
+  return sortBy(scheduledTasks, '1.scheduledStart');
 });
 
 export const selectBlockedTasks = createSelector(
@@ -242,7 +242,7 @@ export const selectBlockedTasks = createSelector(
     const blockedTasks = tasks.filter(
       ([, task]) => filterActiveBlockerDescriptors(task.blockedBy, taskIdsMap).length > 0,
     );
-    return sortBy(blockedTasks, 'score').reverse();
+    return sortBy(blockedTasks, '1.score').reverse();
   },
 );
 
