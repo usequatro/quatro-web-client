@@ -93,8 +93,13 @@ export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'bl
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
 
-export const selectAllTasks = (state) =>
-  state[namespace].allIds.map((id) => [id, state[namespace].byId[id]]);
+const selectAllTaskIds = (state) => state[namespace].allIds;
+const selectAllTaskIdsAsMap = createSelector(selectAllTaskIds, (ids) =>
+  ids.reduce((memo, id) => ({ ...memo, [id]: true }), {}),
+);
+
+const selectAllTasks = (state) =>
+  selectAllTaskIds(state).map((id) => [id, state[namespace].byId[id]]);
 
 const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
@@ -168,16 +173,6 @@ const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomi
   return tasksWithCustomPrioritization;
 });
 
-const selectAllUpcomingTaskIdsAsMap = createSelector(selectAllUpcomingTasks, (tasks) =>
-  tasks.reduce(
-    (memo, [id]) => ({
-      ...memo,
-      [id]: true,
-    }),
-    {},
-  ),
-);
-
 const filterActiveBlockerDescriptors = (blockedBy, allTaskIdsMap) => {
   const filterFunction = cond([
     [(blockerDescriptor) => blockerDescriptor.type === blockerTypes.FREE_TEXT, () => true],
@@ -194,13 +189,13 @@ const filterActiveBlockerDescriptors = (blockedBy, allTaskIdsMap) => {
 };
 
 export const selectTaskActiveBlockerDescriptors = (state, id) => {
-  const allTaskIdsMap = selectAllUpcomingTaskIdsAsMap(state);
+  const allTaskIdsMap = selectAllTaskIdsAsMap(state);
   const blockedBy = selectTaskBlockedBy(state, id);
   return filterActiveBlockerDescriptors(blockedBy || [], allTaskIdsMap);
 };
 
 export const selectNowTasks = createSelector(
-  [selectUpcomingSortedTasks, selectAllUpcomingTaskIdsAsMap],
+  [selectUpcomingSortedTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) =>
     tasks
       // exclude blocked ones
@@ -212,7 +207,7 @@ export const selectNowTasks = createSelector(
 );
 
 export const selectBacklogTasks = createSelector(
-  [selectUpcomingSortedTasks, selectAllUpcomingTaskIdsAsMap],
+  [selectUpcomingSortedTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) =>
     tasks
       // exclude blocked ones
@@ -237,7 +232,7 @@ export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) =>
 });
 
 export const selectBlockedTasks = createSelector(
-  [selectAllUpcomingTasks, selectAllUpcomingTaskIdsAsMap],
+  [selectAllUpcomingTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) => {
     const blockedTasks = tasks.filter(
       ([, task]) => filterActiveBlockerDescriptors(task.blockedBy, taskIdsMap).length > 0,
