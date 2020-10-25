@@ -123,19 +123,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const impactLabels = {
-  0: 'Not very important',
-  1: 'A little important',
-  2: 'Somewhat important',
-  3: 'Pretty important',
-  4: 'Very important',
+  0: 'Not much',
+  1: 'Nice to have',
+  2: 'Minor impact',
+  3: 'Medium impact',
+  4: 'Major impact',
 };
 
 const impactSliderMarks = [
-  { value: 0, label: 'Not very' },
-  { value: 1, label: 'A little' },
-  { value: 2, label: 'Somewhat' },
-  { value: 3, label: 'Pretty' },
-  { value: 4, label: 'Very' },
+  { value: 0, label: 'Not much' },
+  { value: 1, label: 'Nice to have' },
+  { value: 2, label: 'Minor' },
+  { value: 3, label: 'Medium' },
+  { value: 4, label: 'Major' },
 ];
 
 const effortLabels = {
@@ -379,7 +379,7 @@ const TaskDialogForm = ({ onClose }) => {
         <Box px={3} pt={2} pb={4}>
           <TaskSliderField
             id="impact-slider"
-            label="How important is this task?"
+            label="What impact will this task have?"
             value={impact}
             getValueText={(i) => impactLabels[i] || '-'}
             onChange={(value) => dispatch(setImpact(value))}
