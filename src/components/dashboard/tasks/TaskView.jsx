@@ -79,9 +79,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     whiteSpace: 'normal',
-    [theme.breakpoints.down('sm')]: {
-      width: '10rem',
-    },
   },
   completeButtonIddle: {},
   completeButtonSuccess: {
@@ -93,10 +90,9 @@ const useStyles = makeStyles((theme) => ({
   },
   descriptionParagraph: {
     '& a': {
-      display: "block",
-      wordBreak: "break-all",
-    }
-  }
+      wordBreak: 'break-all',
+    },
+  },
 }));
 
 const TaskView = ({
@@ -150,9 +146,9 @@ const TaskView = ({
         <Typography paragraph>{title}</Typography>
 
         {description && (
-        <Typography variant="body2" paragraph className={classes.descriptionParagraph}>
+          <Typography variant="body2" paragraph className={classes.descriptionParagraph}>
             {parseDescription(description)}
-        </Typography>      
+          </Typography>
         )}
 
         {scheduledStart && (
