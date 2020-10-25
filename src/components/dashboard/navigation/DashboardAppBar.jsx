@@ -199,6 +199,13 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
               </MenuItem>
               <MenuItem
                 onClick={() => {
+                  window.location.reload();
+                }}
+              >
+                Refresh
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
                   getAuth().signOut();
                   window.location.reload();
                 }}
