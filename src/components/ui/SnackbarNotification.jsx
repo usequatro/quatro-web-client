@@ -33,42 +33,63 @@ const SnackbarNotification = (props) => {
   const capitalButtonText = buttonText.charAt(0).toUpperCase() + buttonText.slice(1);
   let actionContent = null;
 
-  if (buttonLink) {
+  const ButtonLink = () => {
+    return (
+      <Button
+        active="true"
+        component={Link}
+        to={buttonLink}
+        variant="outlined"
+        onClick={() => {
+        setTimeout(() => {
+          dispatch(resetSnackbar());
+        }, 200);
+      }}
+        classes={{
+        root: classes.customButton,
+      }}
+      >     
+      {capitalButtonText}
+      </Button>
+    )
+  }
+
+  const ButtonAction = () => {
+    return (
+      <Button
+        size="small"
+        onClick={() => {
+        buttonAction()
+        setTimeout(() => {
+          dispatch(resetSnackbar());
+        }, 200);
+      }}
+        variant="outlined"
+        classes={{
+        root: classes.customButton,
+      }}
+      >
+      {capitalButtonText}
+      </Button>
+    )
+  }
+
+  if(open) {
+    setTimeout(() => {
+     dispatch(resetSnackbar());
+    }, 5000);
+  }
+
+  if (buttonLink) { 
     actionContent = (
       <Box display="flex" flexDirection="row" m={1}>
-        <Button
-          active="true"
-          component={Link}
-          to={buttonLink}
-          variant="outlined"
-          classes={{
-            root: classes.customButton,
-          }}
-        >     
-          {capitalButtonText}
-        </Button>
+        <ButtonLink />
       </Box>
     )
-  };
-
-  if (buttonAction) {
+  } else if  (buttonAction) {
     actionContent = (
       <Box display="flex" flexDirection="row" m={1}>
-        <Button
-          size="small"
-          onClick={() => {
-            buttonAction()
-            setTimeout(() => {
-              dispatch(resetSnackbar());
-            }, 200);
-          }}
-          variant="outlined"
-          classes={{
-            root: classes.customButton,
-          }}
-        >
-          {capitalButtonText}
-        </Button>
+        <ButtonAction />
       </Box>
     )
   }

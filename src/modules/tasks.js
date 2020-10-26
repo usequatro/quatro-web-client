@@ -261,34 +261,24 @@ export const selectTaskDashboardTab = (state, taskId) =>
     [() => true, () => undefined],
   ])();
 
-export const tabTasks = (props) => {
-  switch (props) {
-    case dashboardTabs.NOW:
-      return {
-        text: 'Top 4',
-        link: dashboardTabs.NOW,
-      };
-    case dashboardTabs.BACKLOG:
-      return {
-        text: dashboardTabs.BACKLOG,
-        link: dashboardTabs.BACKLOG,
-      };
-    case dashboardTabs.SCHEDULED:
-      return {
-        text: dashboardTabs.SCHEDULED,
-        link: dashboardTabs.SCHEDULED,
-      };
-    case dashboardTabs.BLOCKED:
-      return {
-        text: dashboardTabs.BLOCKED,
-        link: dashboardTabs.BLOCKED,
-      };
-    default:
-      return {
-        text: 'Top 4',
-        link: dashboardTabs.NOW,
-      };
-  }
+export const getTabProperties = (tab) => {
+  const tabProperties = {
+    [dashboardTabs.NOW]: {
+      text: dashboardTabs.LABELS.NOW,
+      link: dashboardTabs.NOW,
+    },
+    [dashboardTabs.BACKLOG]: {
+      text: dashboardTabs.LABELS.BACKLOG,
+      link: dashboardTabs.BACKLOG,
+    },
+    [dashboardTabs.SCHEDULED]: {
+      text: dashboardTabs.LABELS.SCHEDULED,
+      link: dashboardTabs.SCHEDULED,
+    },
+    [dashboardTabs.BLOCKED]: { text: dashboardTabs.LABELS.BLOCKED, link: dashboardTabs.BLOCKED },
+  };
+
+  return tabProperties[tab] || tabProperties[dashboardTabs.NOW];
 };
 
 // Actions
