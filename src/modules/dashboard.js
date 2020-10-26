@@ -2,7 +2,7 @@
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
 import createReducer from '../utils/createReducer';
-import { loadTasks, addTask, selectTaskDashboardTab, tabTasks } from './tasks';
+import { loadTasks, addTask, selectTaskDashboardTab, getTabProperties } from './tasks';
 import { loadRecurringConfigs } from './recurringConfigs';
 import { selectUserId } from './session';
 import { RESET } from './reset';
@@ -178,14 +178,14 @@ export const createTask = (
   const showSnackbar = (tid, task_) => {
     const stateTask = getState();
     const tabTask = selectTaskDashboardTab(stateTask, tid);
-    const selectTab = tabTasks(tabTask);
+    const selectTab = getTabProperties(tabTask);
     dispatch(
       setSnackbarData({
         open: true,
-        message: 'Your task has been successfully created and added to your',
+        message: `Task created and added to ${selectTab.text}`,
         id: tid,
         task: task_,
-        buttonText: selectTab.text,
+        buttonText: 'Go there',
         buttonLink: selectTab.link,
       }),
     );
