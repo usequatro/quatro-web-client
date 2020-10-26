@@ -545,9 +545,9 @@ const TaskDialogForm = ({ onClose }) => {
         onClose={() => setShowScheduledStartDialog(false)}
         value={scheduledStartTimestamp}
         onChangeCommitted={(value) => {
-          const scheduled = scheduled instanceof Date ? scheduled.getTime() : value;
+          const scheduled = value instanceof Date ? value.getTime() : value;
           dispatch(setScheduledStart(scheduled));
-          
+
           // If we remove the scheduled start and there was repeat, also clear it
           if (!value && recurringConfig) {
             dispatch(setRecurringConfig(null));
