@@ -78,6 +78,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
+    whiteSpace: 'normal',
   },
   completeButtonIddle: {},
   completeButtonSuccess: {
@@ -86,6 +87,11 @@ const useStyles = makeStyles((theme) => ({
   blockersIcon: {
     marginRight: theme.spacing(1),
     marginTop: '6px', // to align with first blocker row
+  },
+  descriptionParagraph: {
+    '& a': {
+      wordBreak: 'break-all',
+    },
   },
 }));
 
@@ -140,7 +146,7 @@ const TaskView = ({
         <Typography paragraph>{title}</Typography>
 
         {description && (
-          <Typography variant="body2" paragraph>
+          <Typography variant="body2" paragraph className={classes.descriptionParagraph}>
             {parseDescription(description)}
           </Typography>
         )}
