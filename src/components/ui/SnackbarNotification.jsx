@@ -3,27 +3,22 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import Alert from '@material-ui/lab/Alert';
 import { Snackbar, makeStyles, Box, Button } from '@material-ui/core';
 import { resetSnackbar } from '../../modules/dashboard';
 
 const useStyles = makeStyles((theme) => ({
   xsPosition: {
     [theme.breakpoints.down('xs')]: {
-      bottom: 120,
+      bottom: '2.5rem',
     },
   },
-  snackbarStyle: {
-    background: theme.palette.background.secondary,
-    borderRadius: 30,
-    color: 'white',
-  },
-  customButton: {
-    borderRadius: 30,
-    borderColor: '#ffff',
-    color: '#ffff',
+  alertMessage: {
+    display: 'flex',
+    alignItems: 'center',
+    flexShrink: 0,
   },
 }));
-
 
 const SnackbarNotification = (props) => {
   const classes = useStyles();
@@ -31,81 +26,57 @@ const SnackbarNotification = (props) => {
 
   const { open, message, buttonText, buttonAction, buttonLink } = props;
   const capitalButtonText = buttonText.charAt(0).toUpperCase() + buttonText.slice(1);
-  let actionContent = null;
 
-  const ButtonLink = () => {
-    return (
-      <Button
-        active="true"
-        component={Link}
-        to={buttonLink}
-        variant="outlined"
-        onClick={() => {
-        setTimeout(() => {
-          dispatch(resetSnackbar());
-        }, 200);
-      }}
-        classes={{
-        root: classes.customButton,
-      }}
-      >     
-      {capitalButtonText}
-      </Button>
-    )
-  }
-
-  const ButtonAction = () => {
-    return (
-      <Button
-        size="small"
-        onClick={() => {
-        buttonAction()
-        setTimeout(() => {
-          dispatch(resetSnackbar());
-        }, 200);
-      }}
-        variant="outlined"
-        classes={{
-        root: classes.customButton,
-      }}
-      >
-      {capitalButtonText}
-      </Button>
-    )
-  }
-
-  if(open) {
+  if (open) {
     setTimeout(() => {
-     dispatch(resetSnackbar());
+      dispatch(resetSnackbar());
     }, 5000);
   }
 
-  if (buttonLink) { 
-    actionContent = (
-      <Box display="flex" flexDirection="row" m={1}>
-        <ButtonLink />
-      </Box>
-    )
-  } else if  (buttonAction) {
-    actionContent = (
-      <Box display="flex" flexDirection="row" m={1}>
-        <ButtonAction />
-      </Box>
-    )
-  }
+  const handleButtonActionClick = (event) => {
+    event.stopPropagation();
+    if (buttonAction) {
+      buttonAction();
+    }
+    setTimeout(() => {
+      dispatch(resetSnackbar());
+    }, 200);
+  };
 
   return (
-    <Snackbar
-      className={classes.xsPosition}
-      ContentProps={{
-        className: classes.snackbarStyle
-      }}
-      open={open}
-      message={message}
-      action={actionContent}
-    />
-  )
-}
+    <Snackbar className={classes.xsPosition} open={open}>
+      <Alert
+        icon={false}
+        severity="info"
+        variant="filled"
+        classes={{ message: classes.alertMessage }}
+        onClick={() => dispatch(resetSnackbar())} // Tapping on the alert will close it
+        action={
+          (buttonLink || buttonAction) && (
+            <Box display="flex" flexDirection="row" m={1}>
+              <Button
+                color="inherit"
+                variant="outlined"
+                size="small"
+                {...(buttonLink
+                  ? {
+                      component: Link,
+                      to: buttonLink,
+                    }
+                  : {})}
+                onClick={handleButtonActionClick}
+              >
+                {capitalButtonText}
+              </Button>
+            </Box>
+          )
+        }
+      >
+        {message}
+      </Alert>
+    </Snackbar>
+  );
+};
 
 SnackbarNotification.propTypes = {
   open: PropTypes.bool.isRequired,
@@ -119,6 +90,6 @@ SnackbarNotification.defaultProps = {
   buttonText: '',
   buttonAction: null,
   buttonLink: null,
-}
+};
 
 export default SnackbarNotification;

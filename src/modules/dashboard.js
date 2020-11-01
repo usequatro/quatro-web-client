@@ -178,15 +178,19 @@ export const createTask = (
   const showSnackbar = (tid, task_) => {
     const stateTask = getState();
     const tabTask = selectTaskDashboardTab(stateTask, tid);
+    const dashboardActiveTab = selectDashboardActiveTab(state);
+
     const selectTab = getTabProperties(tabTask);
     dispatch(
       setSnackbarData({
         open: true,
-        message: `Task created and added to ${selectTab.text}`,
+        message: `Task created`,
         id: tid,
         task: task_,
-        buttonText: 'Go there',
-        buttonLink: selectTab.link,
+        // Show button only if task went to a different tab than what's visible now
+        ...(dashboardActiveTab !== tabTask
+          ? { buttonText: `See ${selectTab.text}`, buttonLink: selectTab.link }
+          : {}),
       }),
     );
   };
