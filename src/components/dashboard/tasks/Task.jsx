@@ -13,6 +13,7 @@ import {
   selectTaskDue,
   selectTaskPrioritizedAheadOf,
   completeTask,
+  undoCompleteTask
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
 import { setEditTaskDialogId, setSnackbarData } from '../../../modules/dashboard';
@@ -41,6 +42,10 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
           message: '🎉 Task Completed!',
           id: tid,
           task,
+          buttonText: 'Undo',
+          buttonAction: function action() {
+            dispatch(undoCompleteTask(tid, task));
+          }
         }),
       );
     },
