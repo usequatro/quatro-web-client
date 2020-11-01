@@ -15,6 +15,9 @@ const muiTheme = createMuiTheme({
       lightEmphasis: 'rgb(240, 242, 247)',
       paper: '#fff',
     },
+    info: {
+      main: 'rgb(65, 77, 103)',
+    },
   },
   typography: {
     fontFamily: ['Work Sans', 'sans-serif'],

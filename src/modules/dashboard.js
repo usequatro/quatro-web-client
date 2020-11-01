@@ -1,9 +1,8 @@
 /**
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
-
 import createReducer from '../utils/createReducer';
-import { loadTasks, addTask, selectTaskDashboardTab } from './tasks';
+import { loadTasks, addTask, selectTaskDashboardTab, getTabProperties } from './tasks';
 import { loadRecurringConfigs } from './recurringConfigs';
 import { selectUserId } from './session';
 import { RESET } from './reset';
@@ -39,7 +38,15 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
-  snackbarData: { open: false, message: "", id: null, task: null }
+  snackbarData: {
+    open: false,
+    message: '',
+    id: null,
+    task: null,
+    buttonText: '',
+    buttonAction: null,
+    buttonLink: null,
+  },
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -168,22 +175,42 @@ export const createTask = (
     created: Date.now(),
     source: SOURCES.USER,
   };
+  const showSnackbar = (tid, task_) => {
+    const stateTask = getState();
+    const tabTask = selectTaskDashboardTab(stateTask, tid);
+    const dashboardActiveTab = selectDashboardActiveTab(state);
+
+    const selectTab = getTabProperties(tabTask);
+    dispatch(
+      setSnackbarData({
+        open: true,
+        message: `Task created`,
+        id: tid,
+        task: task_,
+        // Show button only if task went to a different tab than what's visible now
+        ...(dashboardActiveTab !== tabTask
+          ? { buttonText: `See ${selectTab.text}`, buttonLink: selectTab.link }
+          : {}),
+      }),
+    );
+  };
 
   return apiClient.fetchCreateTask(task).then(({ id }) => {
     dispatch(addTask(id, task));
-
+    showSnackbar(id, task);
     mixpanel.track(TASK_CREATED, {
       hasBlockers: blockedBy.length > 0,
       hasScheduledStart: !!scheduledStart,
       hasDueDate: !!due,
     });
 
-    const updatedState = getState();
-    const tab = selectTaskDashboardTab(updatedState, id);
-    if (tab) {
-      dispatch(setDashboardActiveTab(tab));
-      dispatch(setHighlighedTask(id));
-    }
+    // For autoupdating the new task tab
+    // const updatedState = getState();
+    // const tasktab = selectTaskDashboardTab(updatedState, id);
+    // if (tab) {
+    //   dispatch(setDashboardActiveTab(tasktab));
+    //   dispatch(setHighlighedTask(id));
+    // }
 
     return id;
   });

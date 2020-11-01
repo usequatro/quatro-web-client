@@ -5,11 +5,8 @@ import cond from 'lodash/cond';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
-import { Button } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Snackbar from '@material-ui/core/Snackbar';
-import Box from '@material-ui/core/Box';
+import { makeStyles } from '@material-ui/core/styles';
 
 import NavigationSidebar from './navigation/NavigationSidebar';
 import TaskList from './tasks/TaskList';
@@ -17,15 +14,15 @@ import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
+import SnackbarNotification from '../ui/SnackbarNotification';
+
 import {
   selectDashboadReadyForInitialFetch,
   loadDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
-  resetSnackbar,
 } from '../../modules/dashboard';
-import { undoCompleteTask } from '../../modules/tasks';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
@@ -61,13 +58,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ColorButton = withStyles(() => ({
-  root: {
-    borderRadius: 30,
-    borderColor: '#ffff',
-    color: '#ffff',
-  },
-}))(Button);
 
 const tabsShowingTaskList = [
   dashboardTabs.NOW,
@@ -98,6 +88,8 @@ const Dashboard = () => {
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
   const savingUnsavedChanges = useSelector(selectUnsavedChangesSaving);
 
+  const snackbarData = useSelector(selectSnackbarData);
+
   const [navigationOpen, setNavigationOpen] = useState(false);
   // Close drawer when route changes
   const previousPathname = usePrevious(location.pathname);
@@ -106,16 +98,6 @@ const Dashboard = () => {
       setNavigationOpen(false);
     }
   }, [location.pathname, navigationOpen, previousPathname]);
-
-  // Snackbar
-  const snackbarData = useSelector(selectSnackbarData);
-  useEffect(() => {
-    if (snackbarData.open) {
-      setTimeout(() => {
-        dispatch(resetSnackbar());
-      }, 5000);
-    }
-  }, [dispatch, snackbarData]);
 
   useEffect(() => {
     window.onbeforeunload =
@@ -171,27 +153,8 @@ const Dashboard = () => {
 
         <TaskDialog />
 
-        <Snackbar
-          className={classes.xsPosition}
-          ContentProps={{
-            className: classes.snackbarStyle,
-          }}
-          open={snackbarData.open}
-          message={snackbarData.message}
-          action={
-            <Box display="flex" flexDirection="row" m={1}>
-              <ColorButton
-                size="small"
-                onClick={() => {
-                  dispatch(undoCompleteTask(snackbarData.id, snackbarData.task));
-                  dispatch(resetSnackbar());
-                }}
-                variant="outlined"
-              >
-                Undo
-              </ColorButton>
-            </Box>
-          }
+        <SnackbarNotification
+          {...snackbarData}
         />
       </div>
     </div>
