@@ -27,6 +27,7 @@ import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modul
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../../utils/usePrevious';
+import GoogleCalendar from '../GoogleCalendar';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -130,6 +131,8 @@ const Dashboard = () => {
   return (
     <div className={classes.root}>
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
+
+      <GoogleCalendar />
 
       <NavigationSidebar open={navigationOpen} />
 

@@ -5,7 +5,6 @@ import Div100vh from 'react-div-100vh';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { Provider as ReactReduxProvider } from 'react-redux';
 
-import GoogleCalendar from './GoogleCalendar';
 import UserLoginListener from './UserLoginListener';
 import ErrorBoundary from './ErrorBoundary';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
@@ -30,7 +29,6 @@ const App = () => (
         <CssBaseline />
         <Router {...routerProps}>
           <UserLoginListener />
-          <GoogleCalendar />
           <RouterChangeTracker />
           <Div100vh style={{ width: '100%', height: '100rvh' }}>
             <NotificationContextProvider>

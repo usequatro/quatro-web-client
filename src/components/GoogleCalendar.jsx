@@ -1,5 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+
+import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 
 import {
   setGoogleAPIClient,
@@ -8,23 +12,37 @@ import {
   selectGoogleSignInStatus
 } from '../modules/dashboard';
 
+const useStyles = makeStyles(() => ({
+  container: {
+    padding: 90,
+    flexGrow: 1,
+    display: "flex",
+    alignItems: "center",
+    alignContent: "center",
+  },
+}));
+
 const GoogleCalendar = () => {
   const dispatch = useDispatch();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
   const googleSignInStatus = useSelector(selectGoogleSignInStatus);
-  const [googleSignedIn, setGoogleSignedIn] = useState(googleSignInStatus);
+  const [googleSignedIn, setGoogleSignedIn] = useState(false);
+  const classes = useStyles();
 
   const updateSignInStatus = useCallback(
     (bool) => {
-      setGoogleSignedIn(bool)
-      dispatch(setGoogleSignInStatus(bool))
+      setGoogleSignedIn(bool);
+      dispatch(setGoogleSignInStatus(bool));
     },
-    [dispatch, setGoogleSignedIn],
+    [dispatch],
   );
 
-  useEffect(() => {
-    // console.log('googleSignedIn', googleSignedIn)
-  }, [googleSignedIn])
+  // useEffect(() => {
+  //   console.log('googleSignedIn', googleSignedIn)
+  // }, [googleSignedIn]);
+  // useEffect(() => {
+  //   console.log('googleSignInStatus', googleSignInStatus)
+  // }, [googleSignInStatus]);
 
   const initGoogleClient = useCallback(
     () => {
@@ -36,12 +54,9 @@ const GoogleCalendar = () => {
 
       googleAPIClient.client.init(config)
         .then(() => {
-          // console.log('initClient then');
-          // googleAPIClient.auth2.getAuthInstance().signIn();
-          // googleAPIClient.auth2.getAuthInstance().signOut();
-
           // Listen for sign-in state changes.
-          googleAPIClient.auth2.getAuthInstance().isSignedIn.listen(googleSignedIn);
+          googleAPIClient.auth2.getAuthInstance().isSignedIn.listen(
+            state => updateSignInStatus(state));
           // Handle the initial sign-in state.
           updateSignInStatus(googleAPIClient.auth2.getAuthInstance().isSignedIn.get());
         })
@@ -49,7 +64,7 @@ const GoogleCalendar = () => {
           console.log("ERROR on initGoogleClient: ", e);
         });
     },
-    [googleAPIClient, googleSignedIn, updateSignInStatus],
+    [googleAPIClient, updateSignInStatus],
   );
 
   const injectGoogleAPIScript = useCallback(
@@ -69,11 +84,25 @@ const GoogleCalendar = () => {
     [dispatch, googleAPIClient, initGoogleClient],
   )
 
+  const connectGoogle = () => {
+    googleAPIClient.auth2.getAuthInstance().signIn();
+  };
+
+  const logOutGoogle = () => {
+    googleAPIClient.auth2.getAuthInstance().signOut();
+  };
+
   useEffect(() => {
     injectGoogleAPIScript();
   },[injectGoogleAPIScript]);
 
-  return(null)
+  return(
+    <Box className={classes.container}>
+      { googleSignedIn ? 
+          <Button onClick={logOutGoogle} variant="contained">Log Out Google Calendar</Button> :     
+            <Button onClick={connectGoogle} variant="contained">Connect Google Calendar</Button> } 
+    </Box>
+  )
 };
 
 export default GoogleCalendar;
