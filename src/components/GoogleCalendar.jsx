@@ -25,7 +25,7 @@ const useStyles = makeStyles(() => ({
 const GoogleCalendar = () => {
   const dispatch = useDispatch();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
-  const googleSignInStatus = useSelector(selectGoogleSignInStatus);
+  // const googleSignInStatus = useSelector(selectGoogleSignInStatus);
   const [googleSignedIn, setGoogleSignedIn] = useState(false);
   const classes = useStyles();
 
@@ -37,12 +37,20 @@ const GoogleCalendar = () => {
     [dispatch],
   );
 
-  // useEffect(() => {
-  //   console.log('googleSignedIn', googleSignedIn)
-  // }, [googleSignedIn]);
-  // useEffect(() => {
-  //   console.log('googleSignInStatus', googleSignInStatus)
-  // }, [googleSignInStatus]);
+  const getUserCalendars = useCallback(
+    () => {
+      googleAPIClient.client.load('calendar','v3', () => {
+        googleAPIClient.client.calendar.calendarList.list({
+          maxResults: 250,
+          minAccessRole: 'writer',
+        }).execute(calendarListResponse => {
+          const calendars = calendarListResponse.items;
+          console.log(calendars.map(cal => cal));
+        });
+      });
+    },
+    [googleAPIClient],
+  );
 
   const initGoogleClient = useCallback(
     () => {
@@ -59,12 +67,18 @@ const GoogleCalendar = () => {
             state => updateSignInStatus(state));
           // Handle the initial sign-in state.
           updateSignInStatus(googleAPIClient.auth2.getAuthInstance().isSignedIn.get());
+
+          // const idToken = googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.id_token
+          // const accessToken = 
+          //   googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.accessToken
+
+          getUserCalendars();
         })
         .catch((e) => {
-          console.log("ERROR on initGoogleClient: ", e);
+          // console.log("ERROR on initGoogleClient: ", e);
         });
     },
-    [googleAPIClient, updateSignInStatus],
+    [googleAPIClient, updateSignInStatus, getUserCalendars],
   );
 
   const injectGoogleAPIScript = useCallback(
@@ -99,8 +113,8 @@ const GoogleCalendar = () => {
   return(
     <Box className={classes.container}>
       { googleSignedIn ? 
-          <Button onClick={logOutGoogle} variant="contained">Log Out Google Calendar</Button> :     
-            <Button onClick={connectGoogle} variant="contained">Connect Google Calendar</Button> } 
+          <Button onClick={logOutGoogle} variant="contained">Log Out Google Calendar</Button>
+           : <Button onClick={connectGoogle} variant="contained">Connect Google Calendar</Button> } 
     </Box>
   )
 };
