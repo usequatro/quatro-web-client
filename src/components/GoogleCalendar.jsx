@@ -10,7 +10,7 @@ import {
   selectGoogleAPIClient,
   setGoogleSignInStatus,
   selectGoogleSignInStatus
-} from '../modules/dashboard';
+} from '../modules/googleCalendar';
 
 const useStyles = makeStyles(() => ({
   container: {
