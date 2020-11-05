@@ -28,6 +28,7 @@ const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
 const SET_NEW_TASK_DIALOG_OPEN = `${NAMESPACE}/SET_NEW_TASK_DIALOG_OPEN`;
 const SET_EDIT_TASK_DIALOG_ID = `${NAMESPACE}/SET_EDIT_TASK_DIALOG_ID`;
 const HIGHLIGH_TASK = `${NAMESPACE}/HIGHLIGH_TASK`;
+const SET_GOOGLE_API_CLIENT =  `${NAMESPACE}/SET_GOOGLE_API_CLIENT`;
 
 // Reducers
 
@@ -38,6 +39,7 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
+  googleAPIClient: null,
   snackbarData: {
     open: false,
     message: '',
@@ -70,6 +72,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_NEW_TASK_DIALOG_OPEN]: (state, { payload }) => ({ ...state, newTaskDialogOpen: payload }),
   [SET_EDIT_TASK_DIALOG_ID]: (state, { payload }) => ({ ...state, editTaskDialogId: payload }),
   [HIGHLIGH_TASK]: (state, { payload }) => ({ ...state, highlightedTaskId: payload }),
+  [SET_GOOGLE_API_CLIENT]: (state, { payload }) => ({ ...state, googleAPIClient: payload }),
   [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
@@ -83,6 +86,7 @@ export const selectDashboardActiveTab = (state) => state[NAMESPACE].activeTab;
 export const selectNewTaskDialogOpen = (state) => state[NAMESPACE].newTaskDialogOpen;
 export const selectEditTaskDialogId = (state) => state[NAMESPACE].editTaskDialogId;
 export const selectHighlightedTaskId = (state) => state[NAMESPACE].highlightedTaskId;
+export const selectGoogleAPIClient= (state) => state[NAMESPACE].googleAPIClient;
 
 // Actions
 
@@ -114,6 +118,11 @@ export const setNewTaskDialogOpen = (open) => ({
 export const setEditTaskDialogId = (id) => ({
   type: SET_EDIT_TASK_DIALOG_ID,
   payload: id,
+});
+
+export const setGoogleAPIClient = (client) => ({
+  type: SET_GOOGLE_API_CLIENT,
+  payload: client,
 });
 
 const setStatus = (status) => ({

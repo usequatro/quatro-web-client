@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
@@ -22,6 +22,8 @@ import {
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
+  setGoogleAPIClient,
+  selectGoogleAPIClient,
 } from '../../modules/dashboard';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
@@ -84,6 +86,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const dashboardReadyForInitialFetch = useSelector(selectDashboadReadyForInitialFetch);
   const activeTab = useSelector(selectDashboardActiveTab);
+  const googleAPIClient = useSelector(selectGoogleAPIClient);
 
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
   const savingUnsavedChanges = useSelector(selectUnsavedChangesSaving);
@@ -116,6 +119,57 @@ const Dashboard = () => {
       dispatch(loadDashboardTasks());
     }
   }, [dashboardReadyForInitialFetch, dispatch]);
+
+  const config = {
+    "clientId": process.env.REACT_APP_GOOGLE_CLIENT_ID,
+    "apiKey": process.env.REACT_APP_GOOGLE_API_KEY,
+    "scope": process.env.REACT_APP_GOOGLE_SCOPE,
+  };
+
+  const [googleAPI, setGoogleAPI] = useState(null);
+  const [ooogleApiLoaded, setGoogleApiLoaded] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const updateSigninStatus = isSignedIn_ => {
+    setIsSignedIn(isSignedIn_)
+  }
+
+  const initClient = () => {
+    console.log('initClient');
+
+    googleAPIClient.client.init(config)
+      .then(() => {
+        console.log('initClient then');
+        //googleAPIClient.auth2.getAuthInstance().signIn();
+        //googleAPIClient.auth2.getAuthInstance().signOut();
+        // Listen for sign-in state changes.
+        googleAPIClient.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+        // Handle the initial sign-in state.
+        updateSigninStatus(googleAPIClient.auth2.getAuthInstance().isSignedIn.get());
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+
+  useEffect(() => {
+    console.log('isSignedIn',isSignedIn)
+  }, [isSignedIn]);
+
+  useEffect(() => {
+    if (googleAPIClient) {
+      googleAPIClient.load('client:auth2', initClient);
+    } else {
+      const gScript = document.createElement('script');
+      gScript.type = 'text/javascript';
+      gScript.src = 'https://apis.google.com/js/platform.js?onload=onScriptLoad';
+      document.body.appendChild(gScript);
+      gScript.onload = () => {
+        setGoogleApiLoaded(true);
+        dispatch(setGoogleAPIClient(window.gapi));
+      };
+    }
+  },[googleAPIClient]);
 
   const renderContent = useCallback(
     () =>
@@ -152,7 +206,6 @@ const Dashboard = () => {
          </Hidden>  */}
 
         <TaskDialog />
-
         <SnackbarNotification
           {...snackbarData}
         />
