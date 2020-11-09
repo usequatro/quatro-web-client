@@ -1,53 +1,69 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from "react-router-dom";
 
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import cond from 'lodash/cond';
 import { makeStyles } from '@material-ui/core/styles';
+import LoadingState from '../dashboard/tasks/LoadingState';
 
 import {
   setGoogleAPIClient,
   selectGoogleAPIClient,
   setGoogleSignInStatus,
-  selectGoogleSignInStatus
-} from '../modules/googleCalendar';
+  selectGoogleIsFetching,
+  setGoogleIsFetching,
+} from '../../modules/googleCalendar';
+import { setDashboardActiveTab } from '../../modules/dashboard';
+
+import GoogleSignIn from './GoogleSignIn';
+import GoogleCalendarTaskList from './GoogleCalendarTaskList';
 
 const useStyles = makeStyles(() => ({
   container: {
-    padding: 90,
     flexGrow: 1,
+    padding: 90,
     display: "flex",
     alignItems: "center",
     alignContent: "center",
+    border: 'solid 1px rgba(0, 0, 0, 0.12)',
+    resize: 'horizontal',
+    overflow: 'auto',
+    backgroundColor: '#ffffff',
   },
 }));
 
 const GoogleCalendar = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
-  // const googleSignInStatus = useSelector(selectGoogleSignInStatus);
+  const fetching = useSelector(selectGoogleIsFetching);
   const [googleSignedIn, setGoogleSignedIn] = useState(false);
+  const [calendarList, setCalendarList] = useState(false);
+
   const classes = useStyles();
 
   const updateSignInStatus = useCallback(
     (bool) => {
       setGoogleSignedIn(bool);
       dispatch(setGoogleSignInStatus(bool));
+      dispatch(setGoogleIsFetching(false));
     },
     [dispatch],
   );
 
   const getUserCalendars = useCallback(
     () => {
-      googleAPIClient.client.load('calendar','v3', () => {
-        googleAPIClient.client.calendar.calendarList.list({
-          maxResults: 250,
-          minAccessRole: 'writer',
-        }).execute(calendarListResponse => {
-          const calendars = calendarListResponse.items;
-          console.log(calendars.map(cal => cal));
-        });
-      });
+      return [1];
+    //   googleAPIClient.client.load('calendar','v3', () => {
+    //     googleAPIClient.client.calendar.calendarList.list({
+    //       maxResults: 250,
+    //       minAccessRole: 'writer',
+    //     }).execute(calendarListResponse => {
+    //       setCalendarList(calendarListResponse.items);
+    //     });
+    //   });
     },
     [googleAPIClient],
   );
@@ -70,9 +86,16 @@ const GoogleCalendar = () => {
 
           // const idToken = googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.id_token
           // const accessToken = 
-          //   googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.accessToken
+          // googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.accessToken
 
-          getUserCalendars();
+   
+          const connectedCalendars = getUserCalendars();
+           
+          if (connectedCalendars.length === 0 ) {
+            history.push("/dashboard/googlecalendar");  
+          }
+
+
         })
         .catch((e) => {
           // console.log("ERROR on initGoogleClient: ", e);
@@ -98,10 +121,6 @@ const GoogleCalendar = () => {
     [dispatch, googleAPIClient, initGoogleClient],
   )
 
-  const connectGoogle = () => {
-    googleAPIClient.auth2.getAuthInstance().signIn();
-  };
-
   const logOutGoogle = () => {
     googleAPIClient.auth2.getAuthInstance().signOut();
   };
@@ -112,9 +131,17 @@ const GoogleCalendar = () => {
 
   return(
     <Box className={classes.container}>
-      { googleSignedIn ? 
-          <Button onClick={logOutGoogle} variant="contained">Log Out Google Calendar</Button>
-           : <Button onClick={connectGoogle} variant="contained">Connect Google Calendar</Button> } 
+      {cond([
+        [() => fetching, () => <LoadingState />],
+        [() => fetching && !googleSignedIn, () => null],
+        [() => !fetching && googleSignedIn, () => (
+          <Box className={classes.container}>
+            <GoogleCalendarTaskList />
+            <Button onClick={() => logOutGoogle()} variant="contained">Log Out Google Calendar</Button>
+          </Box>
+        )],
+        [() => !fetching && !googleSignedIn, () => <GoogleSignIn />],
+      ])}
     </Box>
   )
 };
