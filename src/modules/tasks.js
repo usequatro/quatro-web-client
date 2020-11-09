@@ -236,8 +236,8 @@ export const selectBlockedTasks = createSelector(
   },
 );
 
-const selectTasksPrioritizedAheadOf = (state, id) =>
-  selectAllTasks(state).filter((task) => task.prioritizedAheadOf === id);
+const selectTasksPrioritizedAheadOfGivenTask = (state, id) =>
+  selectAllTasks(state).filter(([, task]) => task.prioritizedAheadOf === id);
 
 export const selectTaskDashboardTab = (state, taskId) =>
   cond([
@@ -336,7 +336,7 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
 
   // If there are other tasks depending on the one that is going to be moved,
   // we're going to associate them to the next one, so that they stay on the same spot.
-  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
+  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOfGivenTask(state, sourceTaskId);
   const taskAfter = allTasks[sourceIndex + 1];
 
   fetchUpdateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId });
@@ -350,8 +350,16 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
 export const clearRelativePrioritization = (id) => () =>
   fetchUpdateTask(id, { prioritizedAheadOf: null });
 
-export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
+export const completeTask = (id) => (dispatch, getState, { mixpanel }) => {
   const timeout = setTimeout(() => {
+    const state = getState();
+
+    // Clear relative prioritization depending on this task
+    const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
+    tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
+      fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
+    });
+
     fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
   }, 750);
@@ -371,6 +379,12 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
+
+  // Clear relative prioritization depending on this task
+  const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
+  tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
+    fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
+  });
 
   fetchDeleteTask(id);
   if (recurringConfigId) {

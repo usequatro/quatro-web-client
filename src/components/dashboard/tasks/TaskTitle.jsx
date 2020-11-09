@@ -6,7 +6,7 @@ import { selectTaskTitle } from '../../../modules/tasks';
 
 const TaskTitle = memo(({ id }) => {
   const title = useSelector((state) => selectTaskTitle(state, id));
-  return title;
+  return title || '';
 });
 
 TaskTitle.propTypes = {
