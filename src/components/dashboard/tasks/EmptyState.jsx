@@ -13,6 +13,7 @@ const emptyStateImages = {
   [dashboardTabs.BLOCKED]: '/empty-states/empty-state-blocked.png',
   [dashboardTabs.BACKLOG]: '/empty-states/empty-state-backlog.png',
   [dashboardTabs.COMPLETED]: '/empty-states/empty-state-completed.png',
+  [dashboardTabs.GOOGLE_CALENDAR]: '/empty-states/empty-state-top-4.png',
 };
 
 const emptyStateCopy = {
@@ -29,6 +30,9 @@ const emptyStateCopy = {
     'Nice!',
     "You have an empty backlog. Keep your focus on what's important.",
   ],
+  [dashboardTabs.GOOGLE_CALENDAR]: [
+    'There are only so many hours in the day.',
+    'Make sure you aren`t committing more than you have.'],
 };
 
 const useStyles = makeStyles(() => ({
