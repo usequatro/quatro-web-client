@@ -10,6 +10,8 @@ import difference from 'lodash/difference';
 import { createSelector } from 'reselect';
 
 import calculateTaskScore from '../utils/calculateTaskScore';
+import debugConsole from '../utils/debugConsole';
+import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
 import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
@@ -32,9 +34,7 @@ export const NAMESPACE = 'tasks';
 
 // Action types
 
-const ADD_TO_LOCAL_STATE = `${NAMESPACE}/ADD_TO_LOCAL_STATE`;
-const UPDATE_LOCAL_STATE = `${NAMESPACE}/UPDATE_LOCAL_STATE`;
-const REMOVE_FROM_LOCAL_STATE = `${NAMESPACE}/REMOVE_FROM_LOCAL_STATE`;
+const ADD_CHANGES_TO_LOCAL_STATE = `${NAMESPACE}/ADD_CHANGES_TO_LOCAL_STATE`;
 const RESET_LOCAL_STATE = `${NAMESPACE}/RESET_LOCAL_STATE`;
 
 // Reducers
@@ -44,43 +44,27 @@ const INITIAL_STATE = {
   byId: {},
 };
 
+const applyScores = (state) => ({
+  ...state,
+  byId: Object.keys(state.byId).reduce(
+    (memo, id) => ({
+      ...memo,
+      [id]: {
+        ...state.byId[id],
+        score: calculateTaskScore(state.byId[id].impact, state.byId[id].effort, state.byId[id].due),
+      },
+    }),
+    {},
+  ),
+});
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
   [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
-  [ADD_TO_LOCAL_STATE]: (state, { payload: { id, task } }) => {
-    if (state.byId[id]) {
-      throw new Error(`Reducer validation failed, trying to add task id ${id} but already exists.`);
-    }
-    return {
-      ...state,
-      allIds: [...state.allIds, id],
-      byId: {
-        ...state.byId,
-        [id]: {
-          ...task,
-          score: calculateTaskScore(task.impact, task.effort, task.due),
-        },
-      },
-    };
+  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) => {
+    const newState = applyGroupedEntityChanges(state, { added, modified, removed });
+    const newStateWithScores = applyScores(newState);
+    return newStateWithScores;
   },
-  [UPDATE_LOCAL_STATE]: (state, { payload: { id, updates } }) => {
-    const updatedTask = { ...state.byId[id], ...updates };
-    return {
-      ...state,
-      byId: {
-        ...state.byId,
-        [id]: {
-          ...updatedTask,
-          score: calculateTaskScore(updatedTask.impact, updatedTask.effort, updatedTask.due),
-        },
-      },
-    };
-  },
-  [REMOVE_FROM_LOCAL_STATE]: (state, { payload: { id } }) => ({
-    ...state,
-    allIds: state.allIds.filter((tid) => tid !== id),
-    byId: { ...state.byId, [id]: null },
-  }),
 });
 
 // Selectors
@@ -290,20 +274,16 @@ export const getTabProperties = (tab) => {
 // Actions
 
 export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispatch) => {
-  const onNext = (results, hasUnsavedChanges) => {
-    console.log('listenToTaskList', results, hasUnsavedChanges); // eslint-disable-line no-console
-    results.forEach(({ type, entity: [id, data] }) => {
-      if (type === 'removed') {
-        dispatch({ type: REMOVE_FROM_LOCAL_STATE, payload: { id } });
-      }
-      if (type === 'added') {
-        dispatch({ type: ADD_TO_LOCAL_STATE, payload: { id, task: data } });
-      }
-      if (type === 'modified') {
-        dispatch({ type: UPDATE_LOCAL_STATE, payload: { id, updates: data } });
-      }
+  const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
+    debugConsole.log('listenToTaskList', {
+      groupedChangedEntities,
+      hasEntityChanges,
+      hasLocalUnsavedChanges,
     });
-    nextCallback(hasUnsavedChanges);
+    if (hasEntityChanges) {
+      dispatch({ type: ADD_CHANGES_TO_LOCAL_STATE, payload: groupedChangedEntities });
+    }
+    nextCallback(hasLocalUnsavedChanges);
   };
   const onError = (error) => {
     errorCallback(error);

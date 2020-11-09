@@ -1,6 +1,7 @@
 /**
  * File to interact with Firebase's Firestore database
  */
+import { formatQuerySnapshotChanges } from './firestoreRealtimeHelpers';
 import { getFirestore } from '../firebase';
 import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
@@ -28,34 +29,6 @@ const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
     values.filter(({ status }) => status === 'fulfilled').map(({ value }) => value),
   );
 
-const filterValidEntityChangesFromQuerySnapshot = (querySnapshot, validateSchema) => {
-  const listenResult = querySnapshot
-    .docChanges()
-    // Extract documents into plain objects
-    .map((change) => ({
-      source: change.doc.metadata.hasPendingWrites ? 'local' : 'server',
-      type: change.type,
-      entity: [change.doc.id, change.doc.data()],
-    }))
-    // validate and filter out invalids
-    .map(({ entity: [id, data], ...rest }) => {
-      const { value, error } = validateSchema(data, { sync: true });
-      if (error) {
-        console.error(error, id, data); // eslint-disable-line no-console
-        return null;
-      }
-      return { ...rest, entity: [id, value] };
-    })
-    .filter(Boolean);
-
-  return listenResult;
-};
-
-const hasLocalUnsavedChanges = (querySnapshot) =>
-  querySnapshot
-    .docChanges({ includeMetadataChanges: true })
-    .reduce((memo, change) => memo || change.doc.metadata.hasPendingWrites, false);
-
 /**
  * @param {Object} task
  * @return {Promise<firebase.firestore.DocumentReference>}
@@ -69,11 +42,11 @@ export const fetchCreateTask = async (task) => {
  * Attaches a listener for task list events.
  *
  * @param {string} userId
- * @param {Function} nextCallback
- * @param {Function} errorCallback
+ * @param {Function} onNext
+ * @param {Function} onError
  * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const listenListTasks = (userId, nextCallback, errorCallback) =>
+export const listenListTasks = (userId, onNext, onError) =>
   getFirestore()
     .collection(TASKS)
     .where('userId', '==', userId)
@@ -81,15 +54,10 @@ export const listenListTasks = (userId, nextCallback, errorCallback) =>
     .onSnapshot(
       { includeMetadataChanges: true },
       (querySnapshot) => {
-        const listenResult = filterValidEntityChangesFromQuerySnapshot(
-          querySnapshot,
-          validateTaskSchema,
-        );
-        const hasUnsynchedChanges = hasLocalUnsavedChanges(querySnapshot);
-        nextCallback(listenResult, hasUnsynchedChanges);
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateTaskSchema));
       },
       (error) => {
-        errorCallback(error);
+        onError(error);
       },
     );
 
@@ -139,26 +107,21 @@ export const fetchDeleteTask = (id) => getFirestore().collection(TASKS).doc(id).
  * Attaches a listener for recurring config list events.
  *
  * @param {string} userId
- * @param {Function} nextCallback
- * @param {Function} errorCallback
+ * @param {Function} onNext
+ * @param {Function} onError
  * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const listenListRecurringConfigs = (userId, nextCallback, errorCallback) =>
+export const listenListRecurringConfigs = (userId, onNext, onError) =>
   getFirestore()
     .collection(RECURRING_CONFIGS)
     .where('userId', '==', userId)
     .onSnapshot(
       { includeMetadataChanges: true },
       (querySnapshot) => {
-        const listenResult = filterValidEntityChangesFromQuerySnapshot(
-          querySnapshot,
-          validateRecurringConfigSchema,
-        );
-        const hasUnsynchedChanges = hasLocalUnsavedChanges(querySnapshot);
-        nextCallback(listenResult, hasUnsynchedChanges);
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateRecurringConfigSchema));
       },
       (error) => {
-        errorCallback(error);
+        onError(error);
       },
     );
 
