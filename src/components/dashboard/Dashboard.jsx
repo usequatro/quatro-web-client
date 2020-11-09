@@ -14,6 +14,7 @@ import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
+import GoogleCalendarConnectedCalendars from '../gCalendar/GoogleCalendarConnectedCalendars';
 import SnackbarNotification from '../ui/SnackbarNotification';
 
 import {
@@ -27,7 +28,7 @@ import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modul
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../../utils/usePrevious';
-import GoogleCalendar from '../GoogleCalendar';
+import GoogleCalendar from '../gCalendar/GoogleCalendar';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -124,6 +125,8 @@ const Dashboard = () => {
         [(tab) => tabsShowingTaskList.includes(tab), () => <TaskList />],
         [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
         [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
+        [(tab) => tab === dashboardTabs.CONNECTED_GOOGLE_CALENDARS, () => 
+          <GoogleCalendarConnectedCalendars />],
       ])(activeTab),
     [activeTab],
   );
@@ -131,10 +134,11 @@ const Dashboard = () => {
   return (
     <div className={classes.root}>
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
-
-      <GoogleCalendar />
+      
 
       <NavigationSidebar open={navigationOpen} />
+
+      { activeTab === dashboardTabs.NOW && <GoogleCalendar /> }
 
       <div className={classes.appContentContainer}>
         <Backdrop
