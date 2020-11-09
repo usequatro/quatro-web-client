@@ -2,6 +2,7 @@
  * Namespace to keep information of the current session, like user details.
  */
 import sortBy from 'lodash/sortBy';
+import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
 import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
@@ -171,7 +172,14 @@ const sortByCustomPrioritization = (tasks) => {
 };
 
 const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomingTasks) => {
-  const tasksByScore = sortBy(upcomingTasks, '1.score').reverse();
+  const tasksByScore = cloneDeep(upcomingTasks);
+  tasksByScore.sort(([, task1], [, task2]) => {
+    if (task1.score === task2.score) {
+      return (task1.title || '').toLowerCase() > (task2.title || '').toLowerCase() ? 1 : -1;
+    }
+    return task2.score - task1.score;
+  });
+
   const tasksWithCustomPrioritization = sortByCustomPrioritization(tasksByScore);
   return tasksWithCustomPrioritization;
 });
