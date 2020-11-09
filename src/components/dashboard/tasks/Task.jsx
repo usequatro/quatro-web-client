@@ -1,10 +1,9 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import TaskView from './TaskView';
 import {
-  selectTask,
   selectTaskTitle,
   selectTaskDescription,
   selectTaskScore,
@@ -13,13 +12,12 @@ import {
   selectTaskDue,
   selectTaskPrioritizedAheadOf,
   completeTask,
-  undoCompleteTask
+  undoCompleteTask,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setEditTaskDialogId, setSnackbarData } from '../../../modules/dashboard';
+import { setEditTaskDialogId, setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
 
 const Task = ({ id, position, component, highlighted, showBlockers }) => {
-  const task = useSelector((state) => selectTask(state, id));
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
@@ -34,35 +32,31 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
   const dispatch = useDispatch();
   const handleClick = useCallback(() => dispatch(setEditTaskDialogId(id)), [id, dispatch]);
 
-  const showSnackbar = useCallback(
-    (tid) => {
-      dispatch(
-        setSnackbarData({
-          open: true,
-          message: '🎉 Task Completed!',
-          id: tid,
-          task,
-          buttonText: 'Undo',
-          buttonAction: function action() {
-            dispatch(undoCompleteTask(tid, task));
-          }
-        }),
-      );
-    },
-    [dispatch, task],
-  );
-
+  const [visualCompleted, setVisualCompleted] = useState(completed);
   const cancelCompletion = useRef();
   const handleComplete = useCallback(
     (tid) => {
-      if (!completed) {
-        showSnackbar(tid);
+      if (!visualCompleted) {
+        setVisualCompleted(Date.now());
+        dispatch(
+          setSnackbarData({
+            open: true,
+            message: '🎉 Task Completed!',
+            id: tid,
+            buttonText: 'Undo',
+            buttonAction: function action() {
+              dispatch(undoCompleteTask(tid));
+            },
+          }),
+        );
         cancelCompletion.current = dispatch(completeTask(tid));
       } else if (cancelCompletion) {
+        dispatch(resetSnackbar());
         cancelCompletion.current();
+        setVisualCompleted(null);
       }
     },
-    [dispatch, completed, showSnackbar],
+    [dispatch, visualCompleted],
   );
 
   return (
@@ -74,7 +68,7 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
       title={title}
       description={description}
       score={score}
-      completed={completed}
+      completed={visualCompleted}
       scheduledStart={scheduledStart}
       due={due}
       prioritizedAheadOf={prioritizedAheadOf}

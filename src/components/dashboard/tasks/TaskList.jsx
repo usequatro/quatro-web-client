@@ -27,7 +27,7 @@ import {
   selectDashboardActiveTab,
   setNewTaskDialogOpen,
   selectHighlightedTaskId,
-  selectDashboadIsFetching,
+  selectDashboadIsLoading,
 } from '../../../modules/dashboard';
 import Task from './Task';
 import Sortable from './Sortable';
@@ -70,7 +70,7 @@ const TaskList = forwardRef((_, ref) => {
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
-  const fetching = useSelector(selectDashboadIsFetching);
+  const loading = useSelector(selectDashboadIsLoading);
   const tasks = useSelector(selectorFunctionByPathname[tab] || selectorFunctionByPathname.fallback);
   const taskIds = mapIds(tasks);
   const showPosition = shouldShowPosition(tab);
@@ -85,7 +85,7 @@ const TaskList = forwardRef((_, ref) => {
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
       {cond([
-        [() => fetching, () => <LoadingState />],
+        [() => loading, () => <LoadingState />],
         [() => taskIds.length === 0, () => <EmptyState tab={tab} />],
         [
           () => true,

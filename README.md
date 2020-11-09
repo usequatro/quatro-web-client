@@ -16,9 +16,9 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 Libraries used:
 
 - React.
-- Redux: for global state management. (redux-thunk)
+- Redux: for global state management. (withredux-thunk)
 - Material-UI: for UI components and styling.
-- Redux Saga: for side effects, like triggering autosave.
+- Firebase Firestore: for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
 - React Router: for navigation.
 - Date-fns: for date and time manipulation.
 

@@ -17,13 +17,12 @@ import AccountSettings from './account/AccountSettings';
 import SnackbarNotification from '../ui/SnackbarNotification';
 
 import {
-  selectDashboadReadyForInitialFetch,
-  loadDashboardTasks,
+  listenToDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectSnackbarData,
+  selectIsDataInSync,
 } from '../../modules/dashboard';
-import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../../utils/usePrevious';
@@ -58,7 +57,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
 const tabsShowingTaskList = [
   dashboardTabs.NOW,
   dashboardTabs.BACKLOG,
@@ -82,11 +80,9 @@ const Dashboard = () => {
   const location = useLocation();
 
   const dispatch = useDispatch();
-  const dashboardReadyForInitialFetch = useSelector(selectDashboadReadyForInitialFetch);
   const activeTab = useSelector(selectDashboardActiveTab);
 
-  const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
-  const savingUnsavedChanges = useSelector(selectUnsavedChangesSaving);
+  const isDataInSync = useSelector(selectIsDataInSync);
 
   const snackbarData = useSelector(selectSnackbarData);
 
@@ -100,9 +96,8 @@ const Dashboard = () => {
   }, [location.pathname, navigationOpen, previousPathname]);
 
   useEffect(() => {
-    window.onbeforeunload =
-      hasUnsavedChanges || savingUnsavedChanges ? confirmBeforeLeaving : () => undefined;
-  }, [hasUnsavedChanges, savingUnsavedChanges]);
+    window.onbeforeunload = !isDataInSync ? confirmBeforeLeaving : () => undefined;
+  }, [isDataInSync]);
 
   useEffect(() => {
     const tab = PATHS_TO_DASHBOARD_TABS[location.pathname];
@@ -112,10 +107,14 @@ const Dashboard = () => {
   }, [location.pathname, activeTab, dispatch]);
 
   useEffect(() => {
-    if (dashboardReadyForInitialFetch) {
-      dispatch(loadDashboardTasks());
-    }
-  }, [dashboardReadyForInitialFetch, dispatch]);
+    const unsubscribe = dispatch(listenToDashboardTasks());
+    return () => {
+      if (unsubscribe) {
+        console.log('listener unsubscribed'); // eslint-disable-line
+        unsubscribe();
+      }
+    };
+  }, [dispatch]);
 
   const renderContent = useCallback(
     () =>
@@ -153,9 +152,7 @@ const Dashboard = () => {
 
         <TaskDialog />
 
-        <SnackbarNotification
-          {...snackbarData}
-        />
+        <SnackbarNotification {...snackbarData} />
       </div>
     </div>
   );

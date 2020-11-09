@@ -7,16 +7,21 @@
 import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
 import { selectUserId } from './session';
-import { fetchListRecurringConfigs, fetchCreateRecurringConfig } from '../utils/apiClient';
+import {
+  fetchCreateRecurringConfig,
+  listenListRecurringConfigs,
+  fetchDeleteRecurringConfig,
+  fetchUpdateRecurringConfig,
+} from '../utils/apiClient';
 
 export const namespace = 'recurringConfigs';
 
 // Action types
 
-const ADD = `${namespace}/ADD`;
-const SET_MULTIPLE = `${namespace}/SET_MULTIPLE`;
-export const UPDATE = `${namespace}/UPDATE`;
-export const DELETE = `${namespace}/DELETE`;
+const ADD_TO_LOCAL_STATE = `${namespace}/ADD_TO_LOCAL_STATE`;
+const UPDATE_LOCAL_STATE = `${namespace}/UPDATE_LOCAL_STATE`;
+const REMOVE_FROM_LOCAL_STATE = `${namespace}/REMOVE_FROM_LOCAL_STATE`;
+const RESET_LOCAL_STATE = `${namespace}/RESET_LOCAL_STATE`;
 
 // Reducers
 
@@ -27,27 +32,24 @@ const INITIAL_STATE = {
 
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
-  [ADD]: (state, { payload: { id, recurringConfig } }) => ({
-    ...state,
-    allIds: [...state.allIds, id],
-    byId: { ...state.byId, [id]: recurringConfig },
-  }),
-  [SET_MULTIPLE]: (state, { payload }) => ({
-    ...state,
-    allIds: payload.map(([id]) => id),
-    byId: payload.reduce(
-      (memo, [id, recurringConfig]) => ({
-        ...memo,
-        [id]: recurringConfig,
-      }),
-      {},
-    ),
-  }),
-  [UPDATE]: (state, { payload: { id, updates } }) => ({
+  [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
+  [ADD_TO_LOCAL_STATE]: (state, { payload: { id, recurringConfig } }) => {
+    if (state.byId[id]) {
+      throw new Error(
+        `Reducer validation failed, trying to add recurring config id ${id} but already exists.`,
+      );
+    }
+    return {
+      ...state,
+      allIds: [...state.allIds, id],
+      byId: { ...state.byId, [id]: recurringConfig },
+    };
+  },
+  [UPDATE_LOCAL_STATE]: (state, { payload: { id, updates } }) => ({
     ...state,
     byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
   }),
-  [DELETE]: (state, { payload: { id } }) => ({
+  [REMOVE_FROM_LOCAL_STATE]: (state, { payload: { id } }) => ({
     ...state,
     allIds: state.allIds.filter((tid) => tid !== id),
   }),
@@ -69,30 +71,39 @@ export const selectRecurringConfigByMostRecentTaskId = (state, taskId) => {
 
 // Actions
 
-const addRecurringConfig = (id, recurringConfig) => ({
-  type: ADD,
-  payload: { id, recurringConfig },
-});
-export const updateRecurringConfig = (id, updates) => ({ type: UPDATE, payload: { id, updates } });
-export const deleteRecurringConfig = (id) => ({ type: DELETE, payload: { id } });
+export const updateRecurringConfig = (id, updates) => () => fetchUpdateRecurringConfig(id, updates);
+export const deleteRecurringConfig = (id) => () => fetchDeleteRecurringConfig(id);
 
 export const createRecurringConfig = (recurringConfig) => async (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);
   const recurringConfigWithUserId = { ...recurringConfig, userId };
   const newId = await fetchCreateRecurringConfig(recurringConfigWithUserId).then(({ id }) => {
-    dispatch(addRecurringConfig(id, recurringConfigWithUserId));
     return id;
   });
   return newId;
 };
 
-export const loadRecurringConfigs = () => async (dispatch, getState) => {
-  const state = getState();
-  const userId = selectUserId(state);
-  if (!userId) {
-    throw new Error('[recurringConfigs:loadRecurringConfigs] No userId');
-  }
-  const results = await fetchListRecurringConfigs(userId);
-  dispatch({ type: SET_MULTIPLE, payload: results });
+export const listenToRecurringConfigList = (userId, nextCallback, errorCallback) => (dispatch) => {
+  const onNext = (results, hasUnsavedChanges) => {
+    console.log('listenToRecurringConfigList', results, hasUnsavedChanges); // eslint-disable-line no-console
+    results.forEach(({ type, entity: [id, data] }) => {
+      if (type === 'removed') {
+        dispatch({ type: REMOVE_FROM_LOCAL_STATE, payload: { id } });
+      }
+      if (type === 'added') {
+        dispatch({ type: ADD_TO_LOCAL_STATE, payload: { id, recurringConfig: data } });
+      }
+      if (type === 'modified') {
+        dispatch({ type: UPDATE_LOCAL_STATE, payload: { id, updates: data } });
+      }
+    });
+    nextCallback(hasUnsavedChanges);
+  };
+  const onError = (error) => {
+    errorCallback(error);
+  };
+  dispatch({ type: RESET_LOCAL_STATE });
+  const unsubscribe = listenListRecurringConfigs(userId, onNext, onError);
+  return unsubscribe;
 };

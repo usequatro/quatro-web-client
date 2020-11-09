@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux';
-import { all } from 'redux-saga/effects';
 import { reducer as tasksReducer, namespace as tasksNamespace } from './tasks';
 import {
   reducer as recurringConfigsReducer,
@@ -9,11 +8,6 @@ import { reducer as dashboardReducer, NAMESPACE as dashboardNamespace } from './
 import { reducer as sessionReducer, NAMESPACE as sessionNamespace } from './session';
 import { reducer as taskFormReducer, NAMESPACE as taskFormNamespace } from './taskForm';
 import { reducer as registrationReducer, NAMESPACE as registrationNamespace } from './registration';
-import {
-  reducer as unsavedChangesReducer,
-  NAMESPACE as unsavedChangesNamespace,
-  sagas as unsavedChangesSagas,
-} from './unsavedChanges';
 
 // eslint-disable-next-line import/prefer-default-export
 export const reducer = combineReducers({
@@ -22,10 +16,5 @@ export const reducer = combineReducers({
   [recurringConfigsNamespace]: recurringConfigsReducer,
   [sessionNamespace]: sessionReducer,
   [taskFormNamespace]: taskFormReducer,
-  [unsavedChangesNamespace]: unsavedChangesReducer,
   [registrationNamespace]: registrationReducer,
 });
-
-export const sagas = function* rootSaga() {
-  yield all([...unsavedChangesSagas]);
-};

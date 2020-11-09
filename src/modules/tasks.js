@@ -11,8 +11,7 @@ import { createSelector } from 'reselect';
 import calculateTaskScore from '../utils/calculateTaskScore';
 import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
-import { selectUserId } from './session';
-import { fetchListTasks } from '../utils/apiClient';
+import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
@@ -32,11 +31,10 @@ export const NAMESPACE = 'tasks';
 
 // Action types
 
-const ADD = `${NAMESPACE}/ADD`;
-const SET_MULTIPLE = `${NAMESPACE}/SET_MULTIPLE`;
-export const UPDATE = `${NAMESPACE}/UPDATE`;
-export const DELETE = `${NAMESPACE}/DELETE`;
-const REMOVE_FROM_LIST = `${NAMESPACE}/REMOVE_FROM_LIST`;
+const ADD_TO_LOCAL_STATE = `${NAMESPACE}/ADD_TO_LOCAL_STATE`;
+const UPDATE_LOCAL_STATE = `${NAMESPACE}/UPDATE_LOCAL_STATE`;
+const REMOVE_FROM_LOCAL_STATE = `${NAMESPACE}/REMOVE_FROM_LOCAL_STATE`;
+const RESET_LOCAL_STATE = `${NAMESPACE}/RESET_LOCAL_STATE`;
 
 // Reducers
 
@@ -47,32 +45,37 @@ const INITIAL_STATE = {
 
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
-  [ADD]: (state, { payload: { id, task } }) => ({
-    ...state,
-    allIds: [...state.allIds, id],
-    byId: { ...state.byId, [id]: task },
-  }),
-  [SET_MULTIPLE]: (state, { payload }) => ({
-    ...state,
-    allIds: payload.map(([id]) => id),
-    byId: payload.reduce(
-      (memo, [id, task]) => ({
-        ...memo,
-        [id]: task,
-      }),
-      {},
-    ),
-  }),
-  [UPDATE]: (state, { payload: { id, updates } }) => ({
-    ...state,
-    byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
-  }),
-  [DELETE]: (state, { payload: { id } }) => ({
-    ...state,
-    allIds: state.allIds.filter((tid) => tid !== id),
-    byId: { ...state.byId, [id]: null },
-  }),
-  [REMOVE_FROM_LIST]: (state, { payload: { id } }) => ({
+  [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
+  [ADD_TO_LOCAL_STATE]: (state, { payload: { id, task } }) => {
+    if (state.byId[id]) {
+      throw new Error(`Reducer validation failed, trying to add task id ${id} but already exists.`);
+    }
+    return {
+      ...state,
+      allIds: [...state.allIds, id],
+      byId: {
+        ...state.byId,
+        [id]: {
+          ...task,
+          score: calculateTaskScore(task.impact, task.effort, task.due),
+        },
+      },
+    };
+  },
+  [UPDATE_LOCAL_STATE]: (state, { payload: { id, updates } }) => {
+    const updatedTask = { ...state.byId[id], ...updates };
+    return {
+      ...state,
+      byId: {
+        ...state.byId,
+        [id]: {
+          ...updatedTask,
+          score: calculateTaskScore(updatedTask.impact, updatedTask.effort, updatedTask.due),
+        },
+      },
+    };
+  },
+  [REMOVE_FROM_LOCAL_STATE]: (state, { payload: { id } }) => ({
     ...state,
     allIds: state.allIds.filter((tid) => tid !== id),
     byId: { ...state.byId, [id]: null },
@@ -277,36 +280,36 @@ export const getTabProperties = (tab) => {
 };
 
 // Actions
-export const loadTasks = () => async (dispatch, getState) => {
-  const state = getState();
-  const userId = selectUserId(state);
-  if (!userId) {
-    throw new Error('[tasks:loadTasks] No userId');
-  }
-  const results = await fetchListTasks(userId);
-  const resultsWithScore = results.map(([id, task]) => [
-    id,
-    {
-      ...task,
-      score: calculateTaskScore(task.impact, task.effort, task.due),
-    },
-  ]);
-  dispatch({ type: SET_MULTIPLE, payload: resultsWithScore });
-  return results;
+
+export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispatch) => {
+  const onNext = (results, hasUnsavedChanges) => {
+    console.log('listenToTaskList', results, hasUnsavedChanges); // eslint-disable-line no-console
+    results.forEach(({ type, entity: [id, data] }) => {
+      if (type === 'removed') {
+        dispatch({ type: REMOVE_FROM_LOCAL_STATE, payload: { id } });
+      }
+      if (type === 'added') {
+        dispatch({ type: ADD_TO_LOCAL_STATE, payload: { id, task: data } });
+      }
+      if (type === 'modified') {
+        dispatch({ type: UPDATE_LOCAL_STATE, payload: { id, updates: data } });
+      }
+    });
+    nextCallback(hasUnsavedChanges);
+  };
+  const onError = (error) => {
+    errorCallback(error);
+  };
+
+  dispatch({ type: RESET_LOCAL_STATE });
+  const unsubscribe = listenListTasks(userId, onNext, onError);
+
+  return unsubscribe;
 };
 
-export const addTask = (id, task) => ({
-  type: ADD,
-  payload: {
-    id,
-    task: {
-      ...task,
-      score: calculateTaskScore(task.impact, task.effort, task.due),
-    },
-  },
-});
-
-export const updateTask = (id, updates) => ({ type: UPDATE, payload: { id, updates } });
+export const updateTask = (id, updates) => () => {
+  fetchUpdateTask(id, updates);
+};
 
 export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
   dispatch,
@@ -348,44 +351,40 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
   const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
   const taskAfter = allTasks[sourceIndex + 1];
 
-  dispatch(updateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId }));
+  fetchUpdateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId });
   tasksPrioritizedBefore.forEach((task) => {
-    dispatch(updateTask(task.id, { prioritizedAheadOf: taskAfter.id }));
+    fetchUpdateTask(task.id, { prioritizedAheadOf: taskAfter.id });
   });
 
   mixpanel.track(TASK_MANUALLY_ARRANGED);
 };
 
-export const clearRelativePrioritization = (id) => updateTask(id, { prioritizedAheadOf: null });
+export const clearRelativePrioritization = (id) => () =>
+  fetchUpdateTask(id, { prioritizedAheadOf: null });
 
 export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
-  dispatch(updateTask(id, { completed: Date.now() }));
-
   const timeout = setTimeout(() => {
-    dispatch({ type: REMOVE_FROM_LIST, payload: { id } });
+    fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
-  }, 1000);
+  }, 2000);
 
   // Return function to cancel the completion
   return () => {
     clearTimeout(timeout);
-    dispatch(updateTask(id, { completed: null }));
   };
 };
 
-export const undoCompleteTask = (id, task) => (dispatch, _, { mixpanel }) => {
-  dispatch(addTask(id, task));
-  dispatch(updateTask(id, { completed: null }));
-
+export const undoCompleteTask = (id) => (dispatch, _, { mixpanel }) => {
+  fetchUpdateTask(id, { completed: null });
   mixpanel.track(TASK_UNDO_COMPLETE);
 };
 
 export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
-  dispatch({ type: DELETE, payload: { id } });
-
   // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
+
+  fetchDeleteTask(id);
   if (recurringConfigId) {
     dispatch(deleteRecurringConfig(recurringConfigId));
   }

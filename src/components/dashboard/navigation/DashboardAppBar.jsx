@@ -21,17 +21,16 @@ import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import DoneAllRoundedIcon from '@material-ui/icons/DoneAllRounded';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import SettingsRoundedIcon from '@material-ui/icons/SettingsRounded';
-import ErrorRoundedIcon from '@material-ui/icons/ErrorRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 
 import { getAuth } from '../../../firebase';
 import * as tabs from '../../../constants/dashboardTabs';
 import * as paths from '../../../constants/paths';
-import { selectDashboardActiveTab } from '../../../modules/dashboard';
-import { selectUnsavedChangesIsStatus, SAVING, ERROR } from '../../../modules/unsavedChanges';
+import { selectDashboardActiveTab, selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
+import useDebounce from '../../../utils/useDebounce';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -114,10 +113,11 @@ const iconsByPath = {
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
 };
 
-const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
+const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const tab = useSelector(selectDashboardActiveTab);
   const userPhotoURL = useSelector(selectUserPhotoURL);
-  const status = useSelector(selectUnsavedChangesIsStatus);
+  const dashboardDataIsInSync = useSelector(selectIsDataInSync);
+  const showSpinner = useDebounce(!dashboardDataIsInSync, 750) && !dashboardDataIsInSync;
 
   const sectionTitle = sectionTitlesByPath[tab] || 'Not found';
   const Icon = iconsByPath[tab] || Fragment;
@@ -147,20 +147,20 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
           </div>
 
           <Box className={classes.appBarEdge} justifyContent="flex-end">
-            {status === SAVING && (
+            {showSpinner && (
               <Box flexGrow={1} display="flex" justifyContent="flex-end" pr={2}>
                 <Tooltip title="Saving...">
                   <CircularProgress thickness={3} size="2rem" className={classes.saveLoader} />
                 </Tooltip>
               </Box>
             )}
-            {status === ERROR && (
+            {/* {dashboardHasSavingError && (
               <Box flexGrow={1} display="flex" justifyContent="flex-end" pr={2}>
                 <Tooltip title="Error saving changes">
                   <ErrorRoundedIcon color="error" fontSize="large" />
                 </Tooltip>
               </Box>
-            )}
+            )} */}
 
             <IconButton
               edge="end"
@@ -230,9 +230,9 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
   );
 };
 
-Dashboard.propTypes = {
+DashboardAppBar.propTypes = {
   setNavigationOpen: PropTypes.func.isRequired,
   navigationOpen: PropTypes.bool.isRequired,
 };
 
-export default Dashboard;
+export default DashboardAppBar;
