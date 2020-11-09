@@ -17,14 +17,14 @@ const useStyles = makeStyles(() => ({
   container: {
     flexGrow: 1,
     padding: 90,
-    display: "flex",
-    alignItems: "center",
-    alignContent: "center",
+    display: 'flex',
+    alignItems: 'center',
+    alignContent: 'center',
     border: 'solid 1px rgba(0, 0, 0, 0.12)',
     resize: 'horizontal',
     overflow: 'auto',
     backgroundColor: '#ffffff',
-    flexDirection: "column"
+    flexDirection: 'column'
   },
 }));
 
@@ -40,7 +40,7 @@ const GoogleSignIn = () => {
   return (
     <Box className={classes.container}>
       <EmptyState tab={tab} />
-      <Button onClick={() => connectGoogle()} variant="contained">Connect Calendar</Button>
+      <Button onClick={() => connectGoogle()} variant="contained">Log-in to Google</Button>
     </Box>
   )
 };
