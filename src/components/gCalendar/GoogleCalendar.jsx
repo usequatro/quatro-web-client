@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from "react-router-dom";
 
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -15,7 +14,6 @@ import {
   selectGoogleIsFetching,
   setGoogleIsFetching,
 } from '../../modules/googleCalendar';
-import { setDashboardActiveTab } from '../../modules/dashboard';
 
 import GoogleSignIn from './GoogleSignIn';
 import GoogleCalendarTaskList from './GoogleCalendarTaskList';
@@ -24,23 +22,22 @@ const useStyles = makeStyles(() => ({
   container: {
     flexGrow: 1,
     padding: 90,
-    display: "flex",
-    alignItems: "center",
-    alignContent: "center",
+    display: 'flex',
+    alignItems: 'center',
+    alignContent: 'center',
     border: 'solid 1px rgba(0, 0, 0, 0.12)',
     resize: 'horizontal',
     overflow: 'auto',
     backgroundColor: '#ffffff',
+    flexDirection: 'column'
   },
 }));
 
 const GoogleCalendar = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
   const fetching = useSelector(selectGoogleIsFetching);
   const [googleSignedIn, setGoogleSignedIn] = useState(false);
-  const [calendarList, setCalendarList] = useState(false);
 
   const classes = useStyles();
 
@@ -51,21 +48,6 @@ const GoogleCalendar = () => {
       dispatch(setGoogleIsFetching(false));
     },
     [dispatch],
-  );
-
-  const getUserCalendars = useCallback(
-    () => {
-      return [1];
-    //   googleAPIClient.client.load('calendar','v3', () => {
-    //     googleAPIClient.client.calendar.calendarList.list({
-    //       maxResults: 250,
-    //       minAccessRole: 'writer',
-    //     }).execute(calendarListResponse => {
-    //       setCalendarList(calendarListResponse.items);
-    //     });
-    //   });
-    },
-    [googleAPIClient],
   );
 
   const initGoogleClient = useCallback(
@@ -87,21 +69,12 @@ const GoogleCalendar = () => {
           // const idToken = googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.id_token
           // const accessToken = 
           // googleAPIClient.auth2.getAuthInstance().currentUser.get().wc.accessToken
-
-   
-          const connectedCalendars = getUserCalendars();
-           
-          if (connectedCalendars.length === 0 ) {
-            history.push("/dashboard/googlecalendar");  
-          }
-
-
         })
         .catch((e) => {
-          // console.log("ERROR on initGoogleClient: ", e);
+          console.log("ERROR on initGoogleClient: ", e);
         });
     },
-    [googleAPIClient, updateSignInStatus, getUserCalendars],
+    [googleAPIClient, updateSignInStatus],
   );
 
   const injectGoogleAPIScript = useCallback(
