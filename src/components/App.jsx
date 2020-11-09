@@ -9,6 +9,7 @@ import UserLoginListener from './UserLoginListener';
 import ErrorBoundary from './ErrorBoundary';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
 import AppRouting from './AppRouting';
+import GoogleCalendarInit from './gCalendar/GoogleCalendarInit';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
 import muiTheme from './theme';
 import createStore from '../store';
@@ -27,6 +28,7 @@ const App = () => (
     <MaterialThemeProvider theme={muiTheme}>
       <ErrorBoundary>
         <CssBaseline />
+        <GoogleCalendarInit />
         <Router {...routerProps}>
           <UserLoginListener />
           <RouterChangeTracker />
