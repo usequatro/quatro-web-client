@@ -133,8 +133,6 @@ const Dashboard = () => {
   return (
     <div className={classes.root}>
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
-      
-
       <NavigationSidebar open={navigationOpen} />
 
       { activeTab === dashboardTabs.NOW && <GoogleCalendar /> }
