@@ -366,7 +366,7 @@ export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
   const timeout = setTimeout(() => {
     fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
-  }, 2000);
+  }, 750);
 
   // Return function to cancel the completion
   return () => {
