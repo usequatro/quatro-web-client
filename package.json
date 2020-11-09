@@ -49,7 +49,8 @@
     "lint": "eslint --ext .jsx,.js src"
   },
   "engines": {
-    "yarn": "YARN NO LONGER USED - use npm instead."
+    "yarn": "YARN NO LONGER USED - use npm instead.",
+    "node": "12.x"
   },
   "browserslist": {
     "production": [
