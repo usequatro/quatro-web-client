@@ -125,8 +125,7 @@ const Dashboard = () => {
         [(tab) => tabsShowingTaskList.includes(tab), () => <TaskList />],
         [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
         [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
-        [(tab) => tab === dashboardTabs.CONNECTED_GOOGLE_CALENDARS, () => 
-          <GoogleCalendarList />],
+        [(tab) => tab === dashboardTabs.GOOGLE_CALENDARS, () => <GoogleCalendarList />],
       ])(activeTab),
     [activeTab],
   );

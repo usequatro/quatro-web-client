@@ -105,7 +105,7 @@ const sectionTitlesByPath = {
   [tabs.SCHEDULED]: 'Scheduled',
   [tabs.COMPLETED]: 'Completed',
   [tabs.ACCOUNT_SETTINGS]: 'Account',
-  [tabs.CONNECTED_GOOGLE_CALENDARS]: 'Connected Google Calendars',
+  [tabs.GOOGLE_CALENDARS]: 'Google Calendars',
 };
 const iconsByPath = {
   [tabs.NOW]: HomeRoundedIcon,
@@ -114,7 +114,7 @@ const iconsByPath = {
   [tabs.SCHEDULED]: CalendarTodayRoundedIcon,
   [tabs.COMPLETED]: DoneAllRoundedIcon,
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
-  [tabs.CONNECTED_GOOGLE_CALENDARS]: ControlCameraRoundedIcon,
+  [tabs.GOOGLE_CALENDARS]: ControlCameraRoundedIcon,
 };
 
 const Dashboard = ({ setNavigationOpen, navigationOpen }) => {

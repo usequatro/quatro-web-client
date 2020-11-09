@@ -5,7 +5,8 @@ export const BLOCKED = 'blocked';
 export const COMPLETED = 'completed';
 export const ACCOUNT_SETTINGS = 'accountSettings';
 export const GOOGLE_CALENDAR = 'googleCalendar';
-export const CONNECTED_GOOGLE_CALENDARS = "googleCalendar";
+export const GOOGLE_CALENDARS = "googleCalendars";
+export const GOOGLE_CALENDAR_TASK_LIST = "googleCalendarTaskList";
 
 export const LABELS = {
   NOW: 'Top 4',
@@ -13,5 +14,5 @@ export const LABELS = {
   SCHEDULED: 'Scheduled',
   BLOCKED: 'Blocked',
   GCALENDAR: 'Google Calendar',
-  CONNECTEDGOOGLECALENDARS: 'Connected Google Calendars',
+  GOOGLE_CALENDARS: 'Google Calendars',
 };
