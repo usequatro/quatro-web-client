@@ -32,11 +32,11 @@ const useStyles = makeStyles(() => ({
 }));
 
 const GoogleCalendar = () => {
+  const classes = useStyles();
+
   const googleAPIClient = useSelector(selectGoogleAPIClient);
   const fetching = useSelector(selectGoogleIsFetching);
   const googleSignInStatus = useSelector(selectGoogleSignInStatus);
-
-  const classes = useStyles();
 
   const logOutGoogle = () => {
     googleAPIClient.auth2.getAuthInstance().signOut();
