@@ -45,9 +45,11 @@ export const taskSchema = Joi.object({
  * @param {Object} entity
  * @param {Object} [options]
  * @param {bool} [options.isUpdate]
+ * @param {bool} [options.sync]
+ * @return {Promise|Object}
  */
-export const validateTaskSchema = (entity, { isUpdate = false } = {}) =>
-  taskSchema.validateAsync(entity, {
+export const validateTaskSchema = (entity, { isUpdate = false, sync = false } = {}) =>
+  taskSchema[sync ? 'validate' : 'validateAsync'](entity, {
     noDefaults: false,
     // We don't allow unknown when updating, but when fetching yes, they'll be stripped out
     allowUnknown: !isUpdate,

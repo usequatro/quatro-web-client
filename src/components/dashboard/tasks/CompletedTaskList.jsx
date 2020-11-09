@@ -105,7 +105,7 @@ const CompletedTaskList = () => {
     );
 
     // add the task, and dispatch the update that will be tracked
-    dispatch(undoCompleteTask(id, completedTaskPair[1]));
+    dispatch(undoCompleteTask(id));
 
     // Mark as not completed so UI updates
     setCompletedTasks(

@@ -28,6 +28,34 @@ const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
     values.filter(({ status }) => status === 'fulfilled').map(({ value }) => value),
   );
 
+const filterValidEntityChangesFromQuerySnapshot = (querySnapshot, validateSchema) => {
+  const listenResult = querySnapshot
+    .docChanges()
+    // Extract documents into plain objects
+    .map((change) => ({
+      source: change.doc.metadata.hasPendingWrites ? 'local' : 'server',
+      type: change.type,
+      entity: [change.doc.id, change.doc.data()],
+    }))
+    // validate and filter out invalids
+    .map(({ entity: [id, data], ...rest }) => {
+      const { value, error } = validateSchema(data, { sync: true });
+      if (error) {
+        console.error(error, id, data); // eslint-disable-line no-console
+        return null;
+      }
+      return { ...rest, entity: [id, value] };
+    })
+    .filter(Boolean);
+
+  return listenResult;
+};
+
+const hasLocalUnsavedChanges = (querySnapshot) =>
+  querySnapshot
+    .docChanges({ includeMetadataChanges: true })
+    .reduce((memo, change) => memo || change.doc.metadata.hasPendingWrites, false);
+
 /**
  * @param {Object} task
  * @return {Promise<firebase.firestore.DocumentReference>}
@@ -38,17 +66,32 @@ export const fetchCreateTask = async (task) => {
 };
 
 /**
+ * Attaches a listener for task list events.
+ *
  * @param {string} userId
- * @return {Promise<Array<Object>>}
+ * @param {Function} nextCallback
+ * @param {Function} errorCallback
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const fetchListTasks = (userId) =>
+export const listenListTasks = (userId, nextCallback, errorCallback) =>
   getFirestore()
     .collection(TASKS)
     .where('userId', '==', userId)
     .where('completed', '==', null)
-    .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) => validateEntitiesFilteringOutInvalidOnes(results, validateTaskSchema));
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        const listenResult = filterValidEntityChangesFromQuerySnapshot(
+          querySnapshot,
+          validateTaskSchema,
+        );
+        const hasUnsynchedChanges = hasLocalUnsavedChanges(querySnapshot);
+        nextCallback(listenResult, hasUnsynchedChanges);
+      },
+      (error) => {
+        errorCallback(error);
+      },
+    );
 
 export const COMPLETED_TASKS_PAGE_SIZE = 15;
 
@@ -87,75 +130,36 @@ export const fetchUpdateTask = async (taskId, updates) => {
 };
 
 /**
- * @param {Object} updatesByTaskId
+ * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchUpdateTaskBatch = async (updatesByTaskId) => {
-  const batch = getFirestore().batch();
-
-  const validatedUpdates = await Promise.all(
-    Object.entries(updatesByTaskId).map(async ([id, updates]) => {
-      // Null means deletion, let it go through
-      if (updates === null) {
-        return [id, updates];
-      }
-      const validatedUpdate = await validateTaskSchema(updates, { isUpdate: true });
-      return [id, validatedUpdate];
-    }),
-  );
-
-  validatedUpdates.forEach(([id, updates]) => {
-    const ref = getFirestore().collection(TASKS).doc(id);
-    if (updates !== null) {
-      batch.update(ref, updates);
-    } else {
-      batch.delete(ref);
-    }
-  });
-  return batch.commit();
-};
+export const fetchDeleteTask = (id) => getFirestore().collection(TASKS).doc(id).delete();
 
 /**
- * @param {Object} updatesByRecurringConfigId
- * @return {Promise<void>}
+ * Attaches a listener for recurring config list events.
+ *
+ * @param {string} userId
+ * @param {Function} nextCallback
+ * @param {Function} errorCallback
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const fetchUpdateRecurringConfigBatch = async (updatesByRecurringConfigId) => {
-  const batch = getFirestore().batch();
-
-  const validatedUpdates = await Promise.all(
-    Object.entries(updatesByRecurringConfigId).map(async ([id, updates]) => {
-      // Null means deletion, let it go through
-      if (updates === null) {
-        return [id, updates];
-      }
-      const validatedUpdate = await validateRecurringConfigSchema(updates, { isUpdate: true });
-      return [id, validatedUpdate];
-    }),
-  );
-
-  validatedUpdates.forEach(([id, updates]) => {
-    const ref = getFirestore().collection(RECURRING_CONFIGS).doc(id);
-    if (updates !== null) {
-      batch.update(ref, updates);
-    } else {
-      batch.delete(ref);
-    }
-  });
-  return batch.commit();
-};
-
-/**
- * @param {userId} taskId
- * @return {Promise<Array<Object>>}
- */
-export const fetchListRecurringConfigs = (userId) =>
+export const listenListRecurringConfigs = (userId, nextCallback, errorCallback) =>
   getFirestore()
     .collection(RECURRING_CONFIGS)
     .where('userId', '==', userId)
-    .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) =>
-      validateEntitiesFilteringOutInvalidOnes(results, validateRecurringConfigSchema),
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        const listenResult = filterValidEntityChangesFromQuerySnapshot(
+          querySnapshot,
+          validateRecurringConfigSchema,
+        );
+        const hasUnsynchedChanges = hasLocalUnsavedChanges(querySnapshot);
+        nextCallback(listenResult, hasUnsynchedChanges);
+      },
+      (error) => {
+        errorCallback(error);
+      },
     );
 
 /**
