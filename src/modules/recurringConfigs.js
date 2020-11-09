@@ -5,6 +5,8 @@
 // import get from 'lodash/get';
 
 import createReducer from '../utils/createReducer';
+import debugConsole from '../utils/debugConsole';
+import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import { RESET } from './reset';
 import { selectUserId } from './session';
 import {
@@ -18,9 +20,7 @@ export const namespace = 'recurringConfigs';
 
 // Action types
 
-const ADD_TO_LOCAL_STATE = `${namespace}/ADD_TO_LOCAL_STATE`;
-const UPDATE_LOCAL_STATE = `${namespace}/UPDATE_LOCAL_STATE`;
-const REMOVE_FROM_LOCAL_STATE = `${namespace}/REMOVE_FROM_LOCAL_STATE`;
+const ADD_CHANGES_TO_LOCAL_STATE = `${namespace}/ADD_CHANGES_TO_LOCAL_STATE`;
 const RESET_LOCAL_STATE = `${namespace}/RESET_LOCAL_STATE`;
 
 // Reducers
@@ -33,26 +33,8 @@ const INITIAL_STATE = {
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
   [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
-  [ADD_TO_LOCAL_STATE]: (state, { payload: { id, recurringConfig } }) => {
-    if (state.byId[id]) {
-      throw new Error(
-        `Reducer validation failed, trying to add recurring config id ${id} but already exists.`,
-      );
-    }
-    return {
-      ...state,
-      allIds: [...state.allIds, id],
-      byId: { ...state.byId, [id]: recurringConfig },
-    };
-  },
-  [UPDATE_LOCAL_STATE]: (state, { payload: { id, updates } }) => ({
-    ...state,
-    byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
-  }),
-  [REMOVE_FROM_LOCAL_STATE]: (state, { payload: { id } }) => ({
-    ...state,
-    allIds: state.allIds.filter((tid) => tid !== id),
-  }),
+  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) =>
+    applyGroupedEntityChanges(state, { added, modified, removed }),
 });
 
 // Selectors
@@ -85,20 +67,16 @@ export const createRecurringConfig = (recurringConfig) => async (dispatch, getSt
 };
 
 export const listenToRecurringConfigList = (userId, nextCallback, errorCallback) => (dispatch) => {
-  const onNext = (results, hasUnsavedChanges) => {
-    console.log('listenToRecurringConfigList', results, hasUnsavedChanges); // eslint-disable-line no-console
-    results.forEach(({ type, entity: [id, data] }) => {
-      if (type === 'removed') {
-        dispatch({ type: REMOVE_FROM_LOCAL_STATE, payload: { id } });
-      }
-      if (type === 'added') {
-        dispatch({ type: ADD_TO_LOCAL_STATE, payload: { id, recurringConfig: data } });
-      }
-      if (type === 'modified') {
-        dispatch({ type: UPDATE_LOCAL_STATE, payload: { id, updates: data } });
-      }
+  const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
+    debugConsole.log('listenToRecurringConfigList', {
+      groupedChangedEntities,
+      hasEntityChanges,
+      hasLocalUnsavedChanges,
     });
-    nextCallback(hasUnsavedChanges);
+    if (hasEntityChanges) {
+      dispatch({ type: ADD_CHANGES_TO_LOCAL_STATE, payload: groupedChangedEntities });
+    }
+    nextCallback(hasLocalUnsavedChanges);
   };
   const onError = (error) => {
     errorCallback(error);
