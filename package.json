@@ -10,7 +10,7 @@
     "@material-ui/lab": "^4.0.0-alpha.56",
     "@material-ui/pickers": "^3.2.10",
     "date-fns": "^2.16.1",
-    "firebase": "^6.6.2",
+    "firebase": "^8.0.1",
     "lodash": "^4.17.20",
     "mixpanel-browser": "^2.39.0",
     "prop-types": "^15.7.2",
