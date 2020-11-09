@@ -37,6 +37,7 @@ import {
   selectNewTaskDialogOpen,
   selectEditTaskDialogId,
   createTask,
+  setSnackbarData,
 } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
 import {
@@ -188,7 +189,7 @@ const TaskDialogForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
-  const { notifyError, notifyInfo } = useNotification();
+  const { notifyError } = useNotification();
 
   const newTaskDialogOpen = useSelector(selectNewTaskDialogOpen);
 
@@ -505,7 +506,13 @@ const TaskDialogForm = ({ onClose }) => {
             onConfirm={() => {
               onClose();
               dispatch(deleteTask(editTaskDialogId));
-              notifyInfo('Task deleted');
+              dispatch(
+                setSnackbarData({
+                  open: true,
+                  message: 'Task deleted',
+                  id: editTaskDialogId,
+                }),
+              );
             }}
             renderDialog={(open, onConfirm, onConfirmationClose) => (
               <ConfirmationDialog

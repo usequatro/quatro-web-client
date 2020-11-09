@@ -2,6 +2,7 @@
  * Namespace to keep information of the current session, like user details.
  */
 import sortBy from 'lodash/sortBy';
+import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
 import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
@@ -9,10 +10,11 @@ import difference from 'lodash/difference';
 import { createSelector } from 'reselect';
 
 import calculateTaskScore from '../utils/calculateTaskScore';
+import debugConsole from '../utils/debugConsole';
+import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import createReducer from '../utils/createReducer';
 import { RESET } from './reset';
-import { selectUserId } from './session';
-import { fetchListTasks } from '../utils/apiClient';
+import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
@@ -32,11 +34,8 @@ export const NAMESPACE = 'tasks';
 
 // Action types
 
-const ADD = `${NAMESPACE}/ADD`;
-const SET_MULTIPLE = `${NAMESPACE}/SET_MULTIPLE`;
-export const UPDATE = `${NAMESPACE}/UPDATE`;
-export const DELETE = `${NAMESPACE}/DELETE`;
-const REMOVE_FROM_LIST = `${NAMESPACE}/REMOVE_FROM_LIST`;
+const ADD_CHANGES_TO_LOCAL_STATE = `${NAMESPACE}/ADD_CHANGES_TO_LOCAL_STATE`;
+const RESET_LOCAL_STATE = `${NAMESPACE}/RESET_LOCAL_STATE`;
 
 // Reducers
 
@@ -45,38 +44,27 @@ const INITIAL_STATE = {
   byId: {},
 };
 
+const applyScores = (state) => ({
+  ...state,
+  byId: Object.keys(state.byId).reduce(
+    (memo, id) => ({
+      ...memo,
+      [id]: {
+        ...state.byId[id],
+        score: calculateTaskScore(state.byId[id].impact, state.byId[id].effort, state.byId[id].due),
+      },
+    }),
+    {},
+  ),
+});
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
-  [ADD]: (state, { payload: { id, task } }) => ({
-    ...state,
-    allIds: [...state.allIds, id],
-    byId: { ...state.byId, [id]: task },
-  }),
-  [SET_MULTIPLE]: (state, { payload }) => ({
-    ...state,
-    allIds: payload.map(([id]) => id),
-    byId: payload.reduce(
-      (memo, [id, task]) => ({
-        ...memo,
-        [id]: task,
-      }),
-      {},
-    ),
-  }),
-  [UPDATE]: (state, { payload: { id, updates } }) => ({
-    ...state,
-    byId: { ...state.byId, [id]: { ...state.byId[id], ...updates } },
-  }),
-  [DELETE]: (state, { payload: { id } }) => ({
-    ...state,
-    allIds: state.allIds.filter((tid) => tid !== id),
-    byId: { ...state.byId, [id]: null },
-  }),
-  [REMOVE_FROM_LIST]: (state, { payload: { id } }) => ({
-    ...state,
-    allIds: state.allIds.filter((tid) => tid !== id),
-    byId: { ...state.byId, [id]: null },
-  }),
+  [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
+  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) => {
+    const newState = applyGroupedEntityChanges(state, { added, modified, removed });
+    const newStateWithScores = applyScores(newState);
+    return newStateWithScores;
+  },
 });
 
 // Selectors
@@ -168,7 +156,14 @@ const sortByCustomPrioritization = (tasks) => {
 };
 
 const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomingTasks) => {
-  const tasksByScore = sortBy(upcomingTasks, '1.score').reverse();
+  const tasksByScore = cloneDeep(upcomingTasks);
+  tasksByScore.sort(([, task1], [, task2]) => {
+    if (task1.score === task2.score) {
+      return (task1.title || '').toLowerCase() > (task2.title || '').toLowerCase() ? 1 : -1;
+    }
+    return task2.score - task1.score;
+  });
+
   const tasksWithCustomPrioritization = sortByCustomPrioritization(tasksByScore);
   return tasksWithCustomPrioritization;
 });
@@ -241,8 +236,8 @@ export const selectBlockedTasks = createSelector(
   },
 );
 
-const selectTasksPrioritizedAheadOf = (state, id) =>
-  selectAllTasks(state).filter((task) => task.prioritizedAheadOf === id);
+const selectTasksPrioritizedAheadOfGivenTask = (state, id) =>
+  selectAllTasks(state).filter(([, task]) => task.prioritizedAheadOf === id);
 
 export const selectTaskDashboardTab = (state, taskId) =>
   cond([
@@ -277,36 +272,32 @@ export const getTabProperties = (tab) => {
 };
 
 // Actions
-export const loadTasks = () => async (dispatch, getState) => {
-  const state = getState();
-  const userId = selectUserId(state);
-  if (!userId) {
-    throw new Error('[tasks:loadTasks] No userId');
-  }
-  const results = await fetchListTasks(userId);
-  const resultsWithScore = results.map(([id, task]) => [
-    id,
-    {
-      ...task,
-      score: calculateTaskScore(task.impact, task.effort, task.due),
-    },
-  ]);
-  dispatch({ type: SET_MULTIPLE, payload: resultsWithScore });
-  return results;
+
+export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispatch) => {
+  const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
+    debugConsole.log('listenToTaskList', {
+      groupedChangedEntities,
+      hasEntityChanges,
+      hasLocalUnsavedChanges,
+    });
+    if (hasEntityChanges) {
+      dispatch({ type: ADD_CHANGES_TO_LOCAL_STATE, payload: groupedChangedEntities });
+    }
+    nextCallback(hasLocalUnsavedChanges);
+  };
+  const onError = (error) => {
+    errorCallback(error);
+  };
+
+  dispatch({ type: RESET_LOCAL_STATE });
+  const unsubscribe = listenListTasks(userId, onNext, onError);
+
+  return unsubscribe;
 };
 
-export const addTask = (id, task) => ({
-  type: ADD,
-  payload: {
-    id,
-    task: {
-      ...task,
-      score: calculateTaskScore(task.impact, task.effort, task.due),
-    },
-  },
-});
-
-export const updateTask = (id, updates) => ({ type: UPDATE, payload: { id, updates } });
+export const updateTask = (id, updates) => () => {
+  fetchUpdateTask(id, updates);
+};
 
 export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
   dispatch,
@@ -345,47 +336,57 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
 
   // If there are other tasks depending on the one that is going to be moved,
   // we're going to associate them to the next one, so that they stay on the same spot.
-  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOf(state, sourceTaskId);
+  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOfGivenTask(state, sourceTaskId);
   const taskAfter = allTasks[sourceIndex + 1];
 
-  dispatch(updateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId }));
+  fetchUpdateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId });
   tasksPrioritizedBefore.forEach((task) => {
-    dispatch(updateTask(task.id, { prioritizedAheadOf: taskAfter.id }));
+    fetchUpdateTask(task.id, { prioritizedAheadOf: taskAfter.id });
   });
 
   mixpanel.track(TASK_MANUALLY_ARRANGED);
 };
 
-export const clearRelativePrioritization = (id) => updateTask(id, { prioritizedAheadOf: null });
+export const clearRelativePrioritization = (id) => () =>
+  fetchUpdateTask(id, { prioritizedAheadOf: null });
 
-export const completeTask = (id) => (dispatch, _, { mixpanel }) => {
-  dispatch(updateTask(id, { completed: Date.now() }));
-
+export const completeTask = (id) => (dispatch, getState, { mixpanel }) => {
   const timeout = setTimeout(() => {
-    dispatch({ type: REMOVE_FROM_LIST, payload: { id } });
+    const state = getState();
+
+    // Clear relative prioritization depending on this task
+    const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
+    tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
+      fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
+    });
+
+    fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
-  }, 1000);
+  }, 750);
 
   // Return function to cancel the completion
   return () => {
     clearTimeout(timeout);
-    dispatch(updateTask(id, { completed: null }));
   };
 };
 
-export const undoCompleteTask = (id, task) => (dispatch, _, { mixpanel }) => {
-  dispatch(addTask(id, task));
-  dispatch(updateTask(id, { completed: null }));
-
+export const undoCompleteTask = (id) => (dispatch, _, { mixpanel }) => {
+  fetchUpdateTask(id, { completed: null });
   mixpanel.track(TASK_UNDO_COMPLETE);
 };
 
 export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
-  dispatch({ type: DELETE, payload: { id } });
-
   // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
+
+  // Clear relative prioritization depending on this task
+  const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
+  tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
+    fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
+  });
+
+  fetchDeleteTask(id);
   if (recurringConfigId) {
     dispatch(deleteRecurringConfig(recurringConfigId));
   }

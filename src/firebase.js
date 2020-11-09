@@ -1,4 +1,4 @@
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/storage';
 import 'firebase/firestore';
@@ -52,32 +52,31 @@ export const sendEmailVerification = async () => {
 };
 
 export const updateUserProfile = async ({ displayName, photoURL }) =>
-  Promise.resolve(getAuth().currentUser)
-    .then((user) => {
-      if (!user) {
-        throw new Error('No logged in user');
-      }
-      return user.updateProfile({ displayName, photoURL });
-    });
+  Promise.resolve(getAuth().currentUser).then((user) => {
+    if (!user) {
+      throw new Error('No logged in user');
+    }
+    return user.updateProfile({ displayName, photoURL });
+  });
 
-export const updateUserEmail = async (email) => Promise.resolve(getAuth().currentUser)
-  .then((user) => {
+export const updateUserEmail = async (email) =>
+  Promise.resolve(getAuth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
     }
     return user.updateEmail(email);
   });
 
-export const updateUserPassword = async (newPassword) => Promise.resolve(getAuth().currentUser)
-  .then((user) => {
+export const updateUserPassword = async (newPassword) =>
+  Promise.resolve(getAuth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
     }
     return user.updatePassword(newPassword);
   });
 
-export const reauthenticateUser = async (currentPassword) => Promise.resolve(getAuth().currentUser)
-  .then((user) => {
+export const reauthenticateUser = async (currentPassword) =>
+  Promise.resolve(getAuth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
     }

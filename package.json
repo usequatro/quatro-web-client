@@ -10,34 +10,33 @@
     "@material-ui/lab": "^4.0.0-alpha.56",
     "@material-ui/pickers": "^3.2.10",
     "date-fns": "^2.16.1",
-    "firebase": "^6.6.2",
+    "firebase": "^8.0.1",
     "lodash": "^4.17.20",
     "mixpanel-browser": "^2.39.0",
     "prop-types": "^15.7.2",
-    "react": "^16.14.0",
+    "react": "^17.0.1",
     "react-beautiful-dnd": "^13.0.0",
-    "react-div-100vh": "^0.3.8",
-    "react-dom": "^16.14.0",
-    "react-hotkeys-hook": "^2.3.1",
-    "react-redux": "^7.2.1",
+    "react-div-100vh": "^0.5.6",
+    "react-dom": "^17.0.1",
+    "react-hotkeys-hook": "^2.4.0",
+    "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "4.0.0",
     "redux": "^4.0.5",
-    "redux-saga": "^1.1.3",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "uuid": "^8.3.1"
   },
   "devDependencies": {
-    "dotenv-cli": "^3.2.0",
-    "eslint": "^7.11.0",
-    "eslint-config-airbnb": "^18.2.0",
-    "eslint-config-prettier": "^6.13.0",
+    "dotenv-cli": "^4.0.0",
+    "eslint": "^7.13.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.0",
-    "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-react": "^7.21.4",
-    "eslint-plugin-react-hooks": "^4.1.2"
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^4.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -49,7 +48,8 @@
     "lint": "eslint --ext .jsx,.js src"
   },
   "engines": {
-    "yarn": "YARN NO LONGER USED - use npm instead."
+    "yarn": "YARN NO LONGER USED - use npm instead.",
+    "node": "12.x"
   },
   "browserslist": {
     "production": [

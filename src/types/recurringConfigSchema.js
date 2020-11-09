@@ -24,9 +24,11 @@ export const recurringConfigSchema = Joi.object({
  * @param {Object} entity
  * @param {Object} [options]
  * @param {bool} [options.isUpdate]
+ * @param {bool} [options.sync]
+ * @return {Promise|Object}
  */
-export const validateRecurringConfigSchema = (entity, { isUpdate = false } = {}) =>
-  recurringConfigSchema.validateAsync(entity, {
+export const validateRecurringConfigSchema = (entity, { isUpdate = false, sync = false } = {}) =>
+  recurringConfigSchema[sync ? 'validate' : 'validateAsync'](entity, {
     // when updating some values of the entity, we don't want to fill with defaults
     noDefaults: isUpdate,
     // We don't allow unknown when updating, but when fetching yes, they'll be stripped out

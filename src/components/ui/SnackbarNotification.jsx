@@ -20,11 +20,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const SnackbarNotification = (props) => {
+const SnackbarNotification = ({ open, message, buttonText, buttonAction, buttonLink }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const { open, message, buttonText, buttonAction, buttonLink } = props;
   const capitalButtonText = buttonText.charAt(0).toUpperCase() + buttonText.slice(1);
 
   if (open) {

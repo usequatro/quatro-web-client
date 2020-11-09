@@ -1,6 +1,7 @@
 /**
  * File to interact with Firebase's Firestore database
  */
+import { formatQuerySnapshotChanges } from './firestoreRealtimeHelpers';
 import { getFirestore } from '../firebase';
 import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
@@ -38,17 +39,27 @@ export const fetchCreateTask = async (task) => {
 };
 
 /**
+ * Attaches a listener for task list events.
+ *
  * @param {string} userId
- * @return {Promise<Array<Object>>}
+ * @param {Function} onNext
+ * @param {Function} onError
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const fetchListTasks = (userId) =>
+export const listenListTasks = (userId, onNext, onError) =>
   getFirestore()
     .collection(TASKS)
     .where('userId', '==', userId)
     .where('completed', '==', null)
-    .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) => validateEntitiesFilteringOutInvalidOnes(results, validateTaskSchema));
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateTaskSchema));
+      },
+      (error) => {
+        onError(error);
+      },
+    );
 
 export const COMPLETED_TASKS_PAGE_SIZE = 15;
 
@@ -87,75 +98,31 @@ export const fetchUpdateTask = async (taskId, updates) => {
 };
 
 /**
- * @param {Object} updatesByTaskId
+ * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchUpdateTaskBatch = async (updatesByTaskId) => {
-  const batch = getFirestore().batch();
-
-  const validatedUpdates = await Promise.all(
-    Object.entries(updatesByTaskId).map(async ([id, updates]) => {
-      // Null means deletion, let it go through
-      if (updates === null) {
-        return [id, updates];
-      }
-      const validatedUpdate = await validateTaskSchema(updates, { isUpdate: true });
-      return [id, validatedUpdate];
-    }),
-  );
-
-  validatedUpdates.forEach(([id, updates]) => {
-    const ref = getFirestore().collection(TASKS).doc(id);
-    if (updates !== null) {
-      batch.update(ref, updates);
-    } else {
-      batch.delete(ref);
-    }
-  });
-  return batch.commit();
-};
+export const fetchDeleteTask = (id) => getFirestore().collection(TASKS).doc(id).delete();
 
 /**
- * @param {Object} updatesByRecurringConfigId
- * @return {Promise<void>}
+ * Attaches a listener for recurring config list events.
+ *
+ * @param {string} userId
+ * @param {Function} onNext
+ * @param {Function} onError
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
-export const fetchUpdateRecurringConfigBatch = async (updatesByRecurringConfigId) => {
-  const batch = getFirestore().batch();
-
-  const validatedUpdates = await Promise.all(
-    Object.entries(updatesByRecurringConfigId).map(async ([id, updates]) => {
-      // Null means deletion, let it go through
-      if (updates === null) {
-        return [id, updates];
-      }
-      const validatedUpdate = await validateRecurringConfigSchema(updates, { isUpdate: true });
-      return [id, validatedUpdate];
-    }),
-  );
-
-  validatedUpdates.forEach(([id, updates]) => {
-    const ref = getFirestore().collection(RECURRING_CONFIGS).doc(id);
-    if (updates !== null) {
-      batch.update(ref, updates);
-    } else {
-      batch.delete(ref);
-    }
-  });
-  return batch.commit();
-};
-
-/**
- * @param {userId} taskId
- * @return {Promise<Array<Object>>}
- */
-export const fetchListRecurringConfigs = (userId) =>
+export const listenListRecurringConfigs = (userId, onNext, onError) =>
   getFirestore()
     .collection(RECURRING_CONFIGS)
     .where('userId', '==', userId)
-    .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) =>
-      validateEntitiesFilteringOutInvalidOnes(results, validateRecurringConfigSchema),
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateRecurringConfigSchema));
+      },
+      (error) => {
+        onError(error);
+      },
     );
 
 /**

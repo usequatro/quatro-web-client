@@ -1,9 +1,10 @@
 /**
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
+import once from 'lodash/once';
 import createReducer from '../utils/createReducer';
-import { loadTasks, addTask, selectTaskDashboardTab, getTabProperties } from './tasks';
-import { loadRecurringConfigs } from './recurringConfigs';
+import { listenToTaskList, selectTaskDashboardTab, getTabProperties } from './tasks';
+import { listenToRecurringConfigList } from './recurringConfigs';
 import { selectUserId } from './session';
 import { RESET } from './reset';
 import { NOW } from '../constants/dashboardTabs';
@@ -18,6 +19,9 @@ const LOADING = 'loading';
 const LOADED = 'loaded';
 const ERROR = 'error';
 
+const IN_SYNC = 'inSync';
+const OUT_OF_SYNC = 'outOfSync';
+
 // Action types
 
 const SET_STATUS = `${NAMESPACE}/SET_STATUS`;
@@ -28,6 +32,8 @@ const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
 const SET_NEW_TASK_DIALOG_OPEN = `${NAMESPACE}/SET_NEW_TASK_DIALOG_OPEN`;
 const SET_EDIT_TASK_DIALOG_ID = `${NAMESPACE}/SET_EDIT_TASK_DIALOG_ID`;
 const HIGHLIGH_TASK = `${NAMESPACE}/HIGHLIGH_TASK`;
+const SET_TASKS_LISTENER_STATUS = `${NAMESPACE}/HIGHLIGH_TASK`;
+const SET_RECURRING_CONFIGS_LISTENER_STATUS = `${NAMESPACE}/HIGHLIGH_TASK`;
 
 // Reducers
 
@@ -38,11 +44,12 @@ const INITIAL_STATE = {
   newTaskDialogOpen: false,
   editTaskDialogId: null,
   highlightedTaskId: null,
+  tasksSyncStatus: IN_SYNC,
+  recurringConfigsSyncStatus: IN_SYNC,
   snackbarData: {
     open: false,
     message: '',
     id: null,
-    task: null,
     buttonText: '',
     buttonAction: null,
     buttonLink: null,
@@ -70,19 +77,27 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_NEW_TASK_DIALOG_OPEN]: (state, { payload }) => ({ ...state, newTaskDialogOpen: payload }),
   [SET_EDIT_TASK_DIALOG_ID]: (state, { payload }) => ({ ...state, editTaskDialogId: payload }),
   [HIGHLIGH_TASK]: (state, { payload }) => ({ ...state, highlightedTaskId: payload }),
+  [SET_TASKS_LISTENER_STATUS]: (state, { payload }) => ({ ...state, tasksSyncStatus: payload }),
+  [SET_RECURRING_CONFIGS_LISTENER_STATUS]: (state, { payload }) => ({
+    ...state,
+    recurringConfigsSyncStatus: payload,
+  }),
   [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors
 
-export const selectDashboadReadyForInitialFetch = (state) => state[NAMESPACE].status === INITIAL;
-export const selectDashboadIsFetching = (state) => state[NAMESPACE].status === LOADING;
+export const selectDashboadIsLoading = (state) => state[NAMESPACE].status === LOADING;
 export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
 export const selectSnackbarData = (state) => state[NAMESPACE].snackbarData;
 export const selectDashboardActiveTab = (state) => state[NAMESPACE].activeTab;
 export const selectNewTaskDialogOpen = (state) => state[NAMESPACE].newTaskDialogOpen;
 export const selectEditTaskDialogId = (state) => state[NAMESPACE].editTaskDialogId;
 export const selectHighlightedTaskId = (state) => state[NAMESPACE].highlightedTaskId;
+
+export const selectIsDataInSync = (state) =>
+  state[NAMESPACE].tasksSyncStatus === IN_SYNC &&
+  state[NAMESPACE].recurringConfigsSyncStatus === IN_SYNC;
 
 // Actions
 
@@ -121,20 +136,58 @@ const setStatus = (status) => ({
   payload: status,
 });
 
-export const loadDashboardTasks = () => (dispatch) => {
+export const listenToDashboardTasks = () => (dispatch, getState) => {
+  const state = getState();
+  const userId = selectUserId(state);
+  if (!userId) {
+    throw new Error('[tasks:listenToDashboardTasks] No userId');
+  }
+
   dispatch(setStatus(LOADING));
 
-  dispatch(loadTasks())
-    .then(() => {
-      return dispatch(loadRecurringConfigs());
-    })
-    .then(() => {
-      dispatch(setStatus(LOADED));
-    })
-    .catch((error) => {
-      console.error(error); // eslint-disable-line no-console
-      dispatch(setStatus(ERROR));
-    });
+  const errorCallback = () => {
+    dispatch(setStatus(ERROR));
+  };
+
+  // Preparing snapshot listener callbacks to update initial dashboard loading state and dispatches
+  // changes to the flag that tracks if the local changes are persisted
+  const { tasksNextCallback, recurringConfigsNextCallback } = (() => {
+    const flags = { tasks: false, recurringConfigs: false };
+    const dispatchLoaded = once(() => dispatch(setStatus(LOADED)));
+    const dispatchLoadedIfReady = () => {
+      if (flags.tasks && flags.recurringConfigs) {
+        dispatchLoaded();
+      }
+    };
+    return {
+      tasksNextCallback: (hasUnsavedChanges) => {
+        flags.tasks = true;
+        dispatch({
+          type: SET_TASKS_LISTENER_STATUS,
+          payload: hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC,
+        });
+        dispatchLoadedIfReady();
+      },
+      recurringConfigsNextCallback: (hasUnsavedChanges) => {
+        flags.recurringConfigs = true;
+        dispatch({
+          type: SET_RECURRING_CONFIGS_LISTENER_STATUS,
+          payload: hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC,
+        });
+        dispatchLoadedIfReady();
+      },
+    };
+  })();
+
+  const unsubscribeTaskList = dispatch(listenToTaskList(userId, tasksNextCallback, errorCallback));
+  const unsubscribeRecurringConfigList = dispatch(
+    listenToRecurringConfigList(userId, recurringConfigsNextCallback, errorCallback),
+  );
+
+  return () => {
+    unsubscribeTaskList();
+    unsubscribeRecurringConfigList();
+  };
 };
 
 export const setHighlighedTask = (id) => (dispatch) => {
@@ -175,7 +228,7 @@ export const createTask = (
     created: Date.now(),
     source: SOURCES.USER,
   };
-  const showSnackbar = (tid, task_) => {
+  const showSnackbar = (tid) => {
     const stateTask = getState();
     const tabTask = selectTaskDashboardTab(stateTask, tid);
     const dashboardActiveTab = selectDashboardActiveTab(state);
@@ -186,7 +239,6 @@ export const createTask = (
         open: true,
         message: `Task created`,
         id: tid,
-        task: task_,
         // Show button only if task went to a different tab than what's visible now
         ...(dashboardActiveTab !== tabTask
           ? { buttonText: `See ${selectTab.text}`, buttonLink: selectTab.link }
@@ -196,21 +248,12 @@ export const createTask = (
   };
 
   return apiClient.fetchCreateTask(task).then(({ id }) => {
-    dispatch(addTask(id, task));
     showSnackbar(id, task);
     mixpanel.track(TASK_CREATED, {
       hasBlockers: blockedBy.length > 0,
       hasScheduledStart: !!scheduledStart,
       hasDueDate: !!due,
     });
-
-    // For autoupdating the new task tab
-    // const updatedState = getState();
-    // const tasktab = selectTaskDashboardTab(updatedState, id);
-    // if (tab) {
-    //   dispatch(setDashboardActiveTab(tasktab));
-    //   dispatch(setHighlighedTask(id));
-    // }
 
     return id;
   });
