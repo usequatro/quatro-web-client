@@ -12,7 +12,7 @@ export const BACKLOG = '/dashboard/backlog';
 export const COMPLETED = '/dashboard/completed';
 export const NEW_TASK = '/dashboard/new';
 export const EDIT_TASK = '/dashboard/edit/:id';
-export const CONNECTED_GOOGLE_CALENDARS = '/dashboard/googlecalendar';
+export const CONNECTED_GOOGLE_CALENDARS = '/dashboard/google-calendar-list';
 
 export const ACCOUNT_SETTINGS = '/account';
 
