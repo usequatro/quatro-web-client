@@ -14,7 +14,7 @@ import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
-import GoogleCalendarConnectedCalendars from '../gCalendar/GoogleCalendarConnectedCalendars';
+import GoogleCalendarList from '../gCalendar/GoogleCalendarList';
 import SnackbarNotification from '../ui/SnackbarNotification';
 
 import {
@@ -126,7 +126,7 @@ const Dashboard = () => {
         [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
         [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
         [(tab) => tab === dashboardTabs.CONNECTED_GOOGLE_CALENDARS, () => 
-          <GoogleCalendarConnectedCalendars />],
+          <GoogleCalendarList />],
       ])(activeTab),
     [activeTab],
   );
