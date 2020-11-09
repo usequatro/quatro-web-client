@@ -65,10 +65,12 @@ export const getUserCalendars = () => (dispatch, getState) => {
   const state = getState();
   const googleAPIClient = selectGoogleAPIClient(state);
 
-  googleAPIClient.client.calendar.calendarList.list({
-    maxResults: 250,
-    minAccessRole: 'writer',
-  }).execute(calendarListResponse => {
-    dispatch(setGoogleCalendars(calendarListResponse.items));
-  });
+  if (googleAPIClient.client && googleAPIClient.client.calendar) {
+    googleAPIClient.client.calendar.calendarList.list({
+      maxResults: 250,
+      minAccessRole: 'writer',
+    }).execute(calendarListResponse => {
+      dispatch(setGoogleCalendars(calendarListResponse.items));
+    });
+  };
 };
