@@ -23,6 +23,7 @@ import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import SettingsRoundedIcon from '@material-ui/icons/SettingsRounded';
 import ErrorRoundedIcon from '@material-ui/icons/ErrorRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
+import ControlCameraRoundedIcon from '@material-ui/icons/ControlCameraRounded';
 
 import { getAuth } from '../../../firebase';
 import * as tabs from '../../../constants/dashboardTabs';
@@ -104,6 +105,7 @@ const sectionTitlesByPath = {
   [tabs.SCHEDULED]: 'Scheduled',
   [tabs.COMPLETED]: 'Completed',
   [tabs.ACCOUNT_SETTINGS]: 'Account',
+  [tabs.CONNECTED_GOOGLE_CALENDARS]: 'Connected Google Calendars',
 };
 const iconsByPath = {
   [tabs.NOW]: HomeRoundedIcon,
@@ -112,6 +114,7 @@ const iconsByPath = {
   [tabs.SCHEDULED]: CalendarTodayRoundedIcon,
   [tabs.COMPLETED]: DoneAllRoundedIcon,
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
+  [tabs.CONNECTED_GOOGLE_CALENDARS]: ControlCameraRoundedIcon,
 };
 
 const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
