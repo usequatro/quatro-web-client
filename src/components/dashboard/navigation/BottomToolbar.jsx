@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import Tooltip from '@material-ui/core/Tooltip';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -15,9 +15,10 @@ import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import AddIcon from '@material-ui/icons/Add';
 
 import LabeledIconButton from '../../ui/LabeledIconButton';
-import { selectDashboardActiveTab, setNewTaskDialogOpen } from '../../../modules/dashboard';
+import { selectDashboardActiveTab } from '../../../modules/dashboard';
 import * as paths from '../../../constants/paths';
 import * as dashboardTabs from '../../../constants/dashboardTabs';
+import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
 
 const useStyles = makeStyles((theme) => ({
   bottomToolbar: {
@@ -42,8 +43,9 @@ const useStyles = makeStyles((theme) => ({
 
 const BottomToolbar = () => {
   const classes = useStyles();
-  const dispatch = useDispatch();
   const activeTab = useSelector(selectDashboardActiveTab);
+
+  const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
 
   return (
     <Toolbar className={classes.bottomToolbar}>
@@ -70,7 +72,7 @@ const BottomToolbar = () => {
           <IconButton
             aria-label="Create task"
             classes={{ root: classes.addButtonRoot }}
-            onClick={() => dispatch(setNewTaskDialogOpen(true))}
+            onClick={showNewTaskDialog}
           >
             <AddIcon fontSize="large" />
           </IconButton>

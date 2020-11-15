@@ -115,8 +115,16 @@ export const setNewTaskInitialState = () => ({ type: SET_ALL, payload: INITIAL_S
 export const setTaskInForm = (taskId) => (dispatch, getState) => {
   const state = getState();
   const task = selectTask(state, taskId);
+
+  // Early return to inform the dispatcher that the task doesn't exist
+  if (!task) {
+    return false;
+  }
+
   dispatch({ type: SET_ALL, payload: task });
 
   const recurringConfig = selectRecurringConfigByMostRecentTaskId(state, taskId) || null;
   dispatch({ type: SET_RECURRING_CONFIG, payload: recurringConfig });
+
+  return true;
 };

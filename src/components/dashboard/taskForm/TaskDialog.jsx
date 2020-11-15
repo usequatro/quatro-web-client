@@ -1,19 +1,16 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Dialog from '@material-ui/core/Dialog';
 import Slide from '@material-ui/core/Slide';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme } from '@material-ui/core/styles';
 
-import {
-  selectNewTaskDialogOpen,
-  selectEditTaskDialogId,
-  setEditTaskDialogId,
-  setNewTaskDialogOpen,
-} from '../../../modules/dashboard';
 import { setNewTaskInitialState, setTaskInForm } from '../../../modules/taskForm';
 import TaskDialogForm from './TaskDialogForm';
+import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
+import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
+import { selectDashboadIsLoaded } from '../../../modules/dashboard';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -24,41 +21,48 @@ const TaskDialog = () => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const newTaskDialogOpen = useSelector(selectNewTaskDialogOpen);
-  const editTaskDialogId = useSelector(selectEditTaskDialogId);
+  const dashboardLoaded = useSelector(selectDashboadIsLoaded);
 
-  // On opening new task modal, clear it
-  useEffect(() => {
-    if (newTaskDialogOpen) {
-      dispatch(setNewTaskInitialState());
-    }
-  }, [newTaskDialogOpen, dispatch]);
+  const [newTaskDialogOpen, , closeNewTaskDialog] = useNewTaskDialogRouterControl();
+  const [editTaskDialogId, , closeEditTaskDialog] = useEditTaskDialogRouterControl();
 
-  // On opening edit task modal, load task data
-  useEffect(() => {
-    if (editTaskDialogId) {
-      dispatch(setTaskInForm(editTaskDialogId));
-    }
-  }, [editTaskDialogId, dispatch]);
-
-  const shouldBeOpen = Boolean(newTaskDialogOpen || editTaskDialogId);
+  const shouldBeOpen = Boolean(dashboardLoaded && (newTaskDialogOpen || editTaskDialogId));
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open && shouldBeOpen) {
       setOpen(true);
+    } else if (open && !shouldBeOpen) {
+      setOpen(false);
     }
   }, [shouldBeOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // On opening new task modal, clear it
+  useEffect(() => {
+    if (newTaskDialogOpen && open) {
+      dispatch(setNewTaskInitialState());
+    }
+  }, [newTaskDialogOpen, open, dispatch]);
+
+  // On opening edit task modal, load task data
+  useEffect(() => {
+    if (open && editTaskDialogId) {
+      const success = dispatch(setTaskInForm(editTaskDialogId));
+      if (!success) {
+        closeEditTaskDialog();
+      }
+    }
+  }, [open, editTaskDialogId, closeEditTaskDialog, dispatch]);
 
   const handleClose = () => {
     setOpen(false);
     if (newTaskDialogOpen) {
       setTimeout(() => {
-        dispatch(setNewTaskDialogOpen(false));
+        closeNewTaskDialog();
       }, 150);
     }
     if (editTaskDialogId) {
       setTimeout(() => {
-        dispatch(setEditTaskDialogId(null));
+        closeEditTaskDialog();
       }, 150);
     }
   };
@@ -72,7 +76,7 @@ const TaskDialog = () => {
       TransitionComponent={Transition}
       disableBackdropClick
     >
-      <TaskDialogForm onClose={handleClose} />
+      <TaskDialogForm onClose={handleClose} taskId={editTaskDialogId} />
     </Dialog>
   );
 };

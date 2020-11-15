@@ -30,7 +30,7 @@ import { selectDashboardActiveTab, selectIsDataInSync } from '../../../modules/d
 import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
-import useDebouncedState from '../../../utils/useDebouncedState';
+import useDebouncedState from '../../hooks/useDebouncedState';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
