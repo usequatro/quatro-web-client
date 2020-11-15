@@ -81,6 +81,7 @@ import {
   effortLabels,
   effortSliderMarks,
 } from '../../../constants/taskFormConstants';
+import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -281,6 +282,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
     }
   }, []);
 
+  const isTouchEnabledScreen = useIsTouchEnabledScreen();
+
   return (
     <Box
       onSubmit={handleSubmit}
@@ -308,7 +311,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           <TextField
             label="What do you need to do?"
             className={classes.titleTextField}
-            autoFocus
+            // Autofocus with real keyboard, not when screen keyboard because it's annoying
+            autoFocus={!isTouchEnabledScreen}
             multiline
             rowsMax={3}
             value={title}
