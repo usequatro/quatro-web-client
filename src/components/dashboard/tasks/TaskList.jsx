@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
@@ -9,8 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Hidden from '@material-ui/core/Hidden';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
+import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
 
@@ -25,10 +24,10 @@ import {
 } from '../../../modules/tasks';
 import {
   selectDashboardActiveTab,
-  setNewTaskDialogOpen,
   selectHighlightedTaskId,
   selectDashboadIsLoading,
 } from '../../../modules/dashboard';
+import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
@@ -66,7 +65,6 @@ const useStyles = makeStyles((theme) => ({
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -80,6 +78,8 @@ const TaskList = forwardRef((_, ref) => {
     tab === dashboardTabs.NOW ? selectHasMoveToBacklog(state) : false,
   );
 
+  const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
+
   useCreateTaskShortcut();
 
   return (
@@ -91,7 +91,7 @@ const TaskList = forwardRef((_, ref) => {
           () => true,
           () => (
             <>
-              <MenuList disablePadding>
+              <List disablePadding>
                 <Sortable
                   id={`sortable-${tab}`}
                   enabled={showPosition}
@@ -102,13 +102,13 @@ const TaskList = forwardRef((_, ref) => {
                     <Task
                       key={id}
                       id={id}
-                      component={MenuItem}
                       highlighted={id === highlighedTaskId}
                       position={showPosition ? index + 1 + positionOffset : undefined}
                       // For performance, we indicate if the task should load blockers from the top
                       showBlockers={
                         tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
                       }
+                      editable
                     />
                   )}
                   renderDropAreaStart={
@@ -132,7 +132,7 @@ const TaskList = forwardRef((_, ref) => {
                       : null
                   }
                 />
-              </MenuList>
+              </List>
             </>
           ),
         ],
@@ -151,7 +151,7 @@ const TaskList = forwardRef((_, ref) => {
           aria-label="Create task"
           color="default"
           className={classes.fab}
-          onClick={() => dispatch(setNewTaskDialogOpen(true))}
+          onClick={showNewTaskDialog}
         >
           <AddIcon fontSize="large" />
         </Fab>

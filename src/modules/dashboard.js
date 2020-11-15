@@ -29,11 +29,9 @@ const SET_ACCOUNT_MENU_OPEN = `${NAMESPACE}/SET_ACCOUNT_MENU_OPEN`;
 const SET_SNACKBAR_DATA = `${NAMESPACE}/SET_SNACKBAR_DATA`;
 const RESET_SNACKBAR = `${NAMESPACE}/RESET_SNACKBAR`;
 const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
-const SET_NEW_TASK_DIALOG_OPEN = `${NAMESPACE}/SET_NEW_TASK_DIALOG_OPEN`;
-const SET_EDIT_TASK_DIALOG_ID = `${NAMESPACE}/SET_EDIT_TASK_DIALOG_ID`;
 const HIGHLIGH_TASK = `${NAMESPACE}/HIGHLIGH_TASK`;
-const SET_TASKS_LISTENER_STATUS = `${NAMESPACE}/HIGHLIGH_TASK`;
-const SET_RECURRING_CONFIGS_LISTENER_STATUS = `${NAMESPACE}/HIGHLIGH_TASK`;
+const SET_TASKS_LISTENER_STATUS = `${NAMESPACE}/SET_TASKS_LISTENER_STATUS`;
+const SET_RECURRING_CONFIGS_LISTENER_STATUS = `${NAMESPACE}/SET_RECURRING_CONFIGS_LISTENER_STATUS`;
 
 // Reducers
 
@@ -41,8 +39,6 @@ const INITIAL_STATE = {
   status: INITIAL,
   accountMenuOpen: false,
   activeTab: NOW,
-  newTaskDialogOpen: false,
-  editTaskDialogId: null,
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
   recurringConfigsSyncStatus: IN_SYNC,
@@ -74,8 +70,6 @@ export const reducer = createReducer(INITIAL_STATE, {
     snackbarData: INITIAL_STATE.snackbarData,
   }),
   [SET_ACTIVE_TAB]: (state, { payload }) => ({ ...state, activeTab: payload }),
-  [SET_NEW_TASK_DIALOG_OPEN]: (state, { payload }) => ({ ...state, newTaskDialogOpen: payload }),
-  [SET_EDIT_TASK_DIALOG_ID]: (state, { payload }) => ({ ...state, editTaskDialogId: payload }),
   [HIGHLIGH_TASK]: (state, { payload }) => ({ ...state, highlightedTaskId: payload }),
   [SET_TASKS_LISTENER_STATUS]: (state, { payload }) => ({ ...state, tasksSyncStatus: payload }),
   [SET_RECURRING_CONFIGS_LISTENER_STATUS]: (state, { payload }) => ({
@@ -88,11 +82,10 @@ export const reducer = createReducer(INITIAL_STATE, {
 // Selectors
 
 export const selectDashboadIsLoading = (state) => state[NAMESPACE].status === LOADING;
+export const selectDashboadIsLoaded = (state) => state[NAMESPACE].status === LOADED;
 export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
 export const selectSnackbarData = (state) => state[NAMESPACE].snackbarData;
 export const selectDashboardActiveTab = (state) => state[NAMESPACE].activeTab;
-export const selectNewTaskDialogOpen = (state) => state[NAMESPACE].newTaskDialogOpen;
-export const selectEditTaskDialogId = (state) => state[NAMESPACE].editTaskDialogId;
 export const selectHighlightedTaskId = (state) => state[NAMESPACE].highlightedTaskId;
 
 export const selectIsDataInSync = (state) =>
@@ -119,16 +112,6 @@ export const resetSnackbar = (snackbarData) => ({
 export const setDashboardActiveTab = (tab) => ({
   type: SET_ACTIVE_TAB,
   payload: tab,
-});
-
-export const setNewTaskDialogOpen = (open) => ({
-  type: SET_NEW_TASK_DIALOG_OPEN,
-  payload: open,
-});
-
-export const setEditTaskDialogId = (id) => ({
-  type: SET_EDIT_TASK_DIALOG_ID,
-  payload: id,
 });
 
 const setStatus = (status) => ({

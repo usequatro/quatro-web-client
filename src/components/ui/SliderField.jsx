@@ -23,11 +23,21 @@ const QuatroSlider = withStyles((theme) => ({
 }))(Slider);
 
 // eslint-disable-next-line react/prop-types
-const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) => (
+const SliderField = ({
+  id,
+  label,
+  'aria-label': ariaLabel,
+  onChange,
+  value,
+  getValueText,
+  marks,
+}) => (
   <>
-    <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
-      {label}
-    </Typography>
+    {label && (
+      <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
+        {label}
+      </Typography>
+    )}
     <Typography
       gutterBottom
       color="primary"
@@ -39,11 +49,12 @@ const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) =>
     </Typography>
     <Box px={3}>
       <QuatroSlider
+        aria-label={ariaLabel}
         marks={marks || true}
         min={0}
         max={4}
         step={1}
-        aria-labelledby={id}
+        {...(label ? { 'aria-labelledby': id } : {})}
         getAriaValueText={(v) => getValueText(v)}
         /* first thumb is fixed to position 0, the other one is the varying one */
         value={value}
@@ -57,13 +68,19 @@ const TaskSliderField = ({ id, label, onChange, value, getValueText, marks }) =>
   </>
 );
 
-TaskSliderField.propTypes = {
+SliderField.propTypes = {
   id: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  'aria-label': PropTypes.string,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   getValueText: PropTypes.func.isRequired,
   marks: PropTypes.oneOfType([PropTypes.bool, PropTypes.array]).isRequired,
 };
 
-export default TaskSliderField;
+SliderField.defaultProps = {
+  label: undefined,
+  'aria-label': undefined,
+};
+
+export default SliderField;

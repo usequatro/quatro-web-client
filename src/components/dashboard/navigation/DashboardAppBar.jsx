@@ -30,7 +30,7 @@ import { selectDashboardActiveTab, selectIsDataInSync } from '../../../modules/d
 import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
-import useDebounce from '../../../utils/useDebounce';
+import useDebouncedState from '../../hooks/useDebouncedState';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -117,7 +117,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const tab = useSelector(selectDashboardActiveTab);
   const userPhotoURL = useSelector(selectUserPhotoURL);
   const dashboardDataIsInSync = useSelector(selectIsDataInSync);
-  const showSpinner = useDebounce(!dashboardDataIsInSync, 750) && !dashboardDataIsInSync;
+  const showSpinner = useDebouncedState(!dashboardDataIsInSync, 750) && !dashboardDataIsInSync;
 
   const sectionTitle = sectionTitlesByPath[tab] || 'Not found';
   const Icon = iconsByPath[tab] || Fragment;

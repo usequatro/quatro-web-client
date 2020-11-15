@@ -25,7 +25,7 @@ import {
 } from '../../modules/dashboard';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
-import usePrevious from '../../utils/usePrevious';
+import usePrevious from '../hooks/usePrevious';
 
 const useStyles = makeStyles((theme) => ({
   root: {

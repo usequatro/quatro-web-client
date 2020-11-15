@@ -1,19 +1,13 @@
-import { useSelector, useDispatch } from 'react-redux';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import {
-  setNewTaskDialogOpen,
-  selectNewTaskDialogOpen,
-  selectEditTaskDialogId,
-} from '../../../modules/dashboard';
+import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
+import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 
 const KEY = 'space';
 
 export default function useCreateTaskShortcut() {
-  const dispatch = useDispatch();
-
-  const newTaskDialogOpen = useSelector(selectNewTaskDialogOpen);
-  const editTaskDialogId = useSelector(selectEditTaskDialogId);
+  const [newTaskDialogOpen, openNewTaskDialog] = useNewTaskDialogRouterControl();
+  const [editTaskDialogId] = useEditTaskDialogRouterControl();
 
   useHotkeys(
     KEY,
@@ -23,7 +17,7 @@ export default function useCreateTaskShortcut() {
       }
       event.preventDefault();
       event.stopPropagation();
-      dispatch(setNewTaskDialogOpen(true));
+      openNewTaskDialog();
     },
     [newTaskDialogOpen, editTaskDialogId],
   );

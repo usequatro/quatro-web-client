@@ -15,9 +15,10 @@ import {
   undoCompleteTask,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setEditTaskDialogId, setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
+import { setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
+import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 
-const Task = ({ id, position, component, highlighted, showBlockers }) => {
+const Task = ({ id, position, component, highlighted, showBlockers, editable }) => {
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
@@ -29,8 +30,12 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
     selectRecurringConfigIdByMostRecentTaskId(state, id),
   );
 
+  const [, openEditTaskDialog] = useEditTaskDialogRouterControl();
+
   const dispatch = useDispatch();
-  const handleClick = useCallback(() => dispatch(setEditTaskDialogId(id)), [id, dispatch]);
+  const handleClick = useCallback(() => {
+    openEditTaskDialog(id);
+  }, [openEditTaskDialog, id]);
 
   const [visualCompleted, setVisualCompleted] = useState(completed);
   const cancelCompletion = useRef();
@@ -65,6 +70,7 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
       position={position}
       component={component}
       highlighted={highlighted}
+      editable={editable}
       title={title}
       description={description}
       score={score}
@@ -75,7 +81,7 @@ const Task = ({ id, position, component, highlighted, showBlockers }) => {
       hasRecurringConfig={hasRecurringConfig}
       showBlockers={showBlockers}
       onComplete={handleComplete}
-      onClick={handleClick}
+      onClick={editable ? handleClick : undefined}
     />
   );
 };
@@ -86,12 +92,14 @@ Task.propTypes = {
   position: PropTypes.number,
   component: PropTypes.elementType,
   highlighted: PropTypes.bool,
+  editable: PropTypes.bool,
 };
 
 Task.defaultProps = {
   position: undefined,
   component: undefined,
   highlighted: undefined,
+  editable: false,
 };
 
 export default Task;

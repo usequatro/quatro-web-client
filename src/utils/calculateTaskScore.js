@@ -1,3 +1,5 @@
+import round from 'lodash/round';
+
 const normalizeBase = (value, from, to) => (value * to) / from;
 const convertMillisecondsToDays = (time) => time / (1000 * 60 * 60 * 24);
 const getDaysDue = (due) => convertMillisecondsToDays(Math.max(due - Date.now(), 0));
@@ -15,5 +17,5 @@ export default function calculateTaskScore(impact, effort, due) {
   // https://www.wolframalpha.com/input/?i=plot+2%2Fx
   const daysUntilFactor = due ? 1 + 2 / Math.min(getDaysDue(due), 10000) : 1;
 
-  return (weightenedImpact / weightenedEffort) * daysUntilFactor;
-};
+  return round((weightenedImpact / weightenedEffort) * daysUntilFactor, 3);
+}
