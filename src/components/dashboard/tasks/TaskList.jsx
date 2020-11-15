@@ -9,8 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Hidden from '@material-ui/core/Hidden';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
+import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
 
@@ -91,7 +90,7 @@ const TaskList = forwardRef((_, ref) => {
           () => true,
           () => (
             <>
-              <MenuList disablePadding>
+              <List disablePadding>
                 <Sortable
                   id={`sortable-${tab}`}
                   enabled={showPosition}
@@ -102,13 +101,13 @@ const TaskList = forwardRef((_, ref) => {
                     <Task
                       key={id}
                       id={id}
-                      component={MenuItem}
                       highlighted={id === highlighedTaskId}
                       position={showPosition ? index + 1 + positionOffset : undefined}
                       // For performance, we indicate if the task should load blockers from the top
                       showBlockers={
                         tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
                       }
+                      editable
                     />
                   )}
                   renderDropAreaStart={
@@ -132,7 +131,7 @@ const TaskList = forwardRef((_, ref) => {
                       : null
                   }
                 />
-              </MenuList>
+              </List>
             </>
           ),
         ],

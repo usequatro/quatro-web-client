@@ -6,10 +6,10 @@ import memoize from 'lodash/memoize';
 import truncate from 'lodash/truncate';
 
 import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import ListItem from '@material-ui/core/ListItem';
 import IconButton from '@material-ui/core/IconButton';
 
 import EventRoundedIcon from '@material-ui/icons/EventRounded';
@@ -98,8 +98,8 @@ const useStyles = makeStyles((theme) => ({
 const TaskView = ({
   id,
   position,
-  component,
   highlighted,
+  editable,
   title,
   scheduledStart,
   due,
@@ -123,16 +123,17 @@ const TaskView = ({
     [id, onComplete],
   );
 
+  // Using ListItem when editable, so that along with 'button' prop, we get interaction animations
+  const Component = editable ? ListItem : 'div';
+
   return (
-    <Paper
+    <Component
       data-id={id}
       data-score={score || ''}
       className={classes.outerContainer}
-      square
-      component={component}
       selected={highlighted}
-      elevation={0}
       onClick={onClick}
+      {...(editable ? { button: true } : {})}
     >
       <Box width="3.5rem" align="center" flexShrink={0}>
         {position !== undefined && (
@@ -208,14 +209,13 @@ const TaskView = ({
           )}
         </IconButton>
       </Box>
-    </Paper>
+    </Component>
   );
 };
 
 TaskView.propTypes = {
   id: PropTypes.string.isRequired,
   position: PropTypes.number,
-  component: PropTypes.elementType,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   showBlockers: PropTypes.bool.isRequired,
@@ -228,17 +228,18 @@ TaskView.propTypes = {
   completed: PropTypes.number,
   onClick: PropTypes.func,
   highlighted: PropTypes.bool,
+  editable: PropTypes.bool,
 };
 
 TaskView.defaultProps = {
   position: undefined,
-  component: undefined,
   score: undefined,
   scheduledStart: undefined,
   due: undefined,
   prioritizedAheadOf: undefined,
   completed: undefined,
   highlighted: undefined,
+  editable: false,
   onClick: () => {},
 };
 

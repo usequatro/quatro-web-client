@@ -77,9 +77,15 @@ import RecurringConfigDialog from '../tasks/RecurringConfigDialog';
 import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
-import TaskSliderField from './TaskSliderField';
+import SliderField from '../../ui/SliderField';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
+import {
+  impactLabels,
+  impactSliderMarks,
+  effortLabels,
+  effortSliderMarks,
+} from '../../../constants/taskFormConstants';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -122,38 +128,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: '3px',
   },
 }));
-
-const impactLabels = {
-  0: 'Not much',
-  1: 'Nice to have',
-  2: 'Minor impact',
-  3: 'Medium impact',
-  4: 'Major impact',
-};
-
-const impactSliderMarks = [
-  { value: 0, label: 'Not much' },
-  { value: 1, label: 'Nice to have' },
-  { value: 2, label: 'Minor' },
-  { value: 3, label: 'Medium' },
-  { value: 4, label: 'Major' },
-];
-
-const effortLabels = {
-  0: '15 minutes or less',
-  1: '30 minutes',
-  2: 'An hour',
-  3: 'Two to five hours',
-  4: 'More than a day',
-};
-
-const effortSliderMarks = [
-  { value: 0, label: '1-15 mins' },
-  { value: 1, label: '30 mins' },
-  { value: 2, label: '1 hour' },
-  { value: 3, label: '2-5 hours' },
-  { value: 4, label: '1+ days' },
-];
 
 const initialScheduledDate = addHours(startOfTomorrow(), 9);
 const initialDueDate = addHours(addWeeks(startOfWeek(new Date()), 1), 9);
@@ -378,7 +352,7 @@ const TaskDialogForm = ({ onClose }) => {
         )}
 
         <Box px={3} pt={2} pb={4}>
-          <TaskSliderField
+          <SliderField
             id="impact-slider"
             label="What impact will this task have?"
             value={impact}
@@ -389,7 +363,7 @@ const TaskDialogForm = ({ onClose }) => {
         </Box>
 
         <Box px={3} pt={2} pb={4}>
-          <TaskSliderField
+          <SliderField
             id="effort-slider"
             label="How much time will this task require?"
             value={effort}
