@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
@@ -6,20 +6,18 @@ import addHours from 'date-fns/addHours';
 import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
+import isPast from 'date-fns/isPast';
 
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Typography from '@material-ui/core/Typography';
-import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
-import DialogContent from '@material-ui/core/DialogContent';
-import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -28,10 +26,9 @@ import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
 import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
-import CloseIcon from '@material-ui/icons/Close';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
-import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import {
   selectNewTaskDialogOpen,
@@ -72,6 +69,7 @@ import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
+import { TextFieldWithTypography } from '../../ui/InputWithTypography';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
 import RecurringConfigDialog from '../tasks/RecurringConfigDialog';
 import { useNotification } from '../../Notification';
@@ -88,44 +86,39 @@ import {
 } from '../../../constants/taskFormConstants';
 
 const useStyles = makeStyles((theme) => ({
-  dialogTitle: {
-    position: 'relative',
-    display: 'flex',
-  },
-  dialogTitleTypography: {
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  dialogActionBar: {
-    display: 'flex',
-    backgroundColor: theme.palette.background.secondary,
-  },
   dialogContent: {
-    padding: 0,
-    [theme.breakpoints.up('sm')]: {
-      width: '500px',
-      maxWidth: '100%',
-      height: '30rem',
-      maxHeight: '70vh',
-    },
+    width: '100%',
+    maxWidth: '100%',
+    maxHeight: '70vh',
   },
   titleTextField: {
     flexGrow: 1,
   },
-  dateButton: {
+  dateButtonActive: {
     justifyContent: 'flex-start',
+    textAlign: 'left',
+  },
+  dateButtonInactive: {
+    justifyContent: 'flex-start',
+    textAlign: 'left',
+    opacity: 0.5,
   },
   submitLoader: {
     color: theme.palette.common.white,
   },
-  blockersList: {
-    flexGrow: 1,
+  pastDueIconButton: {
+    color: theme.palette.error.main,
   },
   blockersIconButton: {
     padding: '6px', // to match the list item next to it
     paddingRight: '8px',
     marginTop: '3px',
+  },
+  blockerTitle: {
+    padding: `0 ${theme.spacing(2)}px 0 0`,
+  },
+  blockerListItemRoot: {
+    padding: 0,
   },
 }));
 
@@ -146,7 +139,7 @@ const getBlockerTitle = cond([
 
 const RepeatButtonDisabledTooltip = ({ mounted, children }) =>
   mounted ? (
-    <Tooltip title="Add a Start Date to enable" enterDelay={0}>
+    <Tooltip title="Add a Start Date to enable" enterDelay={0} placement="bottom-start">
       <span>{children}</span>
     </Tooltip>
   ) : (
@@ -191,6 +184,9 @@ const TaskDialogForm = ({ onClose }) => {
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
+  const menuButtonRef = useRef();
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -272,9 +268,6 @@ const TaskDialogForm = ({ onClose }) => {
     setShowRecurringDialog(false);
   };
 
-  const modalTitle = newTaskDialogOpen ? 'New Task' : 'Edit Task';
-  const ctaText = newTaskDialogOpen ? 'Create' : 'Save';
-
   const scrollToBottom = useCallback(() => {
     const container = document.getElementById('task-dialog-content');
     if (container) {
@@ -294,24 +287,12 @@ const TaskDialogForm = ({ onClose }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitle
-        disableTypography
-        className={classes.dialogTitle}
-        color="transparent"
-        elevation={0}
-      >
-        <Typography variant="h6" component="h2" className={classes.dialogTitleTypography}>
-          {modalTitle}
-        </Typography>
-        <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent className={classes.dialogContent} id="task-dialog-content">
-        <Box pt={0} pb={2} px={3} display="flex" alignItems="flex-end">
-          <TextField
-            label="What do you need to do?"
+      <Box py={3} px={3} className={classes.dialogContent} id="task-dialog-content">
+        <Box pb={2} display="flex" alignItems="flex-end">
+          <TextFieldWithTypography
+            typography="h6"
+            aria-label="What do you need to do?"
+            placeholder="What do you need to do?"
             className={classes.titleTextField}
             autoFocus
             value={title}
@@ -327,7 +308,6 @@ const TaskDialogForm = ({ onClose }) => {
           <Tooltip title={showDescription ? 'Remove notes' : 'Add notes'}>
             <IconButton
               size="small"
-              edge="end"
               aria-label="Toggle notes"
               style={{ opacity: showDescription ? 0.5 : 1 }}
               onClick={() => setShowDescription(!showDescription)}
@@ -335,189 +315,240 @@ const TaskDialogForm = ({ onClose }) => {
               <NotesIcon />
             </IconButton>
           </Tooltip>
+
+          {editTaskDialogId && (
+            <>
+              <IconButton
+                size="small"
+                edge="end"
+                aria-label="Toggle more options menu"
+                onClick={() => setOptionsMenuOpen(true)}
+                ref={menuButtonRef}
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Confirm
+                onConfirm={() => {
+                  onClose();
+                  dispatch(deleteTask(editTaskDialogId));
+                  dispatch(
+                    setSnackbarData({
+                      open: true,
+                      message: 'Task deleted',
+                      id: editTaskDialogId,
+                    }),
+                  );
+                }}
+                renderDialog={(open, onConfirm, onConfirmationClose) => (
+                  <ConfirmationDialog
+                    open={open}
+                    onClose={onConfirmationClose}
+                    onConfirm={onConfirm}
+                    id="confirm-delete-task"
+                    title="Delete task"
+                    body={[
+                      'Are you sure you want to delete this task?',
+                      recurringConfig && 'The task will stop repeating when deleted',
+                    ].filter(Boolean)}
+                    buttonText="Delete"
+                  />
+                )}
+                renderContent={(onDeleteClick) => (
+                  <Menu
+                    open={optionsMenuOpen}
+                    onClose={() => setOptionsMenuOpen(false)}
+                    anchorEl={menuButtonRef.current}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem onClick={onDeleteClick}>Delete</MenuItem>
+                  </Menu>
+                )}
+              />
+            </>
+          )}
         </Box>
 
         {showDescription && (
-          <Box px={3} pb={4} pt={0}>
-            <TextField
+          <Box pb={4}>
+            <TextFieldWithTypography
+              typography="body2"
               placeholder="Notes"
               aria-label="Notes"
               fullWidth
               multiline
-              rows={2}
+              rowsMax={4}
               value={description}
               onChange={(event) => dispatch(setDescription(event.target.value))}
             />
           </Box>
         )}
 
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="impact-slider"
-            label="What impact will this task have?"
-            value={impact}
-            getValueText={(i) => impactLabels[i] || '-'}
-            onChange={(value) => dispatch(setImpact(value))}
-            marks={impactSliderMarks}
-          />
+        <Box pt={2} pb={4}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} sm={6}>
+              <SliderField
+                id="impact-slider"
+                label="What impact will this task have?"
+                value={impact}
+                getValueText={(i) => impactLabels[i] || '-'}
+                onChange={(value) => dispatch(setImpact(value))}
+                marks={impactSliderMarks}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <SliderField
+                id="effort-slider"
+                label="How much time will this task require?"
+                value={effort}
+                getValueText={(e) => effortLabels[e] || '-'}
+                onChange={(value) => dispatch(setEffort(value))}
+                marks={effortSliderMarks}
+              />
+            </Grid>
+          </Grid>
         </Box>
 
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="effort-slider"
-            label="How much time will this task require?"
-            value={effort}
-            getValueText={(e) => effortLabels[e] || '-'}
-            onChange={(value) => dispatch(setEffort(value))}
-            marks={effortSliderMarks}
-          />
-        </Box>
-
-        {(dueTimestamp || scheduledStartTimestamp || recurringConfig) && (
-          <Box px={3} pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
+        <Box pt={0} pb={0} display="flex" flexDirection="column" alignItems="flex-start">
+          <Box display="flex">
+            <Button
+              onClick={() => setShowScheduledStartDialog(true)}
+              startIcon={<EventRoundedIcon />}
+              className={
+                scheduledStartTimestamp ? classes.dateButtonActive : classes.dateButtonInactive
+              }
+            >
+              {scheduledStartTimestamp ? formatDateTime(scheduledStartTimestamp) : 'Set start date'}
+            </Button>
             {scheduledStartTimestamp && (
-              <Button
-                onClick={() => setShowScheduledStartDialog(true)}
-                startIcon={<EventRoundedIcon />}
-                className={classes.dateButton}
-              >
-                {'Start Date: '}
-                {formatDateTime(scheduledStartTimestamp)}
-              </Button>
+              <Tooltip title="Clear scheduled start">
+                <IconButton
+                  edge="end"
+                  aria-label="clear scheduled start"
+                  size="small"
+                  onClick={() => dispatch(setScheduledStart(null))}
+                >
+                  <ClearRoundedIcon />
+                </IconButton>
+              </Tooltip>
             )}
-            {dueTimestamp && (
-              <Button
-                onClick={() => setShowDueDialog(true)}
-                startIcon={<AccessAlarmRoundedIcon />}
-                className={classes.dateButton}
-              >
-                {'Due Date: '}
-                {formatDateTime(dueTimestamp)}
-              </Button>
-            )}
-            {recurringConfig && (
+          </Box>
+
+          <RepeatButtonDisabledTooltip mounted={!scheduledStartTimestamp}>
+            <Box display="flex">
               <Button
                 onClick={() => setShowRecurringDialog(true)}
                 startIcon={<ReplayRoundedIcon />}
-                className={classes.dateButton}
+                className={recurringConfig ? classes.dateButtonActive : classes.dateButtonInactive}
+                disabled={!scheduledStartTimestamp}
               >
-                {'Repeat: '}
-                {getUserFacingRecurringText(recurringConfig)}
+                {recurringConfig ? getUserFacingRecurringText(recurringConfig) : 'Set repeat'}
               </Button>
+              {recurringConfig && (
+                <Tooltip title="Clear repeat">
+                  <IconButton
+                    edge="end"
+                    aria-label="clear repeat"
+                    size="small"
+                    onClick={() => dispatch(setRecurringConfig(null))}
+                  >
+                    <ClearRoundedIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          </RepeatButtonDisabledTooltip>
+
+          <Box display="flex">
+            <Button
+              onClick={() => setShowDueDialog(true)}
+              startIcon={
+                <AccessAlarmRoundedIcon
+                  className={isPast(dueTimestamp) ? classes.pastDueIconButton : undefined}
+                />
+              }
+              className={dueTimestamp ? classes.dateButtonActive : classes.dateButtonInactive}
+            >
+              {dueTimestamp ? formatDateTime(dueTimestamp) : 'Set due date'}
+            </Button>
+            {dueTimestamp && (
+              <Tooltip title="Clear due date">
+                <IconButton
+                  edge="end"
+                  aria-label="clear due date"
+                  size="small"
+                  onClick={() => dispatch(setDue(null))}
+                >
+                  <ClearRoundedIcon />
+                </IconButton>
+              </Tooltip>
             )}
           </Box>
-        )}
 
-        {blockedBy.length > 0 && (
-          <Box px={3} pt={0} pb={2} display="flex" flexDirection="row" alignItems="flex-start">
-            <Tooltip title="Add Blocker">
-              <IconButton
-                aria-label="blockers"
-                onClick={() => setShowBlockersDialog(!showBlockersDialog)}
-                className={classes.blockersIconButton}
-              >
-                <BlockRoundedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
-            <List disablePadding className={classes.blockersList}>
+          {(blockedBy || []).length > 0 && (
+            <List disablePadding className="MuiButton-text">
               {blockedBy.map((blockerDescriptor, index) => (
                 <ListItem
                   key={index /* eslint-disable-line react/no-array-index-key */}
+                  classes={{ root: classes.blockerListItemRoot }}
                   disableGutters
                   dense
                 >
-                  <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
+                  <IconButton
+                    edge="start"
+                    aria-label="blockers"
+                    onClick={() => setShowBlockersDialog(!showBlockersDialog)}
+                    className={classes.blockersIconButton}
+                  >
+                    <BlockRoundedIcon fontSize="small" />
+                  </IconButton>
+                  <Typography className={classes.blockerTitle} variant="body2">
+                    {getBlockerTitle(blockerDescriptor)}
+                  </Typography>
 
-                  <ListItemSecondaryAction>
-                    <Tooltip title="Delete Blocker">
-                      <IconButton
-                        edge="end"
-                        aria-label="remove"
-                        size="small"
-                        onClick={() => dispatch(removeBlockerByIndex(index))}
-                      >
-                        <ClearRoundedIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </ListItemSecondaryAction>
+                  <Tooltip title="Remove blocker">
+                    <IconButton
+                      edge="end"
+                      aria-label="remove blocker"
+                      size="small"
+                      onClick={() => dispatch(removeBlockerByIndex(index))}
+                    >
+                      <ClearRoundedIcon />
+                    </IconButton>
+                  </Tooltip>
                 </ListItem>
               ))}
             </List>
-          </Box>
-        )}
-      </DialogContent>
+          )}
 
-      <DialogActions className={classes.dialogActionBar} disableSpacing>
-        <Box flexGrow={1}>
-          <LabeledIconButton
-            label="Start Date"
-            icon={<EventRoundedIcon />}
-            onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
-          />
-          <RepeatButtonDisabledTooltip mounted={!scheduledStartTimestamp}>
-            <LabeledIconButton
-              label="Repeat"
-              disabled={!scheduledStartTimestamp}
-              icon={<ReplayRoundedIcon />}
-              onClick={() => setShowRecurringDialog(!showRecurringDialog)}
-            />
-          </RepeatButtonDisabledTooltip>
-          <LabeledIconButton
-            label="Due Date"
-            icon={<AccessAlarmRoundedIcon />}
-            onClick={() => setShowDueDialog(!showDueDialog)}
-          />
-          <LabeledIconButton
-            label="Blockers"
-            icon={<BlockRoundedIcon />}
+          <Button
             onClick={() => setShowBlockersDialog(!showBlockersDialog)}
-          />
+            startIcon={<BlockRoundedIcon />}
+            className={classes.dateButtonInactive}
+          >
+            Add blocker
+          </Button>
         </Box>
 
-        {editTaskDialogId && (
-          <Confirm
-            onConfirm={() => {
-              onClose();
-              dispatch(deleteTask(editTaskDialogId));
-              dispatch(
-                setSnackbarData({
-                  open: true,
-                  message: 'Task deleted',
-                  id: editTaskDialogId,
-                }),
-              );
-            }}
-            renderDialog={(open, onConfirm, onConfirmationClose) => (
-              <ConfirmationDialog
-                open={open}
-                onClose={onConfirmationClose}
-                onConfirm={onConfirm}
-                id="confirm-delete-task"
-                title="Delete task"
-                body={[
-                  'Are you sure you want to delete this task?',
-                  recurringConfig && 'The task will stop repeating when deleted',
-                ].filter(Boolean)}
-                buttonText="Delete"
-              />
-            )}
-            renderContent={(onClick) => (
-              <LabeledIconButton
-                label="Delete"
-                icon={<DeleteOutlineRoundedIcon />}
-                onClick={onClick}
-              />
-            )}
-          />
-        )}
-
-        {submitting ? (
-          <CircularProgress thickness={4} size="2rem" className={classes.submitLoader} />
-        ) : (
-          <LabeledIconButton type="submit" label={ctaText} icon={<SendRoundedIcon />} />
-        )}
-      </DialogActions>
+        <Box display="flex" justifyContent="flex-end">
+          {submitting ? (
+            <CircularProgress thickness={4} size="2rem" className={classes.submitLoader} />
+          ) : (
+            <LabeledIconButton
+              color="inherit"
+              type="submit"
+              label={newTaskDialogOpen ? 'Create' : 'Save'}
+              icon={<SendRoundedIcon />}
+            />
+          )}
+        </Box>
+      </Box>
 
       <DateTimeDialog
         label="Start date"

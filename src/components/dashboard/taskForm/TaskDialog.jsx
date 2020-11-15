@@ -2,9 +2,8 @@ import React, { forwardRef, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import Dialog from '@material-ui/core/Dialog';
-import Slide from '@material-ui/core/Slide';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useTheme } from '@material-ui/core/styles';
+import Zoom from '@material-ui/core/Zoom';
+import { makeStyles } from '@material-ui/core/styles';
 
 import {
   selectNewTaskDialogOpen,
@@ -16,13 +15,20 @@ import { setNewTaskInitialState, setTaskInForm } from '../../../modules/taskForm
 import TaskDialogForm from './TaskDialogForm';
 
 const Transition = forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Zoom ref={ref} {...props} />;
 });
 
+const useStyles = makeStyles((theme) => ({
+  dialogPaper: {
+    [theme.breakpoints.up('sm')]: {
+      width: '80%',
+    },
+  },
+}));
+
 const TaskDialog = () => {
+  const classes = useStyles();
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
   const newTaskDialogOpen = useSelector(selectNewTaskDialogOpen);
   const editTaskDialogId = useSelector(selectEditTaskDialogId);
@@ -67,10 +73,10 @@ const TaskDialog = () => {
     <Dialog
       open={open}
       onClose={handleClose}
-      fullScreen={fullScreen}
       aria-labelledby="new-task-dialog-title"
       TransitionComponent={Transition}
-      disableBackdropClick
+      classes={{ paper: classes.dialogPaper }}
+      maxWidth={false}
     >
       <TaskDialogForm onClose={handleClose} />
     </Dialog>
