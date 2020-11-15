@@ -309,6 +309,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             label="What do you need to do?"
             className={classes.titleTextField}
             autoFocus
+            multiline
+            rowsMax={3}
             value={title}
             onChange={(event) => {
               dispatch(setTitle(event.target.value));
