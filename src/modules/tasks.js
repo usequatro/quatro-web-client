@@ -73,6 +73,8 @@ export const namespace = 'tasks';
 export const selectTask = (state, id) => state[namespace].byId[id];
 export const selectTaskTitle = (state, id) => get(selectTask(state, id), 'title');
 export const selectTaskDescription = (state, id) => get(selectTask(state, id), 'description');
+export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');
+export const selectTaskEffort = (state, id) => get(selectTask(state, id), 'effort');
 export const selectTaskScore = (state, id) => get(selectTask(state, id), 'score');
 export const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed');
 export const selectTaskScheduledStart = (state, id) => get(selectTask(state, id), 'scheduledStart');
@@ -159,7 +161,7 @@ const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomi
   const tasksByScore = cloneDeep(upcomingTasks);
   tasksByScore.sort(([, task1], [, task2]) => {
     if (task1.score === task2.score) {
-      return (task1.title || '').toLowerCase() > (task2.title || '').toLowerCase() ? 1 : -1;
+      return task2.created - task1.created;
     }
     return task2.score - task1.score;
   });

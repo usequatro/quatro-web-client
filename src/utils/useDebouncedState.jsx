@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
  * @param {mixed} value
  * @returns {mixed}
  */
-export default function useDebounce(value, delay) {
+export default function useDebouncedState(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState();
 
   useEffect(() => {
