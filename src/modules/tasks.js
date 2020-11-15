@@ -71,6 +71,7 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 export const namespace = 'tasks';
 export const selectTask = (state, id) => state[namespace].byId[id];
+export const selectTaskExists = (state, id) => Boolean(state[namespace].byId[id]);
 export const selectTaskTitle = (state, id) => get(selectTask(state, id), 'title');
 export const selectTaskDescription = (state, id) => get(selectTask(state, id), 'description');
 export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');

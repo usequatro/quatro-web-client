@@ -15,7 +15,8 @@ import {
   undoCompleteTask,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setEditTaskDialogId, setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
+import { setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
+import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 
 const Task = ({ id, position, component, highlighted, showBlockers, editable }) => {
   const title = useSelector((state) => selectTaskTitle(state, id));
@@ -29,10 +30,12 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
     selectRecurringConfigIdByMostRecentTaskId(state, id),
   );
 
+  const [, openEditTaskDialog] = useEditTaskDialogRouterControl();
+
   const dispatch = useDispatch();
   const handleClick = useCallback(() => {
-    dispatch(setEditTaskDialogId(id));
-  }, [id, dispatch]);
+    openEditTaskDialog(id);
+  }, [openEditTaskDialog, id]);
 
   const [visualCompleted, setVisualCompleted] = useState(completed);
   const cancelCompletion = useRef();

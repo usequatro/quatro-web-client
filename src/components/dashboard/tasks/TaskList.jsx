@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
@@ -24,10 +24,10 @@ import {
 } from '../../../modules/tasks';
 import {
   selectDashboardActiveTab,
-  setNewTaskDialogOpen,
   selectHighlightedTaskId,
   selectDashboadIsLoading,
 } from '../../../modules/dashboard';
+import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
@@ -65,7 +65,6 @@ const useStyles = makeStyles((theme) => ({
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -78,6 +77,8 @@ const TaskList = forwardRef((_, ref) => {
   const hasMoveToBacklog = useSelector((state) =>
     tab === dashboardTabs.NOW ? selectHasMoveToBacklog(state) : false,
   );
+
+  const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
 
   useCreateTaskShortcut();
 
@@ -150,7 +151,7 @@ const TaskList = forwardRef((_, ref) => {
           aria-label="Create task"
           color="default"
           className={classes.fab}
-          onClick={() => dispatch(setNewTaskDialogOpen(true))}
+          onClick={showNewTaskDialog}
         >
           <AddIcon fontSize="large" />
         </Fab>

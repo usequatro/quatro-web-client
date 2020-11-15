@@ -33,12 +33,7 @@ import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 
-import {
-  selectNewTaskDialogOpen,
-  selectEditTaskDialogId,
-  createTask,
-  setSnackbarData,
-} from '../../../modules/dashboard';
+import { createTask, setSnackbarData } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
 import {
   selectTitle,
@@ -159,16 +154,16 @@ RepeatButtonDisabledTooltip.propTypes = {
 
 const runDelayed = (fn, timeout) => setTimeout(fn, timeout);
 
-const TaskDialogForm = ({ onClose }) => {
+const TaskDialogForm = ({ onClose, taskId }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
   const { notifyError } = useNotification();
 
-  const newTaskDialogOpen = useSelector(selectNewTaskDialogOpen);
+  const newTaskDialogOpen = !taskId;
 
   // This will be defined if we're editing a task
-  const editTaskDialogId = useSelector(selectEditTaskDialogId);
+  const editTaskDialogId = taskId;
   // This will be defined if the task we're editing has a recurring config
   const editRecurringConfigId = useSelector((state) =>
     selectRecurringConfigIdByMostRecentTaskId(state, editTaskDialogId),
@@ -239,18 +234,18 @@ const TaskDialogForm = ({ onClose }) => {
 
     taskPromise
       // Recurring config handling
-      .then(async (taskId) => {
+      .then(async (tId) => {
         // Create, update or delete
         if (!editRecurringConfigId && recurringConfig) {
           const newRcId = await dispatch(
-            createRecurringConfig({ ...recurringConfig, mostRecentTaskId: taskId }),
+            createRecurringConfig({ ...recurringConfig, mostRecentTaskId: tId }),
           );
-          dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
+          dispatch(updateTask(tId, { recurringConfigId: newRcId }));
         } else if (editRecurringConfigId && recurringConfig) {
           dispatch(
             updateRecurringConfig(editRecurringConfigId, {
               ...recurringConfig,
-              mostRecentTaskId: taskId,
+              mostRecentTaskId: tId,
             }),
           );
         } else if (editRecurringConfigId && !recurringConfig) {
@@ -574,6 +569,11 @@ const TaskDialogForm = ({ onClose }) => {
 
 TaskDialogForm.propTypes = {
   onClose: PropTypes.func.isRequired,
+  taskId: PropTypes.string,
+};
+
+TaskDialogForm.defaultProps = {
+  taskId: null,
 };
 
 export default TaskDialogForm;
