@@ -70,7 +70,6 @@ const TaskDialog = () => {
       fullScreen={fullScreen}
       aria-labelledby="new-task-dialog-title"
       TransitionComponent={Transition}
-      disableBackdropClick
     >
       <TaskDialogForm onClose={handleClose} />
     </Dialog>
