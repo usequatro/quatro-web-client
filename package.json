@@ -15,6 +15,7 @@
     "lodash": "^4.17.20",
     "mixpanel-browser": "^2.39.0",
     "prop-types": "^15.7.2",
+    "re-resizable": "^6.9.0",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-div-100vh": "^0.3.8",
