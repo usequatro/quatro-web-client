@@ -57,6 +57,7 @@ const useStyles = makeStyles(() => ({
   },
   emptyStateImage: {
     width: '80%',
+    objectFit: 'scale-down'
   },
 }));
 

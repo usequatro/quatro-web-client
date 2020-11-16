@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cond } from 'lodash';
 import Box from '@material-ui/core/Box';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
 import { useSelector } from 'react-redux';
@@ -27,6 +27,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+
+const ConnectButton = withStyles((theme) => ({
+  root: {
+    color: theme.palette.common.white, 
+    backgroundColor: theme.palette.grey[900],
+    '&:hover': {
+      backgroundColor: theme.palette.grey[800],
+    },
+    borderRadius: '2em',
+    padding: '1em 1.5em'
+  },
+}))(Button);
+
 const GoogleCalendarTaskList = () => {
   const classes = useStyles();
   const history = useHistory();
@@ -50,7 +63,7 @@ const GoogleCalendarTaskList = () => {
          [() => connectedGoogleCalendars.length === 0, () => (
             <>
               <EmptyState tab={GOOGLE_CALENDAR_TASK_LIST} />
-              <Button onClick={() => showGoogleCalendarList()} variant="contained">Connect Calendar</Button>
+              <ConnectButton onClick={() => showGoogleCalendarList()} variant="contained">Connect Calendar</ConnectButton>
             </>
          )],
        ])}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
@@ -22,21 +22,35 @@ const colors = {
   blackboard: '#3C717B'
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     flexGrow: 1,
-    padding: 90,
+    padding: '1vh 3vw',
     width: '100%',
   },
   listItem: {
     width: '100%',
     paddingTop: 30,
     paddingBottom: 30,
+    marginBottom:20,
     border: 'solid 1px rgba(0, 0, 0, 0.03)',
     flexDirection: 'column',
+    borderRadius: '1em',
+  },
+  checkBoxContainer: {
+    flexDirection: 'row',
+    width: '100%',
+  },
+  contentItemContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    margin: '0.9em 0'
   },
   listItemLabel: {
-    color: 'rgba(0, 0, 0, 0.4)',
+    color: 'rgba(0, 0, 0, 0.5)',
+    fontSize: '0.95em',
+    margin: '0.9em 0'
   },
   radioMagenta: {
     color: colors.magenta,
@@ -64,15 +78,23 @@ const useStyles = makeStyles(() => ({
   },
   checkedBlackboard: {
     color: colors.blackboard
-  }
+  },
 }));
+
+
+
+const ConnectCalendarButton = withStyles((theme) => ({
+  root: {
+    color: theme.palette.common.dark, 
+    borderRadius: '2em',
+  },
+}))(Button);
 
 const RenderItem = ({googleCalendar}) => {
   const classes = useStyles();
   const [isActive, setActive] = useState("false");
 
-  const toogleCalendar = (googleCalendarId) => {
-    console.log('googleCalendarId',googleCalendarId, !isActive)
+  const toogleCalendar = () => {
     setActive(!isActive);
   };
   return (
@@ -80,11 +102,24 @@ const RenderItem = ({googleCalendar}) => {
       <ListItem
         className={classes.listItem}
       >
+      <Box className={classes.contentItemContainer}>
         <ListItemText
-          primary={`Google Calendar Name: ${googleCalendar.summary}`}
-          className={classes.listItemLabel}
+          classes={{
+            primary: classes.listItemLabel, 
+          }}
+          primary={googleCalendar.summary}
+        
         />
-        <TextField id="standard-basic" label="Quatro Name..." />
+        <TextField
+          InputLabelProps={{
+            style: { color: '#7187B5'},
+          }}
+          InputProps={{ disableUnderline: true,  }}
+          id="standard-basic"
+          label="Calendar Name..."
+        />
+      </Box>
+      <Box className={classes.checkBoxContainer} display='flex' justifyContent='space-between'>
         <RadioGroup style={{flexDirection: 'row'}}>
           <FormControlLabel
             value="female" 
@@ -111,7 +146,13 @@ const RenderItem = ({googleCalendar}) => {
             }
           />
         </RadioGroup>
-        <Button onClick={() => toogleCalendar(googleCalendar.id)} variant="contained">{isActive ? 'Connect' : 'Disconnect'}</Button>
+        <ConnectCalendarButton
+          onClick={() => toogleCalendar(googleCalendar.id)}
+          variant="outlined"
+        >
+          {isActive ? 'Connect' : 'Disconnect'}
+        </ConnectCalendarButton>
+      </Box>
       </ListItem>
     </form>
   );
@@ -120,8 +161,7 @@ const RenderItem = ({googleCalendar}) => {
 const GoogleCalendarList = () => {
   const classes = useStyles();
   const googleCalendars = useSelector(selectGoogleCalendars);
-  console.log('GoogleCalendarList', googleCalendars)
-  
+   
   return (
     <Box className={classes.container}>
       <List>

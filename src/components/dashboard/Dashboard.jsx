@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, useRef } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
@@ -143,9 +143,10 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
+      
+       { activeTab !== dashboardTabs.NOW && ( <Toolbar />)}
+       
         <Toolbar />
-        <Toolbar />
-
         <Paper className={classes.appContent} square>
           {renderContent()}
         </Paper>

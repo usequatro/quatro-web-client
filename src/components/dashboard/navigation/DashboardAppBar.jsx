@@ -219,16 +219,17 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Toolbar>
       </AppBar>
-
-      <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
-        <Toolbar />
-        <Toolbar className={classes.sectionTitleAppBarToolbar}>
-          <Icon className={classes.sectionTitleIcon} />
-          <Typography variant="h5" component="h2">
-            {sectionTitle}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      { tab !== tabs.NOW && ( 
+        <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
+          <Toolbar />
+          <Toolbar className={classes.sectionTitleAppBarToolbar}>
+            <Icon className={classes.sectionTitleIcon} />
+            <Typography variant="h5" component="h2">
+              {sectionTitle}
+            </Typography>
+          </Toolbar>
+        </AppBar>
+       )}   
     </>
   );
 };
