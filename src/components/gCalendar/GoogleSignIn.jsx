@@ -6,6 +6,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
+import ConnectButton from './ConnectButton';
 
 import {
   selectGoogleAPIClient,
@@ -40,7 +41,7 @@ const GoogleSignIn = () => {
   return (
     <Box className={classes.container}>
       <EmptyState tab={tab} />
-      <Button onClick={() => connectGoogle()} variant="contained">Log-in to Google</Button>
+      <ConnectButton onClick={() => connectGoogle()} variant="contained">Log-in to Google</ConnectButton>
     </Box>
   )
 };

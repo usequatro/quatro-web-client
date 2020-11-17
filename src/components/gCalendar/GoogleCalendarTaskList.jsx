@@ -2,9 +2,7 @@ import React from 'react';
 
 import { cond } from 'lodash';
 import Box from '@material-ui/core/Box';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-
+import { makeStyles } from '@material-ui/core/styles';
 import { useSelector } from 'react-redux';
 import { useHistory } from "react-router-dom";
 
@@ -13,6 +11,7 @@ import {
 } from '../../modules/googleCalendar';
 import { GOOGLE_CALENDAR_TASK_LIST } from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
+import ConnectButton from './ConnectButton';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,19 +25,6 @@ const useStyles = makeStyles(() => ({
     flexDirection: 'column'
   },
 }));
-
-
-const ConnectButton = withStyles((theme) => ({
-  root: {
-    color: theme.palette.common.white, 
-    backgroundColor: theme.palette.grey[900],
-    '&:hover': {
-      backgroundColor: theme.palette.grey[800],
-    },
-    borderRadius: '2em',
-    padding: '1em 1.5em'
-  },
-}))(Button);
 
 const GoogleCalendarTaskList = () => {
   const classes = useStyles();
