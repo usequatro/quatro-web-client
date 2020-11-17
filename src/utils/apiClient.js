@@ -6,6 +6,7 @@ import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
 
 const TASKS = 'tasks';
+const CALENDARS = 'calendars';
 const RECURRING_CONFIGS = 'recurringConfigs';
 
 /**
@@ -183,3 +184,16 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
  */
 export const fetchDeleteRecurringConfig = (id) =>
   getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
+
+
+export const addCalendar = (calendarObject) => {
+  // return getFirestore().collection(CALENDARS).add(calendarObject);
+}
+export const fetchConnectedCalendars = (userId) => {
+  getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .get()
+    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
+    .then((results) => console.log('fetchConnectedCalendars results', results))
+}

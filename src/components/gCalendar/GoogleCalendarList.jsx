@@ -11,6 +11,11 @@ import TextField from '@material-ui/core/TextField';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { fetchConnectedCalendars } from '../../utils/apiClient';
+
+import {
+  selectUserId,
+} from '../../modules/session';
 
 import {
   selectGoogleCalendars,
@@ -90,13 +95,23 @@ const ConnectCalendarButton = withStyles((theme) => ({
   },
 }))(Button);
 
-const RenderItem = ({googleCalendar}) => {
+
+const RenderItem = (googleCalendar) => {
   const classes = useStyles();
   const [isActive, setActive] = useState("false");
+  const userId = useSelector(selectUserId);
+
+  const connectGoogleCalendar = () => {
+    console.log('userId', userId)
+    fetchConnectedCalendars(userId);
+    // getFirestore().collection(CALENDARS).add({});
+  }
 
   const toogleCalendar = () => {
     setActive(!isActive);
+    connectGoogleCalendar();
   };
+
   return (
     <form>
       <ListItem
@@ -175,4 +190,3 @@ const GoogleCalendarList = () => {
 
 
 export default GoogleCalendarList;
-
