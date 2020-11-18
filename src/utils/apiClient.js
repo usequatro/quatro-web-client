@@ -186,14 +186,28 @@ export const fetchDeleteRecurringConfig = (id) =>
   getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
 
 
-export const addCalendar = (calendarObject) => {
-  // return getFirestore().collection(CALENDARS).add(calendarObject);
+export const connectCalendar = (calendarObject) => {
+  return getFirestore().collection(CALENDARS).add(calendarObject);
 }
-export const fetchConnectedCalendars = (userId) => {
-  getFirestore()
+
+export const disconnectCalendar = async (calendarId, userId) => {
+  const results = await getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .where('calendarId', '==', calendarId)
+    .get()
+    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
+    .then((res) => {return res});
+  const firebaseId = results[0][0];
+  await getFirestore().collection(CALENDARS).doc(firebaseId).delete();
+}
+
+export const fetchConnectedCalendars = async (userId) => {
+  const results = await getFirestore()
     .collection(CALENDARS)
     .where('userId', '==', userId)
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((results) => console.log('fetchConnectedCalendars results', results))
+    .then((res) => {return res});
+  return results;
 }

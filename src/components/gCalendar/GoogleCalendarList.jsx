@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 import { makeStyles, withStyles } from '@material-ui/core/styles';
@@ -11,7 +12,7 @@ import TextField from '@material-ui/core/TextField';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { fetchConnectedCalendars } from '../../utils/apiClient';
+import { connectCalendar, disconnectCalendar } from '../../utils/apiClient';
 
 import {
   selectUserId,
@@ -19,6 +20,7 @@ import {
 
 import {
   selectGoogleCalendars,
+  selectGoogleConnectedCalendars,
 } from '../../modules/googleCalendar';
 
 const colors = {
@@ -86,8 +88,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
-
 const ConnectCalendarButton = withStyles((theme) => ({
   root: {
     color: theme.palette.common.dark, 
@@ -95,21 +95,68 @@ const ConnectCalendarButton = withStyles((theme) => ({
   },
 }))(Button);
 
-
-const RenderItem = (googleCalendar) => {
+const RenderItem = ({googleCalendar}) => {
   const classes = useStyles();
-  const [isActive, setActive] = useState("false");
   const userId = useSelector(selectUserId);
+  const calendarId = googleCalendar.id;
+  const googleConnectedCalendars = useSelector(selectGoogleConnectedCalendars);
+
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [name, setName] = useState('');
+  const [color, setColor] = useState('');
+  
+  const checkIfConnected = useCallback(
+    () => {
+      const calendars = googleConnectedCalendars.map(cc => {return cc[1]})
+      const connected = calendars.filter(c => c.calendarId === calendarId)[0];
+      if (connected) {
+        setIsConnected(true);
+        setName(connected.name)
+        setColor(connected.color)
+      }
+    },
+    [googleConnectedCalendars, calendarId],
+  );
+
+  useEffect(() => {
+    checkIfConnected();
+  }, [checkIfConnected, googleConnectedCalendars])
+
+  useEffect(() => {
+    if (name.length > 0 && color.length > 0) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [name, color])
 
   const connectGoogleCalendar = () => {
-    console.log('userId', userId)
-    fetchConnectedCalendars(userId);
-    // getFirestore().collection(CALENDARS).add({});
+    const calendarObject = {
+      calendarId: googleCalendar.id,
+      name,
+      color,
+      userId
+    }
+    connectCalendar(calendarObject);
+    setIsConnected(true);
   }
 
-  const toogleCalendar = () => {
-    setActive(!isActive);
-    connectGoogleCalendar();
+  const disconnectGoogleCalendar = () => {
+    disconnectCalendar(calendarId, userId);
+    setIsConnected(false);
+  }
+
+  const setGoogleCalendar = () => {
+    if (isConnected) {
+      disconnectGoogleCalendar()
+    } else {
+      connectGoogleCalendar()
+    }
+  }
+
+  const toggleCalendar = () => {
+    setGoogleCalendar(calendarId);
   };
 
   return (
@@ -123,21 +170,25 @@ const RenderItem = (googleCalendar) => {
             primary: classes.listItemLabel, 
           }}
           primary={googleCalendar.summary}
-        
         />
         <TextField
           InputLabelProps={{
             style: { color: '#7187B5'},
           }}
+          disabled={isConnected}
+          value={name}
+          onChange={e => setName(e.target.value)}
           InputProps={{ disableUnderline: true,  }}
           id="standard-basic"
-          label="Calendar Name..."
+          label="Quatro Name..."
         />
       </Box>
       <Box className={classes.checkBoxContainer} display='flex' justifyContent='space-between'>
         <RadioGroup style={{flexDirection: 'row'}}>
           <FormControlLabel
-            value="female" 
+            value="radioMagenta"
+            checked={color === 'radioMagenta'}
+            onClick={() => setColor('radioMagenta')}
             control={
               <Radio classes={{root: classes.radioMagenta,
                 checked: classes.checkedMagenta}}
@@ -145,7 +196,9 @@ const RenderItem = (googleCalendar) => {
             }
           />
           <FormControlLabel
-            value="female2" 
+            value="radioOrange" 
+            checked={color === 'radioOrange'}
+            onClick={() => setColor('radioOrange')}
             control={
               <Radio classes={{root: classes.radioOrange,
                 checked: classes.checkedOrange}}
@@ -153,7 +206,9 @@ const RenderItem = (googleCalendar) => {
             }
           />
           <FormControlLabel
-            value="female1" 
+            value="radioBlackboard"
+            checked={color === 'radioBlackboard'}
+            onClick={() => setColor('radioBlackboard')}
             control={
               <Radio classes={{root: classes.radioBlackboard,
                 checked: classes.checkedBlackboard}}
@@ -162,10 +217,11 @@ const RenderItem = (googleCalendar) => {
           />
         </RadioGroup>
         <ConnectCalendarButton
-          onClick={() => toogleCalendar(googleCalendar.id)}
+          onClick={() => toggleCalendar()}
           variant="outlined"
+          disabled={isDisabled && !isConnected}
         >
-          {isActive ? 'Connect' : 'Disconnect'}
+          {!isConnected ? 'Connect' : 'Disconnect'}
         </ConnectCalendarButton>
       </Box>
       </ListItem>
@@ -176,17 +232,25 @@ const RenderItem = (googleCalendar) => {
 const GoogleCalendarList = () => {
   const classes = useStyles();
   const googleCalendars = useSelector(selectGoogleCalendars);
-   
+
   return (
     <Box className={classes.container}>
       <List>
         {googleCalendars.map(gc => {
-          return (<RenderItem googleCalendar={gc} key={gc.etag} />)
+          return (
+            <RenderItem 
+              googleCalendar={gc}
+              key={gc.etag} 
+            />)
         })}
       </List>
     </Box>
   )
 };
 
-
 export default GoogleCalendarList;
+
+
+RenderItem.propTypes = {
+  googleCalendar: PropTypes.node.isRequired,
+};

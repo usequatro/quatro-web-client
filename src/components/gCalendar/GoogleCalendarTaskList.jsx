@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { useHistory } from "react-router-dom";
 
 import {
-  selectConnectedGoogleCalendars,
+  selectGoogleConnectedCalendars,
 } from '../../modules/googleCalendar';
 import { GOOGLE_CALENDAR_TASK_LIST } from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
 const GoogleCalendarTaskList = () => {
   const classes = useStyles();
   const history = useHistory();
-  const connectedGoogleCalendars = useSelector(selectConnectedGoogleCalendars);
+  const connectedGoogleCalendars = useSelector(selectGoogleConnectedCalendars);
 
   const showGoogleCalendarList = () => {
     history.push("/dashboard/google-calendar-list");  
