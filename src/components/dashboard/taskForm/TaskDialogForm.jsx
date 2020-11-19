@@ -316,6 +316,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             multiline
             rowsMax={3}
             value={title}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                handleSubmit(event);
+              }
+            }}
             onChange={(event) => {
               dispatch(setTitle(event.target.value));
               if (validationErrors.includes('title')) {
@@ -347,6 +352,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               multiline
               rows={2}
               value={description}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  handleSubmit(event);
+                }
+              }}
               onChange={(event) => dispatch(setDescription(event.target.value))}
             />
           </Box>
