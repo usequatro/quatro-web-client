@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useReducer } from 'react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -21,6 +22,7 @@ import {
 import {
   selectGoogleCalendars,
   selectGoogleConnectedCalendars,
+  getEventsFromCalendars,
 } from '../../modules/googleCalendar';
 
 const colors = {
@@ -99,6 +101,8 @@ const RenderItem = ({googleCalendar}) => {
   const classes = useStyles();
   const userId = useSelector(selectUserId);
   const calendarId = googleCalendar.id;
+  const dispatch = useDispatch();
+  const history = useHistory();
   const googleConnectedCalendars = useSelector(selectGoogleConnectedCalendars);
 
   const [isDisabled, setIsDisabled] = useState(true);
@@ -140,6 +144,7 @@ const RenderItem = ({googleCalendar}) => {
     }
     connectCalendar(calendarObject);
     setIsConnected(true);
+    dispatch(getEventsFromCalendars([calendarObject]))
   }
 
   const disconnectGoogleCalendar = () => {

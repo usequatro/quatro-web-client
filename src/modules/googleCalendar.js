@@ -98,31 +98,31 @@ export const getConnectedUserCalendars = () => async (dispatch, getState) => {
 
   if (userId) {
     const connectedCalendars = await fetchConnectedCalendars(userId);
-    dispatch(setGoogleConnectedCalendars(connectedCalendars));
+    await dispatch(setGoogleConnectedCalendars(connectedCalendars));
   }
 };
 
-export const getEventsFromCalendars = () => async (dispatch, getState) => {
+export const getEventsFromCalendars = (calendarObject) => (dispatch, getState) => {
   const state = getState();
-  const connectedGoogleCalendars = selectGoogleConnectedCalendars(state);
   const googleAPIClient = selectGoogleAPIClient(state);
 
-  connectedGoogleCalendars.map(async(cal) => {
+  calendarObject.map((cal) => {
     if (googleAPIClient.client && googleAPIClient.client.calendar) {
        googleAPIClient.client.calendar.events.list({
-        'calendarId': cal[1].calendarId,
+        'calendarId': cal.calendarId,
         'timeMin': moment().startOf('day').toISOString(),
         'timeMax': moment().endOf('day').toISOString(),
         'maxResults': 10,
       }).execute(calendarListResponse => {
         const event = {
-          id: cal[1].calendarId,
+          id: cal.calendarId,
           items: calendarListResponse.items,
-          color: cal[1].color,
-          name: cal[1].name,
+          color: cal.color,
+          name: cal.name,
         }
         dispatch(setGoogleCalendarEvents(event));
       });
     };
+    return null;
   })
 }
