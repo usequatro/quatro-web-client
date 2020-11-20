@@ -14,6 +14,7 @@ const SET_GOOGLE_API_CLIENT = `${NAMESPACE}/SET_GOOGLE_API_CLIENT`;
 const SET_GOOGLE_SIGN_IN_STATUS = `${NAMESPACE}/SET_GOOGLE_SIGN_IN_STATUS`;
 const SET_GOOGLE_CALENDARS = `${NAMESPACE}/SET_GOOGLE_CALENDARS`;
 const SET_GOOGLE_CONNECTED_CALENDARS = `${NAMESPACE}/SET_GOOGLE_CONNECTED_CALENDARS`;
+const SET_GOOGLE_CALENDAR_EVENTS = `${NAMESPACE}/SET_GOOGLE_CALENDAR_EVENTS`;
 
 const INITIAL_STATE = {
   googleIsFetching: true,
@@ -21,6 +22,7 @@ const INITIAL_STATE = {
   googleSignInStatus: false,
   googleCalendars: [],
   googleConnectedCalendars: [],
+  googleCalendarEvents: [],
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
@@ -30,6 +32,8 @@ export const reducer = createReducer(INITIAL_STATE, {
   [SET_GOOGLE_CALENDARS]: (state, { payload }) => ({ ...state, googleCalendars: payload }),
   [SET_GOOGLE_CONNECTED_CALENDARS]: (state, { payload }) => ({ 
     ...state, googleConnectedCalendars: payload }),
+  [SET_GOOGLE_CALENDAR_EVENTS]: (state, { payload }) => ({ 
+    ...state, googleCalendarEvents: payload }),
 });
 
 // Selectors
@@ -39,6 +43,7 @@ export const selectGoogleAPIClient = (state) => state[NAMESPACE].googleAPIClient
 export const selectGoogleSignInStatus = (state) => state[NAMESPACE].googleSignInStatus;
 export const selectGoogleCalendars = (state) => state[NAMESPACE].googleCalendars;
 export const selectGoogleConnectedCalendars = (state) => state[NAMESPACE].googleConnectedCalendars;
+export const selectGoogleCalendarEvents = (state) => state[NAMESPACE].googleCalendarEvents;
 
 export const setGoogleAPIClient = (client) => ({
   type: SET_GOOGLE_API_CLIENT,
@@ -60,14 +65,15 @@ export const setGoogleConnectedCalendars = (data) => ({
   payload: data,
 });
 
-
-// Actions
-
 export const setGoogleSignInStatus = (status) => ({
   type: SET_GOOGLE_SIGN_IN_STATUS,
   payload: status,
 });
 
+export const setGoogleCalendarEvents = (status) => ({
+  type: SET_GOOGLE_CALENDAR_EVENTS,
+  payload: status,
+});
 
 // General Functions
 
@@ -94,3 +100,24 @@ export const getConnectedUserCalendars = () => async (dispatch, getState) => {
     dispatch(setGoogleConnectedCalendars(connectedCalendars));
   }
 };
+
+export const getEventsFromCalendars = () => async (dispatch, getState) => {
+  const state = getState();
+  const connectedGoogleCalendars = selectGoogleConnectedCalendars(state);
+  const googleAPIClient = selectGoogleAPIClient(state);
+
+  const events = connectedGoogleCalendars.map((cal) => {
+    const gcEvents = []
+    if (googleAPIClient.client && googleAPIClient.client.calendar) {
+      googleAPIClient.client.calendar.events.list({
+        'calendarId': cal[1].calendarId,
+        'timeMin': (new Date()).toISOString(),
+        'maxResults': 10,
+      }).execute(calendarListResponse => {
+        gcEvents.push({id: cal[1].calendarId, items: calendarListResponse.items})
+      });
+    };
+    return gcEvents;
+  });
+  dispatch(setGoogleCalendarEvents(events));
+}

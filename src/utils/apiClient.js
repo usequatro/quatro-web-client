@@ -191,15 +191,16 @@ export const connectCalendar = (calendarObject) => {
 }
 
 export const disconnectCalendar = async (calendarId, userId) => {
-  const results = await getFirestore()
+  const documentId = await getFirestore()
     .collection(CALENDARS)
     .where('userId', '==', userId)
     .where('calendarId', '==', calendarId)
+    .limit(1)
     .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((res) => {return res});
-  const firebaseId = results[0][0];
-  await getFirestore().collection(CALENDARS).doc(firebaseId).delete();
+    .then((querySnapshot) => querySnapshot.size > 0 ? querySnapshot.docs[0].id : null);
+  if (documentId) {
+    await getFirestore().collection(CALENDARS).doc(documentId).delete();
+  };
 }
 
 export const fetchConnectedCalendars = async (userId) => {

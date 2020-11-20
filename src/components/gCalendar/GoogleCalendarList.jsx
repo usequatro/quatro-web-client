@@ -144,6 +144,8 @@ const RenderItem = ({googleCalendar}) => {
 
   const disconnectGoogleCalendar = () => {
     disconnectCalendar(calendarId, userId);
+    setName('');
+    setColor('');
     setIsConnected(false);
   }
 
@@ -252,5 +254,9 @@ export default GoogleCalendarList;
 
 
 RenderItem.propTypes = {
-  googleCalendar: PropTypes.node.isRequired,
+  googleCalendar: PropTypes.oneOfType([PropTypes.object]),
+};
+
+RenderItem.defaultProps = {
+  googleCalendar: {},
 };
