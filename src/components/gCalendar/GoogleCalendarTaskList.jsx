@@ -43,27 +43,36 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     minHeight: 55
   },
-  colored: {
-    backgroundColor: '#b0b341'
-  }
+  radioMagenta: {
+    backgroundColor: '#EB40AC'
+  },
+  radioOrange: {
+    backgroundColor: '#F08934'
+  },
+  radioBlackboard: {
+    backgroundColor: '#3C717B'
+  },
 }));
 
 const CalendarTaskList = ({hours, events}) => {
-  const classes = useStyles();  
+  const classes = useStyles();
+
   return (
     hours.map(tick => {
       const hourStyle = tick.includes(':00') ? classes.tick: classes.halfTick;
       let coloredTick = false;
       let eventName = '';
+      let color = '';
 
       events.map(e => {
         e.items.map(ei => {
           if (ei.start) {
             const eventStart = moment(ei.start.dateTime).format('h:mm A')
-            console.log('eventName', ei)
+            
             if (eventStart === tick) {
               coloredTick = true;
               eventName = ei.summary;
+              color = classes[e.color]
             }
           }
           return null;
@@ -72,7 +81,7 @@ const CalendarTaskList = ({hours, events}) => {
       });
 
       return (
-        <Paper className={[hourStyle, coloredTick && classes.colored]}>
+        <Paper className={[hourStyle, coloredTick && color]}>
           <p>
             {tick}
             {' '}
@@ -103,12 +112,16 @@ const GoogleCalendarTaskList = () => {
   };
 
   useEffect(() => {
-    generateHoursArray()
-  }, [])
+    if (connectedGoogleCalendars) {
+      connectedGoogleCalendars.map(cgc => {
+        return dispatch(getEventsFromCalendars([cgc[1]]));
+      })
+    }
+  }, [dispatch, connectedGoogleCalendars])
 
   useEffect(() => {
-    dispatch(getEventsFromCalendars());
-  }, [dispatch, connectedGoogleCalendars])
+    generateHoursArray()
+  }, [dispatch]);
   
   const showGoogleCalendarList = () => {
     history.push("/dashboard/google-calendar-list");  
@@ -117,13 +130,13 @@ const GoogleCalendarTaskList = () => {
   return (
     <Box className={classes.container}>
       {cond([
-        [() => (connectedGoogleCalendars.length === 0), () => (
+        [() => ((connectedGoogleCalendars.length === 0) && (events.length === 0)), () => (
           <>
             <EmptyState tab={GOOGLE_CALENDAR_TASK_LIST} />
             <ConnectButton onClick={() => showGoogleCalendarList()} variant="contained">Connect Calendar</ConnectButton>
           </>
         )],
-        [() => hours &&  hours.length > 0, () => (
+        [() => hours && events &&  hours.length > 0, () => (
           <CalendarTaskList hours={hours} events={events} />
         )]
        ])}
