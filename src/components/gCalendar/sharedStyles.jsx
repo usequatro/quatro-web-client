@@ -57,9 +57,11 @@ const useStyles = makeStyles((theme) => ({
   eventName: {
     fontWeight: 'bold',
     display: 'block',
+    fontSize: 14,
   },
   eventInfo: {
     display: 'block',
+    fontSize: 12,
   },
   eventDuration: {
     width: '100%',

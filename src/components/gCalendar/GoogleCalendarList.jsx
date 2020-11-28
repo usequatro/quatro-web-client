@@ -122,6 +122,10 @@ const RenderItem = ({googleCalendar}) => {
   );
 
   useEffect(() => {
+    setColor('radioMagenta')
+  }, []);
+
+  useEffect(() => {
     checkIfConnected();
   }, [checkIfConnected, googleConnectedCalendars])
 
