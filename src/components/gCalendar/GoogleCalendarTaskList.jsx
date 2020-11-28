@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     width: '100%',
     minHeight: tickHeight,
-    borderTop: `solid 1px ${theme.palette.divider}`,
+    borderTop: 'solid 1px #F1F1F1',
   },
   halfTick: {
     flex: 1,
@@ -52,12 +52,35 @@ const useStyles = makeStyles((theme) => ({
     minHeight: tickHeight,
     fontSize: 0,
   },
+  tickLabel: {
+    color: '#AAAAAA',
+    marginTop: -11,
+    display: 'block',
+    backgroundColor: '#ffffff',
+    width: 80,
+    textAlign: 'right',
+    paddingRight: 10,
+  },
+  eventsContainer: {
+    position: 'relative',
+    width: '100%',
+    display: "flex",
+    justifyContent: "flex-end"
+  },
   eventDefaultStyle: {
     position: 'absolute',
     width: '80%',
     padding: 10,
     borderRadius: 5,
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    border: '1px solid #FFFFFF'
+  },
+  eventName: {
+    fontWeight: 'bold',
+    display: 'block',
+  },
+  eventInfo: {
+    display: 'block',
   },
   eventDuration: {
     width: '100%',
@@ -90,8 +113,10 @@ const Ticks = ({hours}) => {
       }
 
       return (
-        <Box className={style}>
-          <p>{tick}</p>
+        <Box className={style} key={Math.random()}>
+          <span className={classes.tickLabel}>
+            {tick}
+          </span>
         </Box>
       ) 
     })
@@ -100,10 +125,12 @@ const Ticks = ({hours}) => {
 
 const Events = ({events}) => {
   const classes = useStyles();
+  const uniqueEvents =  [...new Map(events.map(item =>
+    [item.id, item])).values()];
 
   return (
-    events.map(event => {
-      const totals = event.items.map(eventItem => {
+    uniqueEvents.map((event, index) => {
+      const data = event.items.map(eventItem => {
         if (!eventItem.start) { return null }
 
         // Event height based on duration
@@ -117,34 +144,46 @@ const Events = ({events}) => {
 
         return ({
           eventHeight: renderedTickHeight * tickDuration,
-          topDifferenceTicks: differenceDuration + extraTicks
+          topDifferenceTicks: differenceDuration + extraTicks,
+          event: eventItem,
         });
       });
 
-      const color = classes[event.color]
-      const top = -Math.abs(totals[0].topDifferenceTicks * renderedTickHeight);
-
-      return (
-        <Box 
-          style={{ height: totals[0].eventHeight, top }}
-          className={`${color} ${classes.eventDefaultStyle}`}
-        >
-          <Typography variant="p">
-            {event.name}
-          </Typography>
-        </Box>
-      )
+      return data.map(e => {
+        const color = classes[event.color]
+        const top = -Math.abs(e.topDifferenceTicks * renderedTickHeight);
+        const zIndex = events.length - index;
+  
+        return (
+          <Box
+            key={e.event.id}
+            style={{ height: e.eventHeight, top, zIndex }}
+            className={`${color} ${classes.eventDefaultStyle}`}
+          >
+            <Typography component="p" className={classes.eventName}>
+              {event.name}
+            </Typography>
+            <Typography component="p" className={classes.eventInfo}>
+            {moment(e.event.start.dateTime).format('h:mm A')}
+            {' - '}
+            {moment(e.event.end.dateTime).format('h:mm A')}
+            </Typography>
+          </Box>
+        )
+      })
     })
   )
 };
 
 const CalendarTaskList = ({hours, events}) => {
+  const classes = useStyles();
+
   return (
     <>
       <Ticks hours={hours} />
-      <div style={{ position: 'relative', width: '100%', display: "flex", justifyContent: "flex-end" }}>
+      <Box className={classes.eventsContainer}>
         <Events events={events} />
-      </div>
+      </Box>
     </>
   );
 };
@@ -204,7 +243,7 @@ const GoogleCalendarTaskList = () => {
 };
 
 CalendarTaskList.propTypes = {
-  hours: PropTypes.arrayOf(PropTypes.object).isRequired,
+  hours: PropTypes.arrayOf(PropTypes.string).isRequired,
   events: PropTypes.arrayOf(PropTypes.object).isRequired
 }
 
