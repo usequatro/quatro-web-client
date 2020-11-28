@@ -14,7 +14,9 @@ const UserLoginListener = () => {
         try {
           mixpanel.identify(user.uid);
           mixpanel.people.set({
+            $name: user.displayName,
             $email: user.email,
+            $created: user.metadata.creationTime,
           });
         } catch (error) {
           console.error(error); // eslint-disable-line no-console
