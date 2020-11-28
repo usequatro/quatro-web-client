@@ -19,8 +19,9 @@ import { GOOGLE_CALENDAR_TASK_LIST } from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
 import ConnectButton from './ConnectButton';
 
-const tickHeight = 55;
-const renderedTickHeight = 49;
+const tickHeight = 25;
+const renderedTickHeight = 25;
+const extraTicks = 2;
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -36,11 +37,17 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     width: '100%',
     height: tickHeight,
-    borderBottom: `solid 1px ${theme.palette.divider}`,
+    borderTop: `solid 1px ${theme.palette.divider}`,
   },
   halfTick: {
     flex: 1,
-    borderBottom: `solid 1px ${theme.palette.divider}`,
+    borderTop: 'solid 1px #F6F6F6',
+    width: '100%',
+    height: tickHeight,
+  },
+  quarterTick: {
+    flex: 1,
+    borderBottom: 'solid 1px #FFFFFF',
     width: '100%',
     height: tickHeight,
   },
@@ -73,9 +80,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '1%',
     color:'white',
   },
-  date: {
-    padding: 20,
-  }
 }));
 
 const Ticks = ({hours}) => {
@@ -83,9 +87,20 @@ const Ticks = ({hours}) => {
 
   return (
     hours.map(tick => {
-      const hourStyle = tick.includes(':00') ? classes.tick: classes.halfTick;
+      if (tick.includes(':15') || tick.includes(':45')) {
+        return (
+          <Box className={classes.quarterTick}>
+            <p>&nbsp;</p>
+          </Box>)
+      }
+      if (tick.includes(':30')) {
+        return (
+          <Box className={classes.halfTick}>
+            <p>&nbsp;</p>
+          </Box>)
+      }
       return (
-        <Box className={hourStyle}>
+        <Box className={classes.tick}>
           <p>{tick}</p>
         </Box>
       )
@@ -104,21 +119,20 @@ const Events = ({events}) => {
         // Event height based on duration
         const eventDuration = moment(eventItem.end.dateTime).diff(moment(eventItem.start.dateTime))
         const durationMiliSecs = moment.duration(eventDuration, 'milliseconds');
-        const tickDuration = Math.floor(durationMiliSecs.asMinutes() / 30);
+        const tickDuration = Math.floor(durationMiliSecs.asMinutes() / 15);
         // Event -(minus) top based on (event start - end of day) calculation
         const differenceWithEndOfDay = moment(moment().endOf('day').toISOString()).diff(moment(eventItem.start.dateTime))
         const differenceMiliSecs = moment.duration(differenceWithEndOfDay, 'milliseconds');
-        const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 30);
+        const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 15);
 
         return ({
           eventHeight: renderedTickHeight * tickDuration,
-          topDifferenceTicks: differenceDuration
+          topDifferenceTicks: differenceDuration + extraTicks
         });
       });
 
       const color = classes[event.color]
-      const top = -Math.abs(totals[0].topDifferenceTicks * renderedTickHeight)
-        - (renderedTickHeight * 2);
+      const top = -Math.abs(totals[0].topDifferenceTicks * renderedTickHeight);
 
       return (
         <Box 
@@ -158,9 +172,12 @@ const GoogleCalendarTaskList = () => {
     const items = [];
     new Array(25).fill().forEach((acc, index) => {
       items.push(moment({ hour: index } ).format('h:mm A'));
+      items.push(moment({ hour: index, minute: 15 }).format('h:mm A'));
       items.push(moment({ hour: index, minute: 30 }).format('h:mm A'));
+      items.push(moment({ hour: index, minute: 45 }).format('h:mm A'));
     })
-    setHours(items.slice(0, items.length-1));
+    
+    setHours(items.slice(0, items.length-3));
   };
 
   useEffect(() => {
