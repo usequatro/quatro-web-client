@@ -9,7 +9,8 @@ const ConnectButton = withStyles((theme) => ({
       backgroundColor: theme.palette.grey[800],
     },
     borderRadius: '2em',
-    padding: '1em 1.5em'
+    padding: '1em 1.5em',
+    marginBottom: '9em',
   },
 }))(Button);
 
