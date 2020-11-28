@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { cond } from 'lodash';
+import { Typography } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 import { useSelector, useDispatch} from 'react-redux';
@@ -12,11 +13,13 @@ import {
   getEventsFromCalendars,
   selectGoogleCalendarEvents,
 } from '../../modules/googleCalendar';
+
 import { GOOGLE_CALENDAR_TASK_LIST } from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
 import ConnectButton from './ConnectButton';
 
 const tickHeight = 55;
+const renderedTickHeight = 49;
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -40,7 +43,11 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     height: tickHeight,
   },
-
+  eventDefaultStyle: {
+    position: 'absolute',
+    width: '80%',
+    padding: 10,
+  },
   eventDuration: {
     width: '100%',
     border: `solid 0px ${theme.palette.divider}`,
@@ -52,7 +59,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '1%',
     color:'white',
     borderBottom: `solid 0px ${theme.palette.divider}`,
-
   },
   radioOrange: {
     backgroundColor: '#F08934',
@@ -71,58 +77,72 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const CalendarTaskList = ({hours, events}) => {
+
+const Ticks = ({hours}) => {
   const classes = useStyles();
 
   return (
     hours.map(tick => {
-      let coloredTick = false;
-      let eventName = '';
-      let color = '';
-      let totalEventDuration = 0;
-      let hourStyle = "";
+      const hourStyle = tick.includes(':00') ? classes.tick: classes.halfTick;
+      return (
+        <Box className={hourStyle}>
+          <p>{tick}</p>
+        </Box>
+      )
+    })
+  );
+};
 
-      events.map(e => {
-        e.items.map(ei => {    
-          if (ei.start ) {
-            const duration = moment(ei.end.dateTime).diff(moment(ei.start.dateTime))
-            const d = moment.duration(duration, 'milliseconds');
-            const minDuration = Math.floor(d.asMinutes() / 30);
-            const eventStart = moment(ei.start.dateTime).format('h:mm A')
-            if (eventStart === tick) {
-              coloredTick = true;
-              eventName = ei.summary;
-              color = classes[e.color]
-              totalEventDuration = tickHeight * minDuration
-            }
-          }
-          return null;
-        })
-      return null;  
+const Events = ({events}) => {
+  const classes = useStyles();
+
+  return (
+    events.map(event => {
+      const totals = event.items.map(eventItem => {
+        if (!eventItem.start) { return null }
+
+        // Event height based on duration
+        const eventDuration = moment(eventItem.end.dateTime).diff(moment(eventItem.start.dateTime))
+        const durationMiliSecs = moment.duration(eventDuration, 'milliseconds');
+        const tickDuration = Math.floor(durationMiliSecs.asMinutes() / 30);
+        // Event -(minus) top based on (event start - end of day) calculation
+        const differenceWithEndOfDay = moment(moment().endOf('day').toISOString()).diff(moment(eventItem.start.dateTime))
+        const differenceMiliSecs = moment.duration(differenceWithEndOfDay, 'milliseconds');
+        const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 30);
+
+        return ({
+          eventHeight: renderedTickHeight * tickDuration,
+          topDifferenceTicks: differenceDuration
+        });
       });
-      if (coloredTick){
-        hourStyle = classes.eventDuration
-      } else {
-        hourStyle = classes.tick;
-      }
-      const defaultStyles = `${hourStyle} ${coloredTick && color}`;
+
+      const color = classes[event.color]
+      const top = -Math.abs(totals[0].topDifferenceTicks * renderedTickHeight)
+        - (renderedTickHeight * 2);
 
       return (
-        <div coloredTick={coloredTick} style={{ width: '100%', minHeight: tickHeight }}>
-        <Box
-          style={{ height:totalEventDuration }}
-          className={defaultStyles}
+        <Box 
+          style={{ height: totals[0].eventHeight, top }}
+          className={`${color} ${classes.eventDefaultStyle}`}
         >
-          <p className={classes.date}>
-            {tick}
-            {' '}
-            {eventName}
-          </p>
+          <Typography variant="p">
+            {event.name}
+          </Typography>
         </Box>
-        </div>
       )
     })
   )
+};
+
+const CalendarTaskList = ({hours, events}) => {
+  return (
+    <>
+      <Ticks hours={hours} />
+      <div style={{ position: 'relative', width: '100%', display: "flex", justifyContent: "flex-end" }}>
+        <Events events={events} />
+      </div>
+    </>
+  );
 };
 
 const GoogleCalendarTaskList = () => {
