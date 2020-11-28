@@ -8,6 +8,7 @@ import { Provider as ReactReduxProvider } from 'react-redux';
 import UserLoginListener from './UserLoginListener';
 import ErrorBoundary from './ErrorBoundary';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
+import { MixpanelProvider } from './tracking/MixpanelContext';
 import AppRouting from './AppRouting';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
 import muiTheme from './theme';
@@ -24,21 +25,23 @@ const [Router, routerProps] = isAppFullScreenMode()
 
 const App = () => (
   <ReactReduxProvider store={store}>
-    <MaterialThemeProvider theme={muiTheme}>
-      <ErrorBoundary>
-        <CssBaseline />
-        <Router {...routerProps}>
-          <UserLoginListener />
-          <RouterChangeTracker />
-          <Div100vh style={{ width: '100%', height: '100rvh' }}>
-            <NotificationContextProvider>
-              <AppRouting />
-              <NotificationSnackbar />
-            </NotificationContextProvider>
-          </Div100vh>
-        </Router>
-      </ErrorBoundary>
-    </MaterialThemeProvider>
+    <MixpanelProvider>
+      <MaterialThemeProvider theme={muiTheme}>
+        <ErrorBoundary>
+          <CssBaseline />
+          <Router {...routerProps}>
+            <UserLoginListener />
+            <RouterChangeTracker />
+            <Div100vh style={{ width: '100%', height: '100rvh' }}>
+              <NotificationContextProvider>
+                <AppRouting />
+                <NotificationSnackbar />
+              </NotificationContextProvider>
+            </Div100vh>
+          </Router>
+        </ErrorBoundary>
+      </MaterialThemeProvider>
+    </MixpanelProvider>
   </ReactReduxProvider>
 );
 

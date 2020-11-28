@@ -1,32 +1,17 @@
 import mixpanel from 'mixpanel-browser';
 
-const mixpanelInstance = process.env.REACT_APP_MIXPANEL_KEY !== ''
-  ? (() => {
-      // Initialize mixpanel right away
-      mixpanel.init(process.env.REACT_APP_MIXPANEL_KEY);
-      return mixpanel;
-    })()
-  : // Mock for development
-    {
-      /* eslint-disable no-console */
-      init: (...args) => {
-        console.info('[mixpanel.init]', ...args);
-      },
-      identify: (...args) => {
-        console.info('[mixpanel.identify]', ...args);
-      },
-      track: (...args) => {
-        console.info('[mixpanel.track]', ...args);
-      },
-      register: (...args) => {
-        console.info('[mixpanel.register]', ...args);
-      },
-      people: {
-        set: (...args) => {
-          console.info('[mixpanel.people.set]', ...args);
-        },
-      },
-      /* eslint-enable no-console */
-    };
+if (!process.env.REACT_APP_MIXPANEL_KEY) {
+  throw new Error('Mixpanel key required');
+}
 
-export default mixpanelInstance;
+mixpanel.init(process.env.REACT_APP_MIXPANEL_KEY, {
+  // debug true shows requests in console.
+  // note that if Do Not Track is enabled, Mixpanel doesn't send data
+  debug: process.env.REACT_APP_DEVELOPMENT == 1, // eslint-disable-line eqeqeq
+});
+
+if (process.env.REACT_APP_DEVELOPMENT) {
+  window.mixpanel = mixpanel;
+}
+
+export default mixpanel;
