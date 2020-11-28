@@ -38,6 +38,11 @@ export const getFirestore = () => getFirebase().firestore();
 export const getAuth = () => getFirebase().auth();
 
 /**
+ * @return {firebase.auth.GoogleAuthProvider_Instance}
+ */
+export const getGoogleAuthProvider = () => new firebase.auth.GoogleAuthProvider();
+
+/**
  * @return {firebase.storage.Storage}
  */
 export const getStorage = () => getFirebase().storage();
@@ -49,6 +54,11 @@ export const sendEmailVerification = async () => {
   }
   // @doc: https://firebase.google.com/docs/reference/js/firebase.User#sendemailverification
   return user.sendEmailVerification();
+};
+
+export const getUserProviders = () => {
+  const user = getAuth().currentUser;
+  return ((user && user.providerData) || []).map((provider) => provider.providerId);
 };
 
 export const updateUserProfile = async ({ displayName, photoURL }) =>
