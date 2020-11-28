@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
 import { cond } from 'lodash';
 import { Typography } from '@material-ui/core';
@@ -76,7 +77,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 20,
   }
 }));
-
 
 const Ticks = ({hours}) => {
   const classes = useStyles();
@@ -195,5 +195,10 @@ const GoogleCalendarTaskList = () => {
     </Box>
   )
 };
+
+CalendarTaskList.propTypes = {
+  hours: PropTypes.arrayOf(PropTypes.object).isRequired,
+  events: PropTypes.arrayOf(PropTypes.object).isRequired
+}
 
 export default GoogleCalendarTaskList;
