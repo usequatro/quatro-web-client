@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
@@ -17,6 +17,7 @@ import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import {
   getAuth,
   sendEmailVerification,
+  getUserProviders,
   updateUserProfile,
   updateUserEmail,
   updateUserPassword,
@@ -103,6 +104,10 @@ EmailVerificationText.propTypes = {
   verified: PropTypes.bool.isRequired,
 };
 
+// Making google's profile URL larger, as by default it might be 96
+const resizeGoogleProfileUrl = (profileUrl, size = 200) =>
+  (profileUrl || '').replace(/=s([0-9])+/, `=s${size}`);
+
 const AccountSettings = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -111,6 +116,7 @@ const AccountSettings = () => {
   const [submitting, setSubmitting] = useState(false);
   const emailVerified = useSelector(selectUserEmailVerified) || false;
   const userId = useSelector(selectUserId);
+  const providers = useMemo(getUserProviders, []);
 
   const savedEmail = useSelector(selectUserEmail);
   const [email, setEmail] = useState(savedEmail || '');
@@ -151,7 +157,9 @@ const AccountSettings = () => {
             })
           : undefined,
       )
-      .then(() => (email !== savedEmail ? updateUserEmail(email) : undefined))
+      .then(() =>
+        email !== savedEmail && providers.includes('password') ? updateUserEmail(email) : undefined,
+      )
       .then(() => (newPassword !== '' ? updateUserPassword(email) : undefined))
       .then(() => {
         notifySuccess('Changes saved successfully');
@@ -203,7 +211,11 @@ const AccountSettings = () => {
                     <ButtonBase
                       focusRipple
                       className={classes.profilePhoto}
-                      style={{ backgroundImage: `url("${photoURL}")` }}
+                      style={{
+                        backgroundImage: providers.includes('google.com')
+                          ? `url("${resizeGoogleProfileUrl(photoURL)}")`
+                          : `url("${photoURL}")`,
+                      }}
                       component="span"
                     />
                   ),
@@ -256,22 +268,25 @@ const AccountSettings = () => {
 
         <TextField
           fullWidth
-          label="Email"
+          label={providers.includes('google.com') ? 'Email (managed by Google)' : 'Email'}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           type="email"
           margin="normal"
+          disabled={!providers.includes('password')}
           helperText={<EmailVerificationText verified={emailVerified} />}
         />
 
-        <PasswordTextField
-          fullWidth
-          label="Change password"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
-          margin="normal"
-        />
+        {providers.includes('password') && (
+          <PasswordTextField
+            fullWidth
+            label="Change password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            margin="normal"
+          />
+        )}
 
         <Box display="flex" justifyContent="flex-end" pt={4}>
           <Button

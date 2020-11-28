@@ -15,7 +15,7 @@ import Grow from '@material-ui/core/Grow';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { useNotification } from '../Notification';
-import { getAuth } from '../../firebase';
+import { getAuth, getGoogleAuthProvider } from '../../firebase';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 
@@ -46,6 +46,14 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.common.white,
     marginBottom: theme.spacing(5),
   },
+  orSeparator: {
+    padding: `0 ${theme.spacing(2)}px`,
+  },
+  horizontalLine: {
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    height: 0,
+    flexGrow: 1,
+  },
 }));
 
 const ERROR_USER_NOT_FOUND = 'auth/user-not-found';
@@ -61,6 +69,7 @@ const ERROR_MESSAGE_BY_CODE = {
     'La contraseña es demasiado débil, prueba con minúculas, mayúsculas y números',
   [ERROR_EMAIL_IN_USE]: 'El email introducido ya está en uso',
 };
+const ERROR_MESSAGE_FALLBACK = 'Ha ocurrido un error';
 
 const Registration = ({ mode }) => {
   const classes = useStyles();
@@ -78,6 +87,14 @@ const Registration = ({ mode }) => {
     setPassword('');
   }, [mode]);
 
+  const redirectLoggedInUserToDashboard = () => {
+    // Clear the email on the login/signup form
+    if (emailAddress) {
+      dispatch(setRegistrationEmail(''));
+    }
+    history.push(paths.DASHBOARD);
+  };
+
   const handleLogIn = (event) => {
     event.preventDefault();
     if (submitting) {
@@ -86,14 +103,11 @@ const Registration = ({ mode }) => {
     setSubmitting(true);
     getAuth()
       .signInWithEmailAndPassword(emailAddress, password)
-      .then(() => {
-        dispatch(setRegistrationEmail(''));
-        history.push(paths.DASHBOARD);
-      })
+      .then(() => redirectLoggedInUserToDashboard())
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
         setSubmitting(false);
-        notifyError(ERROR_MESSAGE_BY_CODE[error.code] || 'Ha ocurrido un error');
+        notifyError(ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK);
       });
   };
 
@@ -105,14 +119,11 @@ const Registration = ({ mode }) => {
     setSubmitting(true);
     getAuth()
       .createUserWithEmailAndPassword(emailAddress, password)
-      .then(() => {
-        dispatch(setRegistrationEmail(''));
-        history.push(paths.DASHBOARD);
-      })
+      .then(() => redirectLoggedInUserToDashboard())
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
         setSubmitting(false);
-        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || 'Ha ocurrido un error';
+        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
         notifyError(errorMessage);
       });
   };
@@ -131,9 +142,21 @@ const Registration = ({ mode }) => {
       })
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
-        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || 'Ha ocurrido un error';
+        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
         notifyError(errorMessage);
         setSubmitting(false);
+      });
+  };
+
+  const handleLogWithGoogle = () => {
+    getAuth()
+      .signInWithPopup(getGoogleAuthProvider())
+      // .then(({ user, additionalUserInfo: { isNewUser } }) => {
+      .then(() => redirectLoggedInUserToDashboard())
+      .catch((error) => {
+        console.error(error); // eslint-disable-line no-console
+        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
+        notifyError(errorMessage);
       });
   };
 
@@ -156,6 +179,38 @@ const Registration = ({ mode }) => {
 
       <Grow in>
         <Paper className={classes.paper}>
+          <Box>
+            <Button
+              type="button"
+              onClick={handleLogWithGoogle}
+              variant="outlined"
+              size="large"
+              fullWidth
+              startIcon={
+                <img
+                  src="/images/google_logo.png"
+                  alt="google logo"
+                  style={{ width: '1.5rem', height: '1.5rem' }}
+                />
+              }
+            >
+              Inicia sesión con Google
+            </Button>
+
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+              pt={3}
+              pb={2}
+            >
+              <span className={classes.horizontalLine} />
+              <span className={classes.orSeparator}>or</span>
+              <span className={classes.horizontalLine} />
+            </Box>
+          </Box>
+
           <form
             onSubmit={
               {
