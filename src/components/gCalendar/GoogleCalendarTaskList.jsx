@@ -36,49 +36,43 @@ const useStyles = makeStyles((theme) => ({
   tick: {
     flex: 1,
     width: '100%',
-    height: tickHeight,
+    minHeight: tickHeight,
     borderTop: `solid 1px ${theme.palette.divider}`,
   },
   halfTick: {
     flex: 1,
     borderTop: 'solid 1px #F6F6F6',
     width: '100%',
-    height: tickHeight,
+    minHeight: tickHeight,
   },
   quarterTick: {
     flex: 1,
     borderBottom: 'solid 1px #FFFFFF',
     width: '100%',
-    height: tickHeight,
+    minHeight: tickHeight,
+    fontSize: 0,
   },
   eventDefaultStyle: {
     position: 'absolute',
     width: '80%',
     padding: 10,
+    borderRadius: 5,
+    color: '#FFFFFF'
   },
   eventDuration: {
     width: '100%',
     border: `solid 0px ${theme.palette.divider}`,
-    color:'white',
+    color: '#FFFFFF',
     height: 'auto'
   },
   radioMagenta: {
     backgroundColor: '#EB40AC',
-    borderRadius: '1%',
-    color:'white',
-    borderBottom: `solid 0px ${theme.palette.divider}`,
   },
   radioOrange: {
     backgroundColor: '#F08934',
-    borderRadius: '1%',
-    color:'white',
-    borderBottom: `solid 0px ${theme.palette.divider}`,
-  
   },
   radioBlackboard: {
     backgroundColor: '#3C717B',
-    borderRadius: '1%',
-    color:'white',
   },
 }));
 
@@ -87,23 +81,19 @@ const Ticks = ({hours}) => {
 
   return (
     hours.map(tick => {
+      let style = classes.tick;
+
       if (tick.includes(':15') || tick.includes(':45')) {
-        return (
-          <Box className={classes.quarterTick}>
-            <p>&nbsp;</p>
-          </Box>)
+        style = classes.quarterTick
+      } else if (tick.includes(':30')) {
+        style = classes.halfTick;
       }
-      if (tick.includes(':30')) {
-        return (
-          <Box className={classes.halfTick}>
-            <p>&nbsp;</p>
-          </Box>)
-      }
+
       return (
-        <Box className={classes.tick}>
+        <Box className={style}>
           <p>{tick}</p>
         </Box>
-      )
+      ) 
     })
   );
 };
