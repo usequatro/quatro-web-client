@@ -10,9 +10,9 @@ const UserLoginListener = () => {
 
   useEffect(() => {
     const unsubscribe = getAuth().onAuthStateChanged((user) => {
-      if (user && user.id) {
+      if (user && user.uid) {
         try {
-          mixpanel.identify(user.id);
+          mixpanel.identify(user.uid);
           mixpanel.people.set({
             $email: user.email,
           });
