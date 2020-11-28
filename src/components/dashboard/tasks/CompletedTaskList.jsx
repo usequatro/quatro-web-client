@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import get from 'lodash/get';
 import cond from 'lodash/cond';
+import isToday from 'date-fns/isToday';
+import isYesterday from 'date-fns/isYesterday';
+import isThisWeek from 'date-fns/isThisWeek';
 
 import Toolbar from '@material-ui/core/Toolbar';
 import Hidden from '@material-ui/core/Hidden';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import TaskListHeader from './TaskListHeader';
 import { COMPLETED } from '../../../constants/dashboardTabs';
 import { fetchListCompletedTasks, COMPLETED_TASKS_PAGE_SIZE } from '../../../utils/apiClient';
 import { useNotification } from '../../Notification';
@@ -25,6 +29,13 @@ const FETCHING = 'fetching';
 const FETCHED = 'fetched';
 const ERROR = 'error';
 
+const getSection = cond([
+  [(completed) => isToday(completed), () => 'today'],
+  [(completed) => isYesterday(completed), () => 'yesterday'],
+  [(completed) => isThisWeek(completed), () => 'thisWeek'],
+  [() => true, () => 'rest'],
+]);
+
 const CompletedTaskList = () => {
   const { notifyError } = useNotification();
   const userId = useSelector(selectUserId);
@@ -33,6 +44,18 @@ const CompletedTaskList = () => {
   const [status, setStatus] = useState(INITIAL);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [endReached, setEndReached] = useState(false);
+
+  const { todayTasks, yesterdayTasks, thisWeekTasks, restTasks } = useMemo(
+    () => ({
+      todayTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'today'),
+      yesterdayTasks: completedTasks.filter(
+        ([, task]) => getSection(task.completed) === 'yesterday',
+      ),
+      thisWeekTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'thisWeek'),
+      restTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'rest'),
+    }),
+    [completedTasks],
+  );
 
   useEffect(() => {
     if (status !== INITIAL) {
@@ -121,6 +144,22 @@ const CompletedTaskList = () => {
 
   useCreateTaskShortcut();
 
+  const renderTask = (id, task) => (
+    <TaskView
+      id={id}
+      key={id}
+      title={task.title}
+      description={task.description}
+      scheduledStart={task.scheduledStart}
+      due={task.due}
+      prioritizedAheadOf={undefined}
+      showBlockers={false}
+      hasRecurringConfig={false}
+      completed={task.completed}
+      onComplete={handleUncompleteTask}
+    />
+  );
+
   return (
     <Box flexGrow={1} display="flex" flexDirection="column">
       {cond([
@@ -131,21 +170,33 @@ const CompletedTaskList = () => {
           () => true,
           () => (
             <>
-              {completedTasks.map(([id, task]) => (
-                <TaskView
-                  id={id}
-                  key={id}
-                  title={task.title}
-                  description={task.description}
-                  scheduledStart={task.scheduledStart}
-                  due={task.due}
-                  prioritizedAheadOf={undefined}
-                  showBlockers={false}
-                  hasRecurringConfig={false}
-                  completed={task.completed}
-                  onComplete={handleUncompleteTask}
-                />
-              ))}
+              {todayTasks.length > 0 && (
+                <>
+                  <TaskListHeader>Today</TaskListHeader>
+                  {todayTasks.map(([id, task]) => renderTask(id, task))}
+                </>
+              )}
+
+              {yesterdayTasks.length > 0 && (
+                <>
+                  <TaskListHeader>Yesterday</TaskListHeader>
+                  {yesterdayTasks.map(([id, task]) => renderTask(id, task))}
+                </>
+              )}
+
+              {thisWeekTasks.length > 0 && (
+                <>
+                  <TaskListHeader>This week</TaskListHeader>
+                  {thisWeekTasks.map(([id, task]) => renderTask(id, task))}
+                </>
+              )}
+
+              {restTasks.length > 0 && (
+                <>
+                  <TaskListHeader>Previous</TaskListHeader>
+                  {restTasks.map(([id, task]) => renderTask(id, task))}
+                </>
+              )}
 
               {/* next page loader */}
               {status === FETCHING && completedTasks.length > 0 && (
