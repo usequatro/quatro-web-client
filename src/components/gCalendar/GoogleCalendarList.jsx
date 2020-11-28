@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -102,7 +101,6 @@ const RenderItem = ({googleCalendar}) => {
   const userId = useSelector(selectUserId);
   const calendarId = googleCalendar.id;
   const dispatch = useDispatch();
-  const history = useHistory();
   const googleConnectedCalendars = useSelector(selectGoogleConnectedCalendars);
 
   const [isDisabled, setIsDisabled] = useState(true);
