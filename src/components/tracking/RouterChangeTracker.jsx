@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { trackRouteChange } from '../../utils/tracking';
+import { trackRouteChange } from '../../utils/googleAnalyticsTracking';
 
 const RouterChangeTracker = ({ history }) => {
   useEffect(() => {
