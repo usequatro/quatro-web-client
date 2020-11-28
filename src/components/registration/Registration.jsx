@@ -54,6 +54,9 @@ const useStyles = makeStyles((theme) => ({
     height: 0,
     flexGrow: 1,
   },
+  actionLink: {
+    whiteSpace: 'nowrap',
+  },
 }));
 
 const ERROR_USER_NOT_FOUND = 'auth/user-not-found';
@@ -266,7 +269,7 @@ const Registration = ({ mode }) => {
               {mode === LOG_IN && (
                 <Typography align="center">
                   {"Don't have an account yet? "}
-                  <MuiLink component={RouterLink} to={paths.SIGN_UP}>
+                  <MuiLink component={RouterLink} to={paths.SIGN_UP} className={classes.actionLink}>
                     Sign up
                   </MuiLink>
                 </Typography>
@@ -274,7 +277,11 @@ const Registration = ({ mode }) => {
               {mode === LOG_IN && (
                 <Typography align="center">
                   {'Forgot password? '}
-                  <MuiLink component={RouterLink} to={paths.RECOVER_PASSWORD}>
+                  <MuiLink
+                    component={RouterLink}
+                    to={paths.RECOVER_PASSWORD}
+                    className={classes.actionLink}
+                  >
                     Recover
                   </MuiLink>
                 </Typography>
@@ -282,7 +289,7 @@ const Registration = ({ mode }) => {
               {mode === SIGN_UP && (
                 <Typography align="center">
                   {'Already have an account? '}
-                  <MuiLink component={RouterLink} to={paths.LOG_IN}>
+                  <MuiLink component={RouterLink} to={paths.LOG_IN} className={classes.actionLink}>
                     Log in
                   </MuiLink>
                 </Typography>
@@ -290,7 +297,7 @@ const Registration = ({ mode }) => {
               {mode === RECOVER_PASSWORD && (
                 <Typography align="center">
                   {'Go back to '}
-                  <MuiLink component={RouterLink} to={paths.LOG_IN}>
+                  <MuiLink component={RouterLink} to={paths.LOG_IN} className={classes.actionLink}>
                     log in
                   </MuiLink>
                 </Typography>
