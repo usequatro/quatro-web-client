@@ -16,7 +16,7 @@ import { GOOGLE_CALENDAR_TASK_LIST } from '../../constants/dashboardTabs';
 import EmptyState from '../dashboard/tasks/EmptyState';
 import ConnectButton from './ConnectButton';
 import CalendarTaskList from './CalendarTaskList';
-import useStyles from './sharedStyles';
+import { useStyles } from './sharedStyles';
 
 const GoogleCalendarTaskList = () => {
   const classes = useStyles();
@@ -38,6 +38,10 @@ const GoogleCalendarTaskList = () => {
     
     setHours(items.slice(0, items.length-3));
   };
+  
+  const showGoogleCalendarList = () => {
+    history.push("/dashboard/google-calendar-list");  
+  };
 
   useEffect(() => {
     if (connectedGoogleCalendars) {
@@ -50,10 +54,6 @@ const GoogleCalendarTaskList = () => {
   useEffect(() => {
     generateHoursArray()
   }, [dispatch]);
-  
-  const showGoogleCalendarList = () => {
-    history.push("/dashboard/google-calendar-list");  
-  };
 
   return (
     <Box className={classes.container}>

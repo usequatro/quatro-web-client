@@ -2,14 +2,12 @@ import React from 'react';
 import moment from 'moment';
 import { Typography } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
-
-import useStyles from './sharedStyles';
-
-const renderedTickHeight = 25;
-const extraTicks = 2;
+import { useStyles, tickHeight, extraTicks, useEventBackgroundStyles } from './sharedStyles';
 
 const Events = ({events}) => { 
   const classes = useStyles();
+  const checkboxClasses = useEventBackgroundStyles();
+
   const uniqueEvents =  [...new Map(events.map(item =>
     [item.id, item])).values()];
 
@@ -28,15 +26,15 @@ const Events = ({events}) => {
         const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 15);
 
         return ({
-          eventHeight: renderedTickHeight * tickDuration,
+          eventHeight: tickHeight * tickDuration,
           topDifferenceTicks: differenceDuration + extraTicks,
           event: eventItem,
         });
       });
 
       return data.map(e => {
-        const color = classes[event.color]
-        const top = -Math.abs(e.topDifferenceTicks * renderedTickHeight);
+        const color = checkboxClasses[event.color];
+        const top = -Math.abs(e.topDifferenceTicks * tickHeight);
         const zIndex = events.length - index;
   
         return (

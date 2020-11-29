@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@material-ui/core/Box';
-import useStyles from './sharedStyles';
+import { useStyles } from './sharedStyles';
 import Ticks from './Ticks';
 import Events from './Events';
 

@@ -13,6 +13,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { connectCalendar, disconnectCalendar } from '../../utils/apiClient';
+import { colors, useCheckboxStyles } from './sharedStyles';
 
 import {
   selectUserId,
@@ -23,12 +24,6 @@ import {
   selectGoogleConnectedCalendars,
   getEventsFromCalendars,
 } from '../../modules/googleCalendar';
-
-const colors = {
-  magenta: '#EB40AC',
-  orange: '#F08934',
-  blackboard: '#3C717B'
-};
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -60,33 +55,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '0.95em',
     margin: '0.9em 0'
   },
-  radioMagenta: {
-    color: colors.magenta,
-    '&$checkedMagenta': {
-      color: colors.magenta
-    }
-  },
-  checkedMagenta: {
-    color: colors.magenta
-  },
-  radioOrange: {
-    color: colors.orange,
-    '&$checkedOrange': {
-      color: colors.orange
-    }
-  },
-  checkedOrange: {
-    color: colors.orange
-  },
-  radioBlackboard: {
-    color: colors.blackboard,
-    '&$checkedBlackboard': {
-      color: colors.blackboard
-    }
-  },
-  checkedBlackboard: {
-    color: colors.blackboard
-  },
 }));
 
 const ConnectCalendarButton = withStyles((theme) => ({
@@ -98,6 +66,7 @@ const ConnectCalendarButton = withStyles((theme) => ({
 
 const RenderItem = ({googleCalendar}) => {
   const classes = useStyles();
+  const checkboxClasses = useCheckboxStyles();
   const userId = useSelector(selectUserId);
   const calendarId = googleCalendar.id;
   const dispatch = useDispatch();
@@ -120,22 +89,6 @@ const RenderItem = ({googleCalendar}) => {
     },
     [googleConnectedCalendars, calendarId],
   );
-
-  useEffect(() => {
-    setColor('radioMagenta')
-  }, []);
-
-  useEffect(() => {
-    checkIfConnected();
-  }, [checkIfConnected, googleConnectedCalendars])
-
-  useEffect(() => {
-    if (name.length > 0 && color.length > 0) {
-      setIsDisabled(false);
-    } else {
-      setIsDisabled(true);
-    }
-  }, [name, color])
 
   const connectGoogleCalendar = () => {
     const calendarObject = {
@@ -168,6 +121,22 @@ const RenderItem = ({googleCalendar}) => {
     setGoogleCalendar(calendarId);
   };
 
+  useEffect(() => {
+    setColor('263573');
+  }, []);
+
+  useEffect(() => {
+    checkIfConnected();
+  }, [checkIfConnected, googleConnectedCalendars])
+
+  useEffect(() => {
+    if (name.length > 0 && color.length > 0) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [name, color])
+
   return (
     <form>
       <ListItem
@@ -194,36 +163,23 @@ const RenderItem = ({googleCalendar}) => {
       </Box>
       <Box className={classes.checkBoxContainer} display='flex' justifyContent='space-between'>
         <RadioGroup style={{flexDirection: 'row'}}>
-          <FormControlLabel
-            value="radioMagenta"
-            checked={color === 'radioMagenta'}
-            onClick={() => setColor('radioMagenta')}
-            control={
-              <Radio classes={{root: classes.radioMagenta,
-                checked: classes.checkedMagenta}}
+        {
+          Object.keys(colors).map(key => {
+            return (
+              <FormControlLabel
+                key={key}
+                value={colors[key]}
+                checked={color === key}
+                onClick={() => setColor(key)}
+                control={
+                  <Radio classes={{root: checkboxClasses[key],
+                    checked: checkboxClasses[`checked${key}`]}}
+                  />
+                }
               />
-            }
-          />
-          <FormControlLabel
-            value="radioOrange" 
-            checked={color === 'radioOrange'}
-            onClick={() => setColor('radioOrange')}
-            control={
-              <Radio classes={{root: classes.radioOrange,
-                checked: classes.checkedOrange}}
-              />
-            }
-          />
-          <FormControlLabel
-            value="radioBlackboard"
-            checked={color === 'radioBlackboard'}
-            onClick={() => setColor('radioBlackboard')}
-            control={
-              <Radio classes={{root: classes.radioBlackboard,
-                checked: classes.checkedBlackboard}}
-              />
-            }
-          />
+            )
+          })
+        }
         </RadioGroup>
         <ConnectCalendarButton
           onClick={() => toggleCalendar()}

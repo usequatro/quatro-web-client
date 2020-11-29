@@ -1,8 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles';
 
-const tickHeight = 25;
+export const tickHeight = 25;
+export const extraTicks = 2;
 
-const useStyles = makeStyles((theme) => ({
+export const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: 230,
     display: 'flex',
@@ -68,16 +69,34 @@ const useStyles = makeStyles((theme) => ({
     border: `solid 0px ${theme.palette.divider}`,
     color: '#FFFFFF',
     height: 'auto'
-  },
-  radioMagenta: {
-    backgroundColor: '#EB40AC',
-  },
-  radioOrange: {
-    backgroundColor: '#F08934',
-  },
-  radioBlackboard: {
-    backgroundColor: '#3C717B',
-  },
+  }
 }));
 
-export default useStyles;
+export const colors = {
+  '263573': '#263573',
+  '077EC0': '#077EC0',
+  '57C7E4': '#57C7E4',
+  'F6891F': '#F6891F'
+}
+
+export const eventBackgroundStyles = {}
+Object.keys(colors).forEach(key => {
+  eventBackgroundStyles[key] = {
+    backgroundColor: colors[key]
+  }
+})
+export const useEventBackgroundStyles = makeStyles(eventBackgroundStyles)
+
+const checkBoxesStyles = {}
+Object.keys(colors).forEach(key => {
+  checkBoxesStyles[key] = {
+    color: colors[key],
+    [`&$checked${key}`]: {
+      color: colors[key]
+    }
+  }
+  checkBoxesStyles[`checked${key}`] = {
+    color: colors[key]
+  }
+})
+export const useCheckboxStyles = makeStyles(checkBoxesStyles)

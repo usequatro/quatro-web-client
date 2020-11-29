@@ -1,6 +1,6 @@
 import React from 'react';
 import Box from '@material-ui/core/Box';
-import useStyles from './sharedStyles';
+import { useStyles } from './sharedStyles';
 
 const Ticks = ({hours}) => {
   const classes = useStyles();
