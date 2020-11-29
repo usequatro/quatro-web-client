@@ -55,7 +55,7 @@ First, make sure you have an `.env` file. This file contains production environm
 npm run build-and-deploy
 ```
 
-## Project documnetation
+## Project documentation
 
 The easiest way to see the data structures is by opening the Redux Dev Tools while using the app.
 
