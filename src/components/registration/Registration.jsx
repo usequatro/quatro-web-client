@@ -179,37 +179,39 @@ const Registration = ({ mode }) => {
 
       <Grow in>
         <Paper className={classes.paper}>
-          <Box>
-            <Button
-              type="button"
-              onClick={handleLogWithGoogle}
-              variant="outlined"
-              size="large"
-              fullWidth
-              startIcon={
-                <img
-                  src="/images/google_logo.png"
-                  alt="google logo"
-                  style={{ width: '1.5rem', height: '1.5rem' }}
-                />
-              }
-            >
-              Inicia sesión con Google
-            </Button>
+          {(mode === LOG_IN || mode === SIGN_UP) && (
+            <Box>
+              <Button
+                type="button"
+                onClick={handleLogWithGoogle}
+                variant="outlined"
+                size="large"
+                fullWidth
+                startIcon={
+                  <img
+                    src="/images/google_logo.png"
+                    alt="google logo"
+                    style={{ width: '1.5rem', height: '1.5rem' }}
+                  />
+                }
+              >
+                Inicia sesión con Google
+              </Button>
 
-            <Box
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-              pt={3}
-              pb={2}
-            >
-              <span className={classes.horizontalLine} />
-              <span className={classes.orSeparator}>or</span>
-              <span className={classes.horizontalLine} />
+              <Box
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between"
+                pt={3}
+                pb={2}
+              >
+                <span className={classes.horizontalLine} />
+                <span className={classes.orSeparator}>or</span>
+                <span className={classes.horizontalLine} />
+              </Box>
             </Box>
-          </Box>
+          )}
 
           <form
             onSubmit={
