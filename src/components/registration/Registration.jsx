@@ -195,7 +195,12 @@ const Registration = ({ mode }) => {
                   />
                 }
               >
-                Inicia sesión con Google
+                {
+                  {
+                    [LOG_IN]: 'Sign in with Google',
+                    [SIGN_UP]: 'Sign up with Google',
+                  }[mode]
+                }
               </Button>
 
               <Box
