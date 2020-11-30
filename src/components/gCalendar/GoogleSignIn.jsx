@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useHistory } from "react-router-dom";
 
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
@@ -9,6 +10,7 @@ import ConnectButton from './ConnectButton';
 
 import {
   selectGoogleAPIClient,
+  selectGoogleConnectedCalendars,
 } from '../../modules/googleCalendar';
 
 const tab = dashboardTabs.GOOGLE_CALENDAR
@@ -30,11 +32,16 @@ const useStyles = makeStyles(() => ({
 
 const GoogleSignIn = () => {
   const classes = useStyles();
+  const history = useHistory();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
-
+  const connectedGoogleCalendars = useSelector(selectGoogleConnectedCalendars);
 
   const connectGoogle = () => {
-    googleAPIClient.auth2.getAuthInstance().signIn();
+    googleAPIClient.auth2.getAuthInstance().signIn().then(() => {
+      if (connectedGoogleCalendars.length === 0) {
+        history.push("/dashboard/google-calendar-list");  
+      }
+    });
   };
 
   return (
