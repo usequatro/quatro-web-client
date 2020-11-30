@@ -14,12 +14,14 @@ import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { connectCalendar, disconnectCalendar } from '../../utils/apiClient';
 import { colors, useCheckboxStyles } from './sharedStyles';
+import ConnectButton from './ConnectButton';
 
 import {
   selectUserId,
 } from '../../modules/session';
 
 import {
+  selectGoogleAPIClient,
   selectGoogleCalendars,
   selectGoogleConnectedCalendars,
   getEventsFromCalendars,
@@ -196,12 +198,17 @@ const RenderItem = ({googleCalendar}) => {
 
 const GoogleCalendarList = () => {
   const classes = useStyles();
+  const googleAPIClient = useSelector(selectGoogleAPIClient);
   const googleCalendars = useSelector(selectGoogleCalendars);
+
+  const logOutGoogle = () => {
+    googleAPIClient.auth2.getAuthInstance().signOut();
+  };
 
   return (
     <Box className={classes.container}>
       <List>
-        {googleCalendars.map(gc => {
+        {googleCalendars && googleCalendars.map(gc => {
           return (
             <RenderItem 
               googleCalendar={gc}
@@ -209,6 +216,10 @@ const GoogleCalendarList = () => {
             />)
         })}
       </List>
+      { googleCalendars && googleCalendars.length > 0 && (
+        <ConnectButton onClick={() => logOutGoogle()} variant="contained">Log Out from Google Calendar</ConnectButton>
+      )}
+      
     </Box>
   )
 };
