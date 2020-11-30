@@ -44,7 +44,7 @@ const Events = ({events}) => {
             className={`${color} ${classes.eventDefaultStyle}`}
           >
             <Typography component="p" className={classes.eventName}>
-              {event.name}
+              {e.event.summary}
             </Typography>
             <Typography component="p" className={classes.eventInfo}>
             {moment(e.event.start.dateTime).format('h:mm A')}
