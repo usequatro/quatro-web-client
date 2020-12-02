@@ -27,7 +27,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     alignContent: 'center',
     border: 'solid 1px rgba(0, 0, 0, 0.12)',
-    overflow: 'auto',
+    overflow: 'hidden',
     backgroundColor: '#ffffff',
     flexDirection: 'column',
     height: '100vh',
@@ -37,6 +37,7 @@ const useStyles = makeStyles(() => ({
     top: '90px',
     right: '-23px',
   }
+  
 }));
 
 
