@@ -16,6 +16,7 @@ import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
 import GoogleCalendarList from '../gCalendar/GoogleCalendarList';
 import SnackbarNotification from '../ui/SnackbarNotification';
+import MobileTabs from './MobileTabs';
 
 import {
   selectDashboadReadyForInitialFetch,
@@ -58,8 +59,17 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 30,
     color: 'white',
   },
+  mobileView: {
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
+    },
+  },
+  desktopView: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
+  },
 }));
-
 
 const tabsShowingTaskList = [
   dashboardTabs.NOW,
@@ -135,7 +145,7 @@ const Dashboard = () => {
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
-      { activeTab === dashboardTabs.NOW && <GoogleCalendar /> }
+      {/* { activeTab === dashboardTabs.NOW && <GoogleCalendar /> } */}
 
       <div className={classes.appContentContainer}>
         <Backdrop
@@ -143,23 +153,24 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
-      
-       { activeTab !== dashboardTabs.NOW && ( <Toolbar />)}
-       
+
+        {activeTab !== dashboardTabs.NOW && <Toolbar />}
+
         <Toolbar />
-        <Paper className={classes.appContent} square>
+        {/* <Paper className={classes.appContent} square>
           {renderContent()}
-        </Paper>
+        </Paper> */}
 
         {/* uncomment for bringing back bottom nav on mobile */}
         {/* <Hidden smUp>
           <BottomToolbar />
          </Hidden>  */}
+        <div className={classes.mobileView}>
+          <MobileTabs renderTask={renderContent} activeTab={activeTab} />
+        </div>
 
         <TaskDialog />
-        <SnackbarNotification
-          {...snackbarData}
-        />
+        <SnackbarNotification {...snackbarData} />
       </div>
     </div>
   );

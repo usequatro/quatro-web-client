@@ -49,6 +49,7 @@ const selectorFunctionByPathname = {
   [dashboardTabs.BLOCKED]: selectBlockedTasks,
   fallback: () => emptyArray,
 };
+
 const sectionTitlesByPath = {
   [dashboardTabs.NOW]: 'Top 4',
 };
