@@ -18,7 +18,7 @@ import GoogleCalendarTaskList from './GoogleCalendarTaskList';
 const useStyles = makeStyles(() => ({
   container: {
     flexGrow: 1,
-    paddingTop: 60,
+    paddingTop: 100,
     display: 'flex',
     alignItems: 'center',
     alignContent: 'center',
