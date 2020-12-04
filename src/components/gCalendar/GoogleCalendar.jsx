@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Resizable } from "re-resizable";
+import { Resizable } from 're-resizable';
 
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
@@ -10,10 +10,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import LoadingState from '../dashboard/tasks/LoadingState';
 
-import {
-  selectGoogleIsFetching,
-  selectGoogleSignInStatus
-} from '../../modules/googleCalendar';
+import { selectGoogleIsFetching, selectGoogleSignInStatus } from '../../modules/googleCalendar';
 
 import GoogleSignIn from './GoogleSignIn';
 import GoogleCalendarTaskList from './GoogleCalendarTaskList';
@@ -32,12 +29,11 @@ const useStyles = makeStyles(() => ({
     height: '100vh',
   },
   directions: {
-    position:'absolute',
+    position: 'absolute',
     top: '90px',
     right: '-23px',
-  },  
+  },
 }));
-
 
 const GoogleCalendar = () => {
   const classes = useStyles();
@@ -59,24 +55,27 @@ const GoogleCalendar = () => {
       {cond([
         [() => fetching, () => <LoadingState />],
         [() => fetching && !googleSignInStatus, () => null],
-        [() => !fetching && googleSignInStatus, () => (
-          // <Resizable
-          //   defaultSize={{ width: '40%', height: 'auto' }}
-          //   minWidth='25%'
-          //   maxWidth='100%'
-          //   bounds='window'
-          //   enable={{ left: false, right: true }}            
-          // >
+        [
+          () => !fetching && googleSignInStatus,
+          () => (
+            // <Resizable
+            //   defaultSize={{ width: '40%', height: 'auto' }}
+            //   minWidth='25%'
+            //   maxWidth='100%'
+            //   bounds='window'
+            //   enable={{ left: false, right: true }}
+            // >
             <Box className={classes.container}>
               {/* <ArrowIcons /> */}
               <GoogleCalendarTaskList />
             </Box>
-          // </Resizable>
-        )],
+            // </Resizable>
+          ),
+        ],
         [() => !fetching && !googleSignInStatus, () => <GoogleSignIn />],
       ])}
     </Box>
-  )
+  );
 };
 
 export default GoogleCalendar;

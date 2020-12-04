@@ -25,6 +25,7 @@ import {
   selectDashboardActiveTab,
   selectSnackbarData,
 } from '../../modules/dashboard';
+import MobileView from '../../utils/MobileView';
 import { selectHasUnsavedChanges, selectUnsavedChangesSaving } from '../../modules/unsavedChanges';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
@@ -59,16 +60,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 30,
     color: 'white',
   },
-  mobileView: {
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
-  },
-  desktopView: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
-  },
 }));
 
 const tabsShowingTaskList = [
@@ -96,6 +87,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const dashboardReadyForInitialFetch = useSelector(selectDashboadReadyForInitialFetch);
   const activeTab = useSelector(selectDashboardActiveTab);
+  const isMobile = MobileView();
 
   const hasUnsavedChanges = useSelector(selectHasUnsavedChanges);
   const savingUnsavedChanges = useSelector(selectUnsavedChangesSaving);
@@ -145,7 +137,7 @@ const Dashboard = () => {
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
-      {/* { activeTab === dashboardTabs.NOW && <GoogleCalendar /> } */}
+      {activeTab === dashboardTabs.NOW && !isMobile && <GoogleCalendar />}
 
       <div className={classes.appContentContainer}>
         <Backdrop
@@ -153,21 +145,22 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
-
-        {activeTab !== dashboardTabs.NOW && <Toolbar />}
+        {activeTab !== dashboardTabs.NOW && !isMobile && <Toolbar />}
 
         <Toolbar />
-        {/* <Paper className={classes.appContent} square>
-          {renderContent()}
-        </Paper> */}
+
+        {!isMobile && (
+          <Paper className={classes.appContent} square>
+            {renderContent()}
+          </Paper>
+        )}
 
         {/* uncomment for bringing back bottom nav on mobile */}
         {/* <Hidden smUp>
           <BottomToolbar />
          </Hidden>  */}
-        <div className={classes.mobileView}>
-          <MobileTabs renderTask={renderContent} activeTab={activeTab} />
-        </div>
+
+        {MobileView() && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
 
         <TaskDialog />
         <SnackbarNotification {...snackbarData} />

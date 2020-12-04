@@ -33,6 +33,7 @@ import { selectUnsavedChangesIsStatus, SAVING, ERROR } from '../../../modules/un
 import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
+import MobileView from '../../../utils/MobileView';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -129,6 +130,7 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
 
   const accountMenuAnchor = useRef();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const isMobile = MobileView();
 
   return (
     <>
@@ -219,8 +221,13 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      { tab !== tabs.NOW && ( 
-        <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
+      {tab !== tabs.NOW && !isMobile && (
+        <AppBar
+          position="fixed"
+          color="inherit"
+          className={classes.sectionTitleAppBar}
+          elevation={0}
+        >
           <Toolbar />
           <Toolbar className={classes.sectionTitleAppBarToolbar}>
             <Icon className={classes.sectionTitleIcon} />
@@ -229,7 +236,7 @@ const Dashboard = ({ setNavigationOpen, navigationOpen }) => {
             </Typography>
           </Toolbar>
         </AppBar>
-       )}   
+      )}
     </>
   );
 };

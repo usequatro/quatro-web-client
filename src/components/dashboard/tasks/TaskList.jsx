@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment  } from 'react';
+import React, { forwardRef, Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
@@ -31,6 +31,7 @@ import {
   selectHighlightedTaskId,
   selectDashboadIsFetching,
 } from '../../../modules/dashboard';
+import MobileView from '../../../utils/MobileView';
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
@@ -99,13 +100,14 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     height: '8vh',
     borderBottom: `solid 1px ${theme.palette.divider}`,
-    outline: 'none'
+    outline: 'none',
   },
 }));
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const isMobile = MobileView();
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -125,7 +127,7 @@ const TaskList = forwardRef((_, ref) => {
 
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
-      { tab === dashboardTabs.NOW && ( 
+      {tab === dashboardTabs.NOW && !isMobile && (
         <Box className={classes.titleContainer} component="div">
           <Icon className={classes.sectionTitleIcon} />
           <Typography variant="h5" component="h2">
@@ -140,48 +142,48 @@ const TaskList = forwardRef((_, ref) => {
           () => true,
           () => (
             <>
-            <MenuList disablePadding>
-              <Sortable
-                id={`sortable-${tab}`}
-                enabled={showPosition}
-                dropAreaHeight={DROP_AREA_HEIGHT}
-                itemIds={taskIds}
-                indexOffset={positionOffset}
-                renderItem={(id, index) => (
-                  <Task
-                    key={id}
-                    id={id}
-                    component={MenuItem}
-                    highlighted={id === highlighedTaskId}
-                    position={showPosition ? index + 1 + positionOffset : undefined}
-                    // For performance, we indicate if the task should load blockers from the top
-                    showBlockers={
-                      tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
-                    }
-                  />
-                )}
-                renderDropAreaStart={
-                  tab === dashboardTabs.BACKLOG
-                    ? (isDraggingOver) => (
-                        <TaskSiblingListDropArea
-                          isDraggingOver={isDraggingOver}
-                          title="Move to top 4"
-                        />
-                      )
-                    : null
-                }
-                renderDropAreaEnd={
-                  tab === dashboardTabs.NOW && hasMoveToBacklog
-                    ? (isDraggingOver) => (
-                        <TaskSiblingListDropArea
-                          isDraggingOver={isDraggingOver}
-                          title="Backlog"
-                        />
-                      )
-                    : null
-                }
-              />
-            </MenuList>
+              <MenuList disablePadding>
+                <Sortable
+                  id={`sortable-${tab}`}
+                  enabled={showPosition}
+                  dropAreaHeight={DROP_AREA_HEIGHT}
+                  itemIds={taskIds}
+                  indexOffset={positionOffset}
+                  renderItem={(id, index) => (
+                    <Task
+                      key={id}
+                      id={id}
+                      component={MenuItem}
+                      highlighted={id === highlighedTaskId}
+                      position={showPosition ? index + 1 + positionOffset : undefined}
+                      // For performance, we indicate if the task should load blockers from the top
+                      showBlockers={
+                        tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
+                      }
+                    />
+                  )}
+                  renderDropAreaStart={
+                    tab === dashboardTabs.BACKLOG
+                      ? (isDraggingOver) => (
+                          <TaskSiblingListDropArea
+                            isDraggingOver={isDraggingOver}
+                            title="Move to top 4"
+                          />
+                        )
+                      : null
+                  }
+                  renderDropAreaEnd={
+                    tab === dashboardTabs.NOW && hasMoveToBacklog
+                      ? (isDraggingOver) => (
+                          <TaskSiblingListDropArea
+                            isDraggingOver={isDraggingOver}
+                            title="Backlog"
+                          />
+                        )
+                      : null
+                  }
+                />
+              </MenuList>
             </>
           ),
         ],

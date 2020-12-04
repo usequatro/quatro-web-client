@@ -1,6 +1,7 @@
 /**
  * Basic app state for views, like which view shows, if side menus are open, etc.
  */
+
 import createReducer from '../utils/createReducer';
 import { loadTasks, addTask, selectTaskDashboardTab, getTabProperties } from './tasks';
 import { loadRecurringConfigs } from './recurringConfigs';
@@ -9,6 +10,7 @@ import { RESET } from './reset';
 import { NOW } from '../constants/dashboardTabs';
 import * as SOURCES from '../constants/taskSources';
 import { TASK_CREATED } from '../constants/mixpanelEvents';
+
 import * as apiClient from '../utils/apiClient';
 
 export const NAMESPACE = 'dashboard';

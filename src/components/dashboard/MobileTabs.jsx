@@ -1,10 +1,11 @@
+/* eslint-disable react/prop-types */
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import { Paper, Box, Tab, Tabs } from '@material-ui/core';
 
 import GoogleCalendar from '../gCalendar/GoogleCalendar';
-import * as dashboardTabs from '../../constants/dashboardTabs';
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -30,10 +31,12 @@ const idProps = (index) => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    height: '100vh',
+  },
   root: {
     flexGrow: 1,
     width: '100%',
-    height: '100vh',
   },
 
   indicator: {
@@ -62,12 +65,12 @@ const MobileTabs = ({ renderTask, activeTab }) => {
   const classes = useStyles();
   const [value, setValue] = useState(0);
 
-  const handleChange = (event, newValue) => {
+  const handleChange = (_event, newValue) => {
     setValue(newValue);
   };
 
   return (
-    <Paper>
+    <Paper className={classes.container}>
       <Tabs
         className={classes.tabsContainer}
         variant="fullWidth"
@@ -81,7 +84,6 @@ const MobileTabs = ({ renderTask, activeTab }) => {
         <TabStyle label={activeTab} {...idProps(0)} />
         <TabStyle label="Calendar" {...idProps(1)} />
       </Tabs>
-
       <TabPanel value={value} index={0}>
         {renderTask()}
       </TabPanel>
@@ -90,6 +92,11 @@ const MobileTabs = ({ renderTask, activeTab }) => {
       </TabPanel>
     </Paper>
   );
+};
+
+MobileTabs.propTypes = {
+  renderTask: PropTypes.func.isRequired,
+  activeTab: PropTypes.string.isRequired,
 };
 
 export default MobileTabs;
