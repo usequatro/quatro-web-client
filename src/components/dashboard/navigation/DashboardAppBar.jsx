@@ -22,6 +22,7 @@ import DoneAllRoundedIcon from '@material-ui/icons/DoneAllRounded';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import SettingsRoundedIcon from '@material-ui/icons/SettingsRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
+import ControlCameraRoundedIcon from '@material-ui/icons/ControlCameraRounded';
 
 import { getAuth } from '../../../firebase';
 import * as tabs from '../../../constants/dashboardTabs';
@@ -103,6 +104,7 @@ const sectionTitlesByPath = {
   [tabs.SCHEDULED]: 'Scheduled',
   [tabs.COMPLETED]: 'Completed',
   [tabs.ACCOUNT_SETTINGS]: 'Account',
+  [tabs.GOOGLE_CALENDARS]: 'Google Calendars',
 };
 const iconsByPath = {
   [tabs.NOW]: HomeRoundedIcon,
@@ -111,6 +113,7 @@ const iconsByPath = {
   [tabs.SCHEDULED]: CalendarTodayRoundedIcon,
   [tabs.COMPLETED]: DoneAllRoundedIcon,
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
+  [tabs.GOOGLE_CALENDARS]: ControlCameraRoundedIcon,
 };
 
 const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
@@ -216,16 +219,17 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Toolbar>
       </AppBar>
-
-      <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
-        <Toolbar />
-        <Toolbar className={classes.sectionTitleAppBarToolbar}>
-          <Icon className={classes.sectionTitleIcon} />
-          <Typography variant="h5" component="h2">
-            {sectionTitle}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      { tab !== tabs.NOW && ( 
+        <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
+          <Toolbar />
+          <Toolbar className={classes.sectionTitleAppBarToolbar}>
+            <Icon className={classes.sectionTitleIcon} />
+            <Typography variant="h5" component="h2">
+              {sectionTitle}
+            </Typography>
+          </Toolbar>
+        </AppBar>
+       )}   
     </>
   );
 };

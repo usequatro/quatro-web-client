@@ -29,5 +29,10 @@ service cloud.firestore {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
       allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
+
+    match /calendars/{id} {
+      allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
+    }
   }
 }

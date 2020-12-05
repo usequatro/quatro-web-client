@@ -7,6 +7,7 @@ import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
 
 const TASKS = 'tasks';
+const CALENDARS = 'calendars';
 const RECURRING_CONFIGS = 'recurringConfigs';
 
 /**
@@ -150,3 +151,31 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
  */
 export const fetchDeleteRecurringConfig = (id) =>
   getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
+
+
+export const connectCalendar = (calendarObject) => {
+  return getFirestore().collection(CALENDARS).add(calendarObject);
+}
+
+export const disconnectCalendar = async (calendarId, userId) => {
+  const documentId = await getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .where('calendarId', '==', calendarId)
+    .limit(1)
+    .get()
+    .then((querySnapshot) => querySnapshot.size > 0 ? querySnapshot.docs[0].id : null);
+  if (documentId) {
+    await getFirestore().collection(CALENDARS).doc(documentId).delete();
+  };
+}
+
+export const fetchConnectedCalendars = async (userId) => {
+  const results = await getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .get()
+    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
+    .then((res) => {return res});
+  return results;
+}

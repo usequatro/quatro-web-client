@@ -13,6 +13,8 @@ const emptyStateImages = {
   [dashboardTabs.BLOCKED]: '/empty-states/empty-state-blocked.png',
   [dashboardTabs.BACKLOG]: '/empty-states/empty-state-backlog.png',
   [dashboardTabs.COMPLETED]: '/empty-states/empty-state-completed.png',
+  [dashboardTabs.GOOGLE_CALENDAR]: '/empty-states/empty-state-google-calendar.png',
+  [dashboardTabs.GOOGLE_CALENDAR_TASK_LIST]: '/empty-states/empty-state-google-calendar.png',
 };
 
 const emptyStateCopy = {
@@ -29,6 +31,12 @@ const emptyStateCopy = {
     'Nice!',
     "You have an empty backlog. Keep your focus on what's important.",
   ],
+  [dashboardTabs.GOOGLE_CALENDAR]: [
+    'Connect to your Google Calendar account,',
+    'and sync your Quatro tasks.'],
+  [dashboardTabs.GOOGLE_CALENDAR_TASK_LIST]: [
+    'You haven`t connected any calendar.',
+    'Please connect a Google Calendar.'],
 };
 
 const useStyles = makeStyles(() => ({
@@ -49,6 +57,7 @@ const useStyles = makeStyles(() => ({
   },
   emptyStateImage: {
     width: '80%',
+    objectFit: 'scale-down'
   },
 }));
 

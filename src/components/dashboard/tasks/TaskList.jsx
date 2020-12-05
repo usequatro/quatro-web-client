@@ -1,8 +1,9 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, Fragment  } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
+import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -12,6 +13,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
+import HomeRoundedIcon from '@material-ui/icons/HomeRounded';
 
 import NOW_TASKS_LIMIT from '../../../constants/nowTasksLimit';
 import * as dashboardTabs from '../../../constants/dashboardTabs';
@@ -35,13 +37,23 @@ import LoadingState from './LoadingState';
 import EmptyState from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
+import { CLOSED_DRAWER_WIDTH } from '../navigation/NavigationSidebar';
+
 const emptyArray = [];
+
 const selectorFunctionByPathname = {
   [dashboardTabs.NOW]: selectNowTasks,
   [dashboardTabs.BACKLOG]: selectBacklogTasks,
   [dashboardTabs.SCHEDULED]: selectScheduledTasks,
   [dashboardTabs.BLOCKED]: selectBlockedTasks,
   fallback: () => emptyArray,
+};
+const sectionTitlesByPath = {
+  [dashboardTabs.NOW]: 'Top 4',
+};
+
+const iconsByPath = {
+  [dashboardTabs.NOW]: HomeRoundedIcon,
 };
 
 const shouldShowPosition = memoize((tab) =>
@@ -61,6 +73,32 @@ const useStyles = makeStyles((theme) => ({
     height: '4rem',
     width: '4rem',
   },
+  sectionTitleAppBar: {
+    display: 'flex',
+    justifyContent: 'stretch',
+    alignItems: 'stretch',
+    left: 0,
+    right: 0,
+    width: 'auto',
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    [theme.breakpoints.up('sm')]: {
+      left: `${CLOSED_DRAWER_WIDTH}px`,
+    },
+  },
+  sectionTitleAppBarToolbar: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '8vh',
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    outline: 'none'
+  },
 }));
 
 const TaskList = forwardRef((_, ref) => {
@@ -79,11 +117,20 @@ const TaskList = forwardRef((_, ref) => {
   );
 
   const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
-
+  const sectionTitle = sectionTitlesByPath[tab] || 'Not found';
+  const Icon = iconsByPath[tab] || Fragment;
   useCreateTaskShortcut();
 
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
+      { tab === dashboardTabs.NOW && ( 
+        <Box className={classes.titleContainer} component="div">
+          <Icon className={classes.sectionTitleIcon} />
+          <Typography variant="h5" component="h2">
+            {sectionTitle}
+          </Typography>
+        </Box>
+      )}
       {cond([
         [() => loading, () => <LoadingState />],
         [() => taskIds.length === 0, () => <EmptyState tab={tab} />],

@@ -14,6 +14,7 @@ import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
+import GoogleCalendarList from '../gCalendar/GoogleCalendarList';
 import SnackbarNotification from '../ui/SnackbarNotification';
 
 import {
@@ -26,6 +27,7 @@ import {
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
+import GoogleCalendar from '../gCalendar/GoogleCalendar';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -122,6 +124,7 @@ const Dashboard = () => {
         [(tab) => tabsShowingTaskList.includes(tab), () => <TaskList />],
         [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
         [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
+        [(tab) => tab === dashboardTabs.GOOGLE_CALENDARS, () => <GoogleCalendarList />],
       ])(activeTab),
     [activeTab],
   );
@@ -129,8 +132,9 @@ const Dashboard = () => {
   return (
     <div className={classes.root}>
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
-
       <NavigationSidebar open={navigationOpen} />
+
+      { activeTab === dashboardTabs.NOW && <GoogleCalendar /> }
 
       <div className={classes.appContentContainer}>
         <Backdrop
@@ -138,9 +142,10 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
+      
+       { activeTab !== dashboardTabs.NOW && ( <Toolbar />)}
+       
         <Toolbar />
-        <Toolbar />
-
         <Paper className={classes.appContent} square>
           {renderContent()}
         </Paper>
@@ -151,8 +156,9 @@ const Dashboard = () => {
          </Hidden>  */}
 
         <TaskDialog />
-
-        <SnackbarNotification {...snackbarData} />
+        <SnackbarNotification
+          {...snackbarData}
+        />
       </div>
     </div>
   );

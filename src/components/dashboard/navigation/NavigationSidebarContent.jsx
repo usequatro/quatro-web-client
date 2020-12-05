@@ -14,6 +14,7 @@ import HorizontalSplitRoundedIcon from '@material-ui/icons/HorizontalSplitRounde
 import CalendarTodayRoundedIcon from '@material-ui/icons/CalendarTodayRounded';
 import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import DoneAllRoundedIcon from '@material-ui/icons/DoneAllRounded';
+import ControlCameraRoundedIcon from '@material-ui/icons/ControlCameraRounded';
 
 import { selectDashboardActiveTab } from '../../../modules/dashboard';
 import * as paths from '../../../constants/paths';
@@ -80,6 +81,17 @@ const NavigationSidebarContent = () => {
             <DoneAllRoundedIcon />
           </ListItemIcon>
           <ListItemText primary="Completed" />
+        </ListItem>
+        <ListItem
+          button
+          component={Link}
+          to={paths.GOOGLE_CALENDARS}
+          selected={activeTab === dashboardTabs.GOOGLE_CALENDARS}
+        >
+          <ListItemIcon>
+            <ControlCameraRoundedIcon />
+          </ListItemIcon>
+          <ListItemText primary="Backlog" />
         </ListItem>
       </List>
 
