@@ -91,7 +91,7 @@ const NavigationSidebarContent = () => {
           <ListItemIcon>
             <ControlCameraRoundedIcon />
           </ListItemIcon>
-          <ListItemText primary="Backlog" />
+          <ListItemText primary="Google Calendars" />
         </ListItem>
       </List>
 

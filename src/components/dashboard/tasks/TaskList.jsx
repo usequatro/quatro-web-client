@@ -1,5 +1,5 @@
-import React, { forwardRef, Fragment  } from 'react';
-import { useSelector } from 'react-redux';
+import React, { forwardRef, Fragment } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
@@ -30,6 +30,7 @@ import {
   selectDashboadIsLoading,
 } from '../../../modules/dashboard';
 import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
+import MobileView from '../../../utils/MobileView';
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
@@ -48,6 +49,7 @@ const selectorFunctionByPathname = {
   [dashboardTabs.BLOCKED]: selectBlockedTasks,
   fallback: () => emptyArray,
 };
+
 const sectionTitlesByPath = {
   [dashboardTabs.NOW]: 'Top 4',
 };
@@ -97,12 +99,14 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     height: '8vh',
     borderBottom: `solid 1px ${theme.palette.divider}`,
-    outline: 'none'
+    outline: 'none',
   },
 }));
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const isMobile = MobileView();
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -123,7 +127,7 @@ const TaskList = forwardRef((_, ref) => {
 
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
-      { tab === dashboardTabs.NOW && ( 
+      {tab === dashboardTabs.NOW && !isMobile && (
         <Box className={classes.titleContainer} component="div">
           <Icon className={classes.sectionTitleIcon} />
           <Typography variant="h5" component="h2">

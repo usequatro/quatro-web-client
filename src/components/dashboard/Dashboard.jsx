@@ -16,6 +16,7 @@ import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
 import GoogleCalendarList from '../gCalendar/GoogleCalendarList';
 import SnackbarNotification from '../ui/SnackbarNotification';
+import MobileTabs from './MobileTabs';
 
 import {
   listenToDashboardTasks,
@@ -24,6 +25,7 @@ import {
   selectSnackbarData,
   selectIsDataInSync,
 } from '../../modules/dashboard';
+import MobileView from '../../utils/MobileView';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
@@ -83,6 +85,7 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const activeTab = useSelector(selectDashboardActiveTab);
+  const isMobile = MobileView();
 
   const isDataInSync = useSelector(selectIsDataInSync);
 
@@ -134,7 +137,7 @@ const Dashboard = () => {
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
-      { activeTab === dashboardTabs.NOW && <GoogleCalendar /> }
+      {activeTab === dashboardTabs.NOW && !isMobile && <GoogleCalendar />}
 
       <div className={classes.appContentContainer}>
         <Backdrop
@@ -142,23 +145,25 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
-      
-       { activeTab !== dashboardTabs.NOW && ( <Toolbar />)}
-       
+        {activeTab !== dashboardTabs.NOW && !isMobile && <Toolbar />}
+
         <Toolbar />
-        <Paper className={classes.appContent} square>
-          {renderContent()}
-        </Paper>
+
+        {!isMobile && (
+          <Paper className={classes.appContent} square>
+            {renderContent()}
+          </Paper>
+        )}
 
         {/* uncomment for bringing back bottom nav on mobile */}
         {/* <Hidden smUp>
           <BottomToolbar />
          </Hidden>  */}
 
+        {MobileView() && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
+
         <TaskDialog />
-        <SnackbarNotification
-          {...snackbarData}
-        />
+        <SnackbarNotification {...snackbarData} />
       </div>
     </div>
   );

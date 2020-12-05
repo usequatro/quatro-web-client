@@ -44,8 +44,8 @@ export const useStyles = makeStyles((theme) => ({
   eventsContainer: {
     position: 'relative',
     width: '100%',
-    display: "flex",
-    justifyContent: "flex-end"
+    display: 'flex',
+    justifyContent: 'flex-end',
   },
   eventDefaultStyle: {
     position: 'absolute',
@@ -53,7 +53,7 @@ export const useStyles = makeStyles((theme) => ({
     padding: 10,
     borderRadius: 5,
     color: '#FFFFFF',
-    border: '1px solid #FFFFFF'
+    border: '1px solid #FFFFFF',
   },
   eventName: {
     fontWeight: 'bold',
@@ -68,35 +68,35 @@ export const useStyles = makeStyles((theme) => ({
     width: '100%',
     border: `solid 0px ${theme.palette.divider}`,
     color: '#FFFFFF',
-    height: 'auto'
-  }
+    height: 'auto',
+  },
 }));
 
 export const colors = {
-  '263573': '#263573',
+  263573: '#263573',
   '077EC0': '#077EC0',
   '57C7E4': '#57C7E4',
-  'F6891F': '#F6891F'
-}
+  F6891F: '#F6891F',
+};
 
-export const eventBackgroundStyles = {}
-Object.keys(colors).forEach(key => {
+export const eventBackgroundStyles = {};
+Object.keys(colors).forEach((key) => {
   eventBackgroundStyles[key] = {
-    backgroundColor: colors[key]
-  }
-})
-export const useEventBackgroundStyles = makeStyles(eventBackgroundStyles)
+    backgroundColor: colors[key],
+  };
+});
+export const useEventBackgroundStyles = makeStyles(eventBackgroundStyles);
 
-const checkBoxesStyles = {}
-Object.keys(colors).forEach(key => {
+const checkBoxesStyles = {};
+Object.keys(colors).forEach((key) => {
   checkBoxesStyles[key] = {
     color: colors[key],
     [`&$checked${key}`]: {
-      color: colors[key]
-    }
-  }
+      color: colors[key],
+    },
+  };
   checkBoxesStyles[`checked${key}`] = {
-    color: colors[key]
-  }
-})
-export const useCheckboxStyles = makeStyles(checkBoxesStyles)
+    color: colors[key],
+  };
+});
+export const useCheckboxStyles = makeStyles(checkBoxesStyles);

@@ -32,6 +32,7 @@ import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
 import useDebouncedState from '../../hooks/useDebouncedState';
+import MobileView from '../../../utils/MobileView';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -129,6 +130,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
 
   const accountMenuAnchor = useRef();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const isMobile = MobileView();
 
   return (
     <>
@@ -219,8 +221,13 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      { tab !== tabs.NOW && ( 
-        <AppBar position="fixed" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
+      {tab !== tabs.NOW && !isMobile && (
+        <AppBar
+          position="fixed"
+          color="inherit"
+          className={classes.sectionTitleAppBar}
+          elevation={0}
+        >
           <Toolbar />
           <Toolbar className={classes.sectionTitleAppBarToolbar}>
             <Icon className={classes.sectionTitleIcon} />
@@ -229,7 +236,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
             </Typography>
           </Toolbar>
         </AppBar>
-       )}   
+      )}
     </>
   );
 };

@@ -13,7 +13,7 @@ const Events = ({events}) => {
 
   return (
     uniqueEvents.map((event, index) => {
-      const data = event.items.map(eventItem => {
+      const data = event.items && event.items.map(eventItem => {
         if (!eventItem.start) { return null }
 
         // Event height based on duration
@@ -32,7 +32,7 @@ const Events = ({events}) => {
         });
       });
 
-      return data.map(e => {
+      return data && data.map(e => {
         const color = checkboxClasses[event.color];
         const top = -Math.abs(e.topDifferenceTicks * tickHeight);
         const zIndex = events.length - index;
