@@ -1,34 +1,30 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import format from 'date-fns/format';
-import isMonday from 'date-fns/isMonday';
-import isTuesday from 'date-fns/isTuesday';
-import isWednesday from 'date-fns/isWednesday';
-import isThursday from 'date-fns/isThursday';
-import isFriday from 'date-fns/isFriday';
-import isSaturday from 'date-fns/isSaturday';
-import isSunday from 'date-fns/isSunday';
-
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { WEEK, MONTH, DAY } from '../../../constants/recurringDurationUnits';
+import isFriday from 'date-fns/isFriday';
+import isMonday from 'date-fns/isMonday';
+import isSaturday from 'date-fns/isSaturday';
+import isSunday from 'date-fns/isSunday';
+import isThursday from 'date-fns/isThursday';
+import isTuesday from 'date-fns/isTuesday';
+import isWednesday from 'date-fns/isWednesday';
+import isEqual from 'lodash/isEqual';
+import { DAY, MONTH, WEEK } from '../../../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../../../constants/weekdays';
+import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 
 const getPresetOptions = (referenceDate) =>
   [
     {
-      label: "Don't repeat",
-      config: null,
-    },
-    {
-      label: 'Every day',
+      key: 'everyDay',
       config: {
         unit: DAY,
         amount: 1,
       },
     },
     {
-      label: 'Every weekday (Monday to Friday)',
+      key: 'weekdays',
       config: {
         unit: WEEK,
         amount: 1,
@@ -44,7 +40,7 @@ const getPresetOptions = (referenceDate) =>
       },
     },
     referenceDate && {
-      label: `Weekly every ${format(referenceDate, 'EEEE')}`,
+      key: 'onceWeekly',
       config: {
         unit: WEEK,
         amount: 1,
@@ -60,7 +56,7 @@ const getPresetOptions = (referenceDate) =>
       },
     },
     referenceDate && {
-      label: `Monthy on the ${format(referenceDate, 'do')}`,
+      key: 'monthly',
       config: {
         unit: MONTH,
         amount: 1,
@@ -68,16 +64,74 @@ const getPresetOptions = (referenceDate) =>
     },
   ].filter(Boolean);
 
-const RecurringConfigMenu = ({ anchorEl, referenceDate, onClose, onRepeatConfigChange }) => {
-  const presetOptions = getPresetOptions(referenceDate);
+const RecurringConfigMenu = ({
+  anchorEl,
+  referenceDate,
+  currentRecurringConfig,
+  onClose,
+  onRepeatConfigChange,
+  onCustomConfigSelected,
+}) => {
+  const presetOptions = useMemo(() => getPresetOptions(referenceDate), [referenceDate]);
+  const customRecurringConfigIsntPreset = useMemo(
+    () =>
+      Boolean(
+        currentRecurringConfig &&
+          !presetOptions.reduce(
+            (memo, { config }) =>
+              memo ||
+              (currentRecurringConfig.amount === config.amount &&
+                currentRecurringConfig.unit === config.unit &&
+                (config.unit !== WEEK ||
+                  isEqual(
+                    currentRecurringConfig.activeWeekdays || {},
+                    config.activeWeekdays || {},
+                  ))),
+            false,
+          ),
+      ),
+    [currentRecurringConfig, presetOptions],
+  );
 
   return (
     <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={onClose}>
+      <MenuItem
+        onClick={() => {
+          onRepeatConfigChange(null);
+          onClose();
+        }}
+      >
+        Don&apos;t repeat
+      </MenuItem>
       {presetOptions.map((preset) => (
-        <MenuItem key={preset.label} onClick={() => onRepeatConfigChange(preset.config)}>
-          {preset.label}
+        <MenuItem
+          key={preset.key}
+          onClick={() => {
+            onRepeatConfigChange(preset.config);
+            onClose();
+          }}
+        >
+          {preset.label || getUserFacingRecurringText(preset.config, referenceDate)}
         </MenuItem>
       ))}
+      {customRecurringConfigIsntPreset && (
+        <MenuItem
+          onClick={() => {
+            onClose();
+          }}
+          style={{ whiteSpace: 'normal' }}
+        >
+          {getUserFacingRecurringText(currentRecurringConfig, referenceDate)}
+        </MenuItem>
+      )}
+      <MenuItem
+        onClick={() => {
+          onCustomConfigSelected();
+          onClose();
+        }}
+      >
+        Custom...
+      </MenuItem>
     </Menu>
   );
 };
@@ -87,11 +141,14 @@ RecurringConfigMenu.propTypes = {
   referenceDate: PropTypes.number,
   onClose: PropTypes.func.isRequired,
   onRepeatConfigChange: PropTypes.func.isRequired,
+  onCustomConfigSelected: PropTypes.func.isRequired,
+  currentRecurringConfig: PropTypes.object, // eslint-disable-line react/forbid-prop-types
 };
 
 RecurringConfigMenu.defaultProps = {
   anchorEl: undefined,
-  referenceDate: null,
+  currentRecurringConfig: undefined,
+  referenceDate: undefined,
 };
 
 export default RecurringConfigMenu;

@@ -1,4 +1,5 @@
 import cond from 'lodash/cond';
+import format from 'date-fns/format';
 import { DAY, WEEK, MONTH } from '../constants/recurringDurationUnits';
 import {
   MONDAY,
@@ -28,27 +29,32 @@ const areAllWeekdaysActive = (activeWeekdays) =>
   !activeWeekdays[SATURDAY] &&
   !activeWeekdays[SUNDAY];
 
+function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 /**
  * For a recurring config object, returns a user-facing text to show for it
  * @example 'Every Monday at 9am'
  * @param {Object} recurringConfig
+ * @param {number} [referenceDate]
  * @return {string}
  */
-export default function getUserFacingRecurringText(recurringConfig) {
+export default function getUserFacingRecurringText(recurringConfig, referenceDate) {
   if (!recurringConfig) {
     return '';
   }
 
   const { amount, unit, activeWeekdays } = recurringConfig;
 
-  const amountAndUnit = cond([
-    [() => unit === DAY, () => (amount === 1 ? 'day' : `${amount} days`)],
+  const text = cond([
+    [() => unit === DAY, () => `every ${amount === 1 ? 'day' : `${amount} days`}`],
     [
       () => unit === WEEK,
       () => {
         const activeWeekdaysText = cond([
-          [() => areAllActive(activeWeekdays), () => 'day'],
-          [() => areAllWeekdaysActive(activeWeekdays), () => 'weekday (Monday to Friday)'],
+          [() => areAllActive(activeWeekdays), () => 'every day'],
+          [() => areAllWeekdaysActive(activeWeekdays), () => 'every weekday (Monday to Friday)'],
           [
             () => true,
             () => {
@@ -62,16 +68,18 @@ export default function getUserFacingRecurringText(recurringConfig) {
                 activeWeekdays[SUNDAY] && 'Sunday',
               ].filter(Boolean);
 
-              return labels.reduce((memo, day, index) => {
+              const labelsText = labels.reduce((memo, day, index) => {
                 const separator =
                   // eslint-disable-next-line no-nested-ternary
                   index > 0 && index < labels.length - 1
                     ? ', '
-                    : index === labels.length - 1
+                    : index > 0 && index === labels.length - 1
                     ? ' and '
                     : '';
                 return `${memo}${separator}${day}`;
-              });
+              }, '');
+
+              return amount === 1 ? `every ${labelsText}` : labelsText;
             },
           ],
         ])();
@@ -79,8 +87,16 @@ export default function getUserFacingRecurringText(recurringConfig) {
         return `${activeWeekdaysText}${amount === 1 ? '' : ` every ${amount} weeks`}`;
       },
     ],
-    [() => unit === MONTH, () => (amount === 1 ? 'month' : `${amount} months`)],
+    [
+      () => unit === MONTH,
+      () => {
+        const monthsCopy = amount === 1 ? 'monthly' : `every ${amount} months`;
+        const onTheCopy = referenceDate ? `on the ${format(referenceDate, 'do')}` : '';
+
+        return [monthsCopy, onTheCopy].join(' ').trim();
+      },
+    ],
   ])(unit);
 
-  return `Every ${amountAndUnit}`;
+  return capitalizeFirstLetter(text);
 }
