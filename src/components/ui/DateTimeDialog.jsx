@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -16,6 +15,7 @@ import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
 import TimePicker from './TimePicker';
 import LabeledIconButton from './LabeledIconButton';
+import DialogTitleWithClose from './DialogTitleWithClose';
 
 const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, initialDate }) => {
   const [currentValue, setCurrentValue] = useState(value || initialDate);
@@ -28,7 +28,9 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
 
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby={id}>
-      <DialogTitle id={id}>{label}</DialogTitle>
+      <DialogTitleWithClose id={id} onClose={onClose}>
+        {label}
+      </DialogTitleWithClose>
 
       <DialogContent>
         <MuiPickersUtilsProvider utils={DateFnsUtils}>

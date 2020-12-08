@@ -44,7 +44,16 @@ describe('getUserFacingRecurringText', () => {
         amount: 1,
         unit: MONTH,
       }),
-    ).toBe('Every month');
+    ).toBe('Monthly');
+    expect(
+      getUserFacingRecurringText(
+        {
+          amount: 1,
+          unit: MONTH,
+        },
+        new Date('2020-12-08T09:00:00+00:00').getTime(),
+      ),
+    ).toBe('Monthly on the 8th');
   });
 
   it('returns days of the week', () => {
@@ -69,7 +78,7 @@ describe('getUserFacingRecurringText', () => {
           [WEDNESDAY]: true,
         },
       }),
-    ).toBe('Every Monday, Tuesday and Wednesday every 2 weeks');
+    ).toBe('Monday, Tuesday and Wednesday every 2 weeks');
     expect(
       getUserFacingRecurringText({
         amount: 2,
@@ -98,5 +107,20 @@ describe('getUserFacingRecurringText', () => {
         },
       }),
     ).toBe('Every day');
+    expect(
+      getUserFacingRecurringText({
+        amount: 1,
+        unit: WEEK,
+        activeWeekdays: {
+          [MONDAY]: false,
+          [TUESDAY]: false,
+          [WEDNESDAY]: false,
+          [THURSDAY]: false,
+          [FRIDAY]: false,
+          [SATURDAY]: true,
+          [SUNDAY]: false,
+        },
+      }),
+    ).toBe('Every Saturday');
   });
 });

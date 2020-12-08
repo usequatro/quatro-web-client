@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
@@ -7,8 +7,6 @@ import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
 
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Typography from '@material-ui/core/Typography';
 import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
@@ -28,7 +26,6 @@ import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
 import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
-import CloseIcon from '@material-ui/icons/Close';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
@@ -68,11 +65,13 @@ import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
-import RecurringConfigDialog from '../tasks/RecurringConfigDialog';
+import RecurringConfigMenu from '../tasks/RecurringConfigMenu';
+import RecurringCustomDialog from '../tasks/RecurringCustomDialog';
 import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
 import SliderField from '../../ui/SliderField';
+import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
 import {
@@ -111,6 +110,7 @@ const useStyles = makeStyles((theme) => ({
   },
   dateButton: {
     justifyContent: 'flex-start',
+    textAlign: 'left',
   },
   submitLoader: {
     color: theme.palette.common.white,
@@ -184,9 +184,13 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
-  const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [recurringCustomDialogOpen, setRecurringCustomDialogOpen] = useState(false);
+
+  const repeatActionButtonRef = useRef();
+  const repeatSettingRef = useRef();
+  const [recurringMenuAnchorEl, setRecurringMenuAnchorEl] = useState(undefined);
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -263,11 +267,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       });
   };
 
-  const handleRepeatConfigChange = (config) => {
-    dispatch(setRecurringConfig(config));
-    setShowRecurringDialog(false);
-  };
-
   const modalTitle = newTaskDialogOpen ? 'New Task' : 'Edit Task';
   const ctaText = newTaskDialogOpen ? 'Create' : 'Save';
 
@@ -292,19 +291,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitle
-        disableTypography
-        className={classes.dialogTitle}
-        color="transparent"
-        elevation={0}
-      >
-        <Typography variant="h6" component="h2" className={classes.dialogTitleTypography}>
-          {modalTitle}
-        </Typography>
-        <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <DialogTitleWithClose onClose={onClose}>{modalTitle}</DialogTitleWithClose>
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content">
         <Box pt={0} pb={2} px={3} display="flex" alignItems="flex-end">
@@ -408,12 +395,13 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             )}
             {recurringConfig && (
               <Button
-                onClick={() => setShowRecurringDialog(true)}
+                ref={repeatSettingRef}
+                onClick={() => setRecurringMenuAnchorEl(repeatSettingRef.current)}
                 startIcon={<ReplayRoundedIcon />}
                 className={classes.dateButton}
               >
                 {'Repeat: '}
-                {getUserFacingRecurringText(recurringConfig)}
+                {getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp)}
               </Button>
             )}
           </Box>
@@ -471,7 +459,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               label="Repeat"
               disabled={!scheduledStartTimestamp}
               icon={<ReplayRoundedIcon />}
-              onClick={() => setShowRecurringDialog(!showRecurringDialog)}
+              ref={repeatActionButtonRef}
+              onClick={() => setRecurringMenuAnchorEl(repeatActionButtonRef.current)}
             />
           </RepeatButtonDisabledTooltip>
           <LabeledIconButton
@@ -573,12 +562,26 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         hiddenTasks={editTaskDialogId ? [editTaskDialogId] : []}
       />
 
-      <RecurringConfigDialog
-        open={showRecurringDialog}
-        onClose={() => setShowRecurringDialog(false)}
-        onRepeatConfigChange={(config) => handleRepeatConfigChange(config)}
-        referenceDate={scheduledStartTimestamp}
-      />
+      {scheduledStartTimestamp && (
+        <RecurringConfigMenu
+          anchorEl={recurringMenuAnchorEl}
+          onClose={() => setRecurringMenuAnchorEl(undefined)}
+          onRepeatConfigChange={(config) => dispatch(setRecurringConfig(config))}
+          onCustomConfigSelected={() => setRecurringCustomDialogOpen(true)}
+          referenceDate={scheduledStartTimestamp}
+          currentRecurringConfig={recurringConfig}
+        />
+      )}
+
+      {scheduledStartTimestamp && (
+        <RecurringCustomDialog
+          open={recurringCustomDialogOpen}
+          initialRecurringConfig={recurringConfig}
+          onClose={() => setRecurringCustomDialogOpen(false)}
+          onDone={(config) => dispatch(setRecurringConfig(config))}
+          referenceDate={scheduledStartTimestamp}
+        />
+      )}
     </Box>
   );
 };
