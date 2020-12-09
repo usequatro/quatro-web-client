@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
@@ -34,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
   container: {
     height: '100vh',
   },
+
   root: {
     flexGrow: 1,
     width: '100%',
@@ -58,6 +58,7 @@ const TabStyle = withStyles((theme) => ({
       fontWeight: theme.typography.fontWeightMedium,
     },
   },
+
   selected: {},
 }))((props) => <Tab {...props} />);
 
@@ -97,6 +98,12 @@ const MobileTabs = ({ renderTask, activeTab }) => {
 MobileTabs.propTypes = {
   renderTask: PropTypes.func.isRequired,
   activeTab: PropTypes.string.isRequired,
+};
+
+TabPanel.propTypes = {
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 export default MobileTabs;

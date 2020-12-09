@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Resizable } from 're-resizable';
+// import { Resizable } from 're-resizable';
 
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+// import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
+// import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import Box from '@material-ui/core/Box';
 import cond from 'lodash/cond';
 import { makeStyles } from '@material-ui/core/styles';
@@ -15,10 +15,10 @@ import { selectGoogleIsFetching, selectGoogleSignInStatus } from '../../modules/
 import GoogleSignIn from './GoogleSignIn';
 import GoogleCalendarTaskList from './GoogleCalendarTaskList';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     flexGrow: 1,
-    paddingTop: 100,
+    paddingTop: '6em',
     display: 'flex',
     alignItems: 'center',
     alignContent: 'center',
@@ -27,6 +27,9 @@ const useStyles = makeStyles(() => ({
     backgroundColor: '#ffffff',
     flexDirection: 'column',
     height: '100vh',
+    [theme.breakpoints.down('sm')]: {
+      paddingTop: '2em',
+    },
   },
   directions: {
     position: 'absolute',
