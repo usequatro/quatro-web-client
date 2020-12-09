@@ -25,6 +25,19 @@ const muiTheme = createMuiTheme({
       textTransform: 'inherit',
     },
   },
+  overrides: {
+    MuiCssBaseline: {
+      '@global': {
+        '*': {
+          'scrollbar-width': 'thin',
+        },
+        '*::-webkit-scrollbar': {
+          width: '4px',
+          height: '4px',
+        },
+      },
+    },
+  },
 });
 
 // const breakpointMd = muiTheme.breakpoints.up('md');
