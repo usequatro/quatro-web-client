@@ -119,7 +119,6 @@ const RenderItem = ({ googleCalendar }) => {
   const setLabelName = () => {
     if (!isConnected) {
       setName('');
-
       setRequired('Required');
     }
   };
