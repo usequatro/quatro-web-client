@@ -6,6 +6,25 @@ import { Paper, Box, Tab, Tabs } from '@material-ui/core';
 
 import GoogleCalendar from '../gCalendar/GoogleCalendar';
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    height: '100vh',
+  },
+
+  root: {
+    flexGrow: 1,
+    width: '100%',
+  },
+
+  indicator: {
+    backgroundColor: theme.palette.background.default,
+  },
+
+  tabsContainer: {
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+  },
+}));
+
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
 
@@ -28,25 +47,6 @@ const idProps = (index) => {
     'aria-controls': `scrollable-auto-tabpanel-${index}`,
   };
 };
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    height: '100vh',
-  },
-
-  root: {
-    flexGrow: 1,
-    width: '100%',
-  },
-
-  indicator: {
-    backgroundColor: theme.palette.background.default,
-  },
-
-  tabsContainer: {
-    borderBottom: `solid 1px ${theme.palette.divider}`,
-  },
-}));
 
 const TabStyle = withStyles((theme) => ({
   root: {

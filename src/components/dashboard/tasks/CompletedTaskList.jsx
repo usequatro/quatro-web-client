@@ -3,8 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import get from 'lodash/get';
 import cond from 'lodash/cond';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Hidden from '@material-ui/core/Hidden';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -157,12 +155,6 @@ const CompletedTaskList = () => {
           ),
         ],
       ])()}
-
-      {/* spacing for the mobile bottom toolbar */}
-      <Hidden smUp>
-        <Toolbar />
-        <Toolbar />
-      </Hidden>
     </Box>
   );
 };
