@@ -12,7 +12,7 @@ import TextField from '@material-ui/core/TextField';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { connectCalendar, disconnectCalendar } from '../../utils/apiClient';
+import { connectCalendar, disconnectCalendar, saveCalendar } from '../../utils/apiClient';
 import { colors, useCheckboxStyles } from './sharedStyles';
 import ConnectButton from './ConnectButton';
 
@@ -109,6 +109,17 @@ const RenderItem = ({ googleCalendar }) => {
     dispatch(getEventsFromCalendars([calendarObject]));
   };
 
+  const saveGoogleCalendar = () => {
+    const calendarObject = {
+      calendarId: googleCalendar.id,
+      name,
+      color,
+      userId,
+    };
+    saveCalendar(calendarObject);
+    dispatch(getEventsFromCalendars([calendarObject]));
+  }
+
   const disconnectGoogleCalendar = () => {
     disconnectCalendar(calendarId, userId);
     setName('');
@@ -133,6 +144,11 @@ const RenderItem = ({ googleCalendar }) => {
     }
   };
 
+  const toggleEdit = () => {
+    setIsDisabled(!isDisabled);
+    saveGoogleCalendar();
+  }
+
   const toggleCalendar = () => {
     setGoogleCalendar(calendarId);
   };
@@ -142,12 +158,12 @@ const RenderItem = ({ googleCalendar }) => {
   }, [checkIfConnected, googleConnectedCalendars]);
 
   useEffect(() => {
-    if (name.length > 0 && color.length > 0) {
+    if (isConnected) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
     }
-  }, [name, color]);
+  }, [isConnected]);
 
   return (
     <form>
@@ -163,7 +179,7 @@ const RenderItem = ({ googleCalendar }) => {
             InputLabelProps={{
               style: { color: '#7187B5' },
             }}
-            disabled={isConnected}
+            disabled={!isDisabled}
             value={name}
             onClick={setLabelName}
             onChange={(e) => {
@@ -183,6 +199,7 @@ const RenderItem = ({ googleCalendar }) => {
                   key={key}
                   value={colors[key]}
                   checked={color === key}
+                  disabled={!isDisabled}
                   onClick={() => setColor(key)}
                   control={
                     <Radio
@@ -196,13 +213,22 @@ const RenderItem = ({ googleCalendar }) => {
               );
             })}
           </RadioGroup>
-          <ConnectCalendarButton
-            onClick={() => toggleCalendar()}
-            variant="outlined"
-            disabled={isDisabled && !isConnected}
-          >
-            {!isConnected ? 'Connect' : 'Disconnect'}
-          </ConnectCalendarButton>
+          <Box>
+            {isConnected && (
+              <ConnectCalendarButton
+                onClick={() => toggleEdit()}
+                variant="outlined"
+              >
+                {!isDisabled ? 'Edit' : 'Save'}
+              </ConnectCalendarButton>)}
+            <ConnectCalendarButton
+              onClick={() => toggleCalendar()}
+              variant="outlined"
+              disabled={isDisabled && !isConnected}
+            >
+              {!isConnected ? 'Connect' : 'Disconnect'}
+            </ConnectCalendarButton>
+          </Box>
         </Box>
       </ListItem>
     </form>

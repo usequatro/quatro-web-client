@@ -212,3 +212,15 @@ export const fetchConnectedCalendars = async (userId) => {
     .then((res) => {return res});
   return results;
 }
+export const saveCalendar = async (calendarObject) => {
+  const documentId = await getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', calendarObject.userId)
+    .where('calendarId', '==', calendarObject.calendarId)
+    .limit(1)
+    .get()
+    .then((querySnapshot) => querySnapshot.size > 0 ? querySnapshot.docs[0].id : null);
+  if (documentId) {
+    await getFirestore().collection(CALENDARS).doc(documentId).set(calendarObject);
+  };
+}
