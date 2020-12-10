@@ -70,6 +70,9 @@ export const useStyles = makeStyles((theme) => ({
     color: '#FFFFFF',
     height: 'auto',
   },
+  eventHasPassed: {
+    opacity: '0.6',
+  },
 }));
 
 export const colors = {
