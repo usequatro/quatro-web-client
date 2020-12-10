@@ -41,6 +41,15 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: 'right',
     paddingRight: 10,
   },
+  currentTime: {
+    zIndex: 999999,
+    position: 'relative',
+    minHeight: '2px',
+    width: '100%',
+    marginLeft: '30%',
+    backgroundColor: 'tomato',
+    borderRadius: 5,
+  },
   eventsContainer: {
     position: 'relative',
     width: '100%',
@@ -71,7 +80,7 @@ export const useStyles = makeStyles((theme) => ({
     height: 'auto',
   },
   eventHasPassed: {
-    opacity: '0.6',
+    opacity: '0.4',
   },
 }));
 
