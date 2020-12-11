@@ -1,9 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-// import { Resizable } from 're-resizable';
 
-// import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-// import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import Box from '@material-ui/core/Box';
 import cond from 'lodash/cond';
 import { makeStyles } from '@material-ui/core/styles';
@@ -44,15 +41,6 @@ const GoogleCalendar = () => {
   const fetching = useSelector(selectGoogleIsFetching);
   const googleSignInStatus = useSelector(selectGoogleSignInStatus);
 
-  // const ArrowIcons = () => {
-  //   return (
-  //     <Box className={classes.directions}>
-  //       <ArrowLeftIcon color='action' />
-  //       <ArrowRightIcon color='action' />
-  //     </Box>
-  //   )
-  // };
-
   return (
     <Box>
       {cond([
@@ -61,18 +49,9 @@ const GoogleCalendar = () => {
         [
           () => !fetching && googleSignInStatus,
           () => (
-            // <Resizable
-            //   defaultSize={{ width: '40%', height: 'auto' }}
-            //   minWidth='25%'
-            //   maxWidth='100%'
-            //   bounds='window'
-            //   enable={{ left: false, right: true }}
-            // >
             <Box className={classes.container}>
-              {/* <ArrowIcons /> */}
               <GoogleCalendarTaskList />
             </Box>
-            // </Resizable>
           ),
         ],
         [() => !fetching && !googleSignInStatus, () => <GoogleSignIn />],

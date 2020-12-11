@@ -42,7 +42,7 @@ export const useStyles = makeStyles((theme) => ({
     paddingRight: 10,
   },
   currentTime: {
-    zIndex: 999999,
+    zIndex: theme.zIndex.drawer - 2,
     position: 'relative',
     minHeight: '2px',
     width: '88%',
