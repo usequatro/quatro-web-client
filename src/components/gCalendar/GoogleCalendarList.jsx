@@ -28,7 +28,6 @@ import {
 const useStyles = makeStyles((theme) => ({
   container: {
     flexGrow: 1,
-    padding: '1vh 3vw',
     width: '100%',
   },
 
@@ -45,13 +44,22 @@ const useStyles = makeStyles((theme) => ({
   checkBoxContainer: {
     flexDirection: 'row',
     width: '100%',
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column',
+    },
+  },
+
+  checkBox: {
+    flexDirection: 'row',
+    [theme.breakpoints.down('xs')]: {
+      marginBottom: '20px',
+    },
   },
 
   contentItemContainer: {
     flexDirection: 'row',
     width: '100%',
     borderBottom: `solid 1px ${theme.palette.divider}`,
-    margin: '0.9em 0',
   },
 
   listItemLabel: {
@@ -59,12 +67,21 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '0.70em',
     margin: '0.9em 0',
   },
+
+  calendarButton: {
+    margin: '0.9em',
+    [theme.breakpoints.down('xs')]: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
+  },
 }));
 
 const ConnectCalendarButton = withStyles((theme) => ({
   root: {
     color: theme.palette.common.dark,
     borderRadius: '2em',
+    margin: '0.9em 0.9em 0 0',
   },
 }))(Button);
 
@@ -118,7 +135,7 @@ const RenderItem = ({ googleCalendar }) => {
     };
     saveCalendar(calendarObject);
     dispatch(getEventsFromCalendars([calendarObject]));
-  }
+  };
 
   const disconnectGoogleCalendar = () => {
     disconnectCalendar(calendarId, userId);
@@ -147,7 +164,7 @@ const RenderItem = ({ googleCalendar }) => {
   const toggleEdit = () => {
     setIsDisabled(!isDisabled);
     saveGoogleCalendar();
-  }
+  };
 
   const toggleCalendar = () => {
     setGoogleCalendar(calendarId);
@@ -192,7 +209,7 @@ const RenderItem = ({ googleCalendar }) => {
           />
         </Box>
         <Box className={classes.checkBoxContainer} display="flex" justifyContent="space-between">
-          <RadioGroup style={{ flexDirection: 'row' }}>
+          <RadioGroup className={classes.checkBox}>
             {Object.keys(colors).map((key) => {
               return (
                 <FormControlLabel
@@ -215,12 +232,10 @@ const RenderItem = ({ googleCalendar }) => {
           </RadioGroup>
           <Box>
             {isConnected && (
-              <ConnectCalendarButton
-                onClick={() => toggleEdit()}
-                variant="outlined"
-              >
+              <ConnectCalendarButton onClick={() => toggleEdit()} variant="outlined">
                 {!isDisabled ? 'Edit' : 'Save'}
-              </ConnectCalendarButton>)}
+              </ConnectCalendarButton>
+            )}
             <ConnectCalendarButton
               onClick={() => toggleCalendar()}
               variant="outlined"
@@ -253,9 +268,11 @@ const GoogleCalendarList = () => {
           })}
       </List>
       {googleCalendars && googleCalendars.length > 0 && (
-        <ConnectButton onClick={() => logOutGoogle()} variant="contained">
-          Log Out from Google Calendar
-        </ConnectButton>
+        <Box className={classes.calendarButton}>
+          <ConnectButton onClick={() => logOutGoogle()} variant="contained">
+            Disconnect Google Calendar
+          </ConnectButton>
+        </Box>
       )}
     </Box>
   );

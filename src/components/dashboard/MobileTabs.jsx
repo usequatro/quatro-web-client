@@ -5,6 +5,7 @@ import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { Paper, Box, Tab, Tabs } from '@material-ui/core';
 
 import GoogleCalendar from '../gCalendar/GoogleCalendar';
+import * as dashboardTabs from '../../constants/dashboardTabs';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -70,29 +71,32 @@ const MobileTabs = ({ renderTask, activeTab }) => {
     setValue(newValue);
   };
 
-  return (
-    <Paper className={classes.container}>
-      <Tabs
-        className={classes.tabsContainer}
-        variant="fullWidth"
-        value={value}
-        onChange={handleChange}
-        aria-label="tabs"
-        classes={{
-          indicator: classes.indicator,
-        }}
-      >
-        <TabStyle label={activeTab} {...idProps(0)} />
-        <TabStyle label="Calendar" {...idProps(1)} />
-      </Tabs>
-      <TabPanel value={value} index={0}>
-        {renderTask()}
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <GoogleCalendar />
-      </TabPanel>
-    </Paper>
-  );
+  if (activeTab === dashboardTabs.NOW) {
+    return (
+      <Paper className={classes.container}>
+        <Tabs
+          className={classes.tabsContainer}
+          variant="fullWidth"
+          value={value}
+          onChange={handleChange}
+          aria-label="tabs"
+          classes={{
+            indicator: classes.indicator,
+          }}
+        >
+          <TabStyle label={activeTab} {...idProps(0)} />
+          <TabStyle label="Calendar" {...idProps(1)} />
+        </Tabs>
+        <TabPanel value={value} index={0}>
+          {renderTask()}
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          <GoogleCalendar />
+        </TabPanel>
+      </Paper>
+    );
+  }
+  return <Paper className={classes.container}>{renderTask()}</Paper>;
 };
 
 MobileTabs.propTypes = {

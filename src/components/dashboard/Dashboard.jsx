@@ -145,7 +145,7 @@ const Dashboard = () => {
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
-        {activeTab !== dashboardTabs.NOW && !isMobile && <Toolbar />}
+        {activeTab !== dashboardTabs.NOW && <Toolbar />}
 
         <Toolbar />
 
