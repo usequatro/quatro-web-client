@@ -41,6 +41,15 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: 'right',
     paddingRight: 10,
   },
+  currentTime: {
+    zIndex: theme.zIndex.drawer - 2,
+    position: 'relative',
+    minHeight: '2px',
+    width: '88%',
+    alignSelf: 'flex-end',
+    backgroundColor: 'tomato',
+    borderRadius: 5,
+  },
   eventsContainer: {
     position: 'relative',
     width: '100%',
@@ -69,6 +78,9 @@ export const useStyles = makeStyles((theme) => ({
     border: `solid 0px ${theme.palette.divider}`,
     color: '#FFFFFF',
     height: 'auto',
+  },
+  eventHasPassed: {
+    opacity: '0.4',
   },
 }));
 

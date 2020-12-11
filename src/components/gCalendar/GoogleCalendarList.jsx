@@ -12,13 +12,11 @@ import TextField from '@material-ui/core/TextField';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { connectCalendar, disconnectCalendar } from '../../utils/apiClient';
+import { connectCalendar, disconnectCalendar, saveCalendar } from '../../utils/apiClient';
 import { colors, useCheckboxStyles } from './sharedStyles';
 import ConnectButton from './ConnectButton';
 
-import {
-  selectUserId,
-} from '../../modules/session';
+import { selectUserId } from '../../modules/session';
 
 import {
   selectGoogleAPIClient,
@@ -30,43 +28,64 @@ import {
 const useStyles = makeStyles((theme) => ({
   container: {
     flexGrow: 1,
-    padding: '1vh 3vw',
     width: '100%',
   },
+
   listItem: {
     width: '100%',
     paddingTop: 30,
     paddingBottom: 30,
-    marginBottom:20,
+    marginBottom: 20,
     border: 'solid 1px rgba(0, 0, 0, 0.03)',
     flexDirection: 'column',
     borderRadius: '1em',
   },
+
   checkBoxContainer: {
     flexDirection: 'row',
     width: '100%',
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column',
+    },
   },
+
+  checkBox: {
+    flexDirection: 'row',
+    [theme.breakpoints.down('xs')]: {
+      marginBottom: '20px',
+    },
+  },
+
   contentItemContainer: {
     flexDirection: 'row',
     width: '100%',
     borderBottom: `solid 1px ${theme.palette.divider}`,
-    margin: '0.9em 0'
   },
+
   listItemLabel: {
     color: 'rgba(0, 0, 0, 0.5)',
-    fontSize: '0.95em',
-    margin: '0.9em 0'
+    fontSize: '0.70em',
+    margin: '0.9em 0',
+  },
+
+  calendarButton: {
+    margin: '0.9em',
+    [theme.breakpoints.down('xs')]: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
   },
 }));
 
 const ConnectCalendarButton = withStyles((theme) => ({
   root: {
-    color: theme.palette.common.dark, 
+    color: theme.palette.common.dark,
     borderRadius: '2em',
+    margin: '0.9em 0.9em 0 0',
   },
 }))(Button);
 
-const RenderItem = ({googleCalendar}) => {
+const RenderItem = ({ googleCalendar }) => {
   const classes = useStyles();
   const checkboxClasses = useCheckboxStyles();
   const userId = useSelector(selectUserId);
@@ -76,121 +95,156 @@ const RenderItem = ({googleCalendar}) => {
 
   const [isDisabled, setIsDisabled] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
-  const [name, setName] = useState('');
+  const [name, setName] = useState('Calendar Name...');
   const [color, setColor] = useState('');
-  
-  const checkIfConnected = useCallback(
-    () => {
-      const calendars = googleConnectedCalendars.map(cc => {return cc[1]})
-      const connected = calendars.filter(c => c.calendarId === calendarId)[0];
-      if (connected) {
-        setIsConnected(true);
-        setName(connected.name)
-        setColor(connected.color)
-      }
-    },
-    [googleConnectedCalendars, calendarId],
-  );
+  const [required, setRequired] = useState('');
+
+  const checkIfConnected = useCallback(() => {
+    const calendars = googleConnectedCalendars.map((cc) => {
+      return cc[1];
+    });
+
+    const connected = calendars.filter((c) => c.calendarId === calendarId)[0];
+
+    if (connected) {
+      setIsConnected(true);
+      setName(connected.name);
+      setColor(connected.color);
+      setRequired('');
+    }
+  }, [googleConnectedCalendars, calendarId]);
 
   const connectGoogleCalendar = () => {
     const calendarObject = {
       calendarId: googleCalendar.id,
       name,
       color,
-      userId
-    }
+      userId,
+    };
     connectCalendar(calendarObject);
     setIsConnected(true);
-    dispatch(getEventsFromCalendars([calendarObject]))
-  }
+    dispatch(getEventsFromCalendars([calendarObject]));
+  };
+
+  const saveGoogleCalendar = () => {
+    const calendarObject = {
+      calendarId: googleCalendar.id,
+      name,
+      color,
+      userId,
+    };
+    saveCalendar(calendarObject);
+    dispatch(getEventsFromCalendars([calendarObject]));
+  };
 
   const disconnectGoogleCalendar = () => {
     disconnectCalendar(calendarId, userId);
     setName('');
     setColor('');
     setIsConnected(false);
-  }
+  };
+
+  const setLabelName = () => {
+    if (!isConnected) {
+      setName('');
+      setRequired('Required');
+    }
+  };
 
   const setGoogleCalendar = () => {
     if (isConnected) {
-      disconnectGoogleCalendar()
+      disconnectGoogleCalendar();
+      setName('Calendar Name...');
     } else {
-      connectGoogleCalendar()
+      connectGoogleCalendar();
+      setRequired('');
     }
-  }
+  };
+
+  const toggleEdit = () => {
+    setIsDisabled(!isDisabled);
+    saveGoogleCalendar();
+  };
 
   const toggleCalendar = () => {
     setGoogleCalendar(calendarId);
   };
 
   useEffect(() => {
-    setColor('263573');
-  }, []);
-
-  useEffect(() => {
     checkIfConnected();
-  }, [checkIfConnected, googleConnectedCalendars])
+  }, [checkIfConnected, googleConnectedCalendars]);
 
   useEffect(() => {
-    if (name.length > 0 && color.length > 0) {
+    if (isConnected) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
     }
-  }, [name, color])
+  }, [isConnected]);
 
   return (
     <form>
-      <ListItem
-        className={classes.listItem}
-      >
-      <Box className={classes.contentItemContainer}>
-        <ListItemText
-          classes={{
-            primary: classes.listItemLabel, 
-          }}
-          primary={googleCalendar.summary}
-        />
-        <TextField
-          InputLabelProps={{
-            style: { color: '#7187B5'},
-          }}
-          disabled={isConnected}
-          value={name}
-          onChange={e => setName(e.target.value)}
-          InputProps={{ disableUnderline: true,  }}
-          id="standard-basic"
-          label="Quatro Name..."
-        />
-      </Box>
-      <Box className={classes.checkBoxContainer} display='flex' justifyContent='space-between'>
-        <RadioGroup style={{flexDirection: 'row'}}>
-        {
-          Object.keys(colors).map(key => {
-            return (
-              <FormControlLabel
-                key={key}
-                value={colors[key]}
-                checked={color === key}
-                onClick={() => setColor(key)}
-                control={
-                  <Radio classes={{root: checkboxClasses[key],
-                    checked: checkboxClasses[`checked${key}`]}}
-                  />
-                }
-              />
-            )
-          })
-        }
-        </RadioGroup>
-        <ConnectCalendarButton
-          onClick={() => toggleCalendar()}
-          variant="outlined"
-          disabled={isDisabled && !isConnected}
-        >
-          {!isConnected ? 'Connect' : 'Disconnect'}
-        </ConnectCalendarButton>
-      </Box>
+      <ListItem className={classes.listItem}>
+        <Box className={classes.contentItemContainer}>
+          <ListItemText
+            classes={{
+              primary: classes.listItemLabel,
+            }}
+            primary={googleCalendar.summary}
+          />
+          <TextField
+            InputLabelProps={{
+              style: { color: '#7187B5' },
+            }}
+            disabled={!isDisabled}
+            value={name}
+            onClick={setLabelName}
+            onChange={(e) => {
+              setName(e.target.value);
+              setRequired('');
+            }}
+            InputProps={{ disableUnderline: true }}
+            id="standard-required"
+            label={required}
+          />
+        </Box>
+        <Box className={classes.checkBoxContainer} display="flex" justifyContent="space-between">
+          <RadioGroup className={classes.checkBox}>
+            {Object.keys(colors).map((key) => {
+              return (
+                <FormControlLabel
+                  key={key}
+                  value={colors[key]}
+                  checked={color === key}
+                  disabled={!isDisabled}
+                  onClick={() => setColor(key)}
+                  control={
+                    <Radio
+                      classes={{
+                        root: checkboxClasses[key],
+                        checked: checkboxClasses[`checked${key}`],
+                      }}
+                    />
+                  }
+                />
+              );
+            })}
+          </RadioGroup>
+          <Box>
+            {isConnected && (
+              <ConnectCalendarButton onClick={() => toggleEdit()} variant="outlined">
+                {!isDisabled ? 'Edit' : 'Save'}
+              </ConnectCalendarButton>
+            )}
+            <ConnectCalendarButton
+              onClick={() => toggleCalendar()}
+              variant="outlined"
+              disabled={isDisabled && !isConnected}
+            >
+              {!isConnected ? 'Connect' : 'Disconnect'}
+            </ConnectCalendarButton>
+          </Box>
+        </Box>
       </ListItem>
     </form>
   );
@@ -208,24 +262,23 @@ const GoogleCalendarList = () => {
   return (
     <Box className={classes.container}>
       <List>
-        {googleCalendars && googleCalendars.map(gc => {
-          return (
-            <RenderItem 
-              googleCalendar={gc}
-              key={gc.etag} 
-            />)
-        })}
+        {googleCalendars &&
+          googleCalendars.map((gc) => {
+            return <RenderItem googleCalendar={gc} key={gc.etag} />;
+          })}
       </List>
-      { googleCalendars && googleCalendars.length > 0 && (
-        <ConnectButton onClick={() => logOutGoogle()} variant="contained">Log Out from Google Calendar</ConnectButton>
+      {googleCalendars && googleCalendars.length > 0 && (
+        <Box className={classes.calendarButton}>
+          <ConnectButton onClick={() => logOutGoogle()} variant="contained">
+            Disconnect Google Calendar
+          </ConnectButton>
+        </Box>
       )}
-      
     </Box>
-  )
+  );
 };
 
 export default GoogleCalendarList;
-
 
 RenderItem.propTypes = {
   googleCalendar: PropTypes.oneOfType([PropTypes.object]),

@@ -16,7 +16,6 @@
     "mixpanel-browser": "^2.39.0",
     "moment": "^2.29.1",
     "prop-types": "^15.7.2",
-    "re-resizable": "^6.9.0",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-div-100vh": "^0.3.8",

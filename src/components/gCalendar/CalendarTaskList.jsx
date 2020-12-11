@@ -5,8 +5,9 @@ import Box from '@material-ui/core/Box';
 import { useStyles } from './sharedStyles';
 import Ticks from './Ticks';
 import Events from './Events';
+import CurrentTime from './CurrentTime';
 
-const CalendarTaskList = ({hours, events}) => {
+const CalendarTaskList = ({ hours, events }) => {
   const classes = useStyles();
 
   return (
@@ -15,12 +16,14 @@ const CalendarTaskList = ({hours, events}) => {
       <Box className={classes.eventsContainer}>
         <Events events={events} />
       </Box>
+      <CurrentTime />
     </>
   );
 };
 
 CalendarTaskList.propTypes = {
   hours: PropTypes.arrayOf(PropTypes.string).isRequired,
-  events: PropTypes.arrayOf(PropTypes.object).isRequired
-}
+  events: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
 export default CalendarTaskList;

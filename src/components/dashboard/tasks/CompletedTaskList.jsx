@@ -6,8 +6,6 @@ import isToday from 'date-fns/isToday';
 import isYesterday from 'date-fns/isYesterday';
 import isThisWeek from 'date-fns/isThisWeek';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Hidden from '@material-ui/core/Hidden';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -208,12 +206,6 @@ const CompletedTaskList = () => {
           ),
         ],
       ])()}
-
-      {/* spacing for the mobile bottom toolbar */}
-      <Hidden smUp>
-        <Toolbar />
-        <Toolbar />
-      </Hidden>
     </Box>
   );
 };

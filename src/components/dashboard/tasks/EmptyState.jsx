@@ -33,20 +33,24 @@ const emptyStateCopy = {
   ],
   [dashboardTabs.GOOGLE_CALENDAR]: [
     'Connect to your Google Calendar account,',
-    'and sync your Quatro tasks.'],
+    'and sync your Quatro tasks.',
+  ],
   [dashboardTabs.GOOGLE_CALENDAR_TASK_LIST]: [
     'You haven`t connected any calendar.',
-    'Please connect a Google Calendar.'],
+    'Please connect a Google Calendar.',
+  ],
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   emptyStateContainer: {
-    flexGrow: 1,
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    [theme.breakpoints.up('sm')]: {
+      flexGrow: 1,
+    },
   },
   emptyStateContent: {
     width: '25rem',
@@ -54,10 +58,13 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    [theme.breakpoints.down('sm')]: {
+      margin: '8vh 0',
+    },
   },
   emptyStateImage: {
-    width: '80%',
-    objectFit: 'scale-down'
+    width: '60%',
+    objectFit: 'scale-down',
   },
 }));
 

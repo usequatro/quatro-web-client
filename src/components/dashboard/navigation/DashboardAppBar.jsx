@@ -221,7 +221,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      {tab !== tabs.NOW && !isMobile && (
+      {tab !== tabs.NOW && (
         <AppBar
           position="fixed"
           color="inherit"

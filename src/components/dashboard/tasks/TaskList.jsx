@@ -127,7 +127,7 @@ const TaskList = forwardRef((_, ref) => {
 
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
-      {tab === dashboardTabs.NOW && !isMobile && (
+      {tab === !dashboardTabs.NOW && !isMobile && (
         <Box className={classes.titleContainer} component="div">
           <Icon className={classes.sectionTitleIcon} />
           <Typography variant="h5" component="h2">
