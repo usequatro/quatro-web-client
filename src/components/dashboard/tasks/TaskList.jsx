@@ -1,5 +1,5 @@
 import React, { forwardRef, Fragment } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
@@ -105,7 +105,6 @@ const useStyles = makeStyles((theme) => ({
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
   const isMobile = MobileView();
 
   const tab = useSelector(selectDashboardActiveTab);
