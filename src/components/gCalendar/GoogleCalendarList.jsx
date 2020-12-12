@@ -93,11 +93,9 @@ const RenderItem = ({ googleCalendar }) => {
   const dispatch = useDispatch();
   const googleConnectedCalendars = useSelector(selectGoogleConnectedCalendars);
 
-  const [isDisabled, setIsDisabled] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
-  const [name, setName] = useState('Calendar Name...');
+  const [name, setName] = useState('');
   const [color, setColor] = useState('');
-  const [required, setRequired] = useState('');
 
   const checkIfConnected = useCallback(() => {
     const calendars = googleConnectedCalendars.map((cc) => {
@@ -110,7 +108,6 @@ const RenderItem = ({ googleCalendar }) => {
       setIsConnected(true);
       setName(connected.name);
       setColor(connected.color);
-      setRequired('');
     }
   }, [googleConnectedCalendars, calendarId]);
 
@@ -147,22 +144,19 @@ const RenderItem = ({ googleCalendar }) => {
   const setLabelName = () => {
     if (!isConnected) {
       setName('');
-      setRequired('Required');
     }
   };
 
   const setGoogleCalendar = () => {
     if (isConnected) {
       disconnectGoogleCalendar();
-      setName('Calendar Name...');
+      setName('');
     } else {
       connectGoogleCalendar();
-      setRequired('');
     }
   };
 
   const toggleEdit = () => {
-    setIsDisabled(!isDisabled);
     saveGoogleCalendar();
   };
 
@@ -173,14 +167,6 @@ const RenderItem = ({ googleCalendar }) => {
   useEffect(() => {
     checkIfConnected();
   }, [checkIfConnected, googleConnectedCalendars]);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsDisabled(false);
-    } else {
-      setIsDisabled(true);
-    }
-  }, [isConnected]);
 
   return (
     <form>
@@ -196,16 +182,16 @@ const RenderItem = ({ googleCalendar }) => {
             InputLabelProps={{
               style: { color: '#7187B5' },
             }}
-            disabled={!isDisabled}
             value={name}
             onClick={setLabelName}
             onChange={(e) => {
               setName(e.target.value);
-              setRequired('');
             }}
+            required
             InputProps={{ disableUnderline: true }}
             id="standard-required"
-            label={required}
+            placeholder="Calendar name"
+            aria-label="Calendar name"
           />
         </Box>
         <Box className={classes.checkBoxContainer} display="flex" justifyContent="space-between">
@@ -216,7 +202,6 @@ const RenderItem = ({ googleCalendar }) => {
                   key={key}
                   value={colors[key]}
                   checked={color === key}
-                  disabled={!isDisabled}
                   onClick={() => setColor(key)}
                   control={
                     <Radio
@@ -232,14 +217,18 @@ const RenderItem = ({ googleCalendar }) => {
           </RadioGroup>
           <Box>
             {isConnected && (
-              <ConnectCalendarButton onClick={() => toggleEdit()} variant="outlined">
-                {!isDisabled ? 'Edit' : 'Save'}
+              <ConnectCalendarButton
+                onClick={() => toggleEdit()}
+                variant="outlined"
+                disabled={name === ''}
+              >
+                Save
               </ConnectCalendarButton>
             )}
             <ConnectCalendarButton
               onClick={() => toggleCalendar()}
               variant="outlined"
-              disabled={isDisabled && !isConnected}
+              disabled={!isConnected && name === ''}
             >
               {!isConnected ? 'Connect' : 'Disconnect'}
             </ConnectCalendarButton>
