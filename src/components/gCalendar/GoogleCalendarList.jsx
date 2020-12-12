@@ -22,7 +22,8 @@ import {
   selectGoogleAPIClient,
   selectGoogleCalendars,
   selectGoogleConnectedCalendars,
-  getEventsFromCalendars,
+  loadConnectedUserCalendars,
+  loadEventsFromCalendars,
 } from '../../modules/googleCalendar';
 
 const useStyles = makeStyles((theme) => ({
@@ -93,11 +94,9 @@ const RenderItem = ({ googleCalendar }) => {
   const dispatch = useDispatch();
   const googleConnectedCalendars = useSelector(selectGoogleConnectedCalendars);
 
-  const [isDisabled, setIsDisabled] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
-  const [name, setName] = useState('Calendar Name...');
+  const [name, setName] = useState('');
   const [color, setColor] = useState('');
-  const [required, setRequired] = useState('');
 
   const checkIfConnected = useCallback(() => {
     const calendars = googleConnectedCalendars.map((cc) => {
@@ -110,77 +109,56 @@ const RenderItem = ({ googleCalendar }) => {
       setIsConnected(true);
       setName(connected.name);
       setColor(connected.color);
-      setRequired('');
     }
   }, [googleConnectedCalendars, calendarId]);
 
-  const connectGoogleCalendar = () => {
+  const saveGoogleCalendar = async () => {
     const calendarObject = {
       calendarId: googleCalendar.id,
       name,
       color,
       userId,
     };
-    connectCalendar(calendarObject);
-    setIsConnected(true);
-    dispatch(getEventsFromCalendars([calendarObject]));
-  };
-
-  const saveGoogleCalendar = () => {
-    const calendarObject = {
-      calendarId: googleCalendar.id,
-      name,
-      color,
-      userId,
-    };
-    saveCalendar(calendarObject);
-    dispatch(getEventsFromCalendars([calendarObject]));
-  };
-
-  const disconnectGoogleCalendar = () => {
-    disconnectCalendar(calendarId, userId);
-    setName('');
-    setColor('');
-    setIsConnected(false);
+    await saveCalendar(calendarObject);
+    await dispatch(loadConnectedUserCalendars());
+    dispatch(loadEventsFromCalendars([calendarObject]));
   };
 
   const setLabelName = () => {
     if (!isConnected) {
       setName('');
-      setRequired('Required');
     }
-  };
-
-  const setGoogleCalendar = () => {
-    if (isConnected) {
-      disconnectGoogleCalendar();
-      setName('Calendar Name...');
-    } else {
-      connectGoogleCalendar();
-      setRequired('');
-    }
-  };
-
-  const toggleEdit = () => {
-    setIsDisabled(!isDisabled);
-    saveGoogleCalendar();
   };
 
   const toggleCalendar = () => {
-    setGoogleCalendar(calendarId);
+    if (isConnected) {
+      disconnectCalendar(calendarId, userId);
+      setName('');
+      setColor('');
+      setIsConnected(false);
+      setTimeout(() => {
+        dispatch(loadConnectedUserCalendars());
+      }, 500);
+    } else {
+      const calendarObject = {
+        calendarId: googleCalendar.id,
+        name,
+        color,
+        userId,
+      };
+      connectCalendar(calendarObject);
+      setIsConnected(true);
+
+      setTimeout(() => {
+        dispatch(loadConnectedUserCalendars());
+        dispatch(loadEventsFromCalendars([calendarObject]));
+      }, 100);
+    }
   };
 
   useEffect(() => {
     checkIfConnected();
   }, [checkIfConnected, googleConnectedCalendars]);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsDisabled(false);
-    } else {
-      setIsDisabled(true);
-    }
-  }, [isConnected]);
 
   return (
     <form>
@@ -196,16 +174,16 @@ const RenderItem = ({ googleCalendar }) => {
             InputLabelProps={{
               style: { color: '#7187B5' },
             }}
-            disabled={!isDisabled}
             value={name}
             onClick={setLabelName}
             onChange={(e) => {
               setName(e.target.value);
-              setRequired('');
             }}
+            required
             InputProps={{ disableUnderline: true }}
             id="standard-required"
-            label={required}
+            placeholder="Calendar name"
+            aria-label="Calendar name"
           />
         </Box>
         <Box className={classes.checkBoxContainer} display="flex" justifyContent="space-between">
@@ -216,7 +194,6 @@ const RenderItem = ({ googleCalendar }) => {
                   key={key}
                   value={colors[key]}
                   checked={color === key}
-                  disabled={!isDisabled}
                   onClick={() => setColor(key)}
                   control={
                     <Radio
@@ -232,14 +209,18 @@ const RenderItem = ({ googleCalendar }) => {
           </RadioGroup>
           <Box>
             {isConnected && (
-              <ConnectCalendarButton onClick={() => toggleEdit()} variant="outlined">
-                {!isDisabled ? 'Edit' : 'Save'}
+              <ConnectCalendarButton
+                onClick={() => saveGoogleCalendar()}
+                variant="outlined"
+                disabled={name === ''}
+              >
+                Save
               </ConnectCalendarButton>
             )}
             <ConnectCalendarButton
               onClick={() => toggleCalendar()}
               variant="outlined"
-              disabled={isDisabled && !isConnected}
+              disabled={!isConnected && name === ''}
             >
               {!isConnected ? 'Connect' : 'Disconnect'}
             </ConnectCalendarButton>

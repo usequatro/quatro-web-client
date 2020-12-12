@@ -32,7 +32,6 @@ import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
 import useDebouncedState from '../../hooks/useDebouncedState';
-import MobileView from '../../../utils/MobileView';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -130,7 +129,6 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
 
   const accountMenuAnchor = useRef();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const isMobile = MobileView();
 
   return (
     <>

@@ -1,5 +1,9 @@
 import React from 'react';
-import moment from 'moment';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
+import isPast from 'date-fns/isPast';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
+import endOfDay from 'date-fns/endOfDay';
 import { Typography } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import { useStyles, tickHeight, extraTicks, useEventBackgroundStyles } from './sharedStyles';
@@ -18,15 +22,13 @@ const Events = ({ events }) => {
         }
 
         // Event height based on duration
-        const eventDuration = moment(eventItem.end.dateTime).diff(moment(eventItem.start.dateTime));
-        const durationMiliSecs = moment.duration(eventDuration, 'milliseconds');
-        const tickDuration = Math.floor(durationMiliSecs.asMinutes() / 15);
+        const startDate = parseISO(eventItem.start.dateTime);
+        const endDate = parseISO(eventItem.end.dateTime);
+        const durationMinutes = differenceInMinutes(endDate, startDate);
+        const tickDuration = Math.floor(durationMinutes / 15);
         // Event -(minus) top based on (event start - end of day) calculation
-        const differenceWithEndOfDay = moment(moment().endOf('day').toISOString()).diff(
-          moment(eventItem.start.dateTime),
-        );
-        const differenceMiliSecs = moment.duration(differenceWithEndOfDay, 'milliseconds');
-        const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 15);
+        const differenceMinutes = differenceInMinutes(endOfDay(new Date()), startDate);
+        const differenceDuration = Math.floor(differenceMinutes / 15);
 
         return {
           eventHeight: tickHeight * tickDuration,
@@ -41,9 +43,14 @@ const Events = ({ events }) => {
         const color = checkboxClasses[event.color];
         const top = -Math.abs(e.topDifferenceTicks * tickHeight);
         const zIndex = events.length - index;
-        const start = moment(e.event.start.dateTime).format('h:mm A');
-        const end = moment(e.event.end.dateTime).format('h:mm A');
-        const eventHasPassed = moment().isAfter(e.event.start.dateTime);
+
+        const startDate = parseISO(e.event.start.dateTime);
+        const start = format(startDate, 'h:mm a');
+
+        const endDate = parseISO(e.event.end.dateTime);
+        const end = format(endDate, 'h:mm a');
+
+        const eventHasPassed = isPast(startDate);
 
         return (
           <Box

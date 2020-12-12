@@ -1,5 +1,5 @@
 import React, { forwardRef, Fragment } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
@@ -14,6 +14,7 @@ import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
 import HomeRoundedIcon from '@material-ui/icons/HomeRounded';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import NOW_TASKS_LIMIT from '../../../constants/nowTasksLimit';
 import * as dashboardTabs from '../../../constants/dashboardTabs';
@@ -30,7 +31,6 @@ import {
   selectDashboadIsLoading,
 } from '../../../modules/dashboard';
 import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
-import MobileView from '../../../utils/MobileView';
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
@@ -105,8 +105,7 @@ const useStyles = makeStyles((theme) => ({
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
-  const isMobile = MobileView();
+  const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -127,7 +126,7 @@ const TaskList = forwardRef((_, ref) => {
 
   return (
     <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
-      {tab === !dashboardTabs.NOW && !isMobile && (
+      {tab === !dashboardTabs.NOW && mdUp && (
         <Box className={classes.titleContainer} component="div">
           <Icon className={classes.sectionTitleIcon} />
           <Typography variant="h5" component="h2">
