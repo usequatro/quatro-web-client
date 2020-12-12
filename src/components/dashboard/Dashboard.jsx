@@ -160,7 +160,7 @@ const Dashboard = () => {
           <BottomToolbar />
          </Hidden>  */}
 
-        {MobileView() && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
+        {isMobile && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
 
         <TaskDialog />
         <SnackbarNotification {...snackbarData} />
