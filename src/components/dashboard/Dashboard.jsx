@@ -7,6 +7,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import NavigationSidebar from './navigation/NavigationSidebar';
 import TaskList from './tasks/TaskList';
@@ -25,7 +26,6 @@ import {
   selectSnackbarData,
   selectIsDataInSync,
 } from '../../modules/dashboard';
-import MobileView from '../../utils/MobileView';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
@@ -85,7 +85,7 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const activeTab = useSelector(selectDashboardActiveTab);
-  const isMobile = MobileView();
+  const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const isDataInSync = useSelector(selectIsDataInSync);
 
@@ -137,7 +137,7 @@ const Dashboard = () => {
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
-      {activeTab === dashboardTabs.NOW && !isMobile && <GoogleCalendar />}
+      {activeTab === dashboardTabs.NOW && mdUp && <GoogleCalendar />}
 
       <div className={classes.appContentContainer}>
         <Backdrop
@@ -149,7 +149,7 @@ const Dashboard = () => {
 
         <Toolbar />
 
-        {!isMobile && (
+        {mdUp && (
           <Paper className={classes.appContent} square>
             {renderContent()}
           </Paper>
@@ -160,7 +160,7 @@ const Dashboard = () => {
           <BottomToolbar />
          </Hidden>  */}
 
-        {isMobile && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
+        {!mdUp && <MobileTabs renderTask={renderContent} activeTab={activeTab} />}
 
         <TaskDialog />
         <SnackbarNotification {...snackbarData} />
