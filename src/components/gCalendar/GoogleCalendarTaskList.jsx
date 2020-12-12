@@ -82,6 +82,7 @@ const GoogleCalendarTaskList = () => {
           () => hours && events && hours.length > 0,
           () => <CalendarTaskList hours={hours} events={events} />,
         ],
+        [() => true, () => null],
       ])}
     </Box>
   );
