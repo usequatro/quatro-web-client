@@ -84,7 +84,7 @@ export const setGoogleCalendarEvents = (status) => ({
 
 // General Functions
 
-export const getUserCalendars = () => (dispatch, getState) => {
+export const loadUserCalendars = () => (dispatch, getState) => {
   const state = getState();
   const googleAPIClient = selectGoogleAPIClient(state);
 
@@ -100,7 +100,7 @@ export const getUserCalendars = () => (dispatch, getState) => {
   }
 };
 
-export const getConnectedUserCalendars = () => async (dispatch, getState) => {
+export const loadConnectedUserCalendars = () => async (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);
 
@@ -110,7 +110,7 @@ export const getConnectedUserCalendars = () => async (dispatch, getState) => {
   }
 };
 
-export const getEventsFromCalendars = (calendarObject) => (dispatch, getState) => {
+export const loadEventsFromCalendars = (calendarObject) => (dispatch, getState) => {
   const state = getState();
   const googleAPIClient = selectGoogleAPIClient(state);
 

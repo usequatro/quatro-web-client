@@ -10,7 +10,7 @@ import startOfDay from 'date-fns/startOfDay';
 
 import {
   selectGoogleConnectedCalendars,
-  getEventsFromCalendars,
+  loadEventsFromCalendars,
   selectGoogleCalendarEvents,
 } from '../../modules/googleCalendar';
 
@@ -55,7 +55,7 @@ const GoogleCalendarTaskList = () => {
   useEffect(() => {
     if (connectedGoogleCalendars) {
       connectedGoogleCalendars.map((cgc) => {
-        return dispatch(getEventsFromCalendars([cgc[1]]));
+        return dispatch(loadEventsFromCalendars([cgc[1]]));
       });
     }
   }, [dispatch, connectedGoogleCalendars]);

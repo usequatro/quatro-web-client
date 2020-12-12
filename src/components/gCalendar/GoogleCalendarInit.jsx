@@ -1,15 +1,13 @@
 import { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { selectUserId } from '../../modules/session';
-
 import {
   setGoogleAPIClient,
   selectGoogleAPIClient,
   setGoogleSignInStatus,
   setGoogleIsFetching,
-  getUserCalendars,
-  getConnectedUserCalendars,
+  loadUserCalendars,
+  loadConnectedUserCalendars,
 } from '../../modules/googleCalendar';
 
 const config = {
@@ -21,16 +19,15 @@ const config = {
 const GoogleCalendarInit = () => {
   const dispatch = useDispatch();
   const googleAPIClient = useSelector(selectGoogleAPIClient);
-  const userId = useSelector(selectUserId);
 
   const updateSignInStatus = useCallback(
     (bool) => {
       dispatch(setGoogleSignInStatus(bool));
       dispatch(setGoogleIsFetching(false));
-      dispatch(getUserCalendars(googleAPIClient));
-      dispatch(getConnectedUserCalendars(userId));
+      dispatch(loadUserCalendars(googleAPIClient));
+      dispatch(loadConnectedUserCalendars());
     },
-    [dispatch, googleAPIClient, userId],
+    [dispatch, googleAPIClient],
   );
 
   const initGoogleClient = useCallback(() => {

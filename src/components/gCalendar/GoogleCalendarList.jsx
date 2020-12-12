@@ -22,7 +22,8 @@ import {
   selectGoogleAPIClient,
   selectGoogleCalendars,
   selectGoogleConnectedCalendars,
-  getEventsFromCalendars,
+  loadConnectedUserCalendars,
+  loadEventsFromCalendars,
 } from '../../modules/googleCalendar';
 
 const useStyles = makeStyles((theme) => ({
@@ -111,34 +112,16 @@ const RenderItem = ({ googleCalendar }) => {
     }
   }, [googleConnectedCalendars, calendarId]);
 
-  const connectGoogleCalendar = () => {
+  const saveGoogleCalendar = async () => {
     const calendarObject = {
       calendarId: googleCalendar.id,
       name,
       color,
       userId,
     };
-    connectCalendar(calendarObject);
-    setIsConnected(true);
-    dispatch(getEventsFromCalendars([calendarObject]));
-  };
-
-  const saveGoogleCalendar = () => {
-    const calendarObject = {
-      calendarId: googleCalendar.id,
-      name,
-      color,
-      userId,
-    };
-    saveCalendar(calendarObject);
-    dispatch(getEventsFromCalendars([calendarObject]));
-  };
-
-  const disconnectGoogleCalendar = () => {
-    disconnectCalendar(calendarId, userId);
-    setName('');
-    setColor('');
-    setIsConnected(false);
+    await saveCalendar(calendarObject);
+    await dispatch(loadConnectedUserCalendars());
+    dispatch(loadEventsFromCalendars([calendarObject]));
   };
 
   const setLabelName = () => {
@@ -147,21 +130,30 @@ const RenderItem = ({ googleCalendar }) => {
     }
   };
 
-  const setGoogleCalendar = () => {
-    if (isConnected) {
-      disconnectGoogleCalendar();
-      setName('');
-    } else {
-      connectGoogleCalendar();
-    }
-  };
-
-  const toggleEdit = () => {
-    saveGoogleCalendar();
-  };
-
   const toggleCalendar = () => {
-    setGoogleCalendar(calendarId);
+    if (isConnected) {
+      disconnectCalendar(calendarId, userId);
+      setName('');
+      setColor('');
+      setIsConnected(false);
+      setTimeout(() => {
+        dispatch(loadConnectedUserCalendars());
+      }, 500);
+    } else {
+      const calendarObject = {
+        calendarId: googleCalendar.id,
+        name,
+        color,
+        userId,
+      };
+      connectCalendar(calendarObject);
+      setIsConnected(true);
+
+      setTimeout(() => {
+        dispatch(loadConnectedUserCalendars());
+        dispatch(loadEventsFromCalendars([calendarObject]));
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -218,7 +210,7 @@ const RenderItem = ({ googleCalendar }) => {
           <Box>
             {isConnected && (
               <ConnectCalendarButton
-                onClick={() => toggleEdit()}
+                onClick={() => saveGoogleCalendar()}
                 variant="outlined"
                 disabled={name === ''}
               >

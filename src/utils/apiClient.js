@@ -152,10 +152,9 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
 export const fetchDeleteRecurringConfig = (id) =>
   getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
 
-
 export const connectCalendar = (calendarObject) => {
   return getFirestore().collection(CALENDARS).add(calendarObject);
-}
+};
 
 export const disconnectCalendar = async (calendarId, userId) => {
   const documentId = await getFirestore()
@@ -164,11 +163,11 @@ export const disconnectCalendar = async (calendarId, userId) => {
     .where('calendarId', '==', calendarId)
     .limit(1)
     .get()
-    .then((querySnapshot) => querySnapshot.size > 0 ? querySnapshot.docs[0].id : null);
+    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
   if (documentId) {
     await getFirestore().collection(CALENDARS).doc(documentId).delete();
-  };
-}
+  }
+};
 
 export const fetchConnectedCalendars = async (userId) => {
   const results = await getFirestore()
@@ -176,9 +175,11 @@ export const fetchConnectedCalendars = async (userId) => {
     .where('userId', '==', userId)
     .get()
     .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((res) => {return res});
+    .then((res) => {
+      return res;
+    });
   return results;
-}
+};
 export const saveCalendar = async (calendarObject) => {
   const documentId = await getFirestore()
     .collection(CALENDARS)
@@ -186,8 +187,9 @@ export const saveCalendar = async (calendarObject) => {
     .where('calendarId', '==', calendarObject.calendarId)
     .limit(1)
     .get()
-    .then((querySnapshot) => querySnapshot.size > 0 ? querySnapshot.docs[0].id : null);
+    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
   if (documentId) {
-    await getFirestore().collection(CALENDARS).doc(documentId).set(calendarObject);
-  };
-}
+    return getFirestore().collection(CALENDARS).doc(documentId).update(calendarObject);
+  }
+  return Promise.reject();
+};
