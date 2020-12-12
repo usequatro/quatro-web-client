@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import moment from 'moment';
+import endOfDay from 'date-fns/endOfDay';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import { useStyles } from './sharedStyles';
 
@@ -7,9 +8,9 @@ const CurrentTime = () => {
   const currentTimeRef = useRef();
   const classes = useStyles();
 
-  const differenceWithEndOfDay = moment(moment().endOf('day').toISOString()).diff(moment());
-  const differenceMiliSecs = moment.duration(differenceWithEndOfDay, 'milliseconds');
-  const differenceDuration = Math.floor(differenceMiliSecs.asMinutes() / 15);
+  const differenceMinutes = differenceInMinutes(endOfDay(new Date()), new Date());
+
+  const differenceDuration = Math.floor(differenceMinutes / 15);
   const topDifferenceTicks = differenceDuration + 2;
   const top = -Math.abs(topDifferenceTicks * 25);
 

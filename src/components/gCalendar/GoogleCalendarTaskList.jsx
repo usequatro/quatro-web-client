@@ -4,7 +4,9 @@ import { cond } from 'lodash';
 import Box from '@material-ui/core/Box';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import moment from 'moment';
+import format from 'date-fns/format';
+import add from 'date-fns/add';
+import startOfDay from 'date-fns/startOfDay';
 
 import {
   selectGoogleConnectedCalendars,
@@ -28,13 +30,20 @@ const GoogleCalendarTaskList = () => {
   const [hours, setHours] = useState(null);
 
   const generateHoursArray = () => {
-    const items = [];
-    new Array(25).fill().forEach((acc, index) => {
-      items.push(moment({ hour: index }).format('h:mm A'));
-      items.push(moment({ hour: index, minute: 15 }).format('h:mm A'));
-      items.push(moment({ hour: index, minute: 30 }).format('h:mm A'));
-      items.push(moment({ hour: index, minute: 45 }).format('h:mm A'));
-    });
+    const today = startOfDay(new Date());
+    const items = new Array(25)
+      .fill()
+      .reduce(
+        (acc, _, index) => [
+          ...acc,
+          add(today, { hours: index }),
+          add(today, { hours: index, minutes: 15 }),
+          add(today, { hours: index, minutes: 30 }),
+          add(today, { hours: index, minutes: 45 }),
+        ],
+        [],
+      )
+      .map((date) => format(date, 'h:mm a'));
 
     setHours(items.slice(0, items.length - 3));
   };
