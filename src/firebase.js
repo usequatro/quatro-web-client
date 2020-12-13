@@ -85,7 +85,15 @@ export const updateUserPassword = async (newPassword) =>
     return user.updatePassword(newPassword);
   });
 
-export const reauthenticateUser = async (currentPassword) =>
+export const deleteUser = async () =>
+  Promise.resolve(getAuth().currentUser).then((user) => {
+    if (!user) {
+      throw new Error('No logged in user');
+    }
+    return user.delete();
+  });
+
+export const reauthenticateUserWithPassword = async (currentPassword) =>
   Promise.resolve(getAuth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');

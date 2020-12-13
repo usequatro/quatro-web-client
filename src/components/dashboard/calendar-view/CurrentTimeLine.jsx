@@ -2,9 +2,21 @@ import React, { useRef, useEffect } from 'react';
 import endOfDay from 'date-fns/endOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
-import { useStyles } from './sharedStyles';
+import { makeStyles } from '@material-ui/core/styles';
 
-const CurrentTime = () => {
+const useStyles = makeStyles((theme) => ({
+  currentTime: {
+    zIndex: theme.zIndex.drawer - 2,
+    position: 'relative',
+    minHeight: '2px',
+    width: '88%',
+    alignSelf: 'flex-end',
+    backgroundColor: 'tomato',
+    borderRadius: 5,
+  },
+}));
+
+const CurrentTimeLine = () => {
   const currentTimeRef = useRef();
   const classes = useStyles();
 
@@ -25,4 +37,4 @@ const CurrentTime = () => {
   );
 };
 
-export default CurrentTime;
+export default CurrentTimeLine;

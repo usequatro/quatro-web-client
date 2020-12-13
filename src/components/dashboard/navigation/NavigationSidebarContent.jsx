@@ -85,13 +85,13 @@ const NavigationSidebarContent = () => {
         <ListItem
           button
           component={Link}
-          to={paths.GOOGLE_CALENDARS}
-          selected={activeTab === dashboardTabs.GOOGLE_CALENDARS}
+          to={paths.CALENDARS}
+          selected={activeTab === dashboardTabs.CALENDARS}
         >
           <ListItemIcon>
             <ControlCameraRoundedIcon />
           </ListItemIcon>
-          <ListItemText primary="Google Calendars" />
+          <ListItemText primary="Calendars" />
         </ListItem>
       </List>
 

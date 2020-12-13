@@ -5,6 +5,7 @@ import { formatQuerySnapshotChanges } from './firestoreRealtimeHelpers';
 import { getFirestore } from '../firebase';
 import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
+import { validateCalendarSchema } from '../types/calendarSchema';
 
 const TASKS = 'tasks';
 const CALENDARS = 'calendars';
@@ -193,3 +194,50 @@ export const saveCalendar = async (calendarObject) => {
   }
   return Promise.reject();
 };
+
+/**
+ * Attaches a listener for calendar list events.
+ *
+ * @param {string} userId
+ * @param {Function} onNext
+ * @param {Function} onError
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
+ */
+export const listenToListCalendars = (userId, onNext, onError) =>
+  getFirestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateCalendarSchema));
+      },
+      (error) => {
+        onError(error);
+      },
+    );
+
+/**
+ * @param {Object} calendar
+ * @return {Promise<firebase.firestore.DocumentReference>}
+ */
+export const fetchCreateCalendar = async (calendar) => {
+  const validEntity = await validateCalendarSchema(calendar);
+  return getFirestore().collection(CALENDARS).add(validEntity);
+};
+
+/**
+ * @param {string} taskId
+ * @param {Object} updates
+ * @return {Promise<void>}
+ */
+export const fetchUpdateCalendar = async (id, updates) => {
+  const validatedUpdates = await validateCalendarSchema(updates, { isUpdate: true });
+  return getFirestore().collection(CALENDARS).doc(id).set(validatedUpdates, { merge: true });
+};
+
+/**
+ * @param {string} id
+ * @return {Promise<void>}
+ */
+export const fetchDeleteCalendar = (id) => getFirestore().collection(CALENDARS).doc(id).delete();

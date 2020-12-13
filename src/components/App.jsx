@@ -10,8 +10,8 @@ import ErrorBoundary from './ErrorBoundary';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
 import { MixpanelProvider } from './tracking/MixpanelContext';
 import AppRouting from './AppRouting';
-import GoogleCalendarInit from './gCalendar/GoogleCalendarInit';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
+import { GoogleAPIContextProvider } from './GoogleAPI';
 import muiTheme from './theme';
 import createStore from '../store';
 
@@ -30,14 +30,15 @@ const App = () => (
       <MaterialThemeProvider theme={muiTheme}>
         <ErrorBoundary>
           <CssBaseline />
-          <GoogleCalendarInit />
           <Router {...routerProps}>
             <UserLoginListener />
             <RouterChangeTracker />
             <Div100vh style={{ width: '100%', height: '100rvh' }}>
               <NotificationContextProvider>
-                <AppRouting />
-                <NotificationSnackbar />
+                <GoogleAPIContextProvider>
+                  <AppRouting />
+                  <NotificationSnackbar />
+                </GoogleAPIContextProvider>
               </NotificationContextProvider>
             </Div100vh>
           </Router>

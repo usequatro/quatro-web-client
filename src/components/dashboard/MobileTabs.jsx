@@ -4,7 +4,7 @@ import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import { Paper, Box, Tab, Tabs } from '@material-ui/core';
 
-import GoogleCalendar from '../gCalendar/GoogleCalendar';
+import GoogleCalendar from './calendar-view/CalendarDashboardView';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 
 const useStyles = makeStyles((theme) => ({

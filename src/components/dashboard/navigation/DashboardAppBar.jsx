@@ -104,7 +104,7 @@ const sectionTitlesByPath = {
   [tabs.SCHEDULED]: 'Scheduled',
   [tabs.COMPLETED]: 'Completed',
   [tabs.ACCOUNT_SETTINGS]: 'Account',
-  [tabs.GOOGLE_CALENDARS]: 'Google Calendars',
+  [tabs.CALENDARS]: 'Calendars',
 };
 const iconsByPath = {
   [tabs.NOW]: HomeRoundedIcon,
@@ -113,7 +113,7 @@ const iconsByPath = {
   [tabs.SCHEDULED]: CalendarTodayRoundedIcon,
   [tabs.COMPLETED]: DoneAllRoundedIcon,
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
-  [tabs.GOOGLE_CALENDARS]: ControlCameraRoundedIcon,
+  [tabs.CALENDARS]: ControlCameraRoundedIcon,
 };
 
 const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {

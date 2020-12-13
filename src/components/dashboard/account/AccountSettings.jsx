@@ -21,11 +21,15 @@ import {
   updateUserProfile,
   updateUserEmail,
   updateUserPassword,
-  reauthenticateUser,
+  deleteUser,
+  reauthenticateUserWithPassword,
 } from '../../../firebase';
 import PasswordTextField from '../../ui/PasswordTextField';
+import Confirm from '../../ui/Confirm';
+import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import AsyncFileUploadInput, { ERROR_IMAGE_SIZE } from '../../ui/AsyncFileUploadInput';
 import PasswordConfirmDialog from './PasswordConfirmDialog';
+import GoogleSignInConfirmDialog from './GoogleSignInConfirmDialog';
 import {
   selectUserId,
   selectUserDisplayName,
@@ -37,7 +41,10 @@ import {
 import { useNotification } from '../../Notification';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
-const ERROR_REQUIRES_RECENT_LOGIN = 'auth/requires-recent-login';
+const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
+  'auth/requires-recent-login',
+  'CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
+];
 const ERROR_WRONG_PASSWORD = 'auth/wrong-password';
 const userFacingErrors = {
   [ERROR_IMAGE_SIZE]: 'Image is larger than 1MB. Please use a smaller image',
@@ -144,7 +151,7 @@ const AccountSettings = () => {
   const [uploadingPhotoURL, setUploadingPhotoURL] = useState(null);
 
   const [newPassword, setNewPassword] = useState('');
-  const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
+  const [recentLoginCallback, setRecentLoginCallback] = useState(null);
 
   const handleSave = (initialPromise = Promise.resolve()) => {
     setSubmitting(true);
@@ -169,8 +176,8 @@ const AccountSettings = () => {
         dispatch(setUserFromFirebaseUser(getAuth().currentUser));
       })
       .catch((error) => {
-        if (error.code === ERROR_REQUIRES_RECENT_LOGIN) {
-          setPasswordConfirmOpen(true);
+        if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
+          setRecentLoginCallback(() => handleSave);
           return;
         }
         console.error(error); // eslint-disable-line no-console
@@ -179,11 +186,26 @@ const AccountSettings = () => {
       });
   };
 
-  const handleResave = (password) => {
-    setSubmitting(true);
-    setPasswordConfirmOpen(false);
+  const handleDeleteAccount = () => {
+    deleteUser().catch((error) => {
+      if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
+        setRecentLoginCallback(() => handleDeleteAccount);
+        return;
+      }
+      console.error(error); // eslint-disable-line no-console
+      notifyError(userFacingErrors[error.code] || 'Error saving changes');
+    });
+  };
 
-    handleSave(reauthenticateUser(password));
+  const handleRecentLoginWithPassword = (password) => {
+    setSubmitting(true);
+
+    const recentLoginCallbackReference = recentLoginCallback;
+
+    reauthenticateUserWithPassword(password).then(() => {
+      setRecentLoginCallback(null);
+      return recentLoginCallbackReference();
+    });
   };
 
   const hasChanges =
@@ -300,10 +322,37 @@ const AccountSettings = () => {
         </Box>
       </form>
 
+      <Box display="flex" justifyContent="flex-end" pt={4}>
+        <Confirm
+          onConfirm={handleDeleteAccount}
+          renderDialog={(open, onConfirm, onConfirmationClose) => (
+            <ConfirmationDialog
+              open={open}
+              onClose={onConfirmationClose}
+              onConfirm={onConfirm}
+              id="confirm-delete-account"
+              title="Delete account"
+              body="This action will delete your Quatro account. There's no way back"
+              buttonText="Delete account permanently"
+            />
+          )}
+          renderContent={(onClick) => (
+            <Button type="submit" color="inherit" disabled={submitting} onClick={onClick}>
+              Delete account
+            </Button>
+          )}
+        />
+      </Box>
+
       <PasswordConfirmDialog
-        open={passwordConfirmOpen}
-        onClose={() => setPasswordConfirmOpen(false)}
-        onConfirm={handleResave}
+        open={typeof recentLoginCallback === 'function' && providers.includes('password')}
+        onClose={() => setRecentLoginCallback(null)}
+        onConfirm={handleRecentLoginWithPassword}
+      />
+
+      <GoogleSignInConfirmDialog
+        open={typeof recentLoginCallback === 'function' && providers.includes('google.com')}
+        onClose={() => setRecentLoginCallback(null)}
       />
     </Box>
   );

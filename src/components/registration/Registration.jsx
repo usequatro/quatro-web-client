@@ -14,6 +14,7 @@ import Fade from '@material-ui/core/Fade';
 import Grow from '@material-ui/core/Grow';
 import { makeStyles } from '@material-ui/core/styles';
 
+import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
 import { getAuth, getGoogleAuthProvider } from '../../firebase';
 import * as paths from '../../constants/paths';
@@ -181,27 +182,14 @@ const Registration = ({ mode }) => {
         <Paper className={classes.paper}>
           {(mode === LOG_IN || mode === SIGN_UP) && (
             <Box>
-              <Button
-                type="button"
-                onClick={handleLogWithGoogle}
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={
-                  <img
-                    src="/images/google_logo.png"
-                    alt="google logo"
-                    style={{ width: '1.5rem', height: '1.5rem' }}
-                  />
-                }
-              >
+              <GoogleButton onClick={handleLogWithGoogle} fullWidth>
                 {
                   {
                     [LOG_IN]: 'Sign in with Google',
                     [SIGN_UP]: 'Sign up with Google',
                   }[mode]
                 }
-              </Button>
+              </GoogleButton>
 
               <Box
                 display="flex"

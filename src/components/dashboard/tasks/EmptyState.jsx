@@ -7,14 +7,15 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import * as dashboardTabs from '../../../constants/dashboardTabs';
 
+export const CALENDAR = 'CALENDAR';
+
 const emptyStateImages = {
   [dashboardTabs.SCHEDULED]: '/empty-states/empty-state-scheduled.png',
   [dashboardTabs.NOW]: '/empty-states/empty-state-top-4.png',
   [dashboardTabs.BLOCKED]: '/empty-states/empty-state-blocked.png',
   [dashboardTabs.BACKLOG]: '/empty-states/empty-state-backlog.png',
   [dashboardTabs.COMPLETED]: '/empty-states/empty-state-completed.png',
-  [dashboardTabs.GOOGLE_CALENDAR]: '/empty-states/empty-state-google-calendar.png',
-  [dashboardTabs.GOOGLE_CALENDAR_TASK_LIST]: '/empty-states/empty-state-google-calendar.png',
+  [CALENDAR]: '/empty-states/empty-state-google-calendar.png',
 };
 
 const emptyStateCopy = {
@@ -31,14 +32,7 @@ const emptyStateCopy = {
     'Nice!',
     "You have an empty backlog. Keep your focus on what's important.",
   ],
-  [dashboardTabs.GOOGLE_CALENDAR]: [
-    'Connect to your Google Calendar account,',
-    'and sync your Quatro tasks.',
-  ],
-  [dashboardTabs.GOOGLE_CALENDAR_TASK_LIST]: [
-    'You haven`t connected any calendar.',
-    'Please connect a Google Calendar.',
-  ],
+  [CALENDAR]: ['Connect to your Google Calendar account,', 'and sync your Quatro tasks.'],
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -68,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EmptyState = ({ tab }) => {
+const EmptyState = ({ tab, children }) => {
   const classes = useStyles();
 
   const [currentTab, setCurrentTab] = useState(tab);
@@ -88,11 +82,17 @@ const EmptyState = ({ tab }) => {
             src={emptyStateImages[currentTab] || emptyStateImages[dashboardTabs.NOW]}
           />
 
-          {(emptyStateCopy[currentTab] || []).map((text) => (
-            <Typography gutterBottom key={text} align="center" color="secondary">
-              {text}
+          {emptyStateCopy[currentTab] && (
+            <Typography paragraph align="center" color="secondary">
+              {(emptyStateCopy[currentTab] || []).map((text) => (
+                <>
+                  {text}
+                  <br />
+                </>
+              ))}
             </Typography>
-          ))}
+          )}
+          {children}
         </div>
       </Fade>
     </Box>
@@ -101,6 +101,11 @@ const EmptyState = ({ tab }) => {
 
 EmptyState.propTypes = {
   tab: PropTypes.oneOf(Object.values(dashboardTabs)).isRequired,
+  children: PropTypes.node,
+};
+
+EmptyState.defaultProps = {
+  children: undefined,
 };
 
 export default EmptyState;

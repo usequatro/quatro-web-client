@@ -15,7 +15,6 @@ import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar from './navigation/DashboardAppBar';
 import AccountSettings from './account/AccountSettings';
-import GoogleCalendarList from '../gCalendar/GoogleCalendarList';
 import SnackbarNotification from '../ui/SnackbarNotification';
 import MobileTabs from './MobileTabs';
 
@@ -26,10 +25,12 @@ import {
   selectSnackbarData,
   selectIsDataInSync,
 } from '../../modules/dashboard';
+import { listenToCalendarsList } from '../../modules/calendars';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
-import GoogleCalendar from '../gCalendar/GoogleCalendar';
+import CalendarDashboardView from './calendar-view/CalendarDashboardView';
+import Calendars from './calendars/Calendars';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -121,13 +122,23 @@ const Dashboard = () => {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    const unsubscribe = dispatch(listenToCalendarsList());
+    return () => {
+      if (unsubscribe) {
+        console.log('listener unsubscribed'); // eslint-disable-line
+        unsubscribe();
+      }
+    };
+  }, [dispatch]);
+
   const renderContent = useCallback(
     () =>
       cond([
         [(tab) => tabsShowingTaskList.includes(tab), () => <TaskList />],
         [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
         [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
-        [(tab) => tab === dashboardTabs.GOOGLE_CALENDARS, () => <GoogleCalendarList />],
+        [(tab) => tab === dashboardTabs.CALENDARS, () => <Calendars />],
       ])(activeTab),
     [activeTab],
   );
@@ -137,7 +148,7 @@ const Dashboard = () => {
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
-      {activeTab === dashboardTabs.NOW && mdUp && <GoogleCalendar />}
+      {activeTab === dashboardTabs.NOW && mdUp && <CalendarDashboardView />}
 
       <div className={classes.appContentContainer}>
         <Backdrop
