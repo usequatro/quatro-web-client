@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import endOfDay from 'date-fns/endOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import { makeStyles } from '@material-ui/core/styles';
+
+import tickHeight from './tickHeight';
 
 const useStyles = makeStyles((theme) => ({
   currentTime: {
@@ -16,19 +18,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const getCurrentMinutes = () => differenceInMinutes(endOfDay(new Date()), new Date());
+
 const CurrentTimeLine = () => {
   const currentTimeRef = useRef();
   const classes = useStyles();
 
-  const differenceMinutes = differenceInMinutes(endOfDay(new Date()), new Date());
+  const [minutesToEndOfDay, setMinutesToEndOfDay] = useState(getCurrentMinutes());
 
-  const differenceDuration = Math.floor(differenceMinutes / 15);
+  const differenceDuration = Math.floor(minutesToEndOfDay / 15);
   const topDifferenceTicks = differenceDuration + 2;
-  const top = -Math.abs(topDifferenceTicks * 25);
+  const top = -Math.abs(topDifferenceTicks * tickHeight);
+
+  // Refresh line every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMinutesToEndOfDay(getCurrentMinutes());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (currentTimeRef && currentTimeRef.current) {
-      currentTimeRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      currentTimeRef.current.scrollIntoView({ block: 'center' });
     }
   }, [currentTimeRef]);
 

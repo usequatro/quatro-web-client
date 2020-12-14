@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Box from '@material-ui/core/Box';
 import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { selectCalendarIds } from '../../../modules/calendars';
-import { loadAllEvents } from '../../../modules/calendarEvents';
+import { loadAllEvents, clearEvents } from '../../../modules/calendarEvents';
 
+import CalendarNavBar from './CalendarNavBar';
 import Ticks from './Ticks';
 import CalendarEventList from './CalendarEventList';
 import CurrentTimeLine from './CurrentTimeLine';
@@ -29,17 +30,23 @@ const GoogleCalendarTaskList = () => {
 
   const dispatch = useDispatch();
 
+  const [date, setDate] = useState(new Date());
+
   const calendarIds = useSelector(selectCalendarIds);
   useEffect(() => {
-    dispatch(loadAllEvents(calendarIds));
-  }, [dispatch, calendarIds]);
+    dispatch(clearEvents());
+    dispatch(loadAllEvents(calendarIds, date));
+  }, [dispatch, calendarIds, date]);
 
   return (
-    <Box className={classes.container}>
-      <CalendarEventList />
-      <Ticks />
-      <CurrentTimeLine />
-    </Box>
+    <>
+      <CalendarNavBar date={date} onChange={(newDate) => setDate(newDate)} />
+      <Box className={classes.container}>
+        <CalendarEventList />
+        <Ticks />
+        <CurrentTimeLine />
+      </Box>
+    </>
   );
 };
 

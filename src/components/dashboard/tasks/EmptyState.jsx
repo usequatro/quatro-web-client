@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@material-ui/core/Box';
 import Fade from '@material-ui/core/Fade';
@@ -85,10 +85,10 @@ const EmptyState = ({ tab, children }) => {
           {emptyStateCopy[currentTab] && (
             <Typography paragraph align="center" color="secondary">
               {(emptyStateCopy[currentTab] || []).map((text) => (
-                <>
+                <Fragment key={text}>
                   {text}
                   <br />
-                </>
+                </Fragment>
               ))}
             </Typography>
           )}
@@ -100,7 +100,7 @@ const EmptyState = ({ tab, children }) => {
 };
 
 EmptyState.propTypes = {
-  tab: PropTypes.oneOf(Object.values(dashboardTabs)).isRequired,
+  tab: PropTypes.oneOf([...Object.values(dashboardTabs), CALENDAR]).isRequired,
   children: PropTypes.node,
 };
 

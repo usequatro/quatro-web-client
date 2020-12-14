@@ -22,7 +22,11 @@ const CalendarEventList = () => {
   return (
     <Box className={classes.calendarEventListContainer}>
       {calendarEventIds.map((calendarEventId, index) => (
-        <CalendarEvent id={calendarEventId} zIndex={calendarEventIds.length - index} />
+        <CalendarEvent
+          key={calendarEventId}
+          id={calendarEventId}
+          zIndex={calendarEventIds.length - index}
+        />
       ))}
     </Box>
   );

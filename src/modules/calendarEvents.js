@@ -46,41 +46,45 @@ export const selectCalendarEventCalendarId = (state, id) =>
 
 // Actions
 
-export const loadEventsForCalendar = (calendarId) => (dispatch, getState) => {
+export const loadEventsForCalendar = (calendarId, date) => (dispatch, getState) => {
   const state = getState();
   const providerCalendarId = selectCalendarProviderCalendarId(state, calendarId);
 
   window.gapi.client.calendar.events
+    // @see https://developers.google.com/calendar/v3/reference/events/list
     .list({
       calendarId: providerCalendarId,
-      timeMin: formatISO(startOfDay(new Date())),
-      timeMax: formatISO(endOfDay(new Date())),
-      maxResults: 20,
+      timeMin: formatISO(startOfDay(date)),
+      timeMax: formatISO(endOfDay(date)),
+      maxResults: 25,
+      singleEvents: true,
     })
     .execute((calendarListResponse) => {
       // To see all data, uncomment below
-      // console.log(calendarListResponse.items); // eslint-disable-line
+      console.log(calendarListResponse.items); // eslint-disable-line
       dispatch({
         type: ADD_EVENTS,
-        payload: (calendarListResponse.items || []).map((item) => ({
-          id: item.id,
-          calendarId,
-          providerCalendarId,
-          status: item.status,
-          htmlLink: item.htmlLink,
-          summary: item.summary,
-          description: item.description,
-          location: item.location,
-          start: item.start,
-          end: item.end,
-        })),
+        payload: (calendarListResponse.items || [])
+          .filter((item) => item.status !== 'canceled')
+          .map((item) => ({
+            id: item.id,
+            calendarId,
+            providerCalendarId,
+            status: item.status,
+            htmlLink: item.htmlLink,
+            summary: item.summary,
+            description: item.description,
+            location: item.location,
+            start: item.start,
+            end: item.end,
+          })),
       });
     });
 };
 
-export const loadAllEvents = (calendarIds) => (dispatch) => {
+export const loadAllEvents = (calendarIds, date = new Date()) => (dispatch) => {
   calendarIds.forEach((calendarId) => {
-    dispatch(loadEventsForCalendar(calendarId));
+    dispatch(loadEventsForCalendar(calendarId, date));
   });
 };
 

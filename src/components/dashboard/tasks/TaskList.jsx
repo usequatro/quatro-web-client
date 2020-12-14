@@ -65,6 +65,9 @@ const shouldShowPosition = memoize((tab) =>
 const mapIds = memoize((tasks) => tasks.map(([id]) => id));
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    overflow: 'auto',
+  },
   fab: {
     position: 'fixed',
     bottom: theme.spacing(4),
@@ -125,7 +128,7 @@ const TaskList = forwardRef((_, ref) => {
   useCreateTaskShortcut();
 
   return (
-    <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
+    <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
       {tab === !dashboardTabs.NOW && mdUp && (
         <Box className={classes.titleContainer} component="div">
           <Icon className={classes.sectionTitleIcon} />
