@@ -16,6 +16,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 
+import { useGoogleAPI } from '../../GoogleAPI';
 import { getAuth } from '../../../firebase';
 import * as paths from '../../../constants/paths';
 import { selectIsDataInSync } from '../../../modules/dashboard';
@@ -76,6 +77,17 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
 
   const accountMenuAnchor = useRef();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+
+  const { isSignedIn, signOut } = useGoogleAPI();
+
+  const handleSignOut = () => {
+    const firebaseSignOutPromise = getAuth().signOut();
+    const googleSignOutPromise = isSignedIn && signOut();
+
+    Promise.all([firebaseSignOutPromise, googleSignOutPromise].filter(Boolean)).then(() => {
+      window.location.reload();
+    });
+  };
 
   return (
     <AppBar position="fixed" color="transparent" className={classes.appBar} elevation={2}>
@@ -153,14 +165,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
             >
               Refresh
             </MenuItem>
-            <MenuItem
-              onClick={() => {
-                getAuth().signOut();
-                window.location.reload();
-              }}
-            >
-              Log out
-            </MenuItem>
+            <MenuItem onClick={handleSignOut}>Log out</MenuItem>
           </Menu>
         </Box>
       </Toolbar>

@@ -215,7 +215,14 @@ const AccountSettings = () => {
     photoURL !== savedPhotoURL;
 
   return (
-    <Box className={classes.container} py={4} px={2} style={{ opacity: submitting ? 0.5 : 1 }}>
+    <Box
+      className={classes.container}
+      py={4}
+      px={2}
+      style={{ opacity: submitting ? 0.5 : 1 }}
+      flexGrow={1}
+      alignSelf="center"
+    >
       <form
         onSubmit={(event) => {
           event.preventDefault();
