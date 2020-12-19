@@ -18,7 +18,10 @@ import {
   selectCalendarName,
   selectCalendarColor,
   selectCalendarProviderCalendarId,
+  selectCalendarProviderUserId,
+  selectCalendarProviderUserEmail,
 } from '../../../modules/calendars';
+import { selectGapiUserId } from '../../../modules/session';
 import { clearEvents } from '../../../modules/calendarEvents';
 import { fetchUpdateCalendar, fetchDeleteCalendar } from '../../../utils/apiClient';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
@@ -62,6 +65,9 @@ const CalendarEditView = ({ id, calendarsAvailable }) => {
   const name = useSelector((state) => selectCalendarName(state, id));
   const color = useSelector((state) => selectCalendarColor(state, id));
   const providerCalendarId = useSelector((state) => selectCalendarProviderCalendarId(state, id));
+  const providerUserId = useSelector((state) => selectCalendarProviderUserId(state, id));
+  const providerUserEmail = useSelector((state) => selectCalendarProviderUserEmail(state, id));
+  const gapiUserId = useSelector(selectGapiUserId);
 
   const nameInProvider = get(
     (calendarsAvailable || []).find(
@@ -72,11 +78,19 @@ const CalendarEditView = ({ id, calendarsAvailable }) => {
 
   const [currentName, setCurrentName] = useState(name);
 
+  const isCalendarUserSignedUpWithGoogle = gapiUserId === providerUserId;
+
   return (
     <ListItem className={classes.container}>
       <Grid container spacing={4}>
         <Grid item xs={12} md={5} className={classes.nameContainer}>
           <Typography variant="body2">{nameInProvider}</Typography>
+
+          {!isCalendarUserSignedUpWithGoogle && (
+            <Typography variant="body2" color="error">
+              {`Offline. Need to sign in with Google to ${providerUserEmail}`}
+            </Typography>
+          )}
 
           <TextFieldWithTypography
             typography="body1"
@@ -141,7 +155,7 @@ const CalendarEditView = ({ id, calendarsAvailable }) => {
             renderContent={(onClick) => (
               <LabeledIconButton
                 color="background.secondary"
-                label="Disconnect"
+                label={isCalendarUserSignedUpWithGoogle ? 'Disconnect' : 'Remove'}
                 icon={<ClearRoundedIcon />}
                 onClick={onClick}
               />
@@ -161,5 +175,7 @@ CalendarEditView.propTypes = {
   ).isRequired,
   id: PropTypes.string.isRequired,
 };
+
+CalendarEditView.defaultProps = {};
 
 export default CalendarEditView;

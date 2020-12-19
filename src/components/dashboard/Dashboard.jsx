@@ -121,25 +121,9 @@ const Dashboard = () => {
     }
   }, [location.pathname, activeTab, dispatch]);
 
-  useEffect(() => {
-    const unsubscribe = dispatch(listenToDashboardTasks());
-    return () => {
-      if (unsubscribe) {
-        console.log('listener unsubscribed'); // eslint-disable-line
-        unsubscribe();
-      }
-    };
-  }, [dispatch]);
-
-  useEffect(() => {
-    const unsubscribe = dispatch(listenToCalendarsList());
-    return () => {
-      if (unsubscribe) {
-        console.log('listener unsubscribed'); // eslint-disable-line
-        unsubscribe();
-      }
-    };
-  }, [dispatch]);
+  // Snapshot listeners
+  useEffect(() => dispatch(listenToDashboardTasks()), [dispatch]);
+  useEffect(() => dispatch(listenToCalendarsList()), [dispatch]);
 
   const [selectedMobileTab, setSelectedMobileTab] = useState(1);
 
@@ -239,11 +223,6 @@ const Dashboard = () => {
             [(tab) => tab === dashboardTabs.CALENDARS, () => <Calendars />],
           ])(activeTab)}
         </Paper>
-
-        {/* uncomment for bringing back bottom nav on mobile */}
-        {/* <Hidden smUp>
-          <BottomToolbar />
-         </Hidden>  */}
 
         <TaskDialog />
         <SnackbarNotification {...snackbarData} />

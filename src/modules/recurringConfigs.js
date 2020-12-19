@@ -68,7 +68,7 @@ export const createRecurringConfig = (recurringConfig) => async (dispatch, getSt
 
 export const listenToRecurringConfigList = (userId, nextCallback, errorCallback) => (dispatch) => {
   const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
-    debugConsole.log('listenToRecurringConfigList', {
+    debugConsole.log('Firestore', 'listenToRecurringConfigList', {
       groupedChangedEntities,
       hasEntityChanges,
       hasLocalUnsavedChanges,
@@ -83,5 +83,9 @@ export const listenToRecurringConfigList = (userId, nextCallback, errorCallback)
   };
   dispatch({ type: RESET_LOCAL_STATE });
   const unsubscribe = listenListRecurringConfigs(userId, onNext, onError);
-  return unsubscribe;
+
+  return () => {
+    debugConsole.log('Firestore', 'listenToRecurringConfigList', 'unsubscribe');
+    unsubscribe();
+  };
 };

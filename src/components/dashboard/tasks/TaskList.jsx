@@ -35,7 +35,7 @@ import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
 import LoadingState from './LoadingState';
-import EmptyState from './EmptyState';
+import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
 import { CLOSED_DRAWER_WIDTH } from '../navigation/NavigationSidebar';
@@ -63,6 +63,28 @@ const shouldShowPosition = memoize((tab) =>
 );
 
 const mapIds = memoize((tasks) => tasks.map(([id]) => id));
+
+const emptyStateImages = {
+  [dashboardTabs.SCHEDULED]: IMAGE_SCHEDULED,
+  [dashboardTabs.NOW]: IMAGE_NOW,
+  [dashboardTabs.BLOCKED]: IMAGE_BLOCKED,
+  [dashboardTabs.BACKLOG]: IMAGE_BACKLOG,
+};
+const emptyStateTexts = {
+  [dashboardTabs.SCHEDULED]: [
+    'All clear!',
+    'You don’t have any scheduled meetings, follow-ups, reminders, or tasks.',
+  ],
+  [dashboardTabs.NOW]: ['Great job!', 'Your task list and headspace are clear.'],
+  [dashboardTabs.BLOCKED]: [
+    'The runway is clear!',
+    "You don't have any dependencies blocking your tasks.",
+  ],
+  [dashboardTabs.BACKLOG]: [
+    'Nice!',
+    "You have an empty backlog. Keep your focus on what's important.",
+  ],
+};
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -139,7 +161,10 @@ const TaskList = forwardRef((_, ref) => {
       )}
       {cond([
         [() => loading, () => <LoadingState />],
-        [() => taskIds.length === 0, () => <EmptyState tab={tab} />],
+        [
+          () => taskIds.length === 0,
+          () => <EmptyState image={emptyStateImages[tab]} text={emptyStateTexts[tab]} />,
+        ],
         [
           () => true,
           () => (
@@ -197,8 +222,6 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-      {/* uncomment for bringing back bottom nav on mobile */}
-      {/* <Hidden xsDown> */}
       <Tooltip title="Create task (Space bar)" enterDelay={1000}>
         <Fab
           aria-label="Create task"
@@ -209,7 +232,6 @@ const TaskList = forwardRef((_, ref) => {
           <AddIcon fontSize="large" />
         </Fab>
       </Tooltip>
-      {/* </Hidden> */}
     </Box>
   );
 });

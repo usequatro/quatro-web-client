@@ -61,7 +61,7 @@ export const loadEventsForCalendar = (calendarId, date) => (dispatch, getState) 
     })
     .execute((calendarListResponse) => {
       // To see all data, uncomment below
-      console.log(calendarListResponse.items); // eslint-disable-line
+      // console.log(calendarListResponse.items); // eslint-disable-line
       dispatch({
         type: ADD_EVENTS,
         payload: (calendarListResponse.items || [])

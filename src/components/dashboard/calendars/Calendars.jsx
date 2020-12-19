@@ -9,26 +9,23 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 
 import CalendarEditView from './CalendarEditView';
+import ConnectedAccount from './ConnectedAccount';
 import { fetchCreateCalendar } from '../../../utils/apiClient';
 import { useGoogleAPI } from '../../GoogleAPI';
+import { useNotification } from '../../Notification';
 import {
   selectCalendarIds,
   selectAllConnectedProviderCalendarIds,
 } from '../../../modules/calendars';
-import { selectUserId } from '../../../modules/session';
+import {
+  selectUserId,
+  selectGapiUserSignedIn,
+  selectGoogleFirebaseAuthProvider,
+} from '../../../modules/session';
 import calendarColors from '../../../constants/calendarColors';
 
-import Confirm from '../../ui/Confirm';
-import ConfirmationDialog from '../../ui/ConfirmationDialog';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import GoogleButton from '../../ui/GoogleButton';
 
 const useStyles = makeStyles(() => ({
@@ -39,10 +36,12 @@ const useStyles = makeStyles(() => ({
 
 const Calendars = () => {
   const classes = useStyles();
+  const { notifyError } = useNotification();
 
   const connectNewCalendarButton = useRef();
 
-  const { isSignedIn, gapi, signIn } = useGoogleAPI();
+  const { gapi, connectGoogle, signInExistingUser } = useGoogleAPI();
+  const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
   const [calendarsAvailable, setCalendarsAvailable] = useState([]);
@@ -51,8 +50,10 @@ const Calendars = () => {
   const userId = useSelector(selectUserId);
   const connectedProviderCalendarIds = useSelector(selectAllConnectedProviderCalendarIds);
 
+  const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
+
   useEffect(() => {
-    if (!gapi || !isSignedIn) {
+    if (!gapi || !googleSignedIn) {
       return;
     }
     gapi.client.calendar.calendarList
@@ -68,46 +69,73 @@ const Calendars = () => {
           })),
         );
       });
-  }, [isSignedIn, gapi]);
+  }, [googleSignedIn, gapi]);
 
   const handleSelectAvailableCalendar = ({ providerCalendarId, summary }) => {
+    const currentUser = gapi.auth2.getAuthInstance().currentUser.get();
+    if (!currentUser) {
+      return;
+    }
     fetchCreateCalendar({
       providerCalendarId,
       userId,
       provider: 'google',
+      providerUserId: currentUser.getId(),
+      providerUserEmail: currentUser.getBasicProfile().getEmail(),
       color: calendarColors[0],
       name: summary,
     });
     setNewCalendarMenuOpen(false);
   };
 
-  const [connectedGoogleAccount, setConnectedGoogleAccount] = useState(null);
-  useEffect(() => {
-    if (!gapi) {
-      return;
-    }
-    if (isSignedIn && !connectedGoogleAccount) {
-      const auth = gapi.auth2.getAuthInstance();
-      // https://developers.google.com/identity/sign-in/web/reference#googleusergetbasicprofile
-      const basicProfile = auth.currentUser.get().getBasicProfile();
-      setConnectedGoogleAccount({
-        name: basicProfile.getName(),
-        imageUrl: basicProfile.getImageUrl(),
-        email: basicProfile.getEmail(),
-      });
-    } else if (!isSignedIn && connectedGoogleAccount) {
-      setConnectedGoogleAccount(null);
-    }
-  }, [gapi, isSignedIn, connectedGoogleAccount]);
+  const handleConnectGoogle = () => {
+    connectGoogle().catch((error) => {
+      console.error(error); // eslint-disable-line no-console
+      notifyError('An error happened');
+    });
+  };
 
-  const revokeAccess = () => {
-    const auth = gapi.auth2.getAuthInstance();
-    auth.disconnect();
-    auth.signOut();
+  const handleSignInExistingUser = () => {
+    signInExistingUser().catch((error) => {
+      console.error(error); // eslint-disable-line no-console
+      notifyError('An error happened');
+    });
   };
 
   return (
     <Box my={4} mx={6} flexGrow={1}>
+      <Box mb={6}>
+        <Typography variant="h5" component="h3" paragraph>
+          Connected Account
+        </Typography>
+        {googleFirebaseAuthProvider ? (
+          <List>
+            <ConnectedAccount
+              uid={googleFirebaseAuthProvider.uid}
+              providerId={googleFirebaseAuthProvider.providerId}
+              imageUrl={googleFirebaseAuthProvider.photoURL}
+              name={googleFirebaseAuthProvider.displayName}
+              email={googleFirebaseAuthProvider.email}
+            />
+          </List>
+        ) : (
+          <Typography paragraph>No account connected</Typography>
+        )}
+        {!googleSignedIn && (
+          <Box display="flex" alignItems="center" flexDirection="column">
+            <Box display="flex" justifyContent="center">
+              <GoogleButton
+                onClick={
+                  googleFirebaseAuthProvider ? handleSignInExistingUser : handleConnectGoogle
+                }
+              >
+                Sign in with Google
+              </GoogleButton>
+            </Box>
+          </Box>
+        )}
+      </Box>
+
       <Box mb={6}>
         <Typography variant="h5" component="h3" paragraph>
           Connected Calendars
@@ -115,7 +143,7 @@ const Calendars = () => {
         <Box display="flex" justifyContent="center">
           {cond([
             [
-              () => !isSignedIn || calendarIds.length === 0,
+              () => calendarIds.length === 0,
               () => <Typography paragraph>No calendars connected</Typography>,
             ],
             [
@@ -140,7 +168,7 @@ const Calendars = () => {
             ref={connectNewCalendarButton}
             variant="contained"
             color="primary"
-            disabled={!isSignedIn}
+            disabled={!googleSignedIn}
             onClick={() => setNewCalendarMenuOpen(!newCalendarMenuOpen)}
           >
             Connect a calendar
@@ -161,56 +189,6 @@ const Calendars = () => {
             ))}
           </Menu>
         </Box>
-      </Box>
-
-      <Box>
-        <Typography variant="h5" component="h3" paragraph>
-          Connected Accounts
-        </Typography>
-        {connectedGoogleAccount && (
-          <List>
-            <ListItem>
-              {connectedGoogleAccount.imageUrl && (
-                <ListItemAvatar>
-                  <Avatar alt={connectedGoogleAccount.name} src={connectedGoogleAccount.imageUrl} />
-                </ListItemAvatar>
-              )}
-              <ListItemText>{`${connectedGoogleAccount.name} - ${connectedGoogleAccount.email}`}</ListItemText>
-              <ListItemSecondaryAction>
-                <Confirm
-                  onConfirm={() => revokeAccess()}
-                  renderDialog={(open, onConfirm, onConfirmationClose) => (
-                    <ConfirmationDialog
-                      open={open}
-                      onClose={onConfirmationClose}
-                      onConfirm={onConfirm}
-                      id="confirm-revoke-access"
-                      title="Revoke access"
-                      body="This action will revoke access to your calendars that you've previously granted. Your calendar will stop synching"
-                      buttonText="Revoke access"
-                    />
-                  )}
-                  renderContent={(onClick) => (
-                    <LabeledIconButton
-                      color="background.secondary"
-                      label="Revoke access"
-                      icon={<BlockRoundedIcon />}
-                      onClick={onClick}
-                    />
-                  )}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </List>
-        )}
-        {!connectedGoogleAccount && (
-          <Box display="flex" alignItems="center" flexDirection="column">
-            <Typography paragraph>No accounts connected</Typography>
-            <Box display="flex" justifyContent="center">
-              <GoogleButton onClick={() => signIn()}>Sign in with Google</GoogleButton>
-            </Box>
-          </Box>
-        )}
       </Box>
     </Box>
   );

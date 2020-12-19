@@ -16,13 +16,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 
-import { useGoogleAPI } from '../../GoogleAPI';
-import { getAuth } from '../../../firebase';
 import * as paths from '../../../constants/paths';
 import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import QuatroLogo from '../../icons/QuatroLogo';
 import useDebouncedState from '../../hooks/useDebouncedState';
+import { signOut as firebaseSignOut } from '../../../firebase';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -78,15 +77,9 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const accountMenuAnchor = useRef();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
-  const { isSignedIn, signOut } = useGoogleAPI();
-
   const handleSignOut = () => {
-    const firebaseSignOutPromise = getAuth().signOut();
-    const googleSignOutPromise = isSignedIn && signOut();
-
-    Promise.all([firebaseSignOutPromise, googleSignOutPromise].filter(Boolean)).then(() => {
-      window.location.reload();
-    });
+    firebaseSignOut();
+    setAccountMenuOpen(false);
   };
 
   return (
@@ -115,13 +108,6 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
               </Tooltip>
             </Box>
           )}
-          {/* {dashboardHasSavingError && (
-              <Box flexGrow={1} display="flex" justifyContent="flex-end" pr={2}>
-                <Tooltip title="Error saving changes">
-                  <ErrorRoundedIcon color="error" fontSize="large" />
-                </Tooltip>
-              </Box>
-            )} */}
 
           <IconButton
             edge="end"

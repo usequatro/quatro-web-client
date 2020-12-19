@@ -3,6 +3,8 @@ import Joi from '@hapi/joi';
 export const calendarSchema = Joi.object({
   userId: Joi.string(),
   providerCalendarId: Joi.string(),
+  providerUserId: Joi.string(),
+  providerUserEmail: Joi.string(),
   provider: Joi.valid('google'),
   color: Joi.string(),
   name: Joi.string(),

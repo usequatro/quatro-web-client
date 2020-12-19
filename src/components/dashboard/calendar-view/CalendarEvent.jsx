@@ -8,7 +8,7 @@ import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import startOfDay from 'date-fns/startOfDay';
 import { Typography } from '@material-ui/core';
-import Box from '@material-ui/core/Box';
+import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import TICK_HEIGHT from './tickHeight';
 
@@ -88,7 +88,7 @@ const CalendarEvent = ({ id, zIndex }) => {
   const verticalPadding = getPaddingForDuration(eventDurationInMinutes);
 
   return (
-    <Box
+    <Paper
       key={id}
       data-id={id}
       style={{
@@ -100,7 +100,7 @@ const CalendarEvent = ({ id, zIndex }) => {
         paddingBottom: `${verticalPadding}px`,
       }}
       className={classes.eventDefaultStyle}
-      px={1}
+      elevation={0}
     >
       <Typography
         component="p"
@@ -115,7 +115,7 @@ const CalendarEvent = ({ id, zIndex }) => {
           {isValid(endDate) ? format(endDate, 'h:mm a') : ''}
         </span>
       </Typography>
-    </Box>
+    </Paper>
   );
 };
 

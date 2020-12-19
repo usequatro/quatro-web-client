@@ -31,8 +31,13 @@ export const reducer = createReducer(INITIAL_STATE, {
 export const selectCalendarIds = (state) => state[NAMESPACE].allIds;
 export const selectCalendarName = (state, id) => get(state[NAMESPACE].byId[id], 'name');
 export const selectCalendarColor = (state, id) => get(state[NAMESPACE].byId[id], 'color');
+export const selectCalendarProvider = (state, id) => get(state[NAMESPACE].byId[id], 'provider');
 export const selectCalendarProviderCalendarId = (state, id) =>
   get(state[NAMESPACE].byId[id], 'providerCalendarId');
+export const selectCalendarProviderUserId = (state, id) =>
+  get(state[NAMESPACE].byId[id], 'providerUserId');
+export const selectCalendarProviderUserEmail = (state, id) =>
+  get(state[NAMESPACE].byId[id], 'providerUserEmail');
 
 export const selectAllConnectedProviderCalendarIds = (state) =>
   selectCalendarIds(state).map((id) => selectCalendarProviderCalendarId(state, id));
@@ -47,7 +52,7 @@ export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = (
   const userId = selectUserId(state);
 
   const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
-    debugConsole.log('listenToCalendarsList', {
+    debugConsole.log('Firestore', 'listenToCalendarsList', {
       groupedChangedEntities,
       hasEntityChanges,
       hasLocalUnsavedChanges,
@@ -62,5 +67,9 @@ export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = (
   };
   dispatch({ type: RESET_LOCAL_STATE });
   const unsubscribe = listenToListCalendars(userId, onNext, onError);
-  return unsubscribe;
+
+  return () => {
+    debugConsole.log('Firestore', 'listenToCalendarsList', 'unsubscribe');
+    unsubscribe();
+  };
 };
