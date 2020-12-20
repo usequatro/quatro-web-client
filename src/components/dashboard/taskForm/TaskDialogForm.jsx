@@ -7,8 +7,6 @@ import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
 
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Typography from '@material-ui/core/Typography';
 import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
@@ -28,7 +26,6 @@ import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
 import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
-import CloseIcon from '@material-ui/icons/Close';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
@@ -73,6 +70,7 @@ import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
 import SliderField from '../../ui/SliderField';
+import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
 import {
@@ -292,19 +290,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitle
-        disableTypography
-        className={classes.dialogTitle}
-        color="transparent"
-        elevation={0}
-      >
-        <Typography variant="h6" component="h2" className={classes.dialogTitleTypography}>
-          {modalTitle}
-        </Typography>
-        <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <DialogTitleWithClose
+        onClose={onClose}
+        title={modalTitle}
+        TypographyProps={{ variant: 'h6', component: 'h2' }}
+      />
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content">
         <Box pt={0} pb={2} px={3} display="flex" alignItems="flex-end">

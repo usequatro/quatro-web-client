@@ -37,12 +37,16 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 export const selectCalendarEventIds = (state) => state[NAMESPACE].allIds;
 export const selectCalendarEventSummary = (state, id) => get(state[NAMESPACE].byId[id], 'summary');
+export const selectCalendarEventLocation = (state, id) =>
+  get(state[NAMESPACE].byId[id], 'location');
 export const selectCalendarEventStartDateTime = (state, id) =>
   get(state[NAMESPACE].byId[id], 'start.dateTime');
 export const selectCalendarEventEndDateTime = (state, id) =>
   get(state[NAMESPACE].byId[id], 'end.dateTime');
 export const selectCalendarEventCalendarId = (state, id) =>
   get(state[NAMESPACE].byId[id], 'calendarId');
+export const selectCalendarEventProviderCalendarId = (state, id) =>
+  get(state[NAMESPACE].byId[id], 'providerCalendarId');
 
 // Actions
 

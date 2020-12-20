@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Divider from '@material-ui/core/Divider';
 import MenuList from '@material-ui/core/MenuList';
@@ -18,6 +17,7 @@ import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
 import { selectAllTasksOrderedAlphabetically } from '../../../modules/tasks';
 import LabeledIconButton from '../../ui/LabeledIconButton';
+import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 
 const useStyles = makeStyles(() => ({
   dialogContent: {
@@ -86,7 +86,11 @@ const BlockerSelectionDialog = ({
         className: classes.paper,
       }}
     >
-      <DialogTitle id="task-selection-dialog">Blockers</DialogTitle>
+      <DialogTitleWithClose
+        TypographyProps={{ id: 'task-selection-dialog', variant: 'h6' }}
+        title="Blockers"
+        onClose={onClose}
+      />
 
       <DialogContent>
         <TextField
