@@ -1,4 +1,4 @@
-import { getStorage } from '../firebase';
+import firebase from '../firebase';
 
 const getRandomHash = () =>
   Math.random()
@@ -15,7 +15,7 @@ export default async function uploadUserFile(file, userId) {
   const saferFilename = file.name.replace(/[^a-z0-9-_.]+/gi, '_');
   const filename = `${getRandomHash()}-${saferFilename}`;
 
-  const storage = getStorage();
+  const storage = firebase.storage();
   const rootRef = storage.ref();
   const fileRef = rootRef.child(`user/${userId}/${filename}`);
 

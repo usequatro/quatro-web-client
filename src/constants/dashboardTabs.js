@@ -4,6 +4,4 @@ export const SCHEDULED = 'Scheduled';
 export const BLOCKED = 'Blocked';
 export const COMPLETED = 'Completed';
 export const ACCOUNT_SETTINGS = 'accountSettings';
-export const GOOGLE_CALENDAR = 'Google Calendar';
-export const GOOGLE_CALENDARS = 'Google Calendars';
-export const GOOGLE_CALENDAR_TASK_LIST = 'Google Calendar TaskList';
+export const CALENDARS = 'Calendars';
