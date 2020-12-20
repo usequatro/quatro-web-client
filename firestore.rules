@@ -20,12 +20,17 @@ service cloud.firestore {
       return request.resource.data;
     }
 
-    match /tasks/{id} {
+    match /tasks/{docId} {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
       allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
 
-    match /recurringConfigs/{id} {
+    match /recurringConfigs/{docId} {
+      allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
+    }
+
+    match /calendars/{docId} {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
       allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }

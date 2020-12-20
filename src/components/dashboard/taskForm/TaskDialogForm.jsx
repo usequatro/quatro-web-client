@@ -291,7 +291,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitleWithClose onClose={onClose}>{modalTitle}</DialogTitleWithClose>
+      <DialogTitleWithClose
+        onClose={onClose}
+        title={modalTitle}
+        TypographyProps={{ variant: 'h6', component: 'h2' }}
+      />
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content">
         <Box pt={0} pb={2} px={3} display="flex" alignItems="flex-end">

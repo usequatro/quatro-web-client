@@ -1,8 +1,9 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
+import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -12,6 +13,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
+import HomeRoundedIcon from '@material-ui/icons/HomeRounded';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import NOW_TASKS_LIMIT from '../../../constants/nowTasksLimit';
 import * as dashboardTabs from '../../../constants/dashboardTabs';
@@ -32,10 +35,13 @@ import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
 import LoadingState from './LoadingState';
-import EmptyState from './EmptyState';
+import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
+import { CLOSED_DRAWER_WIDTH } from '../navigation/NavigationSidebar';
+
 const emptyArray = [];
+
 const selectorFunctionByPathname = {
   [dashboardTabs.NOW]: selectNowTasks,
   [dashboardTabs.BACKLOG]: selectBacklogTasks,
@@ -44,13 +50,46 @@ const selectorFunctionByPathname = {
   fallback: () => emptyArray,
 };
 
+const sectionTitlesByPath = {
+  [dashboardTabs.NOW]: 'Top 4',
+};
+
+const iconsByPath = {
+  [dashboardTabs.NOW]: HomeRoundedIcon,
+};
+
 const shouldShowPosition = memoize((tab) =>
   [dashboardTabs.NOW, dashboardTabs.BACKLOG].includes(tab),
 );
 
 const mapIds = memoize((tasks) => tasks.map(([id]) => id));
 
+const emptyStateImages = {
+  [dashboardTabs.SCHEDULED]: IMAGE_SCHEDULED,
+  [dashboardTabs.NOW]: IMAGE_NOW,
+  [dashboardTabs.BLOCKED]: IMAGE_BLOCKED,
+  [dashboardTabs.BACKLOG]: IMAGE_BACKLOG,
+};
+const emptyStateTexts = {
+  [dashboardTabs.SCHEDULED]: [
+    'All clear!',
+    'You don’t have any scheduled meetings, follow-ups, reminders, or tasks.',
+  ],
+  [dashboardTabs.NOW]: ['Great job!', 'Your task list and headspace are clear.'],
+  [dashboardTabs.BLOCKED]: [
+    'The runway is clear!',
+    "You don't have any dependencies blocking your tasks.",
+  ],
+  [dashboardTabs.BACKLOG]: [
+    'Nice!',
+    "You have an empty backlog. Keep your focus on what's important.",
+  ],
+};
+
 const useStyles = makeStyles((theme) => ({
+  container: {
+    overflow: 'auto',
+  },
   fab: {
     position: 'fixed',
     bottom: theme.spacing(4),
@@ -61,10 +100,37 @@ const useStyles = makeStyles((theme) => ({
     height: '4rem',
     width: '4rem',
   },
+  sectionTitleAppBar: {
+    display: 'flex',
+    justifyContent: 'stretch',
+    alignItems: 'stretch',
+    left: 0,
+    right: 0,
+    width: 'auto',
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    [theme.breakpoints.up('sm')]: {
+      left: `${CLOSED_DRAWER_WIDTH}px`,
+    },
+  },
+  sectionTitleAppBarToolbar: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '8vh',
+    borderBottom: `solid 1px ${theme.palette.divider}`,
+    outline: 'none',
+  },
 }));
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
+  const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -79,14 +145,26 @@ const TaskList = forwardRef((_, ref) => {
   );
 
   const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
-
+  const sectionTitle = sectionTitlesByPath[tab] || 'Not found';
+  const Icon = iconsByPath[tab] || Fragment;
   useCreateTaskShortcut();
 
   return (
-    <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
+    <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
+      {tab === !dashboardTabs.NOW && mdUp && (
+        <Box className={classes.titleContainer} component="div">
+          <Icon className={classes.sectionTitleIcon} />
+          <Typography variant="h5" component="h2">
+            {sectionTitle}
+          </Typography>
+        </Box>
+      )}
       {cond([
         [() => loading, () => <LoadingState />],
-        [() => taskIds.length === 0, () => <EmptyState tab={tab} />],
+        [
+          () => taskIds.length === 0,
+          () => <EmptyState image={emptyStateImages[tab]} text={emptyStateTexts[tab]} />,
+        ],
         [
           () => true,
           () => (
@@ -144,8 +222,6 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-      {/* uncomment for bringing back bottom nav on mobile */}
-      {/* <Hidden xsDown> */}
       <Tooltip title="Create task (Space bar)" enterDelay={1000}>
         <Fab
           aria-label="Create task"
@@ -156,7 +232,6 @@ const TaskList = forwardRef((_, ref) => {
           <AddIcon fontSize="large" />
         </Fab>
       </Tooltip>
-      {/* </Hidden> */}
     </Box>
   );
 });

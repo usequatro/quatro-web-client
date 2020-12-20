@@ -6,19 +6,16 @@ import isToday from 'date-fns/isToday';
 import isYesterday from 'date-fns/isYesterday';
 import isThisWeek from 'date-fns/isThisWeek';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Hidden from '@material-ui/core/Hidden';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import TaskListHeader from './TaskListHeader';
-import { COMPLETED } from '../../../constants/dashboardTabs';
 import { fetchListCompletedTasks, COMPLETED_TASKS_PAGE_SIZE } from '../../../utils/apiClient';
 import { useNotification } from '../../Notification';
 import { selectUserId } from '../../../modules/session';
 import { undoCompleteTask } from '../../../modules/tasks';
 import TaskView from './TaskView';
-import EmptyState from './EmptyState';
+import EmptyState, { IMAGE_COMPLETED } from './EmptyState';
 import LoadingState from './LoadingState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
@@ -165,7 +162,7 @@ const CompletedTaskList = () => {
       {cond([
         [() => status === ERROR, () => null],
         [() => status === FETCHING && completedTasks.length === 0, () => <LoadingState />],
-        [() => completedTasks.length === 0, () => <EmptyState tab={COMPLETED} />],
+        [() => completedTasks.length === 0, () => <EmptyState image={IMAGE_COMPLETED} text="" />],
         [
           () => true,
           () => (
@@ -208,12 +205,6 @@ const CompletedTaskList = () => {
           ),
         ],
       ])()}
-
-      {/* spacing for the mobile bottom toolbar */}
-      <Hidden smUp>
-        <Toolbar />
-        <Toolbar />
-      </Hidden>
     </Box>
   );
 };

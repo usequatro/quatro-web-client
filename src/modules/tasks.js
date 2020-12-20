@@ -257,18 +257,18 @@ export const selectTaskDashboardTab = (state, taskId) =>
 export const getTabProperties = (tab) => {
   const tabProperties = {
     [dashboardTabs.NOW]: {
-      text: dashboardTabs.LABELS.NOW,
+      text: dashboardTabs.NOW,
       link: dashboardTabs.NOW,
     },
     [dashboardTabs.BACKLOG]: {
-      text: dashboardTabs.LABELS.BACKLOG,
+      text: dashboardTabs.BACKLOG,
       link: dashboardTabs.BACKLOG,
     },
     [dashboardTabs.SCHEDULED]: {
-      text: dashboardTabs.LABELS.SCHEDULED,
+      text: dashboardTabs.SCHEDULED,
       link: dashboardTabs.SCHEDULED,
     },
-    [dashboardTabs.BLOCKED]: { text: dashboardTabs.LABELS.BLOCKED, link: dashboardTabs.BLOCKED },
+    [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
   };
 
   return tabProperties[tab] || tabProperties[dashboardTabs.NOW];
@@ -278,7 +278,7 @@ export const getTabProperties = (tab) => {
 
 export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispatch) => {
   const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
-    debugConsole.log('listenToTaskList', {
+    debugConsole.log('Firestore', 'listenToTaskList', {
       groupedChangedEntities,
       hasEntityChanges,
       hasLocalUnsavedChanges,
@@ -295,7 +295,10 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
   dispatch({ type: RESET_LOCAL_STATE });
   const unsubscribe = listenListTasks(userId, onNext, onError);
 
-  return unsubscribe;
+  return () => {
+    debugConsole.log('Firestore', 'listenToTaskList', 'unsubscribe');
+    unsubscribe();
+  };
 };
 
 export const updateTask = (id, updates) => () => {

@@ -14,10 +14,12 @@ import Fade from '@material-ui/core/Fade';
 import Grow from '@material-ui/core/Grow';
 import { makeStyles } from '@material-ui/core/styles';
 
+import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
-import { getAuth, getGoogleAuthProvider } from '../../firebase';
+import firebase from '../../firebase';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
+import { useGoogleAPI } from '../GoogleAPI';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -87,6 +89,8 @@ const Registration = ({ mode }) => {
     setPassword('');
   }, [mode]);
 
+  const { signIn } = useGoogleAPI();
+
   const redirectLoggedInUserToDashboard = () => {
     // Clear the email on the login/signup form
     if (emailAddress) {
@@ -101,7 +105,8 @@ const Registration = ({ mode }) => {
       return;
     }
     setSubmitting(true);
-    getAuth()
+    firebase
+      .auth()
       .signInWithEmailAndPassword(emailAddress, password)
       .then(() => redirectLoggedInUserToDashboard())
       .catch((error) => {
@@ -117,9 +122,9 @@ const Registration = ({ mode }) => {
       return;
     }
     setSubmitting(true);
-    getAuth()
+    firebase
+      .auth()
       .createUserWithEmailAndPassword(emailAddress, password)
-      .then(() => redirectLoggedInUserToDashboard())
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
         setSubmitting(false);
@@ -134,7 +139,8 @@ const Registration = ({ mode }) => {
       return;
     }
     setSubmitting(true);
-    getAuth()
+    firebase
+      .auth()
       .sendPasswordResetEmail(emailAddress, { url: `${window.location.origin}/login` })
       .then(() => {
         notifySuccess('Password recovery email sent');
@@ -148,16 +154,12 @@ const Registration = ({ mode }) => {
       });
   };
 
-  const handleLogWithGoogle = () => {
-    getAuth()
-      .signInWithPopup(getGoogleAuthProvider())
-      // .then(({ user, additionalUserInfo: { isNewUser } }) => {
-      .then(() => redirectLoggedInUserToDashboard())
-      .catch((error) => {
-        console.error(error); // eslint-disable-line no-console
-        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
-        notifyError(errorMessage);
-      });
+  const handleSignInWithGoogle = () => {
+    signIn().catch((error) => {
+      console.error(error); // eslint-disable-line no-console
+      const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
+      notifyError(errorMessage);
+    });
   };
 
   return (
@@ -181,27 +183,14 @@ const Registration = ({ mode }) => {
         <Paper className={classes.paper}>
           {(mode === LOG_IN || mode === SIGN_UP) && (
             <Box>
-              <Button
-                type="button"
-                onClick={handleLogWithGoogle}
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={
-                  <img
-                    src="/images/google_logo.png"
-                    alt="google logo"
-                    style={{ width: '1.5rem', height: '1.5rem' }}
-                  />
-                }
-              >
+              <GoogleButton onClick={handleSignInWithGoogle} fullWidth>
                 {
                   {
                     [LOG_IN]: 'Sign in with Google',
                     [SIGN_UP]: 'Sign up with Google',
                   }[mode]
                 }
-              </Button>
+              </GoogleButton>
 
               <Box
                 display="flex"
