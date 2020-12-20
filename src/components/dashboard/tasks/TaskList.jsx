@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
 
-import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -13,8 +12,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 
 import AddIcon from '@material-ui/icons/Add';
-import HomeRoundedIcon from '@material-ui/icons/HomeRounded';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import NOW_TASKS_LIMIT from '../../../constants/nowTasksLimit';
 import * as dashboardTabs from '../../../constants/dashboardTabs';
@@ -38,8 +35,6 @@ import LoadingState from './LoadingState';
 import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
-import { CLOSED_DRAWER_WIDTH } from '../navigation/NavigationSidebar';
-
 const emptyArray = [];
 
 const selectorFunctionByPathname = {
@@ -48,14 +43,6 @@ const selectorFunctionByPathname = {
   [dashboardTabs.SCHEDULED]: selectScheduledTasks,
   [dashboardTabs.BLOCKED]: selectBlockedTasks,
   fallback: () => emptyArray,
-};
-
-const sectionTitlesByPath = {
-  [dashboardTabs.NOW]: 'Top 4',
-};
-
-const iconsByPath = {
-  [dashboardTabs.NOW]: HomeRoundedIcon,
 };
 
 const shouldShowPosition = memoize((tab) =>
@@ -94,43 +81,13 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: theme.spacing(4),
     right: theme.spacing(4),
-    backgroundColor: theme.palette.common.white,
-    color: theme.palette.primary.main,
-    border: `solid 1px ${theme.palette.background.secondary}`,
     height: '4rem',
     width: '4rem',
-  },
-  sectionTitleAppBar: {
-    display: 'flex',
-    justifyContent: 'stretch',
-    alignItems: 'stretch',
-    left: 0,
-    right: 0,
-    width: 'auto',
-    borderBottom: `solid 1px ${theme.palette.divider}`,
-    [theme.breakpoints.up('sm')]: {
-      left: `${CLOSED_DRAWER_WIDTH}px`,
-    },
-  },
-  sectionTitleAppBarToolbar: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  titleContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: '8vh',
-    borderBottom: `solid 1px ${theme.palette.divider}`,
-    outline: 'none',
   },
 }));
 
 const TaskList = forwardRef((_, ref) => {
   const classes = useStyles();
-  const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
@@ -145,20 +102,10 @@ const TaskList = forwardRef((_, ref) => {
   );
 
   const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
-  const sectionTitle = sectionTitlesByPath[tab] || 'Not found';
-  const Icon = iconsByPath[tab] || Fragment;
   useCreateTaskShortcut();
 
   return (
     <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
-      {tab === !dashboardTabs.NOW && mdUp && (
-        <Box className={classes.titleContainer} component="div">
-          <Icon className={classes.sectionTitleIcon} />
-          <Typography variant="h5" component="h2">
-            {sectionTitle}
-          </Typography>
-        </Box>
-      )}
       {cond([
         [() => loading, () => <LoadingState />],
         [
@@ -222,10 +169,10 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-      <Tooltip title="Create task (Space bar)" enterDelay={1000}>
+      <Tooltip title="Create task (Space bar)" enterDelay={500} arrow>
         <Fab
           aria-label="Create task"
-          color="default"
+          color="secondary"
           className={classes.fab}
           onClick={showNewTaskDialog}
         >

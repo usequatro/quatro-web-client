@@ -1,31 +1,22 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import CalendarEditView from './CalendarEditView';
+import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
-import { fetchCreateCalendar } from '../../../utils/apiClient';
 import { useGoogleAPI } from '../../GoogleAPI';
 import { useNotification } from '../../Notification';
-import {
-  selectCalendarIds,
-  selectAllConnectedProviderCalendarIds,
-} from '../../../modules/calendars';
-import {
-  selectUserId,
-  selectGapiUserSignedIn,
-  selectGoogleFirebaseAuthProvider,
-} from '../../../modules/session';
-import calendarColors from '../../../constants/calendarColors';
-
+import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
+import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
+import useDebouncedState from '../../hooks/useDebouncedState';
 import GoogleButton from '../../ui/GoogleButton';
 
 const useStyles = makeStyles(() => ({
@@ -40,53 +31,15 @@ const Calendars = () => {
 
   const connectNewCalendarButton = useRef();
 
-  const { gapi, connectGoogle, signInExistingUser } = useGoogleAPI();
+  const { connectGoogle, signInExistingUser } = useGoogleAPI();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
-  const [calendarsAvailable, setCalendarsAvailable] = useState([]);
 
+  const calendarsAreFetching = useSelector(selectCalendarsAreFetching);
   const calendarIds = useSelector(selectCalendarIds);
-  const userId = useSelector(selectUserId);
-  const connectedProviderCalendarIds = useSelector(selectAllConnectedProviderCalendarIds);
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
-
-  useEffect(() => {
-    if (!gapi || !googleSignedIn) {
-      return;
-    }
-    gapi.client.calendar.calendarList
-      .list({
-        maxResults: 25,
-        minAccessRole: 'writer',
-      })
-      .execute((response) => {
-        setCalendarsAvailable(
-          response.items.map((item) => ({
-            providerCalendarId: item.id,
-            summary: item.summary,
-          })),
-        );
-      });
-  }, [googleSignedIn, gapi]);
-
-  const handleSelectAvailableCalendar = ({ providerCalendarId, summary }) => {
-    const currentUser = gapi.auth2.getAuthInstance().currentUser.get();
-    if (!currentUser) {
-      return;
-    }
-    fetchCreateCalendar({
-      providerCalendarId,
-      userId,
-      provider: 'google',
-      providerUserId: currentUser.getId(),
-      providerUserEmail: currentUser.getBasicProfile().getEmail(),
-      color: calendarColors[0],
-      name: summary,
-    });
-    setNewCalendarMenuOpen(false);
-  };
 
   const handleConnectGoogle = () => {
     connectGoogle().catch((error) => {
@@ -102,8 +55,20 @@ const Calendars = () => {
     });
   };
 
+  const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
+
   return (
-    <Box my={4} mx={6} flexGrow={1}>
+    <Box
+      my={4}
+      mx={6}
+      flexGrow={1}
+      width="30rem"
+      maxWidth="100%"
+      display="flex"
+      flexDirection="column"
+      alignItems="stretch"
+      alignSelf="center"
+    >
       <Box mb={6}>
         <Typography variant="h5" component="h3" paragraph>
           Connected Account
@@ -143,6 +108,15 @@ const Calendars = () => {
         <Box display="flex" justifyContent="center">
           {cond([
             [
+              () => showLoader,
+              () => (
+                <Box display="flex" justifyContent="center" mb={4}>
+                  <CircularProgress thickness={3} size="1.5rem" color="inherit" />
+                </Box>
+              ),
+            ],
+            [() => calendarsAreFetching, () => null],
+            [
               () => calendarIds.length === 0,
               () => <Typography paragraph>No calendars connected</Typography>,
             ],
@@ -151,11 +125,7 @@ const Calendars = () => {
               () => (
                 <List className={classes.list}>
                   {calendarIds.map((calendarId) => (
-                    <CalendarEditView
-                      key={calendarId}
-                      id={calendarId}
-                      calendarsAvailable={calendarsAvailable}
-                    />
+                    <CalendarEditView key={calendarId} id={calendarId} />
                   ))}
                 </List>
               ),
@@ -163,32 +133,24 @@ const Calendars = () => {
           ])()}
         </Box>
 
-        <Box display="flex" justifyContent="center">
-          <Button
-            ref={connectNewCalendarButton}
-            variant="contained"
-            color="primary"
-            disabled={!googleSignedIn}
-            onClick={() => setNewCalendarMenuOpen(!newCalendarMenuOpen)}
-          >
-            Connect a calendar
-          </Button>
-          <Menu
-            anchorEl={connectNewCalendarButton.current}
-            open={newCalendarMenuOpen}
-            onClose={() => setNewCalendarMenuOpen(false)}
-          >
-            {calendarsAvailable.map((calendar) => (
-              <MenuItem
-                key={calendar.providerCalendarId}
-                disabled={connectedProviderCalendarIds.includes(calendar.providerCalendarId)}
-                onClick={() => handleSelectAvailableCalendar(calendar)}
-              >
-                {calendar.providerCalendarId}
-              </MenuItem>
-            ))}
-          </Menu>
-        </Box>
+        {!calendarsAreFetching && (
+          <Box display="flex" justifyContent="center">
+            <Button
+              ref={connectNewCalendarButton}
+              variant="contained"
+              color="primary"
+              disabled={!googleSignedIn}
+              onClick={() => setNewCalendarMenuOpen(!newCalendarMenuOpen)}
+            >
+              Add a calendar
+            </Button>
+
+            <CalendarSelectionDialog
+              open={newCalendarMenuOpen}
+              onClose={() => setNewCalendarMenuOpen(false)}
+            />
+          </Box>
+        )}
       </Box>
     </Box>
   );

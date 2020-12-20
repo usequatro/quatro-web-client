@@ -6,11 +6,15 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 
 import NavigationSidebarContent from './NavigationSidebarContent';
+import { getTopBarHeight } from '../navigation-app-bar/DashboardAppBar';
 
-export const CLOSED_DRAWER_WIDTH = 57;
+export const CLOSED_DRAWER_WIDTH = 54;
 export const OPEN_DRAWER_WIDTH = 240;
 
 const useStyles = makeStyles((theme) => ({
+  placeholderToolbar: {
+    minHeight: getTopBarHeight(theme),
+  },
   // this creates the space so the page contents have a padding
   drawer: {
     width: 0,
@@ -45,7 +49,7 @@ export default function NavigationSidebar({ open }) {
   return (
     <nav className={classes.drawer} aria-label="navigation">
       <Drawer classes={{ paper: classes.drawerPaper }} variant="permanent" open>
-        <Toolbar />
+        <Toolbar className={classes.placeholderToolbar} />
         <NavigationSidebarContent />
       </Drawer>
     </nav>

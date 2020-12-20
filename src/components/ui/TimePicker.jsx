@@ -104,9 +104,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
           label: classes.buttonLabel,
         }}
       >
-        <Typography component="p">
-          Time
-        </Typography>
+        <Typography component="p">Time</Typography>
         <Box className={classes.dateTime}>
           {dateTime ? formatFunction(dateTime, format) : displayFallback}
         </Box>
@@ -171,7 +169,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
 
         <Box className={classes.footer}>
           <LabeledIconButton
-            color="background.secondary"
+            color="primary"
             label="Done"
             icon={<SendRoundedIcon />}
             onClick={handleChangesDone}

@@ -11,7 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useNotification } from '../../Notification';
 import { selectCalendarIds } from '../../../modules/calendars';
 import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
-import GoogleCalendarTaskList from './GoogleCalendarTaskList';
+import CalendarView from '../calendar-view/CalendarView';
 import * as paths from '../../../constants/paths';
 import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
 import GoogleButton from '../../ui/GoogleButton';
@@ -101,7 +101,7 @@ const CalendarDashboardView = () => {
             </EmptyState>
           ),
         ],
-        [() => true, () => <GoogleCalendarTaskList />],
+        [() => true, () => <CalendarView />],
       ])}
     </Box>
   );

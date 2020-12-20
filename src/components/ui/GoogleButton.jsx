@@ -6,6 +6,7 @@ const GoogleButton = ({ ...props }) => (
     type="button"
     variant="outlined"
     size="large"
+    style={{ fontWeight: 500 }}
     startIcon={
       <img
         src="/images/google_logo.png"

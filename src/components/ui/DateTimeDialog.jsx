@@ -66,7 +66,7 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
       <DialogActions>
         <Box flexGrow={1}>
           <LabeledIconButton
-            color="background.secondary"
+            color="inherit"
             label="Clear"
             icon={<ClearRoundedIcon />}
             onClick={() => {
@@ -77,9 +77,9 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
         </Box>
 
         <LabeledIconButton
-          color="background.secondary"
           label="Done"
           icon={<SendRoundedIcon />}
+          color="primary"
           onClick={() => {
             onClose();
             onChangeCommitted(currentValue);

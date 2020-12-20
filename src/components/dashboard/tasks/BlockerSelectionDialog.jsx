@@ -145,7 +145,7 @@ const BlockerSelectionDialog = ({
             />
 
             <LabeledIconButton
-              color="background.secondary"
+              color="primary"
               label="Done"
               icon={<SendRoundedIcon />}
               type="submit"

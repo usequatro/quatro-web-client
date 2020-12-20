@@ -9,12 +9,16 @@ import { selectUserId } from './session';
 
 export const NAMESPACE = 'calendars';
 
+const INITIAL = 'initial';
+const LOADED = 'loaded';
+
 // Action types
 
 const ADD_CHANGES_TO_LOCAL_STATE = `${NAMESPACE}/ADD_CHANGES_TO_LOCAL_STATE`;
 const RESET_LOCAL_STATE = `${NAMESPACE}/RESET_LOCAL_STATE`;
 
 const INITIAL_STATE = {
+  status: INITIAL,
   allIds: [],
   byId: {},
 };
@@ -22,12 +26,15 @@ const INITIAL_STATE = {
 export const reducer = createReducer(INITIAL_STATE, {
   [RESET]: () => ({ ...INITIAL_STATE }),
   [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
-  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) =>
-    applyGroupedEntityChanges(state, { added, modified, removed }),
+  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) => ({
+    status: LOADED,
+    ...applyGroupedEntityChanges(state, { added, modified, removed }),
+  }),
 });
 
 // Selectors
 
+export const selectCalendarsAreFetching = (state) => state[NAMESPACE].status === INITIAL;
 export const selectCalendarIds = (state) => state[NAMESPACE].allIds;
 export const selectCalendarName = (state, id) => get(state[NAMESPACE].byId[id], 'name');
 export const selectCalendarColor = (state, id) => get(state[NAMESPACE].byId[id], 'color');

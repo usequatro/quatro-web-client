@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import endOfDay from 'date-fns/endOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
+import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 
-import tickHeight from './tickHeight';
+import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
 
 const useStyles = makeStyles((theme) => ({
   currentTime: {
@@ -13,22 +14,23 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '2px',
     width: '88%',
     alignSelf: 'flex-end',
-    backgroundColor: 'tomato',
+    backgroundColor: theme.palette.secondary.main,
     borderRadius: 5,
   },
 }));
 
+const minutesForOneTick = 60 / TICKS_PER_HOUR;
+
 const getCurrentMinutes = () => differenceInMinutes(endOfDay(new Date()), new Date());
 
-const CurrentTimeLine = () => {
-  const currentTimeRef = useRef();
+const CurrentTimeLine = (props, ref) => {
   const classes = useStyles();
 
   const [minutesToEndOfDay, setMinutesToEndOfDay] = useState(getCurrentMinutes());
 
-  const differenceDuration = Math.floor(minutesToEndOfDay / 15);
+  const differenceDuration = Math.floor(minutesToEndOfDay / minutesForOneTick);
   const topDifferenceTicks = differenceDuration + 2;
-  const top = -Math.abs(topDifferenceTicks * tickHeight);
+  const top = -Math.abs(topDifferenceTicks * TICK_HEIGHT);
 
   // Refresh line every minute
   useEffect(() => {
@@ -38,15 +40,15 @@ const CurrentTimeLine = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (currentTimeRef && currentTimeRef.current) {
-      currentTimeRef.current.scrollIntoView({ block: 'center' });
-    }
-  }, [currentTimeRef]);
-
   return (
-    <div ref={currentTimeRef} style={{ top }} className={classes.currentTime} id="currentTime" />
+    <Paper
+      ref={ref}
+      style={{ top }}
+      className={classes.currentTime}
+      id="currentTime"
+      elevation={2}
+    />
   );
 };
 
-export default CurrentTimeLine;
+export default forwardRef(CurrentTimeLine);

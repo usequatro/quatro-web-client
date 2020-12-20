@@ -9,10 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
 import MuiLink from '@material-ui/core/Link';
+import SvgIcon from '@material-ui/core/SvgIcon';
 import Box from '@material-ui/core/Box';
 import Fade from '@material-ui/core/Fade';
-import Grow from '@material-ui/core/Grow';
 import { makeStyles } from '@material-ui/core/styles';
+
+import EmailRoundedIcon from '@material-ui/icons/EmailRounded';
 
 import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
@@ -20,6 +22,7 @@ import firebase from '../../firebase';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 import { useGoogleAPI } from '../GoogleAPI';
+import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -33,19 +36,24 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     height: '100%',
     flexDirection: 'column',
+    backgroundColor: theme.palette.primary.light,
   },
   paper: {
     width: '500px',
     maxWidth: '100%',
     padding: theme.spacing(5),
   },
+  appLogo: {
+    width: theme.spacing(8),
+    height: theme.spacing(8),
+    marginBottom: theme.spacing(1),
+  },
   appName: {
-    color: theme.palette.common.white,
-    opacity: 0.8,
+    color: theme.palette.secondary.main,
     marginBottom: theme.spacing(7),
   },
   viewName: {
-    color: theme.palette.common.white,
+    color: theme.palette.secondary.main,
     marginBottom: theme.spacing(5),
   },
   orSeparator: {
@@ -66,12 +74,12 @@ const ERROR_EMAIL_IN_USE = 'auth/email-already-in-use';
 const ERROR_MESSAGE_BY_CODE = {
   [ERROR_USER_NOT_FOUND]: 'User not found',
   [ERROR_BAD_PASSWORD]: 'Wrong password',
-  [ERROR_INVALID_EMAIL]: 'El campo de email es incorrecto, ¿lo has escrito correctamente?',
+  [ERROR_INVALID_EMAIL]: 'Invalid email',
   [ERROR_WEAK_PASSWORD]:
-    'La contraseña es demasiado débil, prueba con minúculas, mayúsculas y números',
-  [ERROR_EMAIL_IN_USE]: 'El email introducido ya está en uso',
+    'The password security is too weak. Try with lower case letters, upper case letters and numbers',
+  [ERROR_EMAIL_IN_USE]: 'Email already in use',
 };
-const ERROR_MESSAGE_FALLBACK = 'Ha ocurrido un error';
+const ERROR_MESSAGE_FALLBACK = 'An error happened';
 
 const Registration = ({ mode }) => {
   const classes = useStyles();
@@ -82,6 +90,7 @@ const Registration = ({ mode }) => {
 
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showEmailPasswordSignInForm, setShowEmailPasswordSignInForm] = useState(false);
 
   const { notifyError, notifySuccess } = useNotification();
 
@@ -164,99 +173,126 @@ const Registration = ({ mode }) => {
 
   return (
     <div className={classes.container}>
-      <Typography variant="h2" component="h1" className={classes.appName}>
-        Quatro
-      </Typography>
-      <Fade in>
-        <Typography variant="h4" component="h2" className={classes.viewName}>
-          {
-            {
-              [LOG_IN]: 'Log in',
-              [SIGN_UP]: 'Sign up',
-              [RECOVER_PASSWORD]: 'Recover password',
-            }[mode]
-          }
-        </Typography>
-      </Fade>
-
-      <Grow in>
-        <Paper className={classes.paper}>
-          {(mode === LOG_IN || mode === SIGN_UP) && (
-            <Box>
-              <GoogleButton onClick={handleSignInWithGoogle} fullWidth>
-                {
-                  {
-                    [LOG_IN]: 'Sign in with Google',
-                    [SIGN_UP]: 'Sign up with Google',
-                  }[mode]
-                }
-              </GoogleButton>
-
-              <Box
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="space-between"
-                pt={3}
-                pb={2}
-              >
-                <span className={classes.horizontalLine} />
-                <span className={classes.orSeparator}>or</span>
-                <span className={classes.horizontalLine} />
-              </Box>
-            </Box>
-          )}
-
-          <form
-            onSubmit={
+      <Paper className={classes.paper}>
+        <Box display="flex" alignItems="center" flexDirection="column">
+          <SvgIcon
+            component={LogoArrowsFull}
+            viewBox="0 0 76.87 68.04"
+            title="Quatro logo"
+            className={classes.appLogo}
+          />
+          <Typography variant="h2" component="h1" className={classes.appName}>
+            Quatro
+          </Typography>
+        </Box>
+        <Fade in>
+          <div>
+            <Typography variant="h4" component="h2" className={classes.viewName}>
               {
-                [LOG_IN]: handleLogIn,
-                [SIGN_UP]: handleSignUp,
-                [RECOVER_PASSWORD]: handleRecoverPassword,
-              }[mode]
-            }
-          >
-            <TextField
-              label="Email address"
-              margin="normal"
-              variant="outlined"
-              fullWidth
-              type="email"
-              value={emailAddress}
-              onChange={(event) => dispatch(setRegistrationEmail(event.target.value))}
-            />
+                {
+                  [LOG_IN]: 'Log in',
+                  [SIGN_UP]: 'Sign up',
+                  [RECOVER_PASSWORD]: 'Recover password',
+                }[mode]
+              }
+            </Typography>
 
-            {(mode === SIGN_UP || mode === LOG_IN) && (
-              <TextField
-                label="Password"
-                margin="normal"
-                variant="outlined"
-                fullWidth
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
+            {(mode === LOG_IN || mode === SIGN_UP) && (
+              <Box>
+                <GoogleButton onClick={handleSignInWithGoogle} fullWidth>
+                  {
+                    {
+                      [LOG_IN]: 'Sign in with Google',
+                      [SIGN_UP]: 'Sign up with Google',
+                    }[mode]
+                  }
+                </GoogleButton>
+
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  pt={3}
+                  pb={3}
+                >
+                  <span className={classes.horizontalLine} />
+                  <span className={classes.orSeparator}>or</span>
+                  <span className={classes.horizontalLine} />
+                </Box>
+              </Box>
             )}
 
-            <Box mt={4} display="flex" justifyContent="center">
+            {mode === SIGN_UP && !showEmailPasswordSignInForm && (
               <Button
-                variant="contained"
-                color="primary"
+                type="button"
+                variant="outlined"
                 size="large"
-                type="submit"
-                startIcon={
-                  submitting ? <CircularProgress thickness={8} size="1rem" color="inherit" /> : null
-                }
+                style={{ fontWeight: 500 }}
+                fullWidth
+                startIcon={<EmailRoundedIcon color="action" />}
+                onClick={() => setShowEmailPasswordSignInForm(true)}
               >
-                {
+                Sign up with email and password
+              </Button>
+            )}
+
+            {(mode !== SIGN_UP || showEmailPasswordSignInForm) && (
+              <form
+                onSubmit={
                   {
-                    [LOG_IN]: 'Log in',
-                    [SIGN_UP]: 'Sign up',
-                    [RECOVER_PASSWORD]: 'Recover',
+                    [LOG_IN]: handleLogIn,
+                    [SIGN_UP]: handleSignUp,
+                    [RECOVER_PASSWORD]: handleRecoverPassword,
                   }[mode]
                 }
-              </Button>
-            </Box>
+              >
+                <TextField
+                  autoFocus={mode === SIGN_UP}
+                  label="Email address"
+                  margin="normal"
+                  variant="outlined"
+                  fullWidth
+                  type="email"
+                  value={emailAddress}
+                  onChange={(event) => dispatch(setRegistrationEmail(event.target.value))}
+                />
+
+                {(mode === SIGN_UP || mode === LOG_IN) && (
+                  <TextField
+                    label="Password"
+                    margin="normal"
+                    variant="outlined"
+                    fullWidth
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
+                )}
+
+                <Box mt={4} display="flex" justifyContent="center">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    type="submit"
+                    startIcon={
+                      submitting ? (
+                        <CircularProgress thickness={8} size="1rem" color="inherit" />
+                      ) : null
+                    }
+                  >
+                    {
+                      {
+                        [LOG_IN]: 'Log in',
+                        [SIGN_UP]: 'Sign up',
+                        [RECOVER_PASSWORD]: 'Recover',
+                      }[mode]
+                    }
+                  </Button>
+                </Box>
+              </form>
+            )}
 
             <Box mt={4} display="flex" flexDirection="column">
               {mode === LOG_IN && (
@@ -292,9 +328,9 @@ const Registration = ({ mode }) => {
                 </Typography>
               )}
             </Box>
-          </form>
-        </Paper>
-      </Grow>
+          </div>
+        </Fade>
+      </Paper>
     </div>
   );
 };

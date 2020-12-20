@@ -5,7 +5,9 @@ import Link from '@material-ui/core/Link';
 
 const TextWithLinks = ({ text, maxLength }) => {
   const tmp = '|+|-|+|';
-  const pieces = text.replace(/(https?:\/\/[^\s]+)/gi, `${tmp}$1${tmp}`).split(tmp);
+  const pieces = text
+    .replace(/(https?:\/\/[A-Za-z0-9-._~:/?#[\]@!$&'()*+,;%=]*)/gi, `${tmp}$1${tmp}`)
+    .split(tmp);
 
   let remainingLength = maxLength;
 
