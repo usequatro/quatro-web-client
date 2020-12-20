@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
@@ -65,7 +65,8 @@ import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
-import RecurringConfigDialog from '../tasks/RecurringConfigDialog';
+import RecurringConfigMenu from '../tasks/RecurringConfigMenu';
+import RecurringCustomDialog from '../tasks/RecurringCustomDialog';
 import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
@@ -109,6 +110,7 @@ const useStyles = makeStyles((theme) => ({
   },
   dateButton: {
     justifyContent: 'flex-start',
+    textAlign: 'left',
   },
   submitLoader: {
     color: theme.palette.common.white,
@@ -182,9 +184,13 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
-  const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [recurringCustomDialogOpen, setRecurringCustomDialogOpen] = useState(false);
+
+  const repeatActionButtonRef = useRef();
+  const repeatSettingRef = useRef();
+  const [recurringMenuAnchorEl, setRecurringMenuAnchorEl] = useState(undefined);
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -259,11 +265,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         console.error(error); // eslint-disable-line no-console
         notifyError('Error saving task');
       });
-  };
-
-  const handleRepeatConfigChange = (config) => {
-    dispatch(setRecurringConfig(config));
-    setShowRecurringDialog(false);
   };
 
   const modalTitle = newTaskDialogOpen ? 'New Task' : 'Edit Task';
@@ -398,12 +399,13 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             )}
             {recurringConfig && (
               <Button
-                onClick={() => setShowRecurringDialog(true)}
+                ref={repeatSettingRef}
+                onClick={() => setRecurringMenuAnchorEl(repeatSettingRef.current)}
                 startIcon={<ReplayRoundedIcon />}
                 className={classes.dateButton}
               >
                 {'Repeat: '}
-                {getUserFacingRecurringText(recurringConfig)}
+                {getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp)}
               </Button>
             )}
           </Box>
@@ -461,7 +463,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               label="Repeat"
               disabled={!scheduledStartTimestamp}
               icon={<ReplayRoundedIcon />}
-              onClick={() => setShowRecurringDialog(!showRecurringDialog)}
+              ref={repeatActionButtonRef}
+              onClick={() => setRecurringMenuAnchorEl(repeatActionButtonRef.current)}
             />
           </RepeatButtonDisabledTooltip>
           <LabeledIconButton
@@ -563,12 +566,26 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         hiddenTasks={editTaskDialogId ? [editTaskDialogId] : []}
       />
 
-      <RecurringConfigDialog
-        open={showRecurringDialog}
-        onClose={() => setShowRecurringDialog(false)}
-        onRepeatConfigChange={(config) => handleRepeatConfigChange(config)}
-        referenceDate={scheduledStartTimestamp}
-      />
+      {scheduledStartTimestamp && (
+        <RecurringConfigMenu
+          anchorEl={recurringMenuAnchorEl}
+          onClose={() => setRecurringMenuAnchorEl(undefined)}
+          onRepeatConfigChange={(config) => dispatch(setRecurringConfig(config))}
+          onCustomConfigSelected={() => setRecurringCustomDialogOpen(true)}
+          referenceDate={scheduledStartTimestamp}
+          currentRecurringConfig={recurringConfig}
+        />
+      )}
+
+      {scheduledStartTimestamp && (
+        <RecurringCustomDialog
+          open={recurringCustomDialogOpen}
+          initialRecurringConfig={recurringConfig}
+          onClose={() => setRecurringCustomDialogOpen(false)}
+          onDone={(config) => dispatch(setRecurringConfig(config))}
+          referenceDate={scheduledStartTimestamp}
+        />
+      )}
     </Box>
   );
 };
