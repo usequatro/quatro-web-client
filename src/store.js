@@ -5,7 +5,9 @@ import * as apiClient from './utils/apiClient';
 import mixpanelInstance from './utils/mixpanelInstance';
 
 export default () => {
-  const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+  const composeEnhancers = process.env.REACT_APP_DEVELOPMENT
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+    : compose;
   const store = createStore(
     reducer,
     {},

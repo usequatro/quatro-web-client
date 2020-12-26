@@ -55,12 +55,13 @@ const CompletedTaskList = () => {
   );
 
   useEffect(() => {
-    if (status !== INITIAL) {
-      return;
-    }
+    let unsubscribed = false;
     setStatus(FETCHING);
     fetchListCompletedTasks(userId)
       .then((results) => {
+        if (unsubscribed) {
+          return;
+        }
         setCompletedTasks(results);
         setEndReached(results.length < COMPLETED_TASKS_PAGE_SIZE);
         setStatus(FETCHED);
@@ -70,7 +71,10 @@ const CompletedTaskList = () => {
         notifyError('Error loading completed tasks');
         setStatus(ERROR);
       });
-  }, [notifyError, status, userId]);
+    return () => {
+      unsubscribed = true;
+    };
+  }, [notifyError, userId]);
 
   useEffect(() => {
     const handleScroll = () => {

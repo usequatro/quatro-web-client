@@ -1,77 +1,69 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
 import format from 'date-fns/format';
 import add from 'date-fns/add';
 import startOfDay from 'date-fns/startOfDay';
+import getMinutes from 'date-fns/getMinutes';
 
-import TICK_HEIGHT from './tickHeight';
+import TickLabel from './TickLabel';
+import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   tick: {
     flex: 1,
     width: '100%',
     minHeight: TICK_HEIGHT,
-    borderTop: 'solid 1px #F1F1F1',
+    borderTop: `solid 1px ${theme.palette.grey['200']}`,
     flexShrink: 0,
   },
-  hourTick: {
-    borderTop: 'solid 1px #F1F1F1',
-  },
-  halfTick: {
-    borderTop: 'solid 1px #F6F6F6',
-  },
-  quarterTick: {
-    borderBottom: 'solid 1px #FFFFFF',
-    fontSize: 0,
+  tickWithTime: {},
+  tickWithoutTime: {
+    marginLeft: theme.spacing(10),
   },
   tickLabel: {
-    color: '#AAAAAA',
-    marginTop: -11,
-    display: 'block',
-    backgroundColor: '#ffffff',
-    width: 80,
-    textAlign: 'right',
-    paddingRight: 10,
+    marginTop: '-0.75em',
   },
 }));
 
+const minutesInOneTick = 60 / TICKS_PER_HOUR;
+
 const today = startOfDay(new Date());
-const items = new Array(25)
+const ticks = new Array(24)
   .fill()
   .reduce(
     (acc, _, index) => [
       ...acc,
-      add(today, { hours: index }),
-      add(today, { hours: index, minutes: 15 }),
-      add(today, { hours: index, minutes: 30 }),
-      add(today, { hours: index, minutes: 45 }),
+      ...Array(TICKS_PER_HOUR)
+        .fill(1)
+        .map((__, tick) => add(today, { hours: index, minutes: minutesInOneTick * tick })),
     ],
     [],
   )
-  .map((date) => format(date, 'h:mm a'));
-const hours = items.slice(0, items.length - 3);
+  .concat([add(today, { hours: 24 })])
+  .map((date) => (getMinutes(date) === 0 ? date : ''))
+  .map((date) => (date ? format(date, 'h:mm a') : ''));
 
 const Ticks = () => {
   const classes = useStyles();
 
   return (
-    <Box width="100%">
-      {hours.map((tick) => {
+    <Box width="100%" px={1}>
+      {ticks.map((tick) => {
         const tickClasses = [
           classes.tick,
-          tick.includes(':00') && classes.hourTick,
-          tick.includes(':15') && classes.quarterTick,
-          tick.includes(':30') && classes.hourTick,
-          tick.includes(':45') && classes.quarterTick,
+          tick && classes.tickWithTime,
+          !tick && classes.tickWithoutTime,
+          !tick && classes.tickWithoutTime,
+          !tick && classes.tickWithoutTime,
         ]
           .filter(Boolean)
           .join(' ');
 
         return (
           <Box className={tickClasses} key={Math.random()}>
-            <span className={classes.tickLabel}>{tick}</span>
+            <TickLabel className={classes.tickLabel}>{tick}</TickLabel>
           </Box>
         );
       })}
@@ -79,4 +71,4 @@ const Ticks = () => {
   );
 };
 
-export default Ticks;
+export default memo(Ticks);

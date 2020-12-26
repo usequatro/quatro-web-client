@@ -13,7 +13,7 @@ const AppRouting = () => {
   const userIsLoggedIn = useSelector(selectUserIsLoggedIn);
 
   return cond([
-    [() => userIsLoggedIn === null, () => <FullScreenLoader background="common.white" />],
+    [() => userIsLoggedIn === null, () => <FullScreenLoader background="secondary.main" />],
     [
       () => userIsLoggedIn === false,
       () => (

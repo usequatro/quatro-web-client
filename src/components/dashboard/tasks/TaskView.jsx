@@ -6,6 +6,7 @@ import isPast from 'date-fns/isPast';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import Tooltip from '@material-ui/core/Tooltip';
 import ListItem from '@material-ui/core/ListItem';
 import IconButton from '@material-ui/core/IconButton';
 
@@ -106,7 +107,12 @@ const TaskView = ({
         <Typography paragraph>{title}</Typography>
 
         {description && (
-          <Typography variant="body2" paragraph className={classes.descriptionParagraph}>
+          <Typography
+            variant="body2"
+            paragraph
+            className={classes.descriptionParagraph}
+            color="textSecondary"
+          >
             <TextWithLinks text={description} maxLength={200} />
           </Typography>
         )}
@@ -121,7 +127,7 @@ const TaskView = ({
           <TaskViewSubtitle
             tooltip="Due date"
             Icon={AccessAlarmRoundedIcon}
-            iconProps={{ color: isPast(due) ? 'error' : 'secondary' }}
+            iconProps={{ color: isPast(due) ? 'error' : 'inherit' }}
             onClick={() => {}}
           >
             {formatDateTime(due)}
@@ -156,17 +162,19 @@ const TaskView = ({
       </Box>
 
       <Box flexShrink={0}>
-        <IconButton
-          aria-label="Complete"
-          onClick={handleCompleteClick}
-          className={completed ? classes.completeButtonSuccess : classes.completeButtonIddle}
-        >
-          {completed ? (
-            <CheckCircleOutlineRoundedIcon fontSize="large" />
-          ) : (
-            <RadioButtonUncheckedRoundedIcon fontSize="large" />
-          )}
-        </IconButton>
+        <Tooltip title="Complete" arrow enterDelay={1000}>
+          <IconButton
+            aria-label="Complete"
+            onClick={handleCompleteClick}
+            className={completed ? classes.completeButtonSuccess : classes.completeButtonIddle}
+          >
+            {completed ? (
+              <CheckCircleOutlineRoundedIcon fontSize="large" />
+            ) : (
+              <RadioButtonUncheckedRoundedIcon fontSize="large" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Box>
     </Component>
   );

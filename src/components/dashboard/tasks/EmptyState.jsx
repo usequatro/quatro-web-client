@@ -54,7 +54,7 @@ const EmptyState = ({ text, image, children }) => {
           </Box>
 
           {text && (
-            <Typography paragraph align="center" color="secondary">
+            <Typography paragraph align="center" color="textSecondary">
               {typeof text === 'string'
                 ? text
                 : text.map((line) => (

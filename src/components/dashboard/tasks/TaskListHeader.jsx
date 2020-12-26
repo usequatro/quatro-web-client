@@ -8,7 +8,7 @@ const useStyles = makeStyles((theme) => ({
   main: {
     padding: `${theme.spacing(2)}px ${theme.spacing(3)}px`,
     borderBottom: `solid 1px ${theme.palette.divider}`,
-    backgroundColor: theme.palette.background.lightEmphasis,
+    backgroundColor: theme.palette.background.default,
   },
 }));
 

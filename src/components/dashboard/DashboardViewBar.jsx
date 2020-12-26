@@ -6,17 +6,18 @@ import Typography from '@material-ui/core/Typography';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 
-import HorizontalSplitRoundedIcon from '@material-ui/icons/HorizontalSplitRounded';
-import HomeRoundedIcon from '@material-ui/icons/HomeRounded';
-import CalendarTodayRoundedIcon from '@material-ui/icons/CalendarTodayRounded';
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
-import DoneAllRoundedIcon from '@material-ui/icons/DoneAllRounded';
 import SettingsRoundedIcon from '@material-ui/icons/SettingsRounded';
-import ControlCameraRoundedIcon from '@material-ui/icons/ControlCameraRounded';
 
-import * as tabs from '../../../constants/dashboardTabs';
-import { selectDashboardActiveTab } from '../../../modules/dashboard';
-import { CLOSED_DRAWER_WIDTH } from './NavigationSidebar';
+import * as tabs from '../../constants/dashboardTabs';
+import { selectDashboardActiveTab } from '../../modules/dashboard';
+import { CLOSED_DRAWER_WIDTH } from './navigation-sidebar/NavigationSidebar';
+
+import HomeIcon from '../icons/HomeIcon';
+import BacklogIcon from '../icons/BacklogIcon';
+import ScheduledIcon from '../icons/ScheduledIcon';
+import BlockedIcon from '../icons/BlockedIcon';
+import CompletedIcon from '../icons/CompletedIcon';
+import ConnectedIcon from '../icons/ConnectedIcon';
 
 const useStyles = makeStyles((theme) => ({
   sectionTitleAppBar: {
@@ -36,6 +37,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  sectionTitleIcon: {
+    marginRight: theme.spacing(1),
+    color: theme.palette.text.secondary,
+  },
 }));
 
 const sectionTitlesByPath = {
@@ -48,13 +53,13 @@ const sectionTitlesByPath = {
   [tabs.CALENDARS]: 'Calendars',
 };
 const iconsByPath = {
-  [tabs.NOW]: HomeRoundedIcon,
-  [tabs.BACKLOG]: HorizontalSplitRoundedIcon,
-  [tabs.BLOCKED]: BlockRoundedIcon,
-  [tabs.SCHEDULED]: CalendarTodayRoundedIcon,
-  [tabs.COMPLETED]: DoneAllRoundedIcon,
+  [tabs.NOW]: HomeIcon,
+  [tabs.BACKLOG]: BacklogIcon,
+  [tabs.SCHEDULED]: ScheduledIcon,
+  [tabs.BLOCKED]: BlockedIcon,
+  [tabs.COMPLETED]: CompletedIcon,
   [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
-  [tabs.CALENDARS]: ControlCameraRoundedIcon,
+  [tabs.CALENDARS]: ConnectedIcon,
 };
 
 const DashboardViewBar = () => {
@@ -69,6 +74,7 @@ const DashboardViewBar = () => {
     <AppBar position="static" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
       <Toolbar className={classes.sectionTitleAppBarToolbar}>
         <Icon className={classes.sectionTitleIcon} />
+
         <Typography variant="h5" component="h2">
           {sectionTitle}
         </Typography>

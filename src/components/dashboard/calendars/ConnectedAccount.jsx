@@ -18,7 +18,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   }
 
   return (
-    <ListItem>
+    <ListItem disableGutters>
       <ListItemAvatar>
         <Avatar
           alt={name || email}

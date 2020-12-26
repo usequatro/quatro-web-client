@@ -4,10 +4,11 @@ import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   dialogTitle: {
     position: 'relative',
     display: 'flex',
@@ -17,9 +18,15 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     alignItems: 'center',
   },
+  extraButtonsContainer: {
+    display: 'flex',
+    [theme.breakpoints.up('md')]: {
+      marginRight: theme.spacing(2),
+    },
+  },
 }));
 
-const DialogTitleWithClose = ({ onClose, title, TypographyProps }) => {
+const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons }) => {
   const classes = useStyles();
 
   return (
@@ -34,6 +41,7 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps }) => {
           {title}
         </Typography>
       )}
+      {extraButtons && <Box className={classes.extraButtonsContainer}>{extraButtons}</Box>}
       <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
         <CloseIcon fontSize="small" />
       </IconButton>
@@ -45,10 +53,12 @@ DialogTitleWithClose.propTypes = {
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
   TypographyProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  extraButtons: PropTypes.node,
 };
 
 DialogTitleWithClose.defaultProps = {
   TypographyProps: {},
+  extraButtons: undefined,
 };
 
 export default DialogTitleWithClose;

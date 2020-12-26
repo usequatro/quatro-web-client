@@ -233,7 +233,7 @@ const AccountSettings = () => {
         }}
       >
         <Box display="flex" justifyContent="center">
-          <Tooltip title="Set profile picture">
+          <Tooltip title="Set profile picture" arrow>
             <label htmlFor="profile-pic-upload-input">
               {cond([
                 [() => uploadingPhotoURL, () => <CircularProgress thickness={4} size="2rem" />],
@@ -329,6 +329,7 @@ const AccountSettings = () => {
         <Box display="flex" justifyContent="flex-end" pt={4}>
           <Button
             type="submit"
+            variant="contained"
             color="primary"
             disabled={submitting || !hasChanges}
             endIcon={submitting ? <CircularProgress thickness={4} size="1.25rem" /> : null}

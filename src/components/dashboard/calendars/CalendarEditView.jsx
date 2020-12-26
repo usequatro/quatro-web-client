@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import get from 'lodash/get';
 import { useSelector, useDispatch } from 'react-redux';
 
 import ListItem from '@material-ui/core/ListItem';
-import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Radio from '@material-ui/core/Radio';
-import FormLabel from '@material-ui/core/FormLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 
 import {
   selectCalendarName,
@@ -22,18 +20,20 @@ import {
   selectCalendarProviderUserEmail,
 } from '../../../modules/calendars';
 import { selectGapiUserId } from '../../../modules/session';
-import { clearEvents } from '../../../modules/calendarEvents';
+import { clearAllEvents } from '../../../modules/calendarEvents';
 import { fetchUpdateCalendar, fetchDeleteCalendar } from '../../../utils/apiClient';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import calendarColors from '../../../constants/calendarColors';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     width: '100%',
     display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    marginBottom: theme.spacing(4),
   },
 }));
 
@@ -57,7 +57,7 @@ const useColorSelectorStyles = makeStyles(() =>
   ),
 );
 
-const CalendarEditView = ({ id, calendarsAvailable }) => {
+const CalendarEditView = ({ id }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const colorSelectorClasses = useColorSelectorStyles();
@@ -69,47 +69,40 @@ const CalendarEditView = ({ id, calendarsAvailable }) => {
   const providerUserEmail = useSelector((state) => selectCalendarProviderUserEmail(state, id));
   const gapiUserId = useSelector(selectGapiUserId);
 
-  const nameInProvider = get(
-    (calendarsAvailable || []).find(
-      (calendar) => calendar.providerCalendarId === providerCalendarId,
-    ),
-    'summary',
-  );
-
   const [currentName, setCurrentName] = useState(name);
 
   const isCalendarUserSignedUpWithGoogle = gapiUserId === providerUserId;
 
   return (
-    <ListItem className={classes.container}>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={5} className={classes.nameContainer}>
-          <Typography variant="body2">{nameInProvider}</Typography>
+    <ListItem className={classes.container} disableGutters>
+      <Box pb={2}>
+        <Typography variant="body2">{providerCalendarId}</Typography>
 
-          {!isCalendarUserSignedUpWithGoogle && (
-            <Typography variant="body2" color="error">
-              {`Offline. Need to sign in with Google to ${providerUserEmail}`}
-            </Typography>
-          )}
+        {!isCalendarUserSignedUpWithGoogle && (
+          <Typography variant="body2" color="error">
+            {`Offline. Need to sign in with Google to ${providerUserEmail}`}
+          </Typography>
+        )}
 
-          <TextFieldWithTypography
-            typography="body1"
-            fullWidth
-            value={currentName}
-            onChange={(e) => {
-              setCurrentName(e.target.value);
-              if (e.target.value) {
-                fetchUpdateCalendar(id, { name: e.target.value });
-              }
-            }}
-            required
-            placeholder="Calendar name"
-            aria-label="Calendar name"
-          />
-        </Grid>
-        <Grid item xs={8} md={4} container justify="center">
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Color</FormLabel>
+        <TextFieldWithTypography
+          typography="body1"
+          fullWidth
+          value={currentName}
+          onChange={(e) => {
+            setCurrentName(e.target.value);
+            if (e.target.value) {
+              fetchUpdateCalendar(id, { name: e.target.value });
+            }
+          }}
+          required
+          placeholder="Calendar name"
+          aria-label="Calendar name"
+        />
+      </Box>
+
+      <Box display="flex">
+        <Box flexGrow={1}>
+          <FormControl component="fieldset" aria-label="color">
             <RadioGroup row>
               {Object.values(colors).map(({ key, value }) => {
                 return (
@@ -132,47 +125,38 @@ const CalendarEditView = ({ id, calendarsAvailable }) => {
               })}
             </RadioGroup>
           </FormControl>
-        </Grid>
-        <Grid item container xs={4} md={3} justify="flex-end">
-          <Confirm
-            onConfirm={() => {
-              dispatch(clearEvents());
-              fetchDeleteCalendar(id);
-            }}
-            renderDialog={(open, onConfirm, onConfirmationClose) => (
-              <ConfirmationDialog
-                open={open}
-                onClose={onConfirmationClose}
-                onConfirm={onConfirm}
-                id="confirm-disconnect-calendar"
-                title="Disconnect calendar"
-                body={`Are you sure you want to disconnect the calendar ${
-                  currentName || nameInProvider
-                }`}
-                buttonText="Disconnect"
-              />
-            )}
-            renderContent={(onClick) => (
-              <LabeledIconButton
-                color="background.secondary"
-                label={isCalendarUserSignedUpWithGoogle ? 'Disconnect' : 'Remove'}
-                icon={<ClearRoundedIcon />}
-                onClick={onClick}
-              />
-            )}
-          />
-        </Grid>
-      </Grid>
+        </Box>
+
+        <Confirm
+          onConfirm={() => {
+            dispatch(clearAllEvents());
+            fetchDeleteCalendar(id);
+          }}
+          renderDialog={(open, onConfirm, onConfirmationClose) => (
+            <ConfirmationDialog
+              open={open}
+              onClose={onConfirmationClose}
+              onConfirm={onConfirm}
+              id="confirm-disconnect-calendar"
+              title="Disconnect calendar"
+              body={`Are you sure you want to disconnect the calendar ${
+                currentName || providerCalendarId
+              }`}
+              buttonText="Disconnect"
+            />
+          )}
+          renderContent={(onClick) => (
+            <Button onClick={onClick} size="small">
+              {isCalendarUserSignedUpWithGoogle ? 'Disconnect' : 'Remove'}
+            </Button>
+          )}
+        />
+      </Box>
     </ListItem>
   );
 };
 
 CalendarEditView.propTypes = {
-  calendarsAvailable: PropTypes.arrayOf(
-    PropTypes.shape({
-      providerCalendarId: PropTypes.string,
-    }),
-  ).isRequired,
   id: PropTypes.string.isRequired,
 };
 

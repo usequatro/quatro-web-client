@@ -12,14 +12,14 @@ import Tab from '@material-ui/core/Tab';
 import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
-import NavigationSidebar from './navigation/NavigationSidebar';
+import NavigationSidebar from './navigation-sidebar/NavigationSidebar';
 import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
-import DashboardAppBar from './navigation/DashboardAppBar';
-import DashboardViewBar from './navigation/DashboardViewBar';
+import DashboardAppBar, { getTopBarHeight } from './navigation-app-bar/DashboardAppBar';
+import DashboardViewBar from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
-import CalendarDashboardView from './calendar-view/CalendarDashboardView';
+import CalendarDashboardView from './calendar-dashboard-view/CalendarDashboardView';
 import Calendars from './calendars/Calendars';
 import SnackbarNotification from '../ui/SnackbarNotification';
 
@@ -39,11 +39,15 @@ const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
   },
+  placeholderToolbar: {
+    minHeight: getTopBarHeight(theme),
+  },
   appContentContainer: {
     flexGrow: 1,
     height: '100vh',
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
   },
   appContent: {
     flexGrow: 1,
@@ -51,6 +55,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'center',
     overflow: 'hidden',
+    width: '100%',
   },
   navigationBackdrop: {
     zIndex: theme.zIndex.drawer - 1,
@@ -61,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   snackbarStyle: {
-    background: theme.palette.background.secondary,
+    background: theme.palette.secondary.main,
     borderRadius: 30,
     color: 'white',
   },
@@ -75,6 +80,9 @@ const useStyles = makeStyles((theme) => ({
     minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
+  },
+  mobileTabList: {
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
 }));
 
@@ -140,7 +148,7 @@ const Dashboard = () => {
         />
 
         <Paper className={classes.appContent} square>
-          {activeTab !== dashboardTabs.NOW && <Toolbar />}
+          {activeTab !== dashboardTabs.NOW && <Toolbar className={classes.placeholderToolbar} />}
           {activeTab !== dashboardTabs.NOW && <DashboardViewBar />}
           {cond([
             [
@@ -153,11 +161,11 @@ const Dashboard = () => {
                     flexDirection="column"
                     className={classes.calendarDesktopViewContainer}
                   >
-                    <Toolbar />
+                    <Toolbar className={classes.placeholderToolbar} />
                     <CalendarDashboardView />
                   </Box>
                   <Box width="50%" display="flex" flexDirection="column">
-                    <Toolbar />
+                    <Toolbar className={classes.placeholderToolbar} />
                     <DashboardViewBar />
                     <TaskList />
                   </Box>
@@ -175,12 +183,13 @@ const Dashboard = () => {
                   flexGrow={1}
                   height="100vh"
                 >
-                  <Toolbar />
+                  <Toolbar className={classes.placeholderToolbar} />
                   <Tabs
                     variant="fullWidth"
                     value={selectedMobileTab}
                     onChange={(_, tab) => setSelectedMobileTab(tab)}
                     aria-label="view selector"
+                    className={classes.mobileTabList}
                   >
                     <Tab
                       label="Calendar"
