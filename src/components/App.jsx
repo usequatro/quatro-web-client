@@ -10,7 +10,7 @@ import RouterChangeTracker from './tracking/RouterChangeTracker';
 import { MixpanelProvider } from './tracking/MixpanelContext';
 import AppRouting from './AppRouting';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
-import { GoogleAPIContextProvider } from './GoogleAPI';
+import AuthManager from './AuthManager';
 import muiTheme from './theme';
 import createStore from '../store';
 
@@ -26,6 +26,7 @@ const [Router, routerProps] = isAppFullScreenMode()
 const App = () => (
   <ReactReduxProvider store={store}>
     <MixpanelProvider>
+      <AuthManager />
       <MaterialThemeProvider theme={muiTheme}>
         <ErrorBoundary>
           <CssBaseline />
@@ -33,10 +34,8 @@ const App = () => (
             <RouterChangeTracker />
             <Div100vh style={{ width: '100%', height: '100rvh' }}>
               <NotificationContextProvider>
-                <GoogleAPIContextProvider>
-                  <AppRouting />
-                  <NotificationSnackbar />
-                </GoogleAPIContextProvider>
+                <AppRouting />
+                <NotificationSnackbar />
               </NotificationContextProvider>
             </Div100vh>
           </Router>

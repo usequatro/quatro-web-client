@@ -6,7 +6,7 @@ import createReducer from '../utils/createReducer';
 import { listenToTaskList, selectTaskDashboardTab, getTabProperties } from './tasks';
 import { listenToRecurringConfigList } from './recurringConfigs';
 import { selectUserId } from './session';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 import { NOW } from '../constants/dashboardTabs';
 import * as SOURCES from '../constants/taskSources';
 import { TASK_CREATED } from '../constants/mixpanelEvents';
@@ -54,6 +54,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [SET_STATUS]: (state, { payload }) => ({
     ...state,
     status: payload,
@@ -77,7 +78,6 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     recurringConfigsSyncStatus: payload,
   }),
-  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors

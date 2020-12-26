@@ -11,14 +11,14 @@ import isAfter from 'date-fns/isAfter';
 import isPast from 'date-fns/isPast';
 import startOfDay from 'date-fns/startOfDay';
 import endOfDay from 'date-fns/endOfDay';
-import formatISO from 'date-fns/formatISO';
 import isValid from 'date-fns/isValid';
 
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../constants/tickConstants';
 import createReducer from '../utils/createReducer';
 import debugConsole from '../utils/debugConsole';
 import { selectCalendarProviderCalendarId } from './calendars';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
+import { gapiListCalendarEvents } from '../googleApi';
 
 export const NAMESPACE = 'calendarEvents';
 
@@ -98,7 +98,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [RESET]: () => ({ ...INITIAL_STATE }),
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [CLEAR_ALL_EVENTS]: () => ({ ...INITIAL_STATE }),
   [ADD_EVENTS]: (state, { payload: { events, dateKey } }) => {
     const byId = {
@@ -244,18 +244,8 @@ export const addTimestamps = (events) =>
 // Actions
 
 export const fetchEventsForCalendar = (providerCalendarId, startDate, endDate) => {
-  return (
-    window.gapi.client.calendar.events
-      // @see https://developers.google.com/calendar/v3/reference/events/list
-      .list({
-        calendarId: providerCalendarId,
-        timeMin: formatISO(startDate),
-        timeMax: formatISO(endDate),
-        maxResults: 25,
-        singleEvents: true,
-      })
-      // https://github.com/google/google-api-javascript-client/blob/master/docs/promises.md
-      .then((response) => response.result.items)
+  return gapiListCalendarEvents(providerCalendarId, startDate, endDate).then(
+    (response) => response.result.items,
   );
 };
 

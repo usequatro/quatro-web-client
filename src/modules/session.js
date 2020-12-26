@@ -5,7 +5,7 @@
 import get from 'lodash/get';
 
 import createReducer from '../utils/createReducer';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 
 export const NAMESPACE = 'session';
 
@@ -23,6 +23,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [LOG_OUT]: () => ({ userIsLoggedIn: false, firebaseUser: null, gapiUser: null }),
   [SET_FIREBASE_USER]: (state, { payload: user }) => ({
     ...state,
     userIsLoggedIn: user !== null, // Needs to be null, false or true.
@@ -32,7 +33,6 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     gapiUser,
   }),
-  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors

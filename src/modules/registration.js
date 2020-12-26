@@ -3,7 +3,7 @@
  */
 
 import createReducer from '../utils/createReducer';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 
 export const NAMESPACE = 'registration';
 
@@ -18,8 +18,8 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [SET_EMAIL]: (state, { payload }) => ({ ...state, email: payload }),
-  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors
@@ -30,5 +30,5 @@ export const selectRegistrationEmail = (state) => state[NAMESPACE].email;
 
 export const setRegistrationEmail = (email) => ({
   type: SET_EMAIL,
-  payload: email
+  payload: email,
 });

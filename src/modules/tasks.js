@@ -13,7 +13,7 @@ import calculateTaskScore from '../utils/calculateTaskScore';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import createReducer from '../utils/createReducer';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
@@ -58,7 +58,7 @@ const applyScores = (state) => ({
   ),
 });
 export const reducer = createReducer(INITIAL_STATE, {
-  [RESET]: () => ({ ...INITIAL_STATE }),
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
   [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) => {
     const newState = applyGroupedEntityChanges(state, { added, modified, removed });

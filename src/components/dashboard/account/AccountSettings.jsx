@@ -16,12 +16,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 
 import firebase, {
-  sendEmailVerification,
-  updateUserProfile,
-  updateUserEmail,
-  updateUserPassword,
-  deleteUser,
-  reauthenticateUserWithPassword,
+  firebaseSendEmailVerification,
+  firebaseUpdateUserProfile,
+  firebaseUpdateUserEmail,
+  firebaseUpdateUserPassword,
+  firebaseDeleteUser,
+  firebaseReauthenticateUserWithPassword,
 } from '../../../firebase';
 import PasswordTextField from '../../ui/PasswordTextField';
 import Confirm from '../../ui/Confirm';
@@ -77,7 +77,7 @@ const EmailVerificationText = ({ verified }) => {
   const onSend = (event) => {
     event.preventDefault();
     setSubmitting(true);
-    sendEmailVerification()
+    firebaseSendEmailVerification()
       .then(() => {
         notifySuccess('Verification email sent');
         setSubmitting(false);
@@ -161,16 +161,16 @@ const AccountSettings = () => {
     return initialPromise
       .then(() =>
         displayName !== savedDisplayName || photoURL !== savedPhotoURL
-          ? updateUserProfile({
+          ? firebaseUpdateUserProfile({
               ...(displayName !== savedDisplayName ? { displayName } : {}),
               ...(photoURL !== savedPhotoURL ? { photoURL } : {}),
             })
           : undefined,
       )
       .then(() =>
-        email !== savedEmail && passwordAuthProvider ? updateUserEmail(email) : undefined,
+        email !== savedEmail && passwordAuthProvider ? firebaseUpdateUserEmail(email) : undefined,
       )
-      .then(() => (newPassword !== '' ? updateUserPassword(email) : undefined))
+      .then(() => (newPassword !== '' ? firebaseUpdateUserPassword(email) : undefined))
       .then(() => {
         notifySuccess('Changes saved successfully');
         setSubmitting(false);
@@ -190,7 +190,7 @@ const AccountSettings = () => {
   };
 
   const handleDeleteAccount = () => {
-    deleteUser().catch((error) => {
+    firebaseDeleteUser().catch((error) => {
       if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
         setRecentLoginCallback(() => handleDeleteAccount);
         return;
@@ -205,7 +205,7 @@ const AccountSettings = () => {
 
     const recentLoginCallbackReference = recentLoginCallback;
 
-    reauthenticateUserWithPassword(password).then(() => {
+    firebaseReauthenticateUserWithPassword(password).then(() => {
       setRecentLoginCallback(null);
       return recentLoginCallbackReference();
     });
