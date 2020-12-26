@@ -9,14 +9,19 @@ import Avatar from '@material-ui/core/Avatar';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { useNotification } from '../../Notification';
-import { selectCalendarIds } from '../../../modules/calendars';
-import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
+import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
+import {
+  selectGapiUserSignedIn,
+  selectGoogleFirebaseAuthProvider,
+  selectGapiUserLoading,
+} from '../../../modules/session';
 import CalendarView from '../calendar-view/CalendarView';
 import * as paths from '../../../constants/paths';
 import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
 import GoogleButton from '../../ui/GoogleButton';
 import { gapiSignInExistingUser } from '../../../googleApi';
 import { firebaseConnectGoogleAccount } from '../../../firebase';
+import LoaderScreen from '../../ui/LoaderScreen';
 
 const useStyles = makeStyles((theme) => ({
   googleAvatar: {
@@ -32,7 +37,9 @@ const CalendarDashboardView = () => {
   const history = useHistory();
 
   const { notifyError } = useNotification();
-  const googleSignedIn = useSelector(selectGapiUserSignedIn);
+  const gapiUserLoading = useSelector(selectGapiUserLoading);
+  const fetchingCalendars = useSelector(selectCalendarsAreFetching);
+  const gapiUserSignedIn = useSelector(selectGapiUserSignedIn);
   const calendarIds = useSelector(selectCalendarIds);
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
@@ -62,8 +69,9 @@ const CalendarDashboardView = () => {
   return (
     <Box>
       {cond([
+        [() => gapiUserLoading || fetchingCalendars, () => <LoaderScreen delay={5000} />],
         [
-          () => !googleSignedIn && googleFirebaseAuthProvider,
+          () => !gapiUserSignedIn && googleFirebaseAuthProvider,
           () => (
             <EmptyState
               image={
@@ -84,7 +92,7 @@ const CalendarDashboardView = () => {
           ),
         ],
         [
-          () => !googleSignedIn,
+          () => !gapiUserSignedIn,
           () => (
             <EmptyState image={IMAGE_CALENDAR} text={emptyStateText}>
               <GoogleButton onClick={() => handleConnectGoogle()}>Sign in with Google</GoogleButton>

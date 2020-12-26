@@ -13,19 +13,17 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
-import Box from '@material-ui/core/Box';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 
 import { useNotification } from '../../Notification';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
+import LoaderScreen from '../../ui/LoaderScreen';
 import { selectAllConnectedProviderCalendarIds } from '../../../modules/calendars';
 import { selectUserId, selectGapiUserSignedIn } from '../../../modules/session';
 import { fetchCreateCalendar } from '../../../utils/apiClient';
 import calendarColors from '../../../constants/calendarColors';
-import useDebouncedState from '../../hooks/useDebouncedState';
 import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
 
 export default function CalendarSelectionDialog({ open, onClose }) {
@@ -41,8 +39,6 @@ export default function CalendarSelectionDialog({ open, onClose }) {
 
   useEffect(() => {
     if (!open) {
-      setFetching(false);
-      setCalendarsAvailable([]);
       setCalendarIdsSelected([]);
     }
   }, [open]);
@@ -99,9 +95,6 @@ export default function CalendarSelectionDialog({ open, onClose }) {
     onClose();
   };
 
-  // Introduce a delay before the spinner shows
-  const showSpinner = useDebouncedState(fetching, 250) && fetching;
-
   return (
     <Dialog
       open={open}
@@ -117,14 +110,7 @@ export default function CalendarSelectionDialog({ open, onClose }) {
       />
       <DialogContent>
         {cond([
-          [
-            () => showSpinner,
-            () => (
-              <Box display="flex" justifyContent="center">
-                <CircularProgress thickness={3} size="1.5rem" color="inherit" />
-              </Box>
-            ),
-          ],
+          [() => fetching, () => <LoaderScreen size="small" />],
           [
             () => calendarsAvailable.length === 0,
             () => <DialogContentText>No calendars</DialogContentText>,

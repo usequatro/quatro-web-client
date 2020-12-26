@@ -175,10 +175,13 @@ export const reducer = createReducer(INITIAL_STATE, {
 
 // Selectors
 
-export const selectCalendarEventIds = (state, dateKey) =>
-  get(state[NAMESPACE].byDate, [dateKey, 'allIds'], []);
+const selectCalendarEventIds = (state, dateKey) => {
+  const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
+  return get(state[NAMESPACE].byDate, [dateKeyString, 'allIds'], []);
+};
 export const selectCalendarEventsNeedLoading = (state, dateKey, currentTimestamp) => {
-  const fetchedAt = get(state[NAMESPACE].byDate, [dateKey, 'fetchedAt']);
+  const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
+  const fetchedAt = get(state[NAMESPACE].byDate, [dateKeyString, 'fetchedAt']);
   return (
     // not fetched
     fetchedAt == null ||
@@ -208,13 +211,13 @@ export const selectCalendarEventStyle = (state, id) => get(state[NAMESPACE].byId
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
   const calendarEventIds = selectCalendarEventIds(state, dateKeyString);
-  return calendarEventIds.filter((id) => !selectCalendarEventAllDay(state, id));
+  return (calendarEventIds || []).filter((id) => !selectCalendarEventAllDay(state, id));
 };
 
 export const selectAllDayCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
   const calendarEventIds = selectCalendarEventIds(state, dateKeyString);
-  return calendarEventIds.filter((id) => selectCalendarEventAllDay(state, id));
+  return (calendarEventIds || []).filter((id) => selectCalendarEventAllDay(state, id));
 };
 
 const isEventAllDay = (startDate, endDate, startOfDayDate, endOfDayDate) => {

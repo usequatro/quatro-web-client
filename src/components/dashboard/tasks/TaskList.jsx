@@ -31,7 +31,7 @@ import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterCon
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
-import LoadingState from './LoadingState';
+import LoaderScreen from '../../ui/LoaderScreen';
 import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
@@ -107,7 +107,7 @@ const TaskList = forwardRef((_, ref) => {
   return (
     <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
       {cond([
-        [() => loading, () => <LoadingState />],
+        [() => loading, () => <LoaderScreen />],
         [
           () => taskIds.length === 0,
           () => <EmptyState image={emptyStateImages[tab]} text={emptyStateTexts[tab]} />,
