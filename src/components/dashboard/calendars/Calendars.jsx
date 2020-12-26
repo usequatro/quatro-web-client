@@ -7,7 +7,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
@@ -19,6 +18,7 @@ import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/
 import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
 import GoogleButton from '../../ui/GoogleButton';
+import LoaderScreen from '../../ui/LoaderScreen';
 
 const useStyles = makeStyles(() => ({
   list: {
@@ -107,14 +107,7 @@ const Calendars = () => {
         </Typography>
         <Box display="flex" justifyContent="center">
           {cond([
-            [
-              () => showLoader,
-              () => (
-                <Box display="flex" justifyContent="center" mb={4}>
-                  <CircularProgress thickness={3} size="1.5rem" color="inherit" />
-                </Box>
-              ),
-            ],
+            [() => showLoader, () => <LoaderScreen size="small" />],
             [() => calendarsAreFetching, () => null],
             [
               () => calendarIds.length === 0,

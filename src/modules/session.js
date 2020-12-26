@@ -9,6 +9,10 @@ import { LOG_OUT } from './reset';
 
 export const NAMESPACE = 'session';
 
+const NOT_DEFINED = 'notDefined';
+const LOGGED_IN = 'loggedIn';
+const LOGGED_OUT = 'loggedOut';
+
 // Action types
 
 const SET_FIREBASE_USER = `${NAMESPACE}/SET_FIREBASE_USER`;
@@ -17,20 +21,22 @@ const SET_GOOGLE_CONNECTED_USER = `${NAMESPACE}/SET_GOOGLE_CONNECTED_USER`;
 // Reducers
 
 const INITIAL_STATE = {
-  userIsLoggedIn: null,
+  fireaseStatus: NOT_DEFINED,
   firebaseUser: null,
+  gapiStatus: NOT_DEFINED,
   gapiUser: null,
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ userIsLoggedIn: false, firebaseUser: null, gapiUser: null }),
+  [LOG_OUT]: () => ({ firebaseUser: null, gapiUser: null, status: NOT_DEFINED }),
   [SET_FIREBASE_USER]: (state, { payload: user }) => ({
     ...state,
-    userIsLoggedIn: user !== null, // Needs to be null, false or true.
+    fireaseStatus: user ? LOGGED_IN : LOGGED_OUT,
     firebaseUser: user,
   }),
   [SET_GOOGLE_CONNECTED_USER]: (state, { payload: gapiUser }) => ({
     ...state,
+    gapiStatus: gapiUser ? LOGGED_IN : LOGGED_OUT,
     gapiUser,
   }),
 });
@@ -43,7 +49,8 @@ export const selectUserEmailVerified = (state) =>
   get(state[NAMESPACE], 'firebaseUser.emailVerified');
 export const selectUserDisplayName = (state) => get(state[NAMESPACE], 'firebaseUser.displayName');
 export const selectUserPhotoURL = (state) => get(state[NAMESPACE], 'firebaseUser.photoURL');
-export const selectUserIsLoggedIn = (state) => state[NAMESPACE].userIsLoggedIn;
+export const selectFirebaseUserIsLoggedIn = (state) => state[NAMESPACE].fireaseStatus === LOGGED_IN;
+export const selectFirebaseUserLoading = (state) => state[NAMESPACE].fireaseStatus === NOT_DEFINED;
 export const selectGoogleFirebaseAuthProvider = (state) =>
   get(state[NAMESPACE], 'firebaseUser.providerData', []).find(
     ({ providerId }) => providerId === 'google.com',
@@ -53,7 +60,8 @@ export const selectPasswordFirebaseAuthProvider = (state) =>
     ({ providerId }) => providerId === 'password',
   );
 
-export const selectGapiUserSignedIn = (state) => Boolean(state[NAMESPACE].gapiUser);
+export const selectGapiUserLoading = (state) => state[NAMESPACE].gapiStatus === NOT_DEFINED;
+export const selectGapiUserSignedIn = (state) => state[NAMESPACE].gapiStatus === LOGGED_IN;
 export const selectGapiUserId = (state) => get(state[NAMESPACE], 'gapiUser.id');
 export const selectGapiUserName = (state) => get(state[NAMESPACE], 'gapiUser.name');
 export const selectGapiUserEmail = (state) => get(state[NAMESPACE], 'gapiUser.email');

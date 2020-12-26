@@ -102,7 +102,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   return (
     <AppBar position="fixed" color="secondary" className={classes.appBar} elevation={2}>
       <Toolbar className={classes.appBarToolbar} disableGutters>
-        <Hidden mdUp>
+        <Hidden smUp>
           <Box justifyContent="flex-start">
             <IconButton
               edge="start"

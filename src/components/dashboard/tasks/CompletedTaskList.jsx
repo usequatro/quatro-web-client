@@ -16,7 +16,7 @@ import { selectUserId } from '../../../modules/session';
 import { undoCompleteTask } from '../../../modules/tasks';
 import TaskView from './TaskView';
 import EmptyState, { IMAGE_COMPLETED } from './EmptyState';
-import LoadingState from './LoadingState';
+import LoaderScreen from '../../ui/LoaderScreen';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
 const SCROLL_OFFSET = 30;
@@ -165,7 +165,7 @@ const CompletedTaskList = () => {
     <Box flexGrow={1} display="flex" flexDirection="column">
       {cond([
         [() => status === ERROR, () => null],
-        [() => status === FETCHING && completedTasks.length === 0, () => <LoadingState />],
+        [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
         [() => completedTasks.length === 0, () => <EmptyState image={IMAGE_COMPLETED} text="" />],
         [
           () => true,

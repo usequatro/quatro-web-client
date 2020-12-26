@@ -88,15 +88,32 @@ const CalendarView = () => {
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
   const calendarIds = useSelector(selectCalendarIds);
   const eventsNeedLoading = useSelector((state) =>
-    selectCalendarEventsNeedLoading(state, format(date, 'yyyy-MM-dd'), currentTime),
+    selectCalendarEventsNeedLoading(state, date, currentTime),
   );
   useEffect(() => {
     if (!googleSignedIn || !eventsNeedLoading) {
       return undefined;
     }
     setFetching(true);
-    const unsubscribe = dispatch(loadEvents(calendarIds, date, () => setFetching(false)));
-    return unsubscribe;
+
+    let unsubscribed = false;
+    let finished = false;
+
+    dispatch(
+      loadEvents(calendarIds, date, () => {
+        if (unsubscribed) {
+          return;
+        }
+        finished = true;
+        setFetching(false);
+      }),
+    );
+    return () => {
+      if (!finished) {
+        setFetching(false);
+        unsubscribed = true;
+      }
+    };
   }, [dispatch, eventsNeedLoading, googleSignedIn, calendarIds, date]);
 
   // Management of current time bar and scrolling

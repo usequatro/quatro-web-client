@@ -89,7 +89,7 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
 
         {showSpinner && (
           <Box display="flex" justifyContent="center">
-            <Tooltip title="Saving..." arrow>
+            <Tooltip title="Loading..." arrow>
               <CircularProgress thickness={3} size="1.5rem" color="inherit" />
             </Tooltip>
           </Box>
