@@ -15,7 +15,8 @@ import CalendarView from '../calendar-view/CalendarView';
 import * as paths from '../../../constants/paths';
 import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
 import GoogleButton from '../../ui/GoogleButton';
-import { useGoogleAPI } from '../../GoogleAPI';
+import { gapiSignInExistingUser } from '../../../googleApi';
+import { firebaseConnectGoogleAccount } from '../../../firebase';
 
 const useStyles = makeStyles((theme) => ({
   googleAvatar: {
@@ -31,7 +32,6 @@ const CalendarDashboardView = () => {
   const history = useHistory();
 
   const { notifyError } = useNotification();
-  const { connectGoogle, signInExistingUser } = useGoogleAPI();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
   const calendarIds = useSelector(selectCalendarIds);
 
@@ -42,7 +42,7 @@ const CalendarDashboardView = () => {
   };
 
   const handleConnectGoogle = () => {
-    connectGoogle()
+    firebaseConnectGoogleAccount()
       .then(() => {
         history.push(paths.CALENDARS);
       })
@@ -53,7 +53,7 @@ const CalendarDashboardView = () => {
   };
 
   const handleSignInExistingUser = () => {
-    signInExistingUser().catch((error) => {
+    gapiSignInExistingUser().catch((error) => {
       console.error(error); // eslint-disable-line no-console
       notifyError('An error happened');
     });

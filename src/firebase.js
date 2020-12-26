@@ -21,7 +21,7 @@ if (process.env.REACT_APP_DEVELOPMENT) {
 
 export default firebase;
 
-export const signInWithCredential = (idToken, accessToken) => {
+export const firebaseSignInWithCredential = (idToken, accessToken) => {
   const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
   return firebase
     .auth()
@@ -32,7 +32,7 @@ export const signInWithCredential = (idToken, accessToken) => {
     });
 };
 
-export const signOut = () =>
+export const firebaseSignOut = () =>
   firebase
     .auth()
     .signOut()
@@ -41,7 +41,7 @@ export const signOut = () =>
       return result;
     });
 
-export const sendEmailVerification = async () => {
+export const firebaseSendEmailVerification = async () => {
   const user = firebase.auth().currentUser;
   if (!user) {
     throw new Error("Can't send email verification since user isn't logged in");
@@ -50,7 +50,7 @@ export const sendEmailVerification = async () => {
   return user.sendEmailVerification();
 };
 
-export const updateUserProfile = async ({ displayName, photoURL }) =>
+export const firebaseUpdateUserProfile = async ({ displayName, photoURL }) =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
@@ -58,7 +58,7 @@ export const updateUserProfile = async ({ displayName, photoURL }) =>
     return user.updateProfile({ displayName, photoURL });
   });
 
-export const updateUserEmail = async (email) =>
+export const firebaseUpdateUserEmail = async (email) =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
@@ -66,7 +66,7 @@ export const updateUserEmail = async (email) =>
     return user.updateEmail(email);
   });
 
-export const updateUserPassword = async (newPassword) =>
+export const firebaseUpdateUserPassword = async (newPassword) =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
@@ -74,7 +74,7 @@ export const updateUserPassword = async (newPassword) =>
     return user.updatePassword(newPassword);
   });
 
-export const deleteUser = async () =>
+export const firebaseDeleteUser = async () =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
@@ -82,7 +82,7 @@ export const deleteUser = async () =>
     return user.delete();
   });
 
-export const reauthenticateUserWithPassword = async (currentPassword) =>
+export const firebaseReauthenticateUserWithPassword = async (currentPassword) =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
       throw new Error('No logged in user');
@@ -90,3 +90,11 @@ export const reauthenticateUserWithPassword = async (currentPassword) =>
     const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
     return user.reauthenticateWithCredential(credential);
   });
+
+export const firebaseConnectGoogleAccount = () =>
+  firebase
+    .auth()
+    .currentUser.linkWithPopup(new firebase.auth.GoogleAuthProvider())
+    .then((result) => {
+      return firebase.auth().signInWithCredential(result.credential);
+    });

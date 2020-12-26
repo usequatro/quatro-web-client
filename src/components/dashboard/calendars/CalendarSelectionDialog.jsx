@@ -23,13 +23,12 @@ import { useNotification } from '../../Notification';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectAllConnectedProviderCalendarIds } from '../../../modules/calendars';
 import { selectUserId, selectGapiUserSignedIn } from '../../../modules/session';
-import { useGoogleAPI } from '../../GoogleAPI';
 import { fetchCreateCalendar } from '../../../utils/apiClient';
 import calendarColors from '../../../constants/calendarColors';
 import useDebouncedState from '../../hooks/useDebouncedState';
+import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
 
 export default function CalendarSelectionDialog({ open, onClose }) {
-  const { gapi } = useGoogleAPI();
   const { notifyError } = useNotification();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
@@ -49,16 +48,13 @@ export default function CalendarSelectionDialog({ open, onClose }) {
   }, [open]);
 
   useEffect(() => {
-    if (!open || !gapi || !googleSignedIn) {
+    if (!open || !googleSignedIn) {
       return undefined;
     }
     let unsubscribed = false;
     setFetching(true);
-    gapi.client.calendar.calendarList
-      .list({
-        maxResults: 25,
-        minAccessRole: 'writer',
-      })
+
+    gapiListCalendars()
       .then((response) => {
         if (unsubscribed) {
           return;
@@ -74,10 +70,10 @@ export default function CalendarSelectionDialog({ open, onClose }) {
     return () => {
       unsubscribed = true;
     };
-  }, [open, googleSignedIn, gapi, notifyError]);
+  }, [open, googleSignedIn, notifyError]);
 
-  const handleConnect = () => {
-    const currentUser = gapi.auth2.getAuthInstance().currentUser.get();
+  const handleConnect = async () => {
+    const currentUser = (await gapiGetAuthInstance()).currentUser.get();
     if (!currentUser) {
       notifyError(`An error ocurred. User isn't signed in to Google`);
       return;

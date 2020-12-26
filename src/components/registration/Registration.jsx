@@ -19,9 +19,9 @@ import EmailRoundedIcon from '@material-ui/icons/EmailRounded';
 import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
 import firebase from '../../firebase';
+import { gapiSignIn } from '../../googleApi';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
-import { useGoogleAPI } from '../GoogleAPI';
 import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 
 export const LOG_IN = 'logIn';
@@ -98,8 +98,6 @@ const Registration = ({ mode }) => {
     setPassword('');
   }, [mode]);
 
-  const { signIn } = useGoogleAPI();
-
   const redirectLoggedInUserToDashboard = () => {
     // Clear the email on the login/signup form
     if (emailAddress) {
@@ -164,7 +162,7 @@ const Registration = ({ mode }) => {
   };
 
   const handleSignInWithGoogle = () => {
-    signIn().catch((error) => {
+    gapiSignIn().catch((error) => {
       console.error(error); // eslint-disable-line no-console
       const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
       notifyError(errorMessage);

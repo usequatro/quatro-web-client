@@ -12,7 +12,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
-import { useGoogleAPI } from '../../GoogleAPI';
+import { gapiSignInExistingUser } from '../../../googleApi';
+import { firebaseConnectGoogleAccount } from '../../../firebase';
 import { useNotification } from '../../Notification';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
@@ -31,7 +32,6 @@ const Calendars = () => {
 
   const connectNewCalendarButton = useRef();
 
-  const { connectGoogle, signInExistingUser } = useGoogleAPI();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
@@ -42,14 +42,14 @@ const Calendars = () => {
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
   const handleConnectGoogle = () => {
-    connectGoogle().catch((error) => {
+    firebaseConnectGoogleAccount().catch((error) => {
       console.error(error); // eslint-disable-line no-console
       notifyError('An error happened');
     });
   };
 
   const handleSignInExistingUser = () => {
-    signInExistingUser().catch((error) => {
+    gapiSignInExistingUser().catch((error) => {
       console.error(error); // eslint-disable-line no-console
       notifyError('An error happened');
     });

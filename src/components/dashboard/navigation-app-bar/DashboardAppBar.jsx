@@ -23,7 +23,7 @@ import * as paths from '../../../constants/paths';
 import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
-import { signOut as firebaseSignOut } from '../../../firebase';
+import { firebaseSignOut } from '../../../firebase';
 import { ReactComponent as Logo } from './logo-white.svg';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
