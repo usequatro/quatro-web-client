@@ -38,13 +38,14 @@ import usePrevious from '../hooks/usePrevious';
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    height: '100%',
   },
   placeholderToolbar: {
     minHeight: getTopBarHeight(theme),
   },
   appContentContainer: {
     flexGrow: 1,
-    height: '100vh',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

@@ -117,16 +117,13 @@ const CompletedTaskList = () => {
   }, [completedTasks, status, endReached, notifyError, userId]);
 
   const handleUncompleteTask = (id) => {
+    // @TODO: handle clicking fast on a task uncompleted, should undo the uncompletion
+
     const completedTaskPair = completedTasks.find(([ctid]) => ctid === id);
     if (!completedTaskPair) {
       notifyError('Error updating task: not found');
       return;
     }
-
-    // Ask as incomplete, so it shows on the UI
-    setCompletedTasks(
-      completedTasks.map(([ctid, task]) => (ctid === id ? { ...task, completed: null } : task)),
-    );
 
     // add the task, and dispatch the update that will be tracked
     dispatch(undoCompleteTask(id));
@@ -134,13 +131,13 @@ const CompletedTaskList = () => {
     // Mark as not completed so UI updates
     setCompletedTasks(
       completedTasks.map(([ctid, ctask]) =>
-        ctid === id ? [ctid, { ...ctask, completed: null }] : [ctid, ctask],
+        ctid === id ? [ctid, { ...ctask, overrideCompletedCheckbox: true }] : [ctid, ctask],
       ),
     );
     // Remove task.
     setTimeout(() => {
       setCompletedTasks(completedTasks.filter(([ctid]) => ctid !== id));
-    }, 500);
+    }, 750);
   };
 
   useCreateTaskShortcut();
@@ -156,7 +153,7 @@ const CompletedTaskList = () => {
       prioritizedAheadOf={undefined}
       showBlockers={false}
       hasRecurringConfig={false}
-      completed={task.completed}
+      completed={task.completed && !task.overrideCompletedCheckbox}
       onComplete={handleUncompleteTask}
     />
   );

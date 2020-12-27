@@ -69,11 +69,15 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
+  const [readyForScroll, setReadyForScroll] = useState(false);
   const anchor = useRef();
 
   const [currentHour, setCurrentHour] = useState('');
   const [currentMinute, setCurrentMinute] = useState('');
   const [currentAmPm, setCurrentAmPm] = useState('');
+
+  const selectedHourRef = useRef();
+  const selectedMinuteRef = useRef();
 
   useEffect(() => {
     setCurrentHour(formatFunction(dateTime, 'hh'));
@@ -91,6 +95,18 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
     );
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (!open || !readyForScroll) {
+      return;
+    }
+    if (selectedHourRef && selectedHourRef.current) {
+      selectedHourRef.current.scrollIntoView();
+    }
+    if (selectedMinuteRef && selectedMinuteRef.current) {
+      selectedMinuteRef.current.scrollIntoView();
+    }
+  }, [readyForScroll, open]);
 
   return (
     <>
@@ -122,6 +138,8 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
           horizontal: 'center',
         }}
         PaperProps={{ className: classes.popoverPaper }}
+        onEnter={() => setReadyForScroll(false)}
+        onEntering={() => setReadyForScroll(true)}
       >
         <Box className={classes.currentValueContainer}>
           <Typography align="center" component="p" variant="h6">
@@ -135,6 +153,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
               <MenuItem
                 key={hour}
                 selected={hour === currentHour}
+                ref={hour === currentHour ? selectedHourRef : undefined}
                 onClick={() => setCurrentHour(hour)}
               >
                 {hour}
@@ -147,6 +166,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
               <MenuItem
                 key={minute}
                 selected={minute === currentMinute}
+                ref={minute === currentMinute ? selectedMinuteRef : undefined}
                 onClick={() => setCurrentMinute(minute)}
               >
                 {minute}

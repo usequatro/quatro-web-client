@@ -40,6 +40,8 @@ const LoaderScreen = ({ background, color, delay, size }) => {
       display="flex"
       justifyContent="center"
       alignItems="center"
+      flexShrink={0}
+      flexGrow={1}
       className={classes.box}
     >
       {showLoader && (

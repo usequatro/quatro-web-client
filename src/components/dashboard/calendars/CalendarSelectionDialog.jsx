@@ -124,7 +124,7 @@ export default function CalendarSelectionDialog({ open, onClose }) {
                   const selected = alreadyAdded || calendarIdsSelected.includes(calendar.id);
                   return (
                     <ListItem key={calendar.id} disabled={alreadyAdded}>
-                      <ListItemText>{calendar.id}</ListItemText>
+                      <ListItemText style={{ wordBreak: 'break-word' }}>{calendar.id}</ListItemText>
                       <ListItemSecondaryAction>
                         <IconButton
                           aria-label="select"

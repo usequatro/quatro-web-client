@@ -88,7 +88,7 @@ const getEventCardStyle = (event) => {
 
 // Action types
 
-const ADD_EVENTS = `${NAMESPACE}/ADD_EVENTS`;
+const SET_DAY_EVENTS = `${NAMESPACE}/SET_DAY_EVENTS`;
 const CLEAR_ALL_EVENTS = `${NAMESPACE}/CLEAR_ALL_EVENTS`;
 
 const INITIAL_STATE = {
@@ -100,68 +100,76 @@ const INITIAL_STATE = {
 export const reducer = createReducer(INITIAL_STATE, {
   [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [CLEAR_ALL_EVENTS]: () => ({ ...INITIAL_STATE }),
-  [ADD_EVENTS]: (state, { payload: { events, dateKey } }) => {
-    const byId = {
-      ...state.byId,
-      ...events.reduce((memo, item) => ({ ...memo, [item.id]: item }), {}),
-    };
+  [SET_DAY_EVENTS]: (state, { payload: { events, dateKey } }) => {
+    const dayEventsById = events.reduce((memo, item) => ({ ...memo, [item.id]: item }), {});
 
     // Optimization to avoid doing it on every render:
     // Add number of collisions and horizontal order to show cards
-    const allTimedEvents = Object.values(byId).filter((event) => !event.allDay);
-    const byIdWithCollisions = Object.entries(byId).reduce((memo, [id, event]) => {
-      const collisionIds = getCollisions(event, allTimedEvents);
+    const allTimedEvents = events.filter((event) => !event.allDay);
+    const dayEventsByIdWithCollisions = Object.entries(dayEventsById).reduce(
+      (memo, [id, event]) => {
+        // @TODO: handle all day collisions
+        const collisionIds = getCollisions(event, allTimedEvents);
 
-      const eventWithCollisionCount = {
-        ...event,
-        collisionCount: collisionIds.length,
-        collisionOrder: event.collisionOrder || 0,
-      };
-      const otherEventsWithCollisionPreference = collisionIds.reduce(
-        (acc, collisionId) => ({
-          ...acc,
-          [collisionId]: {
-            ...(memo[collisionId] || {}),
-            collisionOrder:
-              memo[collisionId] && memo[collisionId].collisionOrder
-                ? memo[collisionId].collisionOrder + 1
-                : 1,
-          },
-        }),
-        {},
-      );
-      return {
-        ...memo,
-        [id]: eventWithCollisionCount,
-        ...otherEventsWithCollisionPreference,
-      };
-    }, {});
+        const eventWithCollisionCount = {
+          ...event,
+          collisionCount: collisionIds.length,
+          collisionOrder: event.collisionOrder || 0,
+        };
+        const otherEventsWithCollisionOrderField = collisionIds.reduce(
+          (acc, collisionId) => ({
+            ...acc,
+            [collisionId]: {
+              ...(memo[collisionId] || {}),
+              collisionOrder:
+                memo[collisionId] && memo[collisionId].collisionOrder
+                  ? memo[collisionId].collisionOrder + 1
+                  : 1,
+            },
+          }),
+          {},
+        );
+
+        return {
+          ...memo,
+          [id]: eventWithCollisionCount,
+          ...otherEventsWithCollisionOrderField,
+        };
+      },
+      {},
+    );
 
     // Optimization to avoid doing it on every render:
     // Add style to events depending on their properties
-    const byIdWithStyle = Object.entries(byIdWithCollisions).reduce((memo, [id, event]) => {
-      const eventWithStyle = {
-        ...event,
-        style: getEventCardStyle(event),
-      };
+    const dayEventsByIdWithStyle = Object.entries(dayEventsByIdWithCollisions).reduce(
+      (memo, [id, event]) => {
+        const eventWithStyle = {
+          ...event,
+          style: getEventCardStyle(event),
+        };
 
-      return {
-        ...memo,
-        [id]: eventWithStyle,
-      };
-    }, {});
+        return {
+          ...memo,
+          [id]: eventWithStyle,
+        };
+      },
+      {},
+    );
 
     // Optimization to avoid doing it on every render:
     // Sort IDs by start time
     const allIds = uniq(events.map(({ id }) => id));
     const idTimestampPairs = allIds.map((id) => {
-      return { id, timestamp: get(byId, [id, 'start', 'timestamp'], Infinity) };
+      return { id, timestamp: get(dayEventsById, [id, 'start', 'timestamp'], Infinity) };
     });
     const sortedPairs = sortBy(idTimestampPairs, 'timestamp');
     const sortedIds = sortedPairs.map(({ id }) => id);
 
     return {
-      byId: byIdWithStyle,
+      byId: {
+        ...state.byId,
+        ...dayEventsByIdWithStyle,
+      },
       byDate: {
         ...state.byDate,
         [dateKey]: {
@@ -324,7 +332,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     }));
 
     dispatch({
-      type: ADD_EVENTS,
+      type: SET_DAY_EVENTS,
       payload: {
         events,
         dateKey,

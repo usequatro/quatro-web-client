@@ -19,9 +19,8 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    [theme.breakpoints.up('sm')]: {
-      flexGrow: 1,
-    },
+    flexShrink: 0,
+    flexGrow: 1,
   },
   emptyStateContent: {
     width: '25rem',
@@ -46,7 +45,7 @@ const EmptyState = ({ text, image, children }) => {
     <Box className={classes.emptyStateContainer}>
       <Fade in>
         <div className={classes.emptyStateContent}>
-          <Box width="60%" mb={4} display="flex" justifyContent="center">
+          <Box width="60%" mb={4} display="flex" justifyContent="center" alignItems="center">
             {image && typeof image === 'string' && (
               <img alt="Empty task list" className={classes.emptyStateImage} src={image} />
             )}
