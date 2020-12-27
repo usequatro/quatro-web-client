@@ -1,8 +1,9 @@
-name: Deploy to Firebase Hosting
+name: Production Deployment
 
 on:
   push:
-    branches: [master, develop]
+    tags:
+      - "releases/[1-9]+.[0-9]+.[0-9]+.*"
 
 jobs:
   deploy:
@@ -21,24 +22,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Use development Firebase
-        if: github.ref == 'refs/heads/develop'
-        run: firebase use quatro-dev-88030 --token ${{ secrets.FIREBASE_TOKEN }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-
       - name: Use production Firebase
-        if: github.ref == 'refs/heads/master'
         run: firebase use tasket-project --token ${{ secrets.FIREBASE_TOKEN }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
-      - name: Build for development environment
-        if: github.ref == 'refs/heads/develop'
-        run: npm run build-dev
-
       - name: Build for production environment
-        if: github.ref == 'refs/heads/master'
         run: npm run build-prod
 
       - name: Deploy to Firebase Hosting
