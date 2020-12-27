@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: '100%',
-    height: '100%',
+    minHeight: '100%',
     flexDirection: 'column',
     backgroundColor: theme.palette.primary.light,
     [theme.breakpoints.up('sm')]: {
