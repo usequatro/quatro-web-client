@@ -6,20 +6,17 @@ import isToday from 'date-fns/isToday';
 import isYesterday from 'date-fns/isYesterday';
 import isThisWeek from 'date-fns/isThisWeek';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Hidden from '@material-ui/core/Hidden';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import TaskListHeader from './TaskListHeader';
-import { COMPLETED } from '../../../constants/dashboardTabs';
 import { fetchListCompletedTasks, COMPLETED_TASKS_PAGE_SIZE } from '../../../utils/apiClient';
 import { useNotification } from '../../Notification';
 import { selectUserId } from '../../../modules/session';
 import { undoCompleteTask } from '../../../modules/tasks';
 import TaskView from './TaskView';
-import EmptyState from './EmptyState';
-import LoadingState from './LoadingState';
+import EmptyState, { IMAGE_COMPLETED } from './EmptyState';
+import LoaderScreen from '../../ui/LoaderScreen';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
 const SCROLL_OFFSET = 30;
@@ -58,12 +55,13 @@ const CompletedTaskList = () => {
   );
 
   useEffect(() => {
-    if (status !== INITIAL) {
-      return;
-    }
+    let unsubscribed = false;
     setStatus(FETCHING);
     fetchListCompletedTasks(userId)
       .then((results) => {
+        if (unsubscribed) {
+          return;
+        }
         setCompletedTasks(results);
         setEndReached(results.length < COMPLETED_TASKS_PAGE_SIZE);
         setStatus(FETCHED);
@@ -73,7 +71,10 @@ const CompletedTaskList = () => {
         notifyError('Error loading completed tasks');
         setStatus(ERROR);
       });
-  }, [notifyError, status, userId]);
+    return () => {
+      unsubscribed = true;
+    };
+  }, [notifyError, userId]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,16 +117,13 @@ const CompletedTaskList = () => {
   }, [completedTasks, status, endReached, notifyError, userId]);
 
   const handleUncompleteTask = (id) => {
+    // @TODO: handle clicking fast on a task uncompleted, should undo the uncompletion
+
     const completedTaskPair = completedTasks.find(([ctid]) => ctid === id);
     if (!completedTaskPair) {
       notifyError('Error updating task: not found');
       return;
     }
-
-    // Ask as incomplete, so it shows on the UI
-    setCompletedTasks(
-      completedTasks.map(([ctid, task]) => (ctid === id ? { ...task, completed: null } : task)),
-    );
 
     // add the task, and dispatch the update that will be tracked
     dispatch(undoCompleteTask(id));
@@ -133,13 +131,13 @@ const CompletedTaskList = () => {
     // Mark as not completed so UI updates
     setCompletedTasks(
       completedTasks.map(([ctid, ctask]) =>
-        ctid === id ? [ctid, { ...ctask, completed: null }] : [ctid, ctask],
+        ctid === id ? [ctid, { ...ctask, overrideCompletedCheckbox: true }] : [ctid, ctask],
       ),
     );
     // Remove task.
     setTimeout(() => {
       setCompletedTasks(completedTasks.filter(([ctid]) => ctid !== id));
-    }, 500);
+    }, 750);
   };
 
   useCreateTaskShortcut();
@@ -155,7 +153,7 @@ const CompletedTaskList = () => {
       prioritizedAheadOf={undefined}
       showBlockers={false}
       hasRecurringConfig={false}
-      completed={task.completed}
+      completed={task.completed && !task.overrideCompletedCheckbox}
       onComplete={handleUncompleteTask}
     />
   );
@@ -164,8 +162,8 @@ const CompletedTaskList = () => {
     <Box flexGrow={1} display="flex" flexDirection="column">
       {cond([
         [() => status === ERROR, () => null],
-        [() => status === FETCHING && completedTasks.length === 0, () => <LoadingState />],
-        [() => completedTasks.length === 0, () => <EmptyState tab={COMPLETED} />],
+        [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
+        [() => completedTasks.length === 0, () => <EmptyState image={IMAGE_COMPLETED} text="" />],
         [
           () => true,
           () => (
@@ -208,12 +206,6 @@ const CompletedTaskList = () => {
           ),
         ],
       ])()}
-
-      {/* spacing for the mobile bottom toolbar */}
-      <Hidden smUp>
-        <Toolbar />
-        <Toolbar />
-      </Hidden>
     </Box>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * @param {mixed} value
@@ -7,12 +7,21 @@ import { useState, useEffect } from 'react';
 export default function useDebouncedState(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState();
 
+  const timeouts = useRef([]);
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
-    return () => clearTimeout(timeout);
+    timeouts.current.push(timeout);
   }, [value, delay]); // Only re-run if value changes
+
+  useEffect(
+    () => () => {
+      timeouts.current.forEach((timeout) => clearTimeout(timeout));
+    },
+    [],
+  );
 
   return debouncedValue;
 }

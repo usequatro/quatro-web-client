@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
@@ -10,22 +10,25 @@ import Tooltip from '@material-ui/core/Tooltip';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 
-import {
-  getAuth,
-  sendEmailVerification,
-  getUserProviders,
-  updateUserProfile,
-  updateUserEmail,
-  updateUserPassword,
-  reauthenticateUser,
+import firebase, {
+  firebaseSendEmailVerification,
+  firebaseUpdateUserProfile,
+  firebaseUpdateUserEmail,
+  firebaseUpdateUserPassword,
+  firebaseDeleteUser,
+  firebaseReauthenticateUserWithPassword,
 } from '../../../firebase';
 import PasswordTextField from '../../ui/PasswordTextField';
+import Confirm from '../../ui/Confirm';
+import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import AsyncFileUploadInput, { ERROR_IMAGE_SIZE } from '../../ui/AsyncFileUploadInput';
 import PasswordConfirmDialog from './PasswordConfirmDialog';
+import GoogleSignInConfirmDialog from './GoogleSignInConfirmDialog';
 import {
   selectUserId,
   selectUserDisplayName,
@@ -33,11 +36,16 @@ import {
   selectUserEmailVerified,
   selectUserPhotoURL,
   setUserFromFirebaseUser,
+  selectPasswordFirebaseAuthProvider,
+  selectGoogleFirebaseAuthProvider,
 } from '../../../modules/session';
 import { useNotification } from '../../Notification';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
-const ERROR_REQUIRES_RECENT_LOGIN = 'auth/requires-recent-login';
+const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
+  'auth/requires-recent-login',
+  'CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
+];
 const ERROR_WRONG_PASSWORD = 'auth/wrong-password';
 const userFacingErrors = {
   [ERROR_IMAGE_SIZE]: 'Image is larger than 1MB. Please use a smaller image',
@@ -69,7 +77,7 @@ const EmailVerificationText = ({ verified }) => {
   const onSend = (event) => {
     event.preventDefault();
     setSubmitting(true);
-    sendEmailVerification()
+    firebaseSendEmailVerification()
       .then(() => {
         notifySuccess('Verification email sent');
         setSubmitting(false);
@@ -116,7 +124,9 @@ const AccountSettings = () => {
   const [submitting, setSubmitting] = useState(false);
   const emailVerified = useSelector(selectUserEmailVerified) || false;
   const userId = useSelector(selectUserId);
-  const providers = useMemo(getUserProviders, []);
+
+  const passwordAuthProvider = useSelector(selectPasswordFirebaseAuthProvider);
+  const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
   const savedEmail = useSelector(selectUserEmail);
   const [email, setEmail] = useState(savedEmail || '');
@@ -144,33 +154,33 @@ const AccountSettings = () => {
   const [uploadingPhotoURL, setUploadingPhotoURL] = useState(null);
 
   const [newPassword, setNewPassword] = useState('');
-  const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
+  const [recentLoginCallback, setRecentLoginCallback] = useState(null);
 
   const handleSave = (initialPromise = Promise.resolve()) => {
     setSubmitting(true);
     return initialPromise
       .then(() =>
         displayName !== savedDisplayName || photoURL !== savedPhotoURL
-          ? updateUserProfile({
+          ? firebaseUpdateUserProfile({
               ...(displayName !== savedDisplayName ? { displayName } : {}),
               ...(photoURL !== savedPhotoURL ? { photoURL } : {}),
             })
           : undefined,
       )
       .then(() =>
-        email !== savedEmail && providers.includes('password') ? updateUserEmail(email) : undefined,
+        email !== savedEmail && passwordAuthProvider ? firebaseUpdateUserEmail(email) : undefined,
       )
-      .then(() => (newPassword !== '' ? updateUserPassword(email) : undefined))
+      .then(() => (newPassword !== '' ? firebaseUpdateUserPassword(email) : undefined))
       .then(() => {
         notifySuccess('Changes saved successfully');
         setSubmitting(false);
         setNewPassword('');
 
-        dispatch(setUserFromFirebaseUser(getAuth().currentUser));
+        dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
       })
       .catch((error) => {
-        if (error.code === ERROR_REQUIRES_RECENT_LOGIN) {
-          setPasswordConfirmOpen(true);
+        if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
+          setRecentLoginCallback(() => handleSave);
           return;
         }
         console.error(error); // eslint-disable-line no-console
@@ -179,11 +189,26 @@ const AccountSettings = () => {
       });
   };
 
-  const handleResave = (password) => {
-    setSubmitting(true);
-    setPasswordConfirmOpen(false);
+  const handleDeleteAccount = () => {
+    firebaseDeleteUser().catch((error) => {
+      if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
+        setRecentLoginCallback(() => handleDeleteAccount);
+        return;
+      }
+      console.error(error); // eslint-disable-line no-console
+      notifyError(userFacingErrors[error.code] || 'Error saving changes');
+    });
+  };
 
-    handleSave(reauthenticateUser(password));
+  const handleRecentLoginWithPassword = (password) => {
+    setSubmitting(true);
+
+    const recentLoginCallbackReference = recentLoginCallback;
+
+    firebaseReauthenticateUserWithPassword(password).then(() => {
+      setRecentLoginCallback(null);
+      return recentLoginCallbackReference();
+    });
   };
 
   const hasChanges =
@@ -193,7 +218,14 @@ const AccountSettings = () => {
     photoURL !== savedPhotoURL;
 
   return (
-    <Box className={classes.container} py={4} px={2} style={{ opacity: submitting ? 0.5 : 1 }}>
+    <Box
+      className={classes.container}
+      py={4}
+      px={2}
+      style={{ opacity: submitting ? 0.5 : 1 }}
+      flexGrow={1}
+      alignSelf="center"
+    >
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -201,7 +233,7 @@ const AccountSettings = () => {
         }}
       >
         <Box display="flex" justifyContent="center">
-          <Tooltip title="Set profile picture">
+          <Tooltip title="Set profile picture" arrow>
             <label htmlFor="profile-pic-upload-input">
               {cond([
                 [() => uploadingPhotoURL, () => <CircularProgress thickness={4} size="2rem" />],
@@ -212,7 +244,7 @@ const AccountSettings = () => {
                       focusRipple
                       className={classes.profilePhoto}
                       style={{
-                        backgroundImage: providers.includes('google.com')
+                        backgroundImage: googleFirebaseAuthProvider
                           ? `url("${resizeGoogleProfileUrl(photoURL)}")`
                           : `url("${photoURL}")`,
                       }}
@@ -266,31 +298,38 @@ const AccountSettings = () => {
           margin="normal"
         />
 
-        <TextField
-          fullWidth
-          label={providers.includes('google.com') ? 'Email (managed by Google)' : 'Email'}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          type="email"
-          margin="normal"
-          disabled={!providers.includes('password')}
-          helperText={<EmailVerificationText verified={emailVerified} />}
-        />
+        {passwordAuthProvider && (
+          <>
+            <TextField
+              fullWidth
+              label="Email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              type="email"
+              margin="normal"
+              helperText={<EmailVerificationText verified={emailVerified} />}
+            />
+            <PasswordTextField
+              fullWidth
+              label="Change password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+            />
+          </>
+        )}
 
-        {providers.includes('password') && (
-          <PasswordTextField
-            fullWidth
-            label="Change password"
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-            margin="normal"
-          />
+        {googleFirebaseAuthProvider && (
+          <Box my={4}>
+            <Typography>Connected Google Account</Typography>
+            <Typography variant="body2">{googleFirebaseAuthProvider.email}</Typography>
+          </Box>
         )}
 
         <Box display="flex" justifyContent="flex-end" pt={4}>
           <Button
             type="submit"
+            variant="contained"
             color="primary"
             disabled={submitting || !hasChanges}
             endIcon={submitting ? <CircularProgress thickness={4} size="1.25rem" /> : null}
@@ -300,10 +339,41 @@ const AccountSettings = () => {
         </Box>
       </form>
 
+      <Box display="flex" justifyContent="flex-end" pt={4}>
+        <Confirm
+          onConfirm={handleDeleteAccount}
+          renderDialog={(open, onConfirm, onConfirmationClose) => (
+            <ConfirmationDialog
+              open={open}
+              onClose={onConfirmationClose}
+              onConfirm={onConfirm}
+              id="confirm-delete-account"
+              title="Delete account"
+              body="This action will delete your Quatro account. There's no way back"
+              buttonText="Delete account permanently"
+            />
+          )}
+          renderContent={(onClick) => (
+            <Button type="submit" color="inherit" disabled={submitting} onClick={onClick}>
+              Delete account
+            </Button>
+          )}
+        />
+      </Box>
+
       <PasswordConfirmDialog
-        open={passwordConfirmOpen}
-        onClose={() => setPasswordConfirmOpen(false)}
-        onConfirm={handleResave}
+        open={Boolean(typeof recentLoginCallback === 'function' && passwordAuthProvider)}
+        onClose={() => setRecentLoginCallback(null)}
+        onConfirm={handleRecentLoginWithPassword}
+      />
+
+      <GoogleSignInConfirmDialog
+        open={Boolean(
+          typeof recentLoginCallback === 'function' &&
+            googleFirebaseAuthProvider &&
+            !passwordAuthProvider,
+        )}
+        onClose={() => setRecentLoginCallback(null)}
       />
     </Box>
   );

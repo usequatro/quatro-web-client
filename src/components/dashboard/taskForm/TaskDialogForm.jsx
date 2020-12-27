@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme) => ({
   },
   dialogActionBar: {
     display: 'flex',
-    backgroundColor: theme.palette.background.secondary,
+    backgroundColor: theme.palette.background.default,
   },
   dialogContent: {
     padding: 0,
@@ -108,9 +108,10 @@ const useStyles = makeStyles((theme) => ({
   titleTextField: {
     flexGrow: 1,
   },
-  dateButton: {
+  settingButton: {
     justifyContent: 'flex-start',
     textAlign: 'left',
+    fontWeight: 'normal',
   },
   submitLoader: {
     color: theme.palette.common.white,
@@ -142,7 +143,7 @@ const getBlockerTitle = cond([
 
 const RepeatButtonDisabledTooltip = ({ mounted, children }) =>
   mounted ? (
-    <Tooltip title="Add a Start Date to enable" enterDelay={0}>
+    <Tooltip title="Add a Start Date to enable" enterDelay={0} arrow>
       <span>{children}</span>
     </Tooltip>
   ) : (
@@ -291,10 +292,14 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitleWithClose onClose={onClose}>{modalTitle}</DialogTitleWithClose>
+      <DialogTitleWithClose
+        onClose={onClose}
+        title={modalTitle}
+        TypographyProps={{ variant: 'h5', component: 'h2' }}
+      />
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content">
-        <Box pt={0} pb={2} px={3} display="flex" alignItems="flex-end">
+        <Box pt={1} pb={2} px={3} display="flex" alignItems="flex-end">
           <TextField
             label="What do you need to do?"
             className={classes.titleTextField}
@@ -317,7 +322,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             error={validationErrors.includes('title')}
           />
 
-          <Tooltip title={showDescription ? 'Remove notes' : 'Add notes'}>
+          <Tooltip title={showDescription ? 'Remove notes' : 'Add notes'} arrow enterDelay={1000}>
             <IconButton
               size="small"
               edge="end"
@@ -377,7 +382,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               <Button
                 onClick={() => setShowScheduledStartDialog(true)}
                 startIcon={<EventRoundedIcon />}
-                className={classes.dateButton}
+                className={classes.settingButton}
               >
                 {'Start Date: '}
                 {formatDateTime(scheduledStartTimestamp)}
@@ -387,7 +392,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               <Button
                 onClick={() => setShowDueDialog(true)}
                 startIcon={<AccessAlarmRoundedIcon />}
-                className={classes.dateButton}
+                className={classes.settingButton}
               >
                 {'Due Date: '}
                 {formatDateTime(dueTimestamp)}
@@ -398,7 +403,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 ref={repeatSettingRef}
                 onClick={() => setRecurringMenuAnchorEl(repeatSettingRef.current)}
                 startIcon={<ReplayRoundedIcon />}
-                className={classes.dateButton}
+                className={classes.settingButton}
               >
                 {'Repeat: '}
                 {getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp)}
@@ -409,7 +414,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
         {blockedBy.length > 0 && (
           <Box px={3} pt={0} pb={2} display="flex" flexDirection="row" alignItems="flex-start">
-            <Tooltip title="Add Blocker">
+            <Tooltip title="Add Blocker" arrow>
               <IconButton
                 aria-label="blockers"
                 onClick={() => setShowBlockersDialog(!showBlockersDialog)}
@@ -429,7 +434,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
 
                   <ListItemSecondaryAction>
-                    <Tooltip title="Delete Blocker">
+                    <Tooltip title="Delete Blocker" arrow>
                       <IconButton
                         edge="end"
                         aria-label="remove"
@@ -451,12 +456,14 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         <Box flexGrow={1}>
           <LabeledIconButton
             label="Start Date"
+            color="inherit"
             icon={<EventRoundedIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
           />
           <RepeatButtonDisabledTooltip mounted={!scheduledStartTimestamp}>
             <LabeledIconButton
               label="Repeat"
+              color="inherit"
               disabled={!scheduledStartTimestamp}
               icon={<ReplayRoundedIcon />}
               ref={repeatActionButtonRef}
@@ -465,11 +472,13 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </RepeatButtonDisabledTooltip>
           <LabeledIconButton
             label="Due Date"
+            color="inherit"
             icon={<AccessAlarmRoundedIcon />}
             onClick={() => setShowDueDialog(!showDueDialog)}
           />
           <LabeledIconButton
             label="Blockers"
+            color="inherit"
             icon={<BlockRoundedIcon />}
             onClick={() => setShowBlockersDialog(!showBlockersDialog)}
           />
@@ -505,6 +514,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             renderContent={(onClick) => (
               <LabeledIconButton
                 label="Delete"
+                color="inherit"
                 icon={<DeleteOutlineRoundedIcon />}
                 onClick={onClick}
               />

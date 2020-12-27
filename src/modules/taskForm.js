@@ -1,7 +1,7 @@
 import get from 'lodash/get';
 import { createSelector } from 'reselect';
 
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 import { selectTask } from './tasks';
 import { selectRecurringConfigByMostRecentTaskId } from './recurringConfigs';
 import createReducer from '../utils/createReducer';
@@ -38,6 +38,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [SET_TITLE]: (state, { payload }) => ({ ...state, title: payload }),
   [SET_DESCRIPTION]: (state, { payload }) => ({ ...state, description: payload }),
   [SET_IMPACT]: (state, { payload }) => ({ ...state, impact: payload }),
@@ -77,7 +78,6 @@ export const reducer = createReducer(INITIAL_STATE, {
     ...state,
     ...payload,
   }),
-  [RESET]: () => ({ ...INITIAL_STATE }),
 });
 
 // Selectors

@@ -5,12 +5,12 @@ import Div100vh from 'react-div-100vh';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { Provider as ReactReduxProvider } from 'react-redux';
 
-import UserLoginListener from './UserLoginListener';
 import ErrorBoundary from './ErrorBoundary';
 import RouterChangeTracker from './tracking/RouterChangeTracker';
 import { MixpanelProvider } from './tracking/MixpanelContext';
 import AppRouting from './AppRouting';
 import { NotificationContextProvider, NotificationSnackbar } from './Notification';
+import AuthManager from './AuthManager';
 import muiTheme from './theme';
 import createStore from '../store';
 
@@ -26,11 +26,11 @@ const [Router, routerProps] = isAppFullScreenMode()
 const App = () => (
   <ReactReduxProvider store={store}>
     <MixpanelProvider>
+      <AuthManager />
       <MaterialThemeProvider theme={muiTheme}>
         <ErrorBoundary>
           <CssBaseline />
           <Router {...routerProps}>
-            <UserLoginListener />
             <RouterChangeTracker />
             <Div100vh style={{ width: '100%', height: '100rvh' }}>
               <NotificationContextProvider>

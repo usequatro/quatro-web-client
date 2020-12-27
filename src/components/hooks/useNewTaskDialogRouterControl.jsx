@@ -9,11 +9,15 @@ export default function useNewTaskDialogRouterControl() {
 
   const isOpen = new URLSearchParams(history.location.search).get('newTask') !== null;
   const open = () => {
-    history.push({ pathname: history.location.pathname, search: '?newTask' });
+    const updatedSearch = new URLSearchParams(history.location.search);
+    updatedSearch.set('newTask', '1');
+    history.push({ pathname: history.location.pathname, search: updatedSearch.toString() });
   };
   const close = () => {
     if (isOpen) {
-      history.replace({ pathname: history.location.pathname, search: '' });
+      const updatedSearch = new URLSearchParams(history.location.search);
+      updatedSearch.delete('newTask');
+      history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
     }
   };
 

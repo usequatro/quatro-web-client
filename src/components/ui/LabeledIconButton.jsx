@@ -5,32 +5,35 @@ import get from 'lodash/get';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
+const INHERIT = 'inherit';
+
 const useStyles = makeStyles((theme) => ({
-  root: (props) => ({
+  root: ({ edge }) => ({
     paddingTop: `${theme.spacing(0.75)}px`,
     paddingBottom: `${theme.spacing(0.75)}px`,
-    paddingLeft: `${props.edge !== 'start' ? theme.spacing(1) : 0}px`,
-    paddingRight: `${props.edge !== 'end' ? theme.spacing(1) : 0}px`,
+    paddingLeft: `${edge !== 'start' ? theme.spacing(1) : 0}px`,
+    paddingRight: `${edge !== 'end' ? theme.spacing(1) : 0}px`,
     minWidth: theme.spacing(6),
     [theme.breakpoints.up('sm')]: {
       minWidth: theme.spacing(8),
     },
   }),
-  label: (props) => ({
+  label: ({ color }) => ({
     flexDirection: 'column',
-    color: get(theme.palette, props.color),
+    color: color !== INHERIT ? get(theme.palette, color) : INHERIT,
     fontSize: '0.65rem',
+    fontWeight: 'normal',
     borderBottom: `solid 1px transparent`,
   }),
-  labelActive: (props) => ({
+  labelActive: ({ color }) => ({
     flexDirection: 'column',
-    color: get(theme.palette, props.color),
+    color: color !== INHERIT ? get(theme.palette, color) : INHERIT,
     fontSize: '0.65rem',
-    borderBottom: `solid 1px ${get(theme.palette, props.color)}`,
+    borderBottom: `solid 1px ${get(theme.palette, color)}`,
   }),
-  startIcon: (props) => ({
+  startIcon: ({ color }) => ({
     margin: 0,
-    color: get(theme.palette, props.color),
+    color: color !== INHERIT ? get(theme.palette, color) : INHERIT,
   }),
   disabled: {
     opacity: 0.26, // weird number, but saw it on MUI's styles
@@ -39,7 +42,8 @@ const useStyles = makeStyles((theme) => ({
 
 const LabeledIconButton = forwardRef(
   ({ icon, label, color, active = false, edge, ...props }, ref) => {
-    const classes = useStyles({ color, edge });
+    const colorWithVariation = color.includes('.') || color === INHERIT ? color : `${color}.main`;
+    const classes = useStyles({ color: colorWithVariation, edge });
     return (
       <Button
         ref={ref}
@@ -68,7 +72,7 @@ LabeledIconButton.propTypes = {
 };
 
 LabeledIconButton.defaultProps = {
-  color: 'common.white',
+  color: 'primary',
   active: false,
   edge: undefined,
 };

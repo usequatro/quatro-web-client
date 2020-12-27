@@ -1,44 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@material-ui/core/Box';
 import Fade from '@material-ui/core/Fade';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
-import * as dashboardTabs from '../../../constants/dashboardTabs';
+export const IMAGE_SCHEDULED = '/empty-states/empty-state-scheduled.png';
+export const IMAGE_NOW = '/empty-states/empty-state-top-4.png';
+export const IMAGE_BLOCKED = '/empty-states/empty-state-blocked.png';
+export const IMAGE_BACKLOG = '/empty-states/empty-state-backlog.png';
+export const IMAGE_COMPLETED = '/empty-states/empty-state-completed.png';
+export const IMAGE_CALENDAR = '/empty-states/empty-state-google-calendar.png';
 
-const emptyStateImages = {
-  [dashboardTabs.SCHEDULED]: '/empty-states/empty-state-scheduled.png',
-  [dashboardTabs.NOW]: '/empty-states/empty-state-top-4.png',
-  [dashboardTabs.BLOCKED]: '/empty-states/empty-state-blocked.png',
-  [dashboardTabs.BACKLOG]: '/empty-states/empty-state-backlog.png',
-  [dashboardTabs.COMPLETED]: '/empty-states/empty-state-completed.png',
-};
-
-const emptyStateCopy = {
-  [dashboardTabs.SCHEDULED]: [
-    'All clear!',
-    'You don’t have any scheduled meetings, follow-ups, reminders, or tasks.',
-  ],
-  [dashboardTabs.NOW]: ['Great job!', 'Your task list and headspace are clear.'],
-  [dashboardTabs.BLOCKED]: [
-    'The runway is clear!',
-    "You don't have any dependencies blocking your tasks.",
-  ],
-  [dashboardTabs.BACKLOG]: [
-    'Nice!',
-    "You have an empty backlog. Keep your focus on what's important.",
-  ],
-};
-
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   emptyStateContainer: {
-    flexGrow: 1,
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
+    flexGrow: 1,
   },
   emptyStateContent: {
     width: '25rem',
@@ -46,37 +28,43 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    [theme.breakpoints.down('sm')]: {
+      margin: '8vh 0',
+    },
   },
   emptyStateImage: {
-    width: '80%',
+    width: '100%',
+    objectFit: 'scale-down',
   },
 }));
 
-const EmptyState = ({ tab }) => {
+const EmptyState = ({ text, image, children }) => {
   const classes = useStyles();
-
-  const [currentTab, setCurrentTab] = useState(tab);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setCurrentTab(tab), 100);
-    return () => clearTimeout(timeout);
-  }, [tab]);
 
   return (
     <Box className={classes.emptyStateContainer}>
-      <Fade in={tab === currentTab}>
+      <Fade in>
         <div className={classes.emptyStateContent}>
-          <img
-            alt="Empty task list"
-            className={classes.emptyStateImage}
-            src={emptyStateImages[currentTab] || emptyStateImages[dashboardTabs.NOW]}
-          />
+          <Box width="60%" mb={4} display="flex" justifyContent="center" alignItems="center">
+            {image && typeof image === 'string' && (
+              <img alt="Empty task list" className={classes.emptyStateImage} src={image} />
+            )}
+            {image && React.isValidElement(image) && image}
+          </Box>
 
-          {(emptyStateCopy[currentTab] || []).map((text) => (
-            <Typography gutterBottom key={text} align="center" color="secondary">
-              {text}
+          {text && (
+            <Typography paragraph align="center" color="textSecondary">
+              {typeof text === 'string'
+                ? text
+                : text.map((line) => (
+                    <Fragment key={line}>
+                      {line}
+                      <br />
+                    </Fragment>
+                  ))}
             </Typography>
-          ))}
+          )}
+          {children}
         </div>
       </Fade>
     </Box>
@@ -84,7 +72,13 @@ const EmptyState = ({ tab }) => {
 };
 
 EmptyState.propTypes = {
-  tab: PropTypes.oneOf(Object.values(dashboardTabs)).isRequired,
+  image: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
+  text: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]).isRequired,
+  children: PropTypes.node,
+};
+
+EmptyState.defaultProps = {
+  children: undefined,
 };
 
 export default EmptyState;

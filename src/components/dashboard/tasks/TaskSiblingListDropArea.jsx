@@ -22,9 +22,10 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    color: theme.palette.primary.contrastText,
   },
   droppableDraggingOver: {
-    backgroundColor: `${theme.palette.background.lightEmphasis}`,
+    backgroundColor: theme.palette.primary.light,
   },
 }));
 
@@ -42,7 +43,7 @@ const TaskSiblingListDropArea = ({ isDraggingOver, title }) => {
           .join(' ')}
       >
         <div className={classes.droppableInnerContainer}>
-          <Typography color="primary" variant="h6" component="p">
+          <Typography color={isDraggingOver ? 'inherit' : 'primary'} variant="h6" component="p">
             {title}
           </Typography>
         </div>

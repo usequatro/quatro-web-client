@@ -121,9 +121,12 @@ const RecurringCustomDialog = ({
         className: classes.paper,
       }}
     >
-      <DialogTitleWithClose id="task-recurrence-custom-repeat-dialog" onClose={onClose}>
-        Custom Repeat
-      </DialogTitleWithClose>
+      <DialogTitleWithClose
+        id="task-recurrence-custom-repeat-dialog"
+        onClose={onClose}
+        title="Custom Repeat"
+        TypographyProps={{ variant: 'h6', component: 'h2' }}
+      />
 
       <DialogContent>
         <Box mb={4} display="flex" flexDirection="row">
@@ -183,7 +186,7 @@ const RecurringCustomDialog = ({
 
       <DialogActions>
         <LabeledIconButton
-          color="background.secondary"
+          color="primary"
           label="Done"
           icon={<SendRoundedIcon />}
           onClick={() => {

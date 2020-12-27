@@ -3,19 +3,23 @@ import { useSelector } from 'react-redux';
 import { Switch, Redirect, Route } from 'react-router-dom';
 import cond from 'lodash/cond';
 
-import { selectUserIsLoggedIn } from '../modules/session';
+import { selectFirebaseUserIsLoggedIn, selectFirebaseUserLoading } from '../modules/session';
 import * as paths from '../constants/paths';
 import Dashboard from './dashboard/Dashboard';
-import FullScreenLoader from './ui/FullScreenLoader';
+import LoaderScreen from './ui/LoaderScreen';
 import { LogIn, SignUp, RecoverPassword } from './registration/Registration';
 
 const AppRouting = () => {
-  const userIsLoggedIn = useSelector(selectUserIsLoggedIn);
+  const firebaseUserLoading = useSelector(selectFirebaseUserLoading);
+  const firebaseUserIsLoggedIn = useSelector(selectFirebaseUserIsLoggedIn);
 
   return cond([
-    [() => userIsLoggedIn === null, () => <FullScreenLoader background="common.white" />],
     [
-      () => userIsLoggedIn === false,
+      () => firebaseUserLoading,
+      () => <LoaderScreen background="secondary.main" color="common.white" delay={500} />,
+    ],
+    [
+      () => !firebaseUserIsLoggedIn,
       () => (
         <Switch>
           <Redirect exact from="/" to={paths.SIGN_UP} />
@@ -28,7 +32,7 @@ const AppRouting = () => {
       ),
     ],
     [
-      () => userIsLoggedIn === true,
+      () => true,
       () => (
         <Switch>
           <Route path={[paths.DASHBOARD, paths.ACCOUNT_SETTINGS]} component={Dashboard} />

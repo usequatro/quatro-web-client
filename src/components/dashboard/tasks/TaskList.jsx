@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
@@ -31,11 +31,12 @@ import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterCon
 import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
-import LoadingState from './LoadingState';
-import EmptyState from './EmptyState';
+import LoaderScreen from '../../ui/LoaderScreen';
+import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 
 const emptyArray = [];
+
 const selectorFunctionByPathname = {
   [dashboardTabs.NOW]: selectNowTasks,
   [dashboardTabs.BACKLOG]: selectBacklogTasks,
@@ -50,14 +51,36 @@ const shouldShowPosition = memoize((tab) =>
 
 const mapIds = memoize((tasks) => tasks.map(([id]) => id));
 
+const emptyStateImages = {
+  [dashboardTabs.SCHEDULED]: IMAGE_SCHEDULED,
+  [dashboardTabs.NOW]: IMAGE_NOW,
+  [dashboardTabs.BLOCKED]: IMAGE_BLOCKED,
+  [dashboardTabs.BACKLOG]: IMAGE_BACKLOG,
+};
+const emptyStateTexts = {
+  [dashboardTabs.SCHEDULED]: [
+    'All clear!',
+    'You don’t have any scheduled meetings, follow-ups, reminders, or tasks.',
+  ],
+  [dashboardTabs.NOW]: ['Great job!', 'Your task list and headspace are clear.'],
+  [dashboardTabs.BLOCKED]: [
+    'The runway is clear!',
+    "You don't have any dependencies blocking your tasks.",
+  ],
+  [dashboardTabs.BACKLOG]: [
+    'Nice!',
+    "You have an empty backlog. Keep your focus on what's important.",
+  ],
+};
+
 const useStyles = makeStyles((theme) => ({
+  container: {
+    overflow: 'auto',
+  },
   fab: {
     position: 'fixed',
     bottom: theme.spacing(4),
     right: theme.spacing(4),
-    backgroundColor: theme.palette.common.white,
-    color: theme.palette.primary.main,
-    border: `solid 1px ${theme.palette.background.secondary}`,
     height: '4rem',
     width: '4rem',
   },
@@ -79,14 +102,16 @@ const TaskList = forwardRef((_, ref) => {
   );
 
   const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
-
   useCreateTaskShortcut();
 
   return (
-    <Box flexGrow={1} ref={ref} display="flex" flexDirection="column">
+    <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
       {cond([
-        [() => loading, () => <LoadingState />],
-        [() => taskIds.length === 0, () => <EmptyState tab={tab} />],
+        [() => loading, () => <LoaderScreen />],
+        [
+          () => taskIds.length === 0,
+          () => <EmptyState image={emptyStateImages[tab]} text={emptyStateTexts[tab]} />,
+        ],
         [
           () => true,
           () => (
@@ -144,19 +169,16 @@ const TaskList = forwardRef((_, ref) => {
         <Toolbar />
       </Hidden>
 
-      {/* uncomment for bringing back bottom nav on mobile */}
-      {/* <Hidden xsDown> */}
-      <Tooltip title="Create task (Space bar)" enterDelay={1000}>
+      <Tooltip title="Create task (Space bar)" enterDelay={500} arrow>
         <Fab
           aria-label="Create task"
-          color="default"
+          color="secondary"
           className={classes.fab}
           onClick={showNewTaskDialog}
         >
           <AddIcon fontSize="large" />
         </Fab>
       </Tooltip>
-      {/* </Hidden> */}
     </Box>
   );
 });

@@ -11,13 +11,17 @@ export default function useEditTaskDialogRouterControl() {
   const isOpen = new URLSearchParams(history.location.search).get('tid');
   const open = useCallback(
     (taskId) => {
-      history.push({ pathname: history.location.pathname, search: `?tid=${taskId}` });
+      const updatedSearch = new URLSearchParams(history.location.search);
+      updatedSearch.set('tid', taskId);
+      history.push({ pathname: history.location.pathname, search: updatedSearch.toString() });
     },
     [history],
   );
   const close = useCallback(() => {
     if (isOpen) {
-      history.replace({ pathname: history.location.pathname, search: '' });
+      const updatedSearch = new URLSearchParams(history.location.search);
+      updatedSearch.delete('tid');
+      history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
     }
   }, [history, isOpen]);
 

@@ -2,13 +2,11 @@ import React, { useCallback, memo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
-import memoize from 'lodash/memoize';
-import truncate from 'lodash/truncate';
 
 import { makeStyles } from '@material-ui/core/styles';
-import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import Tooltip from '@material-ui/core/Tooltip';
 import ListItem from '@material-ui/core/ListItem';
 import IconButton from '@material-ui/core/IconButton';
 
@@ -24,47 +22,9 @@ import TaskTitle from './TaskTitle';
 import TaskRecurringLabel from './TaskRecurringLabel';
 import TaskViewSubtitle from './TaskViewSubtitle';
 import TaskViewBlockersList from './TaskViewBlockersList';
+import TextWithLinks from '../../ui/TextWithLinks';
 import { clearRelativePrioritization } from '../../../modules/tasks';
 import formatDateTime from '../../../utils/formatDateTime';
-
-const MAX_DESCRIPTION_CHARACTERS = 200;
-
-const DescriptionLink = ({ ...props }) => (
-  <Link target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} {...props} />
-);
-
-/**
- * @param {string} text
- * @return {React[]}
- */
-const parseDescription = memoize((text) => {
-  const tmp = '|+|-|+|';
-  const pieces = text.replace(/(https?:\/\/[^\s]+)/gi, `${tmp}$1${tmp}`).split(tmp);
-
-  let remainingLength = MAX_DESCRIPTION_CHARACTERS;
-
-  return pieces
-    .map((piece, index) => {
-      if (remainingLength <= 0) {
-        return null;
-      }
-      const truncatedPiece = truncate(piece, { separator: ' ', length: remainingLength });
-      remainingLength -= truncatedPiece.length;
-
-      const isLink = index % 2 === 1;
-
-      /* eslint-disable react/no-array-index-key */
-      return isLink ? (
-        <DescriptionLink href={piece} key={index}>
-          {truncatedPiece}
-        </DescriptionLink>
-      ) : (
-        <React.Fragment key={index}>{truncatedPiece}</React.Fragment>
-      );
-      /* eslint-enable react/no-array-index-key */
-    })
-    .filter(Boolean);
-});
 
 const useStyles = makeStyles((theme) => ({
   outerContainer: {
@@ -147,8 +107,13 @@ const TaskView = ({
         <Typography paragraph>{title}</Typography>
 
         {description && (
-          <Typography variant="body2" paragraph className={classes.descriptionParagraph}>
-            {parseDescription(description)}
+          <Typography
+            variant="body2"
+            paragraph
+            className={classes.descriptionParagraph}
+            color="textSecondary"
+          >
+            <TextWithLinks text={description} maxLength={200} />
           </Typography>
         )}
 
@@ -162,7 +127,7 @@ const TaskView = ({
           <TaskViewSubtitle
             tooltip="Due date"
             Icon={AccessAlarmRoundedIcon}
-            iconProps={{ color: isPast(due) ? 'error' : 'secondary' }}
+            iconProps={{ color: isPast(due) ? 'error' : 'inherit' }}
             onClick={() => {}}
           >
             {formatDateTime(due)}
@@ -197,17 +162,19 @@ const TaskView = ({
       </Box>
 
       <Box flexShrink={0}>
-        <IconButton
-          aria-label="Complete"
-          onClick={handleCompleteClick}
-          className={completed ? classes.completeButtonSuccess : classes.completeButtonIddle}
-        >
-          {completed ? (
-            <CheckCircleOutlineRoundedIcon fontSize="large" />
-          ) : (
-            <RadioButtonUncheckedRoundedIcon fontSize="large" />
-          )}
-        </IconButton>
+        <Tooltip title="Complete" arrow enterDelay={1000}>
+          <IconButton
+            aria-label="Complete"
+            onClick={handleCompleteClick}
+            className={completed ? classes.completeButtonSuccess : classes.completeButtonIddle}
+          >
+            {completed ? (
+              <CheckCircleOutlineRoundedIcon fontSize="large" />
+            ) : (
+              <RadioButtonUncheckedRoundedIcon fontSize="large" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Box>
     </Component>
   );

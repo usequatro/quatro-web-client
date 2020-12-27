@@ -2,6 +2,6 @@
  * Utils to reset the state of the app.
  */
 
-export const RESET = 'RESET';
+export const LOG_OUT = 'LOG_OUT';
 
-export const resetReduxState = () => ({ type: RESET });
+export const logOutReduxState = () => ({ type: LOG_OUT });

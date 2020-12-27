@@ -7,7 +7,7 @@
 import createReducer from '../utils/createReducer';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
-import { RESET } from './reset';
+import { LOG_OUT } from './reset';
 import { selectUserId } from './session';
 import {
   fetchCreateRecurringConfig,
@@ -31,7 +31,7 @@ const INITIAL_STATE = {
 };
 
 export const reducer = createReducer(INITIAL_STATE, {
-  [RESET]: () => ({ ...INITIAL_STATE }),
+  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
   [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
   [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) =>
     applyGroupedEntityChanges(state, { added, modified, removed }),
@@ -68,7 +68,7 @@ export const createRecurringConfig = (recurringConfig) => async (dispatch, getSt
 
 export const listenToRecurringConfigList = (userId, nextCallback, errorCallback) => (dispatch) => {
   const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
-    debugConsole.log('listenToRecurringConfigList', {
+    debugConsole.log('Firestore', 'listenToRecurringConfigList', {
       groupedChangedEntities,
       hasEntityChanges,
       hasLocalUnsavedChanges,
@@ -83,5 +83,9 @@ export const listenToRecurringConfigList = (userId, nextCallback, errorCallback)
   };
   dispatch({ type: RESET_LOCAL_STATE });
   const unsubscribe = listenListRecurringConfigs(userId, onNext, onError);
-  return unsubscribe;
+
+  return () => {
+    debugConsole.log('Firestore', 'listenToRecurringConfigList', 'unsubscribe');
+    unsubscribe();
+  };
 };

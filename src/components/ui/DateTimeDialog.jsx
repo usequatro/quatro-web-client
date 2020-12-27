@@ -28,9 +28,11 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
 
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby={id}>
-      <DialogTitleWithClose id={id} onClose={onClose}>
-        {label}
-      </DialogTitleWithClose>
+      <DialogTitleWithClose
+        TypographyProps={{ id, variant: 'h6' }}
+        title={label}
+        onClose={onClose}
+      />
 
       <DialogContent>
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -64,7 +66,7 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
       <DialogActions>
         <Box flexGrow={1}>
           <LabeledIconButton
-            color="background.secondary"
+            color="inherit"
             label="Clear"
             icon={<ClearRoundedIcon />}
             onClick={() => {
@@ -75,9 +77,9 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
         </Box>
 
         <LabeledIconButton
-          color="background.secondary"
           label="Done"
           icon={<SendRoundedIcon />}
+          color="primary"
           onClick={() => {
             onClose();
             onChangeCommitted(currentValue);

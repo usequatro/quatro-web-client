@@ -2,11 +2,13 @@
  * File to interact with Firebase's Firestore database
  */
 import { formatQuerySnapshotChanges } from './firestoreRealtimeHelpers';
-import { getFirestore } from '../firebase';
+import firebase from '../firebase';
 import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
+import { validateCalendarSchema } from '../types/calendarSchema';
 
 const TASKS = 'tasks';
+const CALENDARS = 'calendars';
 const RECURRING_CONFIGS = 'recurringConfigs';
 
 /**
@@ -35,7 +37,7 @@ const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
  */
 export const fetchCreateTask = async (task) => {
   const validatedTask = await validateTaskSchema(task);
-  return getFirestore().collection(TASKS).add(validatedTask);
+  return firebase.firestore().collection(TASKS).add(validatedTask);
 };
 
 /**
@@ -47,7 +49,8 @@ export const fetchCreateTask = async (task) => {
  * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
 export const listenListTasks = (userId, onNext, onError) =>
-  getFirestore()
+  firebase
+    .firestore()
     .collection(TASKS)
     .where('userId', '==', userId)
     .where('completed', '==', null)
@@ -69,7 +72,8 @@ export const COMPLETED_TASKS_PAGE_SIZE = 15;
  * @return {Promise<Array<Object>>}
  */
 export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
-  let query = getFirestore()
+  let query = firebase
+    .firestore()
     .collection(TASKS)
     .where('userId', '==', userId)
     .where('completed', '>', 0)
@@ -77,7 +81,7 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
     .orderBy('completed', 'desc');
 
   if (lastTaskId) {
-    const lastTaskSnap = await getFirestore().collection(TASKS).doc(lastTaskId).get();
+    const lastTaskSnap = await firebase.firestore().collection(TASKS).doc(lastTaskId).get();
     query = query.startAfter(lastTaskSnap);
   }
 
@@ -94,14 +98,14 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
  */
 export const fetchUpdateTask = async (taskId, updates) => {
   const validatedUpdates = await validateTaskSchema(updates, { isUpdate: true });
-  return getFirestore().collection(TASKS).doc(taskId).set(validatedUpdates, { merge: true });
+  return firebase.firestore().collection(TASKS).doc(taskId).set(validatedUpdates, { merge: true });
 };
 
 /**
  * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchDeleteTask = (id) => getFirestore().collection(TASKS).doc(id).delete();
+export const fetchDeleteTask = (id) => firebase.firestore().collection(TASKS).doc(id).delete();
 
 /**
  * Attaches a listener for recurring config list events.
@@ -112,7 +116,8 @@ export const fetchDeleteTask = (id) => getFirestore().collection(TASKS).doc(id).
  * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
  */
 export const listenListRecurringConfigs = (userId, onNext, onError) =>
-  getFirestore()
+  firebase
+    .firestore()
     .collection(RECURRING_CONFIGS)
     .where('userId', '==', userId)
     .onSnapshot(
@@ -131,7 +136,7 @@ export const listenListRecurringConfigs = (userId, onNext, onError) =>
  */
 export const fetchCreateRecurringConfig = async (recurringConfig) => {
   const validEntity = await validateRecurringConfigSchema(recurringConfig);
-  return getFirestore().collection(RECURRING_CONFIGS).add(validEntity);
+  return firebase.firestore().collection(RECURRING_CONFIGS).add(validEntity);
 };
 
 /**
@@ -141,7 +146,11 @@ export const fetchCreateRecurringConfig = async (recurringConfig) => {
  */
 export const fetchUpdateRecurringConfig = async (id, updates) => {
   const validEntity = await validateRecurringConfigSchema(updates, { isUpdate: true });
-  return getFirestore().collection(RECURRING_CONFIGS).doc(id).set(validEntity, { merge: true });
+  return firebase
+    .firestore()
+    .collection(RECURRING_CONFIGS)
+    .doc(id)
+    .set(validEntity, { merge: true });
 };
 
 /**
@@ -149,4 +158,98 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
  * @return {Promise<void>}
  */
 export const fetchDeleteRecurringConfig = (id) =>
-  getFirestore().collection(RECURRING_CONFIGS).doc(id).delete();
+  firebase.firestore().collection(RECURRING_CONFIGS).doc(id).delete();
+
+export const connectCalendar = (calendarObject) => {
+  return firebase.firestore().collection(CALENDARS).add(calendarObject);
+};
+
+export const disconnectCalendar = async (calendarId, userId) => {
+  const documentId = await firebase
+    .firestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .where('calendarId', '==', calendarId)
+    .limit(1)
+    .get()
+    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
+  if (documentId) {
+    await firebase.firestore().collection(CALENDARS).doc(documentId).delete();
+  }
+};
+
+export const fetchConnectedCalendars = async (userId) => {
+  const results = await firebase
+    .firestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .get()
+    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
+    .then((res) => {
+      return res;
+    });
+  return results;
+};
+export const saveCalendar = async (calendarObject) => {
+  const documentId = await firebase
+    .firestore()
+    .collection(CALENDARS)
+    .where('userId', '==', calendarObject.userId)
+    .where('calendarId', '==', calendarObject.calendarId)
+    .limit(1)
+    .get()
+    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
+  if (documentId) {
+    return firebase.firestore().collection(CALENDARS).doc(documentId).update(calendarObject);
+  }
+  return Promise.reject();
+};
+
+/**
+ * Attaches a listener for calendar list events.
+ *
+ * @param {string} userId
+ * @param {Function} onNext
+ * @param {Function} onError
+ * @return {Function} An unsubscribe function that can be called to cancel the snapshot listener.
+ */
+export const listenToListCalendars = (userId, onNext, onError) =>
+  firebase
+    .firestore()
+    .collection(CALENDARS)
+    .where('userId', '==', userId)
+    .onSnapshot(
+      { includeMetadataChanges: true },
+      (querySnapshot) => {
+        onNext(formatQuerySnapshotChanges(querySnapshot, validateCalendarSchema));
+      },
+      (error) => {
+        onError(error);
+      },
+    );
+
+/**
+ * @param {Object} calendar
+ * @return {Promise<firebase.firestore.DocumentReference>}
+ */
+export const fetchCreateCalendar = async (calendar) => {
+  const validEntity = await validateCalendarSchema(calendar);
+  return firebase.firestore().collection(CALENDARS).add(validEntity);
+};
+
+/**
+ * @param {string} id
+ * @param {Object} updates
+ * @return {Promise<void>}
+ */
+export const fetchUpdateCalendar = async (id, updates) => {
+  const validatedUpdates = await validateCalendarSchema(updates, { isUpdate: true });
+  return firebase.firestore().collection(CALENDARS).doc(id).set(validatedUpdates, { merge: true });
+};
+
+/**
+ * @param {string} id
+ * @return {Promise<void>}
+ */
+export const fetchDeleteCalendar = (id) =>
+  firebase.firestore().collection(CALENDARS).doc(id).delete();

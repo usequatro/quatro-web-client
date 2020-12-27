@@ -18,8 +18,13 @@ const TaskViewSubtitle = ({ Icon, IconActive, iconProps, onClick, tooltip, child
   const [active, setActive] = useState(false);
   const IconComponent = active && IconActive ? IconActive : Icon;
   return (
-    <Typography variant="body2" className={classes.taskSubtitleWithIcon} gutterBottom>
-      <Tooltip title={tooltip}>
+    <Typography
+      variant="body2"
+      className={classes.taskSubtitleWithIcon}
+      color="textSecondary"
+      gutterBottom
+    >
+      <Tooltip title={tooltip} arrow>
         <IconButton
           aria-label={tooltip}
           size="small"
@@ -28,9 +33,10 @@ const TaskViewSubtitle = ({ Icon, IconActive, iconProps, onClick, tooltip, child
           onBlur={() => setActive(false)}
           onMouseEnter={() => setActive(true)}
           onMouseLeave={() => setActive(false)}
+          color="inherit"
           onClick={onClick}
         >
-          <IconComponent color="secondary" {...iconProps} />
+          <IconComponent color="inherit" {...iconProps} />
         </IconButton>
       </Tooltip>
 
