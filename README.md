@@ -1,13 +1,20 @@
-# Quatro Frontend App
+# Quatro Web Client App
 
-![CI](https://github.com/guillermodlpa/quatro-frontend/workflows/CI/badge.svg)
+![CI](https://github.com/usequatro/quatro-web-client/workflows/CI/badge.svg)
 
 ## Environments
 
-1. **Dev**. Firebase project ID `quatro-dev-88030`
-2. **Prod**. Firebase project ID `tasket-project`
+### Dev
 
-Use Firebase's CLI to toggle between them with `firebase use`.
+* [https://dev.usequatro.com](https://dev.usequatro.com)
+* [Firebase project: quatro-dev-88030](https://console.firebase.google.com/u/0/project/quatro-dev-88030/overview)
+* [Google API Dashboard: quatro-dev-88030](https://console.developers.google.com/apis/dashboard?project=quatro-dev-88030)
+
+### Prod
+
+* [https://app.usequatro.com](https://app.usequatro.com)
+* [Firebase project: tasket-project](https://console.firebase.google.com/u/0/project/tasket-project/overview)
+* [Google API Dashboard: tasket-project](https://console.developers.google.com/apis/credentials?project=tasket-project)
 
 ## Libraries
 
@@ -24,26 +31,28 @@ Libraries used:
 
 ## Local development
 
-1. Clone the repo
+1. Clone the repo.
 1. Clone the file `.env.development` into `.env.local` and adapt it as needed, e.g., remove the Mixpanel ID to disable tracking.
 1. Run `npm install`
 1. Run `npm run start`
 
-Libraries for development
+Libraries for development:
 
 - ESLint. Recommended to use VSCode with ESLint's plugin.
 - Prettier. Recommended to use VSCode with Prettier's plugin and enable _Editor: Format On Save_.
 
 For linting and formatting, make sure you have ESLint and Prettier enabled on your code editor.
 
+For Firebase, use its CLI to toggle between them with `firebase use [env]`. Check active environment with `firebase use`.
+
 ## Deployment
 
 Continuous deployment is wired with GitHub Actions:
 
-- Merging into the `develop` branch will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
-- Merging into the `master` branch will trigger a deploy to https://app.usequatro.com with `.env` variables.
+- Merging into the `master` branch will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
+- Tagging with `releases/x.x.x` will trigger a deploy to https://app.usequatro.com with `.env` variables.
 
-For more details, see the [deployment config](.github/workflows/deploy_to_firebase_hosting.yml).
+For more details, see the [workflows folder](.github/workflows).
 
 There's a slack integration configured (see [notifyDeploy.sh](./script/notifyDeploy.sh)) to notify the Quatro #deploys channel in Slack.
 
@@ -51,12 +60,12 @@ There's a slack integration configured (see [notifyDeploy.sh](./script/notifyDep
 
 First, make sure you have an `.env` file. This file contains production environment variables. Ask another contributor for a copy.
 
-```
+```sh
 npm run build-and-deploy
 ```
 
 ## Project documentation
 
-The easiest way to see the data structures is by opening the Redux Dev Tools while using the app.
+The high level technical documentation is hosted outside this repository, as it includes information related to other repositories and integrations.
 
-In Firebase, we keep tasks represented with 2 entities: `tasks` and `recurringConfigs`. The best way to see this structures is to open [Firestore's console](https://console.firebase.google.com/project/tasket-project/database).
+[Quatro Technical Documentation](https://docs.google.com/document/d/1z9uK2gFBZeuiMLmsh08kf9RSmdj7RKzR1OC20U-m_cI/edit?usp=sharing)
