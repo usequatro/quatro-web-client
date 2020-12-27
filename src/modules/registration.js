@@ -1,34 +1,26 @@
-/**
- * Namespace to keep information of the current session, like user details.
- */
-
-import createReducer from '../utils/createReducer';
+import { createSlice } from '@reduxjs/toolkit';
 import { LOG_OUT } from './reset';
 
-export const NAMESPACE = 'registration';
-
-// Action types
-
-const SET_EMAIL = `${NAMESPACE}/SET_EMAIL`;
-
-// Reducers
-
-const INITIAL_STATE = {
-  email: '',
-};
-
-export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
-  [SET_EMAIL]: (state, { payload }) => ({ ...state, email: payload }),
-});
+const name = 'registration';
 
 // Selectors
 
-export const selectRegistrationEmail = (state) => state[NAMESPACE].email;
+export const selectRegistrationEmail = (state) => state[name].email;
 
-// Actions
+// Slice
 
-export const setRegistrationEmail = (email) => ({
-  type: SET_EMAIL,
-  payload: email,
+const initialState = { email: '' };
+
+const slice = createSlice({
+  name,
+  initialState,
+  extraReducers: {
+    [LOG_OUT]: () => initialState,
+  },
+  reducers: {
+    setRegistrationEmail: (state, { payload }) => ({ email: payload }),
+  },
 });
+
+export const { setRegistrationEmail } = slice.actions;
+export default slice;

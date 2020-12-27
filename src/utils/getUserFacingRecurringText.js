@@ -96,6 +96,14 @@ export default function getUserFacingRecurringText(recurringConfig, referenceDat
         return [monthsCopy, onTheCopy].join(' ').trim();
       },
     ],
+    [
+      () => true,
+      () => {
+        // eslint-disable-next-line no-console
+        console.warn('Invalid unit', recurringConfig);
+        return '';
+      },
+    ],
   ])(unit);
 
   return capitalizeFirstLetter(text);

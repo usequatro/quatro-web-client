@@ -1,10 +1,5 @@
-/**
- * Namespace to keep information of the current session, like user details.
- */
+import { createSlice } from '@reduxjs/toolkit';
 
-// import get from 'lodash/get';
-
-import createReducer from '../utils/createReducer';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import { LOG_OUT } from './reset';
@@ -16,42 +11,45 @@ import {
   fetchUpdateRecurringConfig,
 } from '../utils/apiClient';
 
-export const namespace = 'recurringConfigs';
+const name = 'recurringConfigs';
 
-// Action types
+// Selectors
 
-const ADD_CHANGES_TO_LOCAL_STATE = `${namespace}/ADD_CHANGES_TO_LOCAL_STATE`;
-const RESET_LOCAL_STATE = `${namespace}/RESET_LOCAL_STATE`;
+export const selectRecurringConfig = (state, id) => state[name].byId[id];
+export const selectRecurringConfigIdByMostRecentTaskId = (state, mostRecentTaskId) =>
+  mostRecentTaskId
+    ? state[name].allIds.find((id) => state[name].byId[id].mostRecentTaskId === mostRecentTaskId)
+    : undefined;
+export const selectRecurringConfigByMostRecentTaskId = (state, taskId) => {
+  const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, taskId);
+  return recurringConfigId ? state[name].byId[recurringConfigId] : undefined;
+};
 
-// Reducers
+// Slice
 
-const INITIAL_STATE = {
+const initialState = {
   allIds: [],
   byId: {},
 };
 
-export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
-  [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
-  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) =>
-    applyGroupedEntityChanges(state, { added, modified, removed }),
+/* eslint-disable no-param-reassign */
+const slice = createSlice({
+  name,
+  initialState,
+  extraReducers: {
+    [LOG_OUT]: () => initialState,
+  },
+  reducers: {
+    resetLocalState: () => initialState,
+    addChangesToLocalState: (state, { payload: { added, modified, removed } }) =>
+      applyGroupedEntityChanges(state, { added, modified, removed }),
+  },
 });
+/* eslint-enable no-param-reassign */
 
-// Selectors
+export default slice;
 
-export const selectRecurringConfig = (state, id) => state[namespace].byId[id];
-export const selectRecurringConfigIdByMostRecentTaskId = (state, mostRecentTaskId) =>
-  mostRecentTaskId
-    ? state[namespace].allIds.find(
-        (id) => state[namespace].byId[id].mostRecentTaskId === mostRecentTaskId,
-      )
-    : undefined;
-export const selectRecurringConfigByMostRecentTaskId = (state, taskId) => {
-  const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, taskId);
-  return recurringConfigId ? state[namespace].byId[recurringConfigId] : undefined;
-};
-
-// Actions
+// Thunks
 
 export const updateRecurringConfig = (id, updates) => () => fetchUpdateRecurringConfig(id, updates);
 export const deleteRecurringConfig = (id) => () => fetchDeleteRecurringConfig(id);
@@ -74,14 +72,14 @@ export const listenToRecurringConfigList = (userId, nextCallback, errorCallback)
       hasLocalUnsavedChanges,
     });
     if (hasEntityChanges) {
-      dispatch({ type: ADD_CHANGES_TO_LOCAL_STATE, payload: groupedChangedEntities });
+      dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
     }
     nextCallback(hasLocalUnsavedChanges);
   };
   const onError = (error) => {
     errorCallback(error);
   };
-  dispatch({ type: RESET_LOCAL_STATE });
+  dispatch(slice.actions.resetLocalState());
   const unsubscribe = listenListRecurringConfigs(userId, onNext, onError);
 
   return () => {

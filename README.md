@@ -22,12 +22,12 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Libraries used:
 
-- React.
-- Redux: for global state management. (withredux-thunk)
-- Material-UI: for UI components and styling.
-- Firebase Firestore: for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
-- React Router: for navigation.
-- Date-fns: for date and time manipulation.
+* React.
+* Redux for global state management (imeplement with [Redux Toolkit](https://redux-toolkit.js.org/))
+* [Material-UI](https://material-ui.com/) for UI components and styling.
+* Firebase Firestore for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
+* [React Router](https://reactrouter.com/) for navigation.
+* [Date-fns](https://date-fns.org/) for date and time manipulation.
 
 ## Local development
 
