@@ -20,7 +20,18 @@ import useDebouncedState from '../../hooks/useDebouncedState';
 import GoogleButton from '../../ui/GoogleButton';
 import LoaderScreen from '../../ui/LoaderScreen';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
+  mainContainer: {
+    padding: `${theme.spacing(4)}px ${theme.spacing(6)}px`,
+    flexGrow: 1,
+    width: '30rem',
+    maxWidth: '100vw',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    alignSelf: 'center',
+    overflow: 'auto',
+  },
   list: {
     flexGrow: 1,
   },
@@ -58,17 +69,7 @@ const Calendars = () => {
   const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
 
   return (
-    <Box
-      my={4}
-      mx={6}
-      flexGrow={1}
-      width="30rem"
-      maxWidth="100%"
-      display="flex"
-      flexDirection="column"
-      alignItems="stretch"
-      alignSelf="center"
-    >
+    <Box className={classes.mainContainer}>
       <Box mb={6}>
         <Typography variant="h5" component="h3" paragraph>
           Connected Account

@@ -19,6 +19,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     borderBottom: `solid 1px ${theme.palette.divider}`,
     padding: theme.spacing(1),
+    flexShrink: 0,
   },
   label: {},
   allDayListContainer: {

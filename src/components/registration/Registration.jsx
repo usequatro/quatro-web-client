@@ -31,17 +31,25 @@ export const RECOVER_PASSWORD = 'recoverPassword';
 const useStyles = makeStyles((theme) => ({
   container: {
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     width: '100%',
     height: '100%',
     flexDirection: 'column',
     backgroundColor: theme.palette.primary.light,
+    [theme.breakpoints.up('sm')]: {
+      justifyContent: 'center',
+    },
   },
   paper: {
-    width: '500px',
+    width: '100%',
     maxWidth: '100%',
+    minHeight: '80vh',
     padding: theme.spacing(5),
+    [theme.breakpoints.up('sm')]: {
+      width: '500px',
+      minHeight: 0,
+    },
   },
   appLogo: {
     width: theme.spacing(8),
@@ -274,7 +282,7 @@ const Registration = ({ mode }) => {
                     color="primary"
                     size="large"
                     type="submit"
-                    startIcon={
+                    endIcon={
                       submitting ? (
                         <CircularProgress thickness={8} size="1rem" color="inherit" />
                       ) : null

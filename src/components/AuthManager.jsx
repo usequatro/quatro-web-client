@@ -28,9 +28,7 @@ const AuthManager = () => {
       if (firebaseSignedIn) {
         dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
       }
-      if (googleSignedIn) {
-        dispatch(setGapiUser(gapiAuthInstance.currentUser.get()));
-      }
+      dispatch(setGapiUser(googleSignedIn ? gapiAuthInstance.currentUser.get() : null));
 
       // Listen for Google Auth sign-in state changes.
       gapiAuthInstance.isSignedIn.listen((signInState) => {
