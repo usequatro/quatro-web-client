@@ -84,10 +84,10 @@ const ERROR_WEAK_PASSWORD = 'auth/weak-password';
 const ERROR_EMAIL_IN_USE = 'auth/email-already-in-use';
 const ERROR_MESSAGE_BY_CODE = {
   [ERROR_USER_NOT_FOUND]: 'User not found',
-  [ERROR_BAD_PASSWORD]: 'Wrong password',
+  [ERROR_BAD_PASSWORD]: 'The password is invalid',
   [ERROR_INVALID_EMAIL]: 'Invalid email',
   [ERROR_WEAK_PASSWORD]:
-    'The password security is too weak. Try with lower case letters, upper case letters and numbers',
+    'The password security is too weak. It must be at least 6 characters. Try with lower case letters, upper case letters and numbers',
   [ERROR_EMAIL_IN_USE]: 'Email already in use',
 };
 const ERROR_MESSAGE_FALLBACK = 'An error happened';
@@ -172,12 +172,23 @@ const Registration = ({ mode }) => {
       });
   };
 
+  const [waitingForGoogle, setWaitingForGoogle] = useState(false);
+
   const handleSignInWithGoogle = () => {
-    gapiSignIn().catch((error) => {
-      console.error(error); // eslint-disable-line no-console
-      const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
-      notifyError(errorMessage);
-    });
+    gapiSignIn()
+      .then(() => {
+        setWaitingForGoogle(true);
+      })
+      .catch((error) => {
+        if (error.error === 'popup_closed_by_user') {
+          console.log(error); // eslint-disable-line no-console
+          return;
+        }
+
+        console.error(error); // eslint-disable-line no-console
+        const errorMessage = ERROR_MESSAGE_BY_CODE[error.code] || ERROR_MESSAGE_FALLBACK;
+        notifyError(errorMessage);
+      });
   };
 
   return (
@@ -208,7 +219,15 @@ const Registration = ({ mode }) => {
 
             {(mode === LOG_IN || mode === SIGN_UP) && (
               <Box>
-                <GoogleButton onClick={handleSignInWithGoogle} fullWidth>
+                <GoogleButton
+                  onClick={handleSignInWithGoogle}
+                  fullWidth
+                  endIcon={
+                    waitingForGoogle ? (
+                      <CircularProgress thickness={6} size="1rem" color="inherit" />
+                    ) : null
+                  }
+                >
                   {
                     {
                       [LOG_IN]: 'Sign in with Google',
@@ -287,7 +306,7 @@ const Registration = ({ mode }) => {
                     type="submit"
                     endIcon={
                       submitting ? (
-                        <CircularProgress thickness={8} size="1rem" color="inherit" />
+                        <CircularProgress thickness={6} size="1rem" color="inherit" />
                       ) : null
                     }
                   >
