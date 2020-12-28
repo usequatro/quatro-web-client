@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useRef, useContext } from 'react';
+import React, { createContext, useReducer, useRef, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -41,32 +41,32 @@ export function NotificationContextProvider({ children }) {
 
   const closeTimeout = useRef();
 
-  const closeNotification = () => {
+  const closeNotification = useCallback(() => {
     clearTimeout(closeTimeout.current);
+    dispatch({ type: SET_IS_CLOSED });
+  }, [dispatch]);
 
-    if (state.isOpen) {
-      dispatch({ type: SET_IS_CLOSED });
-    }
-  };
+  const showNotification = useCallback(
+    (type, message) => {
+      closeNotification();
 
-  const showNotification = (type, message) => {
-    closeNotification();
+      dispatch({ type: SET_NOTIFICATION, payload: { type, message } });
 
-    dispatch({ type: SET_NOTIFICATION, payload: { type, message } });
-
-    if (type !== TYPE_ERROR && type !== TYPE_WARNING) {
-      closeTimeout.current = setTimeout(() => {
-        dispatch({ type: SET_IS_CLOSED });
-      }, 2500);
-    }
-  };
+      if (type !== TYPE_ERROR && type !== TYPE_WARNING) {
+        closeTimeout.current = setTimeout(() => {
+          dispatch({ type: SET_IS_CLOSED });
+        }, 2500);
+      }
+    },
+    [dispatch, closeNotification],
+  );
 
   const contextValue = {
-    notifyError: (message) => showNotification(TYPE_ERROR, message),
-    notifyWarning: (message) => showNotification(TYPE_WARNING, message),
-    notifyInfo: (message) => showNotification(TYPE_INFO, message),
-    notifySuccess: (message) => showNotification(TYPE_SUCCESS, message),
-    closeNotification: () => closeNotification(),
+    notifyError: useCallback((msg) => showNotification(TYPE_ERROR, msg), [showNotification]),
+    notifyWarning: useCallback((msg) => showNotification(TYPE_WARNING, msg), [showNotification]),
+    notifyInfo: useCallback((msg) => showNotification(TYPE_INFO, msg), [showNotification]),
+    notifySuccess: useCallback((msg) => showNotification(TYPE_SUCCESS, msg), [showNotification]),
+    closeNotification,
     state,
   };
 
