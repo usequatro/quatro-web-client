@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import cond from 'lodash/cond';
 import addHours from 'date-fns/addHours';
 import addWeeks from 'date-fns/addWeeks';
@@ -30,7 +31,7 @@ import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 
-import { createTask, setSnackbarData } from '../../../modules/dashboard';
+import { createTask } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
 import {
   selectTitle,
@@ -160,7 +161,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
-  const { notifyError } = useNotification();
+  const { notifyError, notifyInfo } = useNotification();
 
   const newTaskDialogOpen = !taskId;
 
@@ -230,12 +231,32 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           return editTaskDialogId;
         })
       : dispatch(
-          createTask(title, impact, effort, {
-            description: showDescription ? description : '',
-            due: dueTimestamp,
-            scheduledStart: scheduledStartTimestamp,
-            blockedBy,
-          }),
+          createTask(
+            title,
+            impact,
+            effort,
+            {
+              description: showDescription ? description : '',
+              due: dueTimestamp,
+              scheduledStart: scheduledStartTimestamp,
+              blockedBy,
+            },
+            ({ notificationButtonText, notificationButtonLink }) => {
+              notifyInfo({
+                message: 'Task created',
+                buttons:
+                  notificationButtonLink && notificationButtonText
+                    ? [
+                        {
+                          component: Link,
+                          to: notificationButtonLink,
+                          children: notificationButtonText,
+                        },
+                      ]
+                    : undefined,
+              });
+            },
+          ),
         );
 
     taskPromise
@@ -489,13 +510,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             onConfirm={() => {
               onClose();
               dispatch(deleteTask(editTaskDialogId));
-              dispatch(
-                setSnackbarData({
-                  open: true,
-                  message: 'Task deleted',
-                  id: editTaskDialogId,
-                }),
-              );
+              notifyInfo('Task Deleted');
             }}
             renderDialog={(open, onConfirm, onConfirmationClose) => (
               <ConfirmationDialog
