@@ -4,7 +4,6 @@ import { createSlice } from '@reduxjs/toolkit';
 import { listenToListCalendars } from '../utils/apiClient';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import debugConsole from '../utils/debugConsole';
-import { LOG_OUT } from './reset';
 import { selectUserId } from './session';
 
 const name = 'calendars';
@@ -40,9 +39,6 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     resetLocalState: () => initialState,
     addChangesToLocalState: (state, { payload: { added, modified, removed } }) => ({

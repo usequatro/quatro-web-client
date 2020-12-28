@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { LOG_OUT } from './reset';
 
 const name = 'registration';
 
@@ -11,16 +10,17 @@ export const selectRegistrationEmail = (state) => state[name].email;
 
 const initialState = { email: '' };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
-    setRegistrationEmail: (state, { payload }) => ({ email: payload }),
+    setRegistrationEmail: (state, { payload }) => {
+      state.email = payload;
+    },
   },
 });
+/* eslint-enable no-param-reassign */
 
 export const { setRegistrationEmail } = slice.actions;
 export default slice;

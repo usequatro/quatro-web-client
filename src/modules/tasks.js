@@ -9,7 +9,6 @@ import difference from 'lodash/difference';
 import calculateTaskScore from '../utils/calculateTaskScore';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
-import { LOG_OUT } from './reset';
 import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
@@ -236,13 +235,9 @@ const initialState = {
   byId: {},
 };
 
-/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     resetLocalState: () => initialState,
     addChangesToLocalState: (state, { payload: { added, modified, removed } }) => {
@@ -252,7 +247,6 @@ const slice = createSlice({
     },
   },
 });
-/* eslint-enable no-param-reassign */
 
 export default slice;
 

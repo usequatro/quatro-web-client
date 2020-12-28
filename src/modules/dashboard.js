@@ -4,7 +4,6 @@ import { createSlice } from '@reduxjs/toolkit';
 import { listenToTaskList, selectTaskDashboardTab } from './tasks';
 import { listenToRecurringConfigList } from './recurringConfigs';
 import { selectUserId } from './session';
-import { LOG_OUT } from './reset';
 import { NOW } from '../constants/dashboardTabs';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as SOURCES from '../constants/taskSources';
@@ -26,7 +25,6 @@ const OUT_OF_SYNC = 'outOfSync';
 
 export const selectDashboadIsLoading = (state) => state[name].status === LOADING;
 export const selectDashboadIsLoaded = (state) => state[name].status === LOADED;
-export const selectAccountMenuOpen = (state) => state[name].accountMenuOpen;
 export const selectSnackbarData = (state) => state[name].snackbarData;
 export const selectDashboardActiveTab = (state) => state[name].activeTab;
 export const selectHighlightedTaskId = (state) => state[name].highlightedTaskId;
@@ -38,7 +36,6 @@ export const selectIsDataInSync = (state) =>
 
 const initialState = {
   status: INITIAL,
-  accountMenuOpen: false,
   activeTab: NOW,
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
@@ -57,15 +54,9 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     setStatus: (state, { payload }) => {
       state.status = payload;
-    },
-    setAccountMenuOpen: (state, { payload }) => {
-      state.accountMenuOpen = payload;
     },
     setSnackbarData: (state, { payload }) => {
       state.snackbarData = payload;
@@ -90,12 +81,7 @@ const slice = createSlice({
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const {
-  setAccountMenuOpen,
-  setSnackbarData,
-  resetSnackbar,
-  setDashboardActiveTab,
-} = slice.actions;
+export const { setSnackbarData, resetSnackbar, setDashboardActiveTab } = slice.actions;
 
 // Thunks
 
@@ -158,24 +144,20 @@ export const setHighlighedTask = (id) => (dispatch) => {
   }, 1500);
 };
 
-const getTabProperties = (tab) => {
-  const tabProperties = {
-    [dashboardTabs.NOW]: {
-      text: dashboardTabs.NOW,
-      link: dashboardTabs.NOW,
-    },
-    [dashboardTabs.BACKLOG]: {
-      text: dashboardTabs.BACKLOG,
-      link: dashboardTabs.BACKLOG,
-    },
-    [dashboardTabs.SCHEDULED]: {
-      text: dashboardTabs.SCHEDULED,
-      link: dashboardTabs.SCHEDULED,
-    },
-    [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
-  };
-
-  return tabProperties[tab] || tabProperties[dashboardTabs.NOW];
+const tabTextAndLink = {
+  [dashboardTabs.NOW]: {
+    text: dashboardTabs.NOW,
+    link: dashboardTabs.NOW,
+  },
+  [dashboardTabs.BACKLOG]: {
+    text: dashboardTabs.BACKLOG,
+    link: dashboardTabs.BACKLOG,
+  },
+  [dashboardTabs.SCHEDULED]: {
+    text: dashboardTabs.SCHEDULED,
+    link: dashboardTabs.SCHEDULED,
+  },
+  [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
 };
 
 /**
@@ -214,16 +196,14 @@ export const createTask = (
     const tabTask = selectTaskDashboardTab(stateTask, tid);
     const dashboardActiveTab = selectDashboardActiveTab(state);
 
-    const selectTab = getTabProperties(tabTask);
+    const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
     dispatch(
       setSnackbarData({
         open: true,
         message: `Task created`,
         id: tid,
         // Show button only if task went to a different tab than what's visible now
-        ...(dashboardActiveTab !== tabTask
-          ? { buttonText: `See ${selectTab.text}`, buttonLink: selectTab.link }
-          : {}),
+        ...(dashboardActiveTab !== tabTask ? { buttonText: `See ${text}`, buttonLink: link } : {}),
       }),
     );
   };

@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
-import { LOG_OUT } from './reset';
 import { selectUserId } from './session';
 import {
   fetchCreateRecurringConfig,
@@ -36,9 +35,6 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     resetLocalState: () => initialState,
     addChangesToLocalState: (state, { payload: { added, modified, removed } }) =>

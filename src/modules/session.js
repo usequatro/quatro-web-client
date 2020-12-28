@@ -1,6 +1,5 @@
 import get from 'lodash/get';
 import { createSlice } from '@reduxjs/toolkit';
-import { LOG_OUT } from './reset';
 
 const name = 'session';
 
@@ -44,9 +43,6 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     setUserFromFirebaseUser: {
       reducer: (state, { payload }) => ({
@@ -67,7 +63,8 @@ const slice = createSlice({
                 photoURL: firebaseUser.photoURL,
                 email: firebaseUser.email,
                 emailVerified: firebaseUser.emailVerified,
-                providerData: firebaseUser.providerData,
+                // Provider data is an array of special objects, so mapping so its serializable
+                providerData: firebaseUser.providerData.map((provider) => ({ ...provider })),
               },
       }),
     },

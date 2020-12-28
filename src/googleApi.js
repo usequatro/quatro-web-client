@@ -1,5 +1,6 @@
 import formatISO from 'date-fns/formatISO';
 import firebase from './firebase';
+import debugConsole from './utils/debugConsole';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -82,5 +83,12 @@ export const gapiSignInExistingUser = async () => {
       });
     }
     return undefined;
+  });
+};
+
+export const gapiSignOut = async () => {
+  const authInstance = await gapiGetAuthInstance();
+  return authInstance.signOut().then(() => {
+    debugConsole.log('Google API', 'signOut');
   });
 };

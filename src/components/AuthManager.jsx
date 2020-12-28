@@ -6,7 +6,6 @@ import firebase, { firebaseSignInWithCredential } from '../firebase';
 import { gapiGetAuthInstance } from '../googleApi';
 import debugConsole from '../utils/debugConsole';
 import { setUserFromFirebaseUser, setGapiUser } from '../modules/session';
-import { logOutReduxState } from '../modules/reset';
 
 const isFirebaseSignedIn = () => Boolean(firebase.auth().currentUser);
 
@@ -50,11 +49,7 @@ const AuthManager = () => {
 
       // Subscribe to Firebase logging out on its own, we log out Google too
       unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-        if (!user) {
-          dispatch(logOutReduxState());
-        } else {
-          dispatch(setUserFromFirebaseUser(user));
-        }
+        dispatch(setUserFromFirebaseUser(user));
 
         // If Firebase logs out, we log out Google too
         if (!user && gapiAuthInstance.isSignedIn.get()) {

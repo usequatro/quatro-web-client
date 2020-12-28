@@ -17,22 +17,22 @@ const initialState = {
   type: TYPE_ERROR,
 };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name: 'notification',
   initialState,
   reducers: {
-    setNotification: (state, { payload: { message, type } }) => ({
-      ...state,
-      isOpen: true,
-      message,
-      type,
-    }),
-    setIsClosed: (state) => ({
-      ...state,
-      isOpen: false,
-    }),
+    setNotification: (state, { payload: { message, type } }) => {
+      state.isOpen = true;
+      state.message = message;
+      state.type = type;
+    },
+    setIsClosed: (state) => {
+      state.isOpen = false;
+    },
   },
 });
+/* eslint-enable no-param-reassign */
 
 const NotificationContext = createContext(initialState);
 export const useNotification = () => useContext(NotificationContext);

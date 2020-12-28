@@ -17,7 +17,6 @@ import isValid from 'date-fns/isValid';
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../constants/tickConstants';
 import debugConsole from '../utils/debugConsole';
 import { selectCalendarProviderCalendarId } from './calendars';
-import { LOG_OUT } from './reset';
 import { gapiListCalendarEvents } from '../googleApi';
 
 const name = 'calendarEvents';
@@ -150,9 +149,6 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     clearAllEvents: () => initialState,
     setDayEvents: (state, { payload: { events, dateKey } }) => {
@@ -280,7 +276,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     selectCalendarProviderCalendarId(state, id),
   ]);
 
-  debugConsole.log('Google API', 'fetching events for', dateKey, calendarIds);
+  debugConsole.log('Google API', `fetching events for ${dateKey} ${JSON.stringify(calendarIds)}`);
 
   const promises = providerCalendarIds.map(([calendarId, providerCalendarId]) =>
     gapiListCalendarEvents(providerCalendarId, startOfDayDate, endOfDayDate)

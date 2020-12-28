@@ -1,7 +1,6 @@
 import get from 'lodash/get';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
-import { LOG_OUT } from './reset';
 import { selectTask } from './tasks';
 import { selectRecurringConfigByMostRecentTaskId } from './recurringConfigs';
 import * as blockerTypes from '../constants/blockerTypes';
@@ -43,9 +42,6 @@ const initialState = {
 const slice = createSlice({
   name,
   initialState,
-  extraReducers: {
-    [LOG_OUT]: () => initialState,
-  },
   reducers: {
     setTitle: (state, { payload }) => {
       state.title = payload;
