@@ -170,6 +170,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
             aria-controls="account-menu"
             aria-haspopup="true"
             size="small"
+            color="inherit"
           >
             <AccountCircleRoundedIcon style={{ opacity: userPhotoURL ? 0 : 1 }} />
           </IconButton>
