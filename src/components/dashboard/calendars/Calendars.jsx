@@ -71,7 +71,7 @@ const Calendars = () => {
   return (
     <Box className={classes.mainContainer}>
       <Box mb={6}>
-        <Typography variant="h5" component="h3" paragraph>
+        <Typography variant="h6" component="h3" paragraph>
           Connected Account
         </Typography>
         {googleFirebaseAuthProvider ? (
@@ -103,7 +103,7 @@ const Calendars = () => {
       </Box>
 
       <Box mb={6}>
-        <Typography variant="h5" component="h3" paragraph>
+        <Typography variant="h6" component="h3" paragraph>
           Connected Calendars
         </Typography>
         <Box display="flex" justifyContent="center">
