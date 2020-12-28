@@ -21,13 +21,11 @@ import DashboardViewBar from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
 import CalendarDashboardView from './calendar-dashboard-view/CalendarDashboardView';
 import Calendars from './calendars/Calendars';
-import SnackbarNotification from '../ui/SnackbarNotification';
 
 import {
   listenToDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
-  selectSnackbarData,
   selectIsDataInSync,
 } from '../../modules/dashboard';
 import { listenToCalendarsList } from '../../modules/calendars';
@@ -66,11 +64,6 @@ const useStyles = makeStyles((theme) => ({
       bottom: 120,
     },
   },
-  snackbarStyle: {
-    background: theme.palette.secondary.main,
-    borderRadius: 30,
-    color: 'white',
-  },
   calendarDesktopViewContainer: {
     borderRight: `solid 1px ${theme.palette.divider}`,
   },
@@ -107,8 +100,6 @@ const Dashboard = () => {
   const activeTab = useSelector(selectDashboardActiveTab);
 
   const isDataInSync = useSelector(selectIsDataInSync);
-
-  const snackbarData = useSelector(selectSnackbarData);
 
   const [navigationOpen, setNavigationOpen] = useState(false);
   // Close drawer when route changes
@@ -235,7 +226,6 @@ const Dashboard = () => {
         </Paper>
 
         <TaskDialog />
-        <SnackbarNotification {...snackbarData} />
       </div>
     </div>
   );

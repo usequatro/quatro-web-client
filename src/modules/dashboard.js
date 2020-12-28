@@ -6,6 +6,7 @@ import { listenToRecurringConfigList } from './recurringConfigs';
 import { selectUserId } from './session';
 import { NOW } from '../constants/dashboardTabs';
 import * as dashboardTabs from '../constants/dashboardTabs';
+import * as paths from '../constants/paths';
 import * as SOURCES from '../constants/taskSources';
 import { TASK_CREATED } from '../constants/mixpanelEvents';
 
@@ -25,7 +26,6 @@ const OUT_OF_SYNC = 'outOfSync';
 
 export const selectDashboadIsLoading = (state) => state[name].status === LOADING;
 export const selectDashboadIsLoaded = (state) => state[name].status === LOADED;
-export const selectSnackbarData = (state) => state[name].snackbarData;
 export const selectDashboardActiveTab = (state) => state[name].activeTab;
 export const selectHighlightedTaskId = (state) => state[name].highlightedTaskId;
 
@@ -40,14 +40,6 @@ const initialState = {
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
   recurringConfigsSyncStatus: IN_SYNC,
-  snackbarData: {
-    open: false,
-    message: '',
-    id: null,
-    buttonText: '',
-    buttonAction: null,
-    buttonLink: null,
-  },
 };
 
 /* eslint-disable no-param-reassign */
@@ -57,12 +49,6 @@ const slice = createSlice({
   reducers: {
     setStatus: (state, { payload }) => {
       state.status = payload;
-    },
-    setSnackbarData: (state, { payload }) => {
-      state.snackbarData = payload;
-    },
-    resetSnackbar: (state) => {
-      state.snackbarData = initialState.snackbarData;
     },
     setDashboardActiveTab: (state, { payload }) => {
       state.activeTab = payload;
@@ -81,7 +67,7 @@ const slice = createSlice({
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const { setSnackbarData, resetSnackbar, setDashboardActiveTab } = slice.actions;
+export const { setDashboardActiveTab } = slice.actions;
 
 // Thunks
 
@@ -147,17 +133,17 @@ export const setHighlighedTask = (id) => (dispatch) => {
 const tabTextAndLink = {
   [dashboardTabs.NOW]: {
     text: dashboardTabs.NOW,
-    link: dashboardTabs.NOW,
+    link: paths.NOW,
   },
   [dashboardTabs.BACKLOG]: {
     text: dashboardTabs.BACKLOG,
-    link: dashboardTabs.BACKLOG,
+    link: paths.BACKLOG,
   },
   [dashboardTabs.SCHEDULED]: {
     text: dashboardTabs.SCHEDULED,
-    link: dashboardTabs.SCHEDULED,
+    link: paths.SCHEDULED,
   },
-  [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
+  [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: paths.BLOCKED },
 };
 
 /**
@@ -175,6 +161,7 @@ export const createTask = (
   impact,
   effort,
   { description, due, scheduledStart, blockedBy } = {},
+  callback = () => {},
 ) => (dispatch, getState, { mixpanel }) => {
   const state = getState();
   const userId = selectUserId(state);
@@ -191,25 +178,21 @@ export const createTask = (
     created: Date.now(),
     source: SOURCES.USER,
   };
-  const showSnackbar = (tid) => {
-    const stateTask = getState();
-    const tabTask = selectTaskDashboardTab(stateTask, tid);
-    const dashboardActiveTab = selectDashboardActiveTab(state);
-
-    const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
-    dispatch(
-      setSnackbarData({
-        open: true,
-        message: `Task created`,
-        id: tid,
-        // Show button only if task went to a different tab than what's visible now
-        ...(dashboardActiveTab !== tabTask ? { buttonText: `See ${text}`, buttonLink: link } : {}),
-      }),
-    );
-  };
 
   return apiClient.fetchCreateTask(task).then(({ id }) => {
-    showSnackbar(id, task);
+    const stateTask = getState();
+    const tabTask = selectTaskDashboardTab(stateTask, id);
+    const isSameTab = tabTask === selectDashboardActiveTab(state);
+
+    const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
+
+    callback({
+      id,
+      task,
+      notificationButtonText: isSameTab ? '' : `See ${text}`,
+      notificationButtonLink: isSameTab ? '' : link,
+    });
+
     mixpanel.track(TASK_CREATED, {
       hasBlockers: blockedBy.length > 0,
       hasScheduledStart: !!scheduledStart,

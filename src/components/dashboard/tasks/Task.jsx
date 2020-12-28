@@ -15,10 +15,12 @@ import {
   undoCompleteTask,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
-import { setSnackbarData, resetSnackbar } from '../../../modules/dashboard';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
+import { useNotification } from '../../Notification';
 
 const Task = ({ id, position, component, highlighted, showBlockers, editable }) => {
+  const { notifyInfo } = useNotification();
+
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
@@ -39,29 +41,34 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
 
   const [visualCompleted, setVisualCompleted] = useState(completed);
   const cancelCompletion = useRef();
+  const closeNotificationRef = useRef();
   const handleComplete = useCallback(
     (tid) => {
       if (!visualCompleted) {
         setVisualCompleted(Date.now());
-        dispatch(
-          setSnackbarData({
-            open: true,
-            message: '🎉 Task Completed!',
-            id: tid,
-            buttonText: 'Undo',
-            buttonAction: function action() {
-              dispatch(undoCompleteTask(tid));
+        closeNotificationRef.current = notifyInfo({
+          icon: '🎉',
+          message: 'Task Completed!',
+          buttons: [
+            {
+              children: 'Undo',
+              onClick: () => {
+                dispatch(undoCompleteTask(tid));
+              },
             },
-          }),
-        );
+          ],
+        });
+
         cancelCompletion.current = dispatch(completeTask(tid));
-      } else if (cancelCompletion) {
-        dispatch(resetSnackbar());
+      } else if (cancelCompletion.current) {
+        if (closeNotificationRef.current) {
+          closeNotificationRef.current();
+        }
         cancelCompletion.current();
         setVisualCompleted(null);
       }
     },
-    [dispatch, visualCompleted],
+    [visualCompleted, dispatch, notifyInfo],
   );
 
   return (
