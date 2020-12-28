@@ -5,6 +5,7 @@ import cond from 'lodash/cond';
 import isToday from 'date-fns/isToday';
 import isYesterday from 'date-fns/isYesterday';
 import isThisWeek from 'date-fns/isThisWeek';
+import { makeStyles } from '@material-ui/core/styles';
 
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -26,6 +27,12 @@ const FETCHING = 'fetching';
 const FETCHED = 'fetched';
 const ERROR = 'error';
 
+const useStyles = makeStyles(() => ({
+  container: {
+    overflow: 'auto',
+  },
+}));
+
 const getSection = cond([
   [(completed) => isToday(completed), () => 'today'],
   [(completed) => isYesterday(completed), () => 'yesterday'],
@@ -37,6 +44,7 @@ const CompletedTaskList = () => {
   const { notifyError } = useNotification();
   const userId = useSelector(selectUserId);
   const dispatch = useDispatch();
+  const classes = useStyles();
 
   const [status, setStatus] = useState(INITIAL);
   const [completedTasks, setCompletedTasks] = useState([]);
@@ -159,7 +167,7 @@ const CompletedTaskList = () => {
   );
 
   return (
-    <Box flexGrow={1} display="flex" flexDirection="column">
+    <Box flexGrow={1} display="flex" flexDirection="column" className={classes.container}>
       {cond([
         [() => status === ERROR, () => null],
         [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
