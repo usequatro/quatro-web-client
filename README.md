@@ -14,7 +14,7 @@
 
 * [https://app.usequatro.com](https://app.usequatro.com)
 * [Firebase project: tasket-project](https://console.firebase.google.com/u/0/project/tasket-project/overview)
-* [Google API Dashboard: tasket-project](https://console.developers.google.com/apis/credentials?project=tasket-project)
+* [Google API Dashboard: tasket-project](https://console.developers.google.com/apis/dashboard?project=tasket-project)
 
 ## Libraries
 
