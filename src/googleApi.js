@@ -32,6 +32,7 @@ export const gapiListCalendarEvents = async (providerCalendarId, startDate, endD
     // @see https://developers.google.com/calendar/v3/reference/events/list
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
+      maxAttendees: 1, // only return the current user, not the others (not needed)
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       maxResults: 25,

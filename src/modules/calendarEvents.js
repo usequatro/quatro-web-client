@@ -1,6 +1,7 @@
 import uniq from 'lodash/uniq';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
+import cond from 'lodash/cond';
 import { createSlice } from '@reduxjs/toolkit';
 
 import parseISO from 'date-fns/parseISO';
@@ -53,6 +54,7 @@ export const selectCalendarEventStartDateTime = (state, id) =>
 export const selectCalendarEventEndDateTime = (state, id) =>
   get(state[name].byId[id], 'end.dateTime');
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
+export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
 export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId[id], 'calendarId');
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
@@ -106,7 +108,19 @@ export const getCollisions = (event, events) => {
   return collisionIds;
 };
 
+const isItemDeclined = (item) => {
+  const seltAttendee = (item.attendees || []).find((attendee) => attendee.self);
+  return seltAttendee && seltAttendee.responseStatus === 'declined';
+};
+
 const PAST_EVENT_OPACITY = 0.7;
+const DECLINED_EVENT_OPACITY = 0.2;
+
+const getEventOpacity = cond([
+  [(event) => event.declined, () => DECLINED_EVENT_OPACITY],
+  [(event) => isPast(event.end.timestamp), () => PAST_EVENT_OPACITY],
+  [() => true, () => 1],
+]);
 
 const getEventCardStyle = (event) => {
   if (event.allDay) {
@@ -123,9 +137,10 @@ const getEventCardStyle = (event) => {
     transform: `translateY(${getEventDisplayTop(event.start.timestamp)}px)`,
     left: `${left}%`,
     width: `${width}%`,
-    opacity: isPast(event.end.timestamp) ? PAST_EVENT_OPACITY : 1,
+    opacity: getEventOpacity(event),
     position: 'absolute',
     zIndex: 1,
+    textDecoration: event.declined ? 'line-through' : 'initial',
   };
 };
 
@@ -280,7 +295,10 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
 
   const promises = providerCalendarIds.map(([calendarId, providerCalendarId]) =>
     gapiListCalendarEvents(providerCalendarId, startOfDayDate, endOfDayDate)
-      .then((response) => response.result.items)
+      .then((response) => {
+        // console.log(response.result.items);
+        return response.result.items;
+      })
       // Add IDs to returned items here so we can keep track of them
       .then((items) => items.map((item) => ({ ...item, calendarId, providerCalendarId }))),
   );
@@ -297,11 +315,8 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     });
 
     const successResults = results.filter(({ status }) => status === 'fulfilled');
-    const items = successResults.reduce((memo, { value }) => [...memo, ...value], []);
-
-    // console.log(items);
-
-    const itemsWithTimestamps = addTimestamps(items);
+    const allItems = successResults.reduce((memo, { value }) => [...memo, ...value], []);
+    const itemsWithTimestamps = addTimestamps(allItems);
 
     const events = itemsWithTimestamps.map((item) => ({
       id: item.id,
@@ -323,6 +338,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
         timeZone: item.end.timeZone,
       },
       allDay: isEventAllDay(item.start.timestamp, item.end.timestamp, startOfDayDate, endOfDayDate),
+      declined: isItemDeclined(item),
     }));
 
     dispatch(slice.actions.setDayEvents({ events, dateKey }));
