@@ -201,7 +201,6 @@ const Dashboard = () => {
                     hidden={selectedMobileTab === 0}
                     className={selectedMobileTab === 0 ? '' : classes.mobileTabPanel}
                   >
-                    <DashboardViewBar />
                     <TaskList />
                   </div>
                   <div
