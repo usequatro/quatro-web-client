@@ -28,11 +28,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
       </ListItemAvatar>
       <ListItemText
         primary={`${[name, email].filter(Boolean).join(' - ')}`}
-        secondary={
-          !isConnectedAccount
-            ? 'Re-enable Quatro to access your calendars by signing in'
-            : undefined
-        }
+        secondary={!isConnectedAccount ? 'Not signed in with Google' : undefined}
       />
     </ListItem>
   );

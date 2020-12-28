@@ -19,7 +19,7 @@ import EmailRoundedIcon from '@material-ui/icons/EmailRounded';
 import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
 import firebase from '../../firebase';
-import { gapiSignIn } from '../../googleApi';
+import useGoogleApiSignIn from '../hooks/useGoogleApiSignIn';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
@@ -117,7 +117,7 @@ const Registration = ({ mode }) => {
     history.push(paths.DASHBOARD);
   };
 
-  const handleLogIn = (event) => {
+  const handlePasswordLogIn = (event) => {
     event.preventDefault();
     if (submitting) {
       return;
@@ -134,7 +134,7 @@ const Registration = ({ mode }) => {
       });
   };
 
-  const handleSignUp = (event) => {
+  const handlePasswordSignUp = (event) => {
     event.preventDefault();
     if (submitting) {
       return;
@@ -173,9 +173,9 @@ const Registration = ({ mode }) => {
   };
 
   const [waitingForGoogle, setWaitingForGoogle] = useState(false);
-
+  const { signInFromRegistration } = useGoogleApiSignIn();
   const handleSignInWithGoogle = () => {
-    gapiSignIn()
+    signInFromRegistration()
       .then(() => {
         setWaitingForGoogle(true);
       })
@@ -269,8 +269,8 @@ const Registration = ({ mode }) => {
               <form
                 onSubmit={
                   {
-                    [LOG_IN]: handleLogIn,
-                    [SIGN_UP]: handleSignUp,
+                    [LOG_IN]: handlePasswordLogIn,
+                    [SIGN_UP]: handlePasswordSignUp,
                     [RECOVER_PASSWORD]: handleRecoverPassword,
                   }[mode]
                 }
