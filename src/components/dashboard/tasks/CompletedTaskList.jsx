@@ -153,7 +153,7 @@ const CompletedTaskList = () => {
       prioritizedAheadOf={undefined}
       showBlockers={false}
       hasRecurringConfig={false}
-      completed={task.completed && !task.overrideCompletedCheckbox}
+      completed={task.overrideCompletedCheckbox ? undefined : task.completed}
       onComplete={handleUncompleteTask}
     />
   );

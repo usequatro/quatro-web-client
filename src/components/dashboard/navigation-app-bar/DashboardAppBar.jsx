@@ -24,6 +24,7 @@ import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
 import { firebaseSignOut } from '../../../firebase';
+import { gapiSignOut } from '../../../googleApi';
 import { ReactComponent as Logo } from './logo-white.svg';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
@@ -95,8 +96,16 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const handleSignOut = () => {
-    firebaseSignOut();
     setAccountMenuOpen(false);
+    Promise.all([gapiSignOut(), firebaseSignOut()])
+      .then(() => {
+        // Redirect to initial screen to reset the Redux
+        window.location = window.location.origin;
+      })
+      .catch((error) => {
+        // @TODO: notify user
+        console.error(error); // eslint-disable-line no-console
+      });
   };
 
   return (

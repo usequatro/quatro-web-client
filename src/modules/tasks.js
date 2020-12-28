@@ -1,19 +1,14 @@
-/**
- * Namespace to keep information of the current session, like user details.
- */
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 import sortBy from 'lodash/sortBy';
 import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
 import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
-import { createSelector } from 'reselect';
 
 import calculateTaskScore from '../utils/calculateTaskScore';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
-import createReducer from '../utils/createReducer';
-import { LOG_OUT } from './reset';
 import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiClient';
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
@@ -30,48 +25,12 @@ import {
   TASK_MANUALLY_ARRANGED,
 } from '../constants/mixpanelEvents';
 
-export const NAMESPACE = 'tasks';
-
-// Action types
-
-const ADD_CHANGES_TO_LOCAL_STATE = `${NAMESPACE}/ADD_CHANGES_TO_LOCAL_STATE`;
-const RESET_LOCAL_STATE = `${NAMESPACE}/RESET_LOCAL_STATE`;
-
-// Reducers
-
-const INITIAL_STATE = {
-  allIds: [],
-  byId: {},
-};
-
-const applyScores = (state) => ({
-  ...state,
-  byId: Object.keys(state.byId).reduce(
-    (memo, id) => ({
-      ...memo,
-      [id]: {
-        ...state.byId[id],
-        score: calculateTaskScore(state.byId[id].impact, state.byId[id].effort, state.byId[id].due),
-      },
-    }),
-    {},
-  ),
-});
-export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
-  [RESET_LOCAL_STATE]: () => ({ ...INITIAL_STATE }),
-  [ADD_CHANGES_TO_LOCAL_STATE]: (state, { payload: { added, modified, removed } }) => {
-    const newState = applyGroupedEntityChanges(state, { added, modified, removed });
-    const newStateWithScores = applyScores(newState);
-    return newStateWithScores;
-  },
-});
+const name = 'tasks';
 
 // Selectors
 
-export const namespace = 'tasks';
-export const selectTask = (state, id) => state[namespace].byId[id];
-export const selectTaskExists = (state, id) => Boolean(state[namespace].byId[id]);
+export const selectTask = (state, id) => state[name].byId[id];
+export const selectTaskExists = (state, id) => Boolean(state[name].byId[id]);
 export const selectTaskTitle = (state, id) => get(selectTask(state, id), 'title');
 export const selectTaskDescription = (state, id) => get(selectTask(state, id), 'description');
 export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');
@@ -84,13 +43,12 @@ export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'bl
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
 
-const selectAllTaskIds = (state) => state[namespace].allIds;
+const selectAllTaskIds = (state) => state[name].allIds;
 const selectAllTaskIdsAsMap = createSelector(selectAllTaskIds, (ids) =>
   ids.reduce((memo, id) => ({ ...memo, [id]: true }), {}),
 );
 
-const selectAllTasks = (state) =>
-  selectAllTaskIds(state).map((id) => [id, state[namespace].byId[id]]);
+const selectAllTasks = (state) => selectAllTaskIds(state).map((id) => [id, state[name].byId[id]]);
 
 const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
@@ -254,27 +212,45 @@ export const selectTaskDashboardTab = (state, taskId) =>
     [() => true, () => undefined],
   ])();
 
-export const getTabProperties = (tab) => {
-  const tabProperties = {
-    [dashboardTabs.NOW]: {
-      text: dashboardTabs.NOW,
-      link: dashboardTabs.NOW,
-    },
-    [dashboardTabs.BACKLOG]: {
-      text: dashboardTabs.BACKLOG,
-      link: dashboardTabs.BACKLOG,
-    },
-    [dashboardTabs.SCHEDULED]: {
-      text: dashboardTabs.SCHEDULED,
-      link: dashboardTabs.SCHEDULED,
-    },
-    [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
-  };
+// Helpers
 
-  return tabProperties[tab] || tabProperties[dashboardTabs.NOW];
+const applyScores = (state) => ({
+  ...state,
+  byId: Object.keys(state.byId).reduce(
+    (memo, id) => ({
+      ...memo,
+      [id]: {
+        ...state.byId[id],
+        score: calculateTaskScore(state.byId[id].impact, state.byId[id].effort, state.byId[id].due),
+      },
+    }),
+    {},
+  ),
+});
+
+// Slice
+
+const initialState = {
+  allIds: [],
+  byId: {},
 };
 
-// Actions
+const slice = createSlice({
+  name,
+  initialState,
+  reducers: {
+    resetLocalState: () => initialState,
+    addChangesToLocalState: (state, { payload: { added, modified, removed } }) => {
+      const newState = applyGroupedEntityChanges(state, { added, modified, removed });
+      const newStateWithScores = applyScores(newState);
+      return newStateWithScores;
+    },
+  },
+});
+
+export default slice;
+
+// Thunks
 
 export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispatch) => {
   const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
@@ -284,7 +260,7 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
       hasLocalUnsavedChanges,
     });
     if (hasEntityChanges) {
-      dispatch({ type: ADD_CHANGES_TO_LOCAL_STATE, payload: groupedChangedEntities });
+      dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
     }
     nextCallback(hasLocalUnsavedChanges);
   };
@@ -292,7 +268,7 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
     errorCallback(error);
   };
 
-  dispatch({ type: RESET_LOCAL_STATE });
+  dispatch(slice.actions.resetLocalState());
   const unsubscribe = listenListTasks(userId, onNext, onError);
 
   return () => {

@@ -1,98 +1,93 @@
-/**
- * Namespace to keep information of the current session, like user details.
- */
-
 import get from 'lodash/get';
+import { createSlice } from '@reduxjs/toolkit';
 
-import createReducer from '../utils/createReducer';
-import { LOG_OUT } from './reset';
-
-export const NAMESPACE = 'session';
+const name = 'session';
 
 const NOT_DEFINED = 'notDefined';
 const LOGGED_IN = 'loggedIn';
 const LOGGED_OUT = 'loggedOut';
 
-// Action types
+// Selectors
 
-const SET_FIREBASE_USER = `${NAMESPACE}/SET_FIREBASE_USER`;
-const SET_GOOGLE_CONNECTED_USER = `${NAMESPACE}/SET_GOOGLE_CONNECTED_USER`;
+export const selectUserId = (state) => get(state[name], 'firebaseUser.uid');
+export const selectUserEmail = (state) => get(state[name], 'firebaseUser.email');
+export const selectUserEmailVerified = (state) => get(state[name], 'firebaseUser.emailVerified');
+export const selectUserDisplayName = (state) => get(state[name], 'firebaseUser.displayName');
+export const selectUserPhotoURL = (state) => get(state[name], 'firebaseUser.photoURL');
+export const selectFirebaseUserIsLoggedIn = (state) => state[name].fireaseStatus === LOGGED_IN;
+export const selectFirebaseUserLoading = (state) => state[name].fireaseStatus === NOT_DEFINED;
+export const selectGoogleFirebaseAuthProvider = (state) =>
+  get(state[name], 'firebaseUser.providerData', []).find(
+    ({ providerId }) => providerId === 'google.com',
+  );
+export const selectPasswordFirebaseAuthProvider = (state) =>
+  get(state[name], 'firebaseUser.providerData', []).find(
+    ({ providerId }) => providerId === 'password',
+  );
+export const selectGapiUserLoading = (state) => state[name].gapiStatus === NOT_DEFINED;
+export const selectGapiUserSignedIn = (state) => state[name].gapiStatus === LOGGED_IN;
+export const selectGapiUserId = (state) => get(state[name], 'gapiUser.id');
+export const selectGapiUserName = (state) => get(state[name], 'gapiUser.name');
+export const selectGapiUserEmail = (state) => get(state[name], 'gapiUser.email');
+export const selectGapiUserImageUrl = (state) => get(state[name], 'gapiUser.imageUrl');
 
-// Reducers
+// Slice
 
-const INITIAL_STATE = {
+const initialState = {
   fireaseStatus: NOT_DEFINED,
   firebaseUser: null,
   gapiStatus: NOT_DEFINED,
   gapiUser: null,
 };
 
-export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ firebaseUser: null, gapiUser: null, status: NOT_DEFINED }),
-  [SET_FIREBASE_USER]: (state, { payload: user }) => ({
-    ...state,
-    fireaseStatus: user ? LOGGED_IN : LOGGED_OUT,
-    firebaseUser: user,
-  }),
-  [SET_GOOGLE_CONNECTED_USER]: (state, { payload: gapiUser }) => ({
-    ...state,
-    gapiStatus: gapiUser ? LOGGED_IN : LOGGED_OUT,
-    gapiUser,
-  }),
+const slice = createSlice({
+  name,
+  initialState,
+  reducers: {
+    setUserFromFirebaseUser: {
+      reducer: (state, { payload }) => ({
+        ...state,
+        fireaseStatus: payload ? LOGGED_IN : LOGGED_OUT,
+        firebaseUser: payload,
+      }),
+      /**
+       * @param {firebase.User} firebaseUser
+       */
+      prepare: (firebaseUser) => ({
+        payload:
+          firebaseUser === null
+            ? null
+            : {
+                uid: firebaseUser.uid,
+                displayName: firebaseUser.displayName,
+                photoURL: firebaseUser.photoURL,
+                email: firebaseUser.email,
+                emailVerified: firebaseUser.emailVerified,
+                // Provider data is an array of special objects, so mapping so its serializable
+                providerData: firebaseUser.providerData.map((provider) => ({ ...provider })),
+              },
+      }),
+    },
+    setGapiUser: {
+      reducer: (state, { payload }) => ({
+        ...state,
+        gapiStatus: payload ? LOGGED_IN : LOGGED_OUT,
+        gapiUser: payload,
+      }),
+      prepare: (gapiUser) => ({
+        payload:
+          gapiUser === null || gapiUser.getId() === null
+            ? null
+            : {
+                id: gapiUser.getId(),
+                name: gapiUser.getBasicProfile().getName(),
+                email: gapiUser.getBasicProfile().getEmail(),
+                imageUrl: gapiUser.getBasicProfile().getImageUrl(),
+              },
+      }),
+    },
+  },
 });
 
-// Selectors
-
-export const selectUserId = (state) => get(state[NAMESPACE], 'firebaseUser.uid');
-export const selectUserEmail = (state) => get(state[NAMESPACE], 'firebaseUser.email');
-export const selectUserEmailVerified = (state) =>
-  get(state[NAMESPACE], 'firebaseUser.emailVerified');
-export const selectUserDisplayName = (state) => get(state[NAMESPACE], 'firebaseUser.displayName');
-export const selectUserPhotoURL = (state) => get(state[NAMESPACE], 'firebaseUser.photoURL');
-export const selectFirebaseUserIsLoggedIn = (state) => state[NAMESPACE].fireaseStatus === LOGGED_IN;
-export const selectFirebaseUserLoading = (state) => state[NAMESPACE].fireaseStatus === NOT_DEFINED;
-export const selectGoogleFirebaseAuthProvider = (state) =>
-  get(state[NAMESPACE], 'firebaseUser.providerData', []).find(
-    ({ providerId }) => providerId === 'google.com',
-  );
-export const selectPasswordFirebaseAuthProvider = (state) =>
-  get(state[NAMESPACE], 'firebaseUser.providerData', []).find(
-    ({ providerId }) => providerId === 'password',
-  );
-
-export const selectGapiUserLoading = (state) => state[NAMESPACE].gapiStatus === NOT_DEFINED;
-export const selectGapiUserSignedIn = (state) => state[NAMESPACE].gapiStatus === LOGGED_IN;
-export const selectGapiUserId = (state) => get(state[NAMESPACE], 'gapiUser.id');
-export const selectGapiUserName = (state) => get(state[NAMESPACE], 'gapiUser.name');
-export const selectGapiUserEmail = (state) => get(state[NAMESPACE], 'gapiUser.email');
-export const selectGapiUserImageUrl = (state) => get(state[NAMESPACE], 'gapiUser.imageUrl');
-
-// Actions
-
-export const setUserFromFirebaseUser = (firebaseUser) => ({
-  type: SET_FIREBASE_USER,
-  payload:
-    firebaseUser === null
-      ? null
-      : {
-          uid: firebaseUser.uid,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-          email: firebaseUser.email,
-          emailVerified: firebaseUser.emailVerified,
-          providerData: firebaseUser.providerData,
-        },
-});
-
-export const setGapiUser = (gapiUser) => ({
-  type: SET_GOOGLE_CONNECTED_USER,
-  payload:
-    gapiUser === null || gapiUser.getId() === null
-      ? null
-      : {
-          id: gapiUser.getId(),
-          name: gapiUser.getBasicProfile().getName(),
-          email: gapiUser.getBasicProfile().getEmail(),
-          imageUrl: gapiUser.getBasicProfile().getImageUrl(),
-        },
-});
+export const { setUserFromFirebaseUser, setGapiUser } = slice.actions;
+export default slice;

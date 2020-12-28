@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
-import createReducer from '../utils/createReducer';
+import { createSlice } from '@reduxjs/toolkit';
 
 const TYPE_ERROR = 'error';
 const TYPE_WARNING = 'warning';
@@ -17,44 +17,45 @@ const initialState = {
   type: TYPE_ERROR,
 };
 
-const SET_NOTIFICATION = 'SET_NOTIFICATION';
-const SET_IS_CLOSED = 'SET_IS_CLOSED';
-
-const reducer = createReducer(initialState, {
-  [SET_NOTIFICATION]: (state, { payload: { message, type } }) => ({
-    ...state,
-    isOpen: true,
-    message,
-    type,
-  }),
-  [SET_IS_CLOSED]: (state) => ({
-    ...state,
-    isOpen: false,
-  }),
+/* eslint-disable no-param-reassign */
+const slice = createSlice({
+  name: 'notification',
+  initialState,
+  reducers: {
+    setNotification: (state, { payload: { message, type } }) => {
+      state.isOpen = true;
+      state.message = message;
+      state.type = type;
+    },
+    setIsClosed: (state) => {
+      state.isOpen = false;
+    },
+  },
 });
+/* eslint-enable no-param-reassign */
 
 const NotificationContext = createContext(initialState);
 export const useNotification = () => useContext(NotificationContext);
 
 export function NotificationContextProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(slice.reducer, initialState);
 
   const closeTimeout = useRef();
 
   const closeNotification = useCallback(() => {
     clearTimeout(closeTimeout.current);
-    dispatch({ type: SET_IS_CLOSED });
+    dispatch(slice.actions.setIsClosed());
   }, [dispatch]);
 
   const showNotification = useCallback(
     (type, message) => {
       closeNotification();
 
-      dispatch({ type: SET_NOTIFICATION, payload: { type, message } });
+      dispatch(slice.actions.setNotification({ type, message }));
 
       if (type !== TYPE_ERROR && type !== TYPE_WARNING) {
         closeTimeout.current = setTimeout(() => {
-          dispatch({ type: SET_IS_CLOSED });
+          dispatch(slice.actions.setIsClosed());
         }, 2500);
       }
     },

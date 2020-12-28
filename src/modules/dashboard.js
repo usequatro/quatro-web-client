@@ -1,19 +1,17 @@
-/**
- * Basic app state for views, like which view shows, if side menus are open, etc.
- */
 import once from 'lodash/once';
-import createReducer from '../utils/createReducer';
-import { listenToTaskList, selectTaskDashboardTab, getTabProperties } from './tasks';
+import { createSlice } from '@reduxjs/toolkit';
+
+import { listenToTaskList, selectTaskDashboardTab } from './tasks';
 import { listenToRecurringConfigList } from './recurringConfigs';
 import { selectUserId } from './session';
-import { LOG_OUT } from './reset';
 import { NOW } from '../constants/dashboardTabs';
+import * as dashboardTabs from '../constants/dashboardTabs';
 import * as SOURCES from '../constants/taskSources';
 import { TASK_CREATED } from '../constants/mixpanelEvents';
 
 import * as apiClient from '../utils/apiClient';
 
-export const NAMESPACE = 'dashboard';
+const name = 'dashboard';
 
 const INITIAL = 'initial';
 const LOADING = 'loading';
@@ -23,22 +21,21 @@ const ERROR = 'error';
 const IN_SYNC = 'inSync';
 const OUT_OF_SYNC = 'outOfSync';
 
-// Action types
+// Selectors
 
-const SET_STATUS = `${NAMESPACE}/SET_STATUS`;
-const SET_ACCOUNT_MENU_OPEN = `${NAMESPACE}/SET_ACCOUNT_MENU_OPEN`;
-const SET_SNACKBAR_DATA = `${NAMESPACE}/SET_SNACKBAR_DATA`;
-const RESET_SNACKBAR = `${NAMESPACE}/RESET_SNACKBAR`;
-const SET_ACTIVE_TAB = `${NAMESPACE}/SET_ACTIVE_TAB`;
-const HIGHLIGH_TASK = `${NAMESPACE}/HIGHLIGH_TASK`;
-const SET_TASKS_LISTENER_STATUS = `${NAMESPACE}/SET_TASKS_LISTENER_STATUS`;
-const SET_RECURRING_CONFIGS_LISTENER_STATUS = `${NAMESPACE}/SET_RECURRING_CONFIGS_LISTENER_STATUS`;
+export const selectDashboadIsLoading = (state) => state[name].status === LOADING;
+export const selectDashboadIsLoaded = (state) => state[name].status === LOADED;
+export const selectSnackbarData = (state) => state[name].snackbarData;
+export const selectDashboardActiveTab = (state) => state[name].activeTab;
+export const selectHighlightedTaskId = (state) => state[name].highlightedTaskId;
 
-// Reducers
+export const selectIsDataInSync = (state) =>
+  state[name].tasksSyncStatus === IN_SYNC && state[name].recurringConfigsSyncStatus === IN_SYNC;
 
-const INITIAL_STATE = {
+// Slice
+
+const initialState = {
   status: INITIAL,
-  accountMenuOpen: false,
   activeTab: NOW,
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
@@ -53,72 +50,40 @@ const INITIAL_STATE = {
   },
 };
 
-export const reducer = createReducer(INITIAL_STATE, {
-  [LOG_OUT]: () => ({ ...INITIAL_STATE }),
-  [SET_STATUS]: (state, { payload }) => ({
-    ...state,
-    status: payload,
-  }),
-  [SET_ACCOUNT_MENU_OPEN]: (state, { payload: accountMenuOpen }) => ({
-    ...state,
-    accountMenuOpen,
-  }),
-  [SET_SNACKBAR_DATA]: (state, { payload: snackbarData }) => ({
-    ...state,
-    snackbarData,
-  }),
-  [RESET_SNACKBAR]: (state) => ({
-    ...state,
-    snackbarData: INITIAL_STATE.snackbarData,
-  }),
-  [SET_ACTIVE_TAB]: (state, { payload }) => ({ ...state, activeTab: payload }),
-  [HIGHLIGH_TASK]: (state, { payload }) => ({ ...state, highlightedTaskId: payload }),
-  [SET_TASKS_LISTENER_STATUS]: (state, { payload }) => ({ ...state, tasksSyncStatus: payload }),
-  [SET_RECURRING_CONFIGS_LISTENER_STATUS]: (state, { payload }) => ({
-    ...state,
-    recurringConfigsSyncStatus: payload,
-  }),
+/* eslint-disable no-param-reassign */
+const slice = createSlice({
+  name,
+  initialState,
+  reducers: {
+    setStatus: (state, { payload }) => {
+      state.status = payload;
+    },
+    setSnackbarData: (state, { payload }) => {
+      state.snackbarData = payload;
+    },
+    resetSnackbar: (state) => {
+      state.snackbarData = initialState.snackbarData;
+    },
+    setDashboardActiveTab: (state, { payload }) => {
+      state.activeTab = payload;
+    },
+    highlightTask: (state, { payload }) => {
+      state.highlightedTaskId = payload;
+    },
+    setTasksListenerStatus: (state, { payload }) => {
+      state.tasksSyncStatus = payload;
+    },
+    setRecurringConfigsListenerStatus: (state, { payload }) => {
+      state.recurringConfigsSyncStatus = payload;
+    },
+  },
 });
+/* eslint-enable no-param-reassign */
 
-// Selectors
+export default slice;
+export const { setSnackbarData, resetSnackbar, setDashboardActiveTab } = slice.actions;
 
-export const selectDashboadIsLoading = (state) => state[NAMESPACE].status === LOADING;
-export const selectDashboadIsLoaded = (state) => state[NAMESPACE].status === LOADED;
-export const selectAccountMenuOpen = (state) => state[NAMESPACE].accountMenuOpen;
-export const selectSnackbarData = (state) => state[NAMESPACE].snackbarData;
-export const selectDashboardActiveTab = (state) => state[NAMESPACE].activeTab;
-export const selectHighlightedTaskId = (state) => state[NAMESPACE].highlightedTaskId;
-
-export const selectIsDataInSync = (state) =>
-  state[NAMESPACE].tasksSyncStatus === IN_SYNC &&
-  state[NAMESPACE].recurringConfigsSyncStatus === IN_SYNC;
-
-// Actions
-
-export const setAccountMenuOpen = (accountMenuOpen) => ({
-  type: SET_ACCOUNT_MENU_OPEN,
-  payload: accountMenuOpen,
-});
-
-export const setSnackbarData = (snackbarData) => ({
-  type: SET_SNACKBAR_DATA,
-  payload: snackbarData,
-});
-
-export const resetSnackbar = (snackbarData) => ({
-  type: RESET_SNACKBAR,
-  payload: snackbarData,
-});
-
-export const setDashboardActiveTab = (tab) => ({
-  type: SET_ACTIVE_TAB,
-  payload: tab,
-});
-
-const setStatus = (status) => ({
-  type: SET_STATUS,
-  payload: status,
-});
+// Thunks
 
 export const listenToDashboardTasks = () => (dispatch, getState) => {
   const state = getState();
@@ -127,17 +92,17 @@ export const listenToDashboardTasks = () => (dispatch, getState) => {
     throw new Error('[tasks:listenToDashboardTasks] No userId');
   }
 
-  dispatch(setStatus(LOADING));
+  dispatch(slice.actions.setStatus(LOADING));
 
   const errorCallback = () => {
-    dispatch(setStatus(ERROR));
+    dispatch(slice.actions.setStatus(ERROR));
   };
 
   // Preparing snapshot listener callbacks to update initial dashboard loading state and dispatches
   // changes to the flag that tracks if the local changes are persisted
   const { tasksNextCallback, recurringConfigsNextCallback } = (() => {
     const flags = { tasks: false, recurringConfigs: false };
-    const dispatchLoaded = once(() => dispatch(setStatus(LOADED)));
+    const dispatchLoaded = once(() => dispatch(slice.actions.setStatus(LOADED)));
     const dispatchLoadedIfReady = () => {
       if (flags.tasks && flags.recurringConfigs) {
         dispatchLoaded();
@@ -146,18 +111,16 @@ export const listenToDashboardTasks = () => (dispatch, getState) => {
     return {
       tasksNextCallback: (hasUnsavedChanges) => {
         flags.tasks = true;
-        dispatch({
-          type: SET_TASKS_LISTENER_STATUS,
-          payload: hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC,
-        });
+        dispatch(slice.actions.setTasksListenerStatus(hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC));
         dispatchLoadedIfReady();
       },
       recurringConfigsNextCallback: (hasUnsavedChanges) => {
         flags.recurringConfigs = true;
-        dispatch({
-          type: SET_RECURRING_CONFIGS_LISTENER_STATUS,
-          payload: hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC,
-        });
+        dispatch(
+          slice.actions.setRecurringConfigsListenerStatus(
+            hasUnsavedChanges ? OUT_OF_SYNC : IN_SYNC,
+          ),
+        );
         dispatchLoadedIfReady();
       },
     };
@@ -175,10 +138,26 @@ export const listenToDashboardTasks = () => (dispatch, getState) => {
 };
 
 export const setHighlighedTask = (id) => (dispatch) => {
-  dispatch({ type: HIGHLIGH_TASK, payload: id });
+  dispatch(slice.actions.highlightTask(id));
   setTimeout(() => {
-    dispatch({ type: HIGHLIGH_TASK, payload: null });
+    dispatch(slice.actions.highlightTask(null));
   }, 1500);
+};
+
+const tabTextAndLink = {
+  [dashboardTabs.NOW]: {
+    text: dashboardTabs.NOW,
+    link: dashboardTabs.NOW,
+  },
+  [dashboardTabs.BACKLOG]: {
+    text: dashboardTabs.BACKLOG,
+    link: dashboardTabs.BACKLOG,
+  },
+  [dashboardTabs.SCHEDULED]: {
+    text: dashboardTabs.SCHEDULED,
+    link: dashboardTabs.SCHEDULED,
+  },
+  [dashboardTabs.BLOCKED]: { text: dashboardTabs.BLOCKED, link: dashboardTabs.BLOCKED },
 };
 
 /**
@@ -217,16 +196,14 @@ export const createTask = (
     const tabTask = selectTaskDashboardTab(stateTask, tid);
     const dashboardActiveTab = selectDashboardActiveTab(state);
 
-    const selectTab = getTabProperties(tabTask);
+    const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
     dispatch(
       setSnackbarData({
         open: true,
         message: `Task created`,
         id: tid,
         // Show button only if task went to a different tab than what's visible now
-        ...(dashboardActiveTab !== tabTask
-          ? { buttonText: `See ${selectTab.text}`, buttonLink: selectTab.link }
-          : {}),
+        ...(dashboardActiveTab !== tabTask ? { buttonText: `See ${text}`, buttonLink: link } : {}),
       }),
     );
   };
