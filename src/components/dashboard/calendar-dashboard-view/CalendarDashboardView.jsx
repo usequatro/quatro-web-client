@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import cond from 'lodash/cond';
 
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Avatar from '@material-ui/core/Avatar';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { useNotification } from '../../Notification';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import {
   selectGapiUserSignedIn,
@@ -19,8 +19,7 @@ import CalendarView from '../calendar-view/CalendarView';
 import * as paths from '../../../constants/paths';
 import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
 import GoogleButton from '../../ui/GoogleButton';
-import { gapiSignInExistingUser } from '../../../googleApi';
-import { firebaseConnectGoogleAccount } from '../../../firebase';
+import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import LoaderScreen from '../../ui/LoaderScreen';
 
 const useStyles = makeStyles((theme) => ({
@@ -36,7 +35,6 @@ const CalendarDashboardView = () => {
   const classes = useStyles();
   const history = useHistory();
 
-  const { notifyError } = useNotification();
   const gapiUserLoading = useSelector(selectGapiUserLoading);
   const fetchingCalendars = useSelector(selectCalendarsAreFetching);
   const gapiUserSignedIn = useSelector(selectGapiUserSignedIn);
@@ -48,22 +46,23 @@ const CalendarDashboardView = () => {
     history.push(paths.CALENDARS);
   };
 
-  const handleConnectGoogle = () => {
-    firebaseConnectGoogleAccount()
-      .then(() => {
-        history.push(paths.CALENDARS);
-      })
-      .catch((error) => {
-        console.error(error); // eslint-disable-line no-console
-        notifyError('An error happened');
-      });
-  };
+  const {
+    signInToConnectGoogleAccount,
+    signInAlreadyConnectedGoogleAccount,
+  } = useGoogleApiSignIn();
 
-  const handleSignInExistingUser = () => {
-    gapiSignInExistingUser().catch((error) => {
-      console.error(error); // eslint-disable-line no-console
-      notifyError('An error happened');
-    });
+  const [signingIn, setSigningIn] = useState(false);
+  const handleSignInToConnectGoogleAccount = () => {
+    setSigningIn(true);
+    signInToConnectGoogleAccount()
+      .then(() => setSigningIn(false))
+      .catch(() => setSigningIn(false));
+  };
+  const handleSignInAlreadyConnectedGoogleAccount = () => {
+    setSigningIn(true);
+    signInAlreadyConnectedGoogleAccount()
+      .then(() => setSigningIn(false))
+      .catch(() => setSigningIn(false));
   };
 
   return (
@@ -87,7 +86,15 @@ const CalendarDashboardView = () => {
               }
               text={`Sign in with Google again to ${googleFirebaseAuthProvider.email} to view your calendars`}
             >
-              <GoogleButton onClick={handleSignInExistingUser}>Sign in with Google</GoogleButton>
+              <GoogleButton
+                onClick={handleSignInAlreadyConnectedGoogleAccount}
+                data-qa="sign-in-existing-account-button"
+                endIcon={
+                  signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                }
+              >
+                Sign in with Google
+              </GoogleButton>
             </EmptyState>
           ),
         ],
@@ -95,7 +102,15 @@ const CalendarDashboardView = () => {
           () => !gapiUserSignedIn,
           () => (
             <EmptyState image={IMAGE_CALENDAR} text={emptyStateText}>
-              <GoogleButton onClick={() => handleConnectGoogle()}>Sign in with Google</GoogleButton>
+              <GoogleButton
+                onClick={handleSignInToConnectGoogleAccount}
+                data-qa="connect-google-button"
+                endIcon={
+                  signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                }
+              >
+                Sign in with Google
+              </GoogleButton>
             </EmptyState>
           ),
         ],

@@ -32,15 +32,6 @@ export const firebaseSignInWithCredential = (idToken, accessToken) => {
     });
 };
 
-export const firebaseSignOut = () =>
-  firebase
-    .auth()
-    .signOut()
-    .then((result) => {
-      debugConsole.log('firebase', 'signOut');
-      return result;
-    });
-
 export const firebaseSendEmailVerification = async () => {
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -91,10 +82,12 @@ export const firebaseReauthenticateUserWithPassword = async (currentPassword) =>
     return user.reauthenticateWithCredential(credential);
   });
 
-export const firebaseConnectGoogleAccount = () =>
-  firebase
+export const firebaseConnectGoogleAccountFromGapiCredential = (idToken, accessToken) => {
+  const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
+  return firebase
     .auth()
-    .currentUser.linkWithPopup(new firebase.auth.GoogleAuthProvider())
+    .currentUser.linkWithCredential(credential)
     .then((result) => {
       return firebase.auth().signInWithCredential(result.credential);
     });
+};

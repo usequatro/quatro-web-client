@@ -1,6 +1,4 @@
 import formatISO from 'date-fns/formatISO';
-import firebase from './firebase';
-import debugConsole from './utils/debugConsole';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -54,42 +52,3 @@ export const gapiListCalendars = async () => {
 
 export const gapiGetAuthInstance = () =>
   getGapiClient().then(() => window.gapi.auth2.getAuthInstance());
-
-/**
- * @returns {Promise}
- */
-export const gapiSignIn = async () => {
-  if (firebase.auth().currentUser) {
-    throw new Error("signIn isn't expected when Firebase user is already logged in");
-  }
-  const authInstance = await gapiGetAuthInstance();
-  return authInstance.signIn();
-};
-
-/**
- * @returns {Promise}
- */
-export const gapiSignInExistingUser = async () => {
-  const authInstance = await gapiGetAuthInstance();
-
-  return authInstance.signIn().then(async () => {
-    const gapiUserId = authInstance.currentUser.get().getId();
-    const firebaseGoogleUserId = firebase
-      .auth()
-      .currentUser.providerData.find(({ providerId }) => providerId === 'google.com').uid;
-
-    if (gapiUserId !== firebaseGoogleUserId) {
-      return authInstance.signOut().then(() => {
-        throw new Error("Email addresses don't match");
-      });
-    }
-    return undefined;
-  });
-};
-
-export const gapiSignOut = async () => {
-  const authInstance = await gapiGetAuthInstance();
-  return authInstance.signOut().then(() => {
-    debugConsole.log('Google API', 'signOut');
-  });
-};

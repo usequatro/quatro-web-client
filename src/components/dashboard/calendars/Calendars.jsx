@@ -11,9 +11,7 @@ import List from '@material-ui/core/List';
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
-import { gapiSignInExistingUser } from '../../../googleApi';
-import { firebaseConnectGoogleAccount } from '../../../firebase';
-import { useNotification } from '../../Notification';
+import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
@@ -39,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
 
 const Calendars = () => {
   const classes = useStyles();
-  const { notifyError } = useNotification();
 
   const connectNewCalendarButton = useRef();
 
@@ -52,19 +49,10 @@ const Calendars = () => {
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const handleConnectGoogle = () => {
-    firebaseConnectGoogleAccount().catch((error) => {
-      console.error(error); // eslint-disable-line no-console
-      notifyError('An error happened');
-    });
-  };
-
-  const handleSignInExistingUser = () => {
-    gapiSignInExistingUser().catch((error) => {
-      console.error(error); // eslint-disable-line no-console
-      notifyError('An error happened');
-    });
-  };
+  const {
+    signInToConnectGoogleAccount,
+    signInAlreadyConnectedGoogleAccount,
+  } = useGoogleApiSignIn();
 
   const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
 
@@ -92,7 +80,9 @@ const Calendars = () => {
             <Box display="flex" justifyContent="center">
               <GoogleButton
                 onClick={
-                  googleFirebaseAuthProvider ? handleSignInExistingUser : handleConnectGoogle
+                  googleFirebaseAuthProvider
+                    ? signInAlreadyConnectedGoogleAccount
+                    : signInToConnectGoogleAccount
                 }
               >
                 Sign in with Google
