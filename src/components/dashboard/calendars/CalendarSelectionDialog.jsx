@@ -17,6 +17,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 
+import { useMixpanel } from '../../tracking/MixpanelContext';
 import { useNotification } from '../../Notification';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import LoaderScreen from '../../ui/LoaderScreen';
@@ -25,6 +26,7 @@ import { selectUserId, selectGapiUserSignedIn } from '../../../modules/session';
 import { fetchCreateCalendar } from '../../../utils/apiClient';
 import calendarColors from '../../../constants/calendarColors';
 import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
+import { GOOGLE_CALENDAR_CONNECTED } from '../../../constants/mixpanelEvents';
 
 export default function CalendarSelectionDialog({ open, onClose }) {
   const { notifyError } = useNotification();
@@ -68,10 +70,15 @@ export default function CalendarSelectionDialog({ open, onClose }) {
     };
   }, [open, googleSignedIn, notifyError]);
 
+  const mixpanel = useMixpanel();
+
   const handleConnect = async () => {
     const currentUser = (await gapiGetAuthInstance()).currentUser.get();
     if (!currentUser) {
       notifyError(`An error ocurred. User isn't signed in to Google`);
+      return;
+    }
+    if (calendarIdsSelected.length <= 0) {
       return;
     }
     calendarIdsSelected.forEach((selectedCalendarId) => {
@@ -91,6 +98,10 @@ export default function CalendarSelectionDialog({ open, onClose }) {
         color: calendarColors[0],
         name: calendar.summary,
       });
+    });
+
+    mixpanel.track(GOOGLE_CALENDAR_CONNECTED, {
+      newCalendarsConncted: calendarIdsSelected.length,
     });
     onClose();
   };
