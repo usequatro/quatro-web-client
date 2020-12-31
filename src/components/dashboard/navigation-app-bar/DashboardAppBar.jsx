@@ -16,7 +16,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import MuiLink from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 
-import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 
 import * as paths from '../../../constants/paths';
@@ -25,6 +24,7 @@ import { selectUserPhotoURL } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import { ReactComponent as Logo } from './logo-white.svg';
+import UserIcon from '../../icons/UserIcon';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
 
@@ -163,8 +163,9 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
             aria-controls="account-menu"
             aria-haspopup="true"
             size="small"
+            color="inherit"
           >
-            <AccountCircleRoundedIcon style={{ opacity: userPhotoURL ? 0 : 1 }} />
+            <UserIcon style={{ opacity: userPhotoURL ? 0 : 1 }} />
           </IconButton>
 
           <Menu

@@ -6,8 +6,6 @@ import Typography from '@material-ui/core/Typography';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 
-import SettingsRoundedIcon from '@material-ui/icons/SettingsRounded';
-
 import * as tabs from '../../constants/dashboardTabs';
 import { selectDashboardActiveTab } from '../../modules/dashboard';
 import { CLOSED_DRAWER_WIDTH } from './navigation-sidebar/NavigationSidebar';
@@ -18,6 +16,7 @@ import ScheduledIcon from '../icons/ScheduledIcon';
 import BlockedIcon from '../icons/BlockedIcon';
 import CompletedIcon from '../icons/CompletedIcon';
 import ConnectedIcon from '../icons/ConnectedIcon';
+import UserIcon from '../icons/UserIcon';
 
 const useStyles = makeStyles((theme) => ({
   sectionTitleAppBar: {
@@ -58,7 +57,7 @@ const iconsByPath = {
   [tabs.SCHEDULED]: ScheduledIcon,
   [tabs.BLOCKED]: BlockedIcon,
   [tabs.COMPLETED]: CompletedIcon,
-  [tabs.ACCOUNT_SETTINGS]: SettingsRoundedIcon,
+  [tabs.ACCOUNT_SETTINGS]: UserIcon,
   [tabs.CALENDARS]: ConnectedIcon,
 };
 
