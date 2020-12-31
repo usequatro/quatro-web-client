@@ -12,7 +12,7 @@ export const IMAGE_BACKLOG = '/empty-states/empty-state-backlog.png';
 export const IMAGE_COMPLETED = '/empty-states/empty-state-completed.png';
 export const IMAGE_CALENDAR = '/empty-states/empty-state-google-calendar.png';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   emptyStateContainer: {
     width: '100%',
     display: 'flex',
@@ -28,9 +28,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    [theme.breakpoints.down('sm')]: {
-      margin: '8vh 0',
-    },
   },
   emptyStateImage: {
     width: '100%',
