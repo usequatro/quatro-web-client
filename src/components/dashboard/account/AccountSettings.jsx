@@ -13,8 +13,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 
-import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
-
 import firebase, {
   firebaseSendEmailVerification,
   firebaseUpdateUserProfile,
@@ -40,6 +38,7 @@ import {
   selectGoogleFirebaseAuthProvider,
 } from '../../../modules/session';
 import { useNotification } from '../../Notification';
+import UserIcon from '../../icons/UserIcon';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
 const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
@@ -263,7 +262,7 @@ const AccountSettings = () => {
                       {uploadingPhotoURL ? (
                         <CircularProgress thickness={4} size="2rem" />
                       ) : (
-                        <AccountCircleRoundedIcon fontSize="large" />
+                        <UserIcon fontSize="large" />
                       )}
                     </IconButton>
                   ),
