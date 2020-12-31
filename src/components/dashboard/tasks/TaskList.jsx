@@ -5,8 +5,6 @@ import memoize from 'lodash/memoize';
 
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
-import Toolbar from '@material-ui/core/Toolbar';
-import Hidden from '@material-ui/core/Hidden';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -73,9 +71,13 @@ const emptyStateTexts = {
   ],
 };
 
-const useStyles = makeStyles((theme) => ({
-  container: {
+export const useStyles = makeStyles((theme) => ({
+  taskListContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
     overflow: 'auto',
+    paddingBottom: theme.spacing(15),
   },
   fab: {
     position: 'fixed',
@@ -105,7 +107,7 @@ const TaskList = forwardRef((_, ref) => {
   useCreateTaskShortcut();
 
   return (
-    <Box ref={ref} display="flex" flexDirection="column" flexGrow={1} className={classes.container}>
+    <Box ref={ref} className={classes.taskListContainer}>
       {cond([
         [() => loading, () => <LoaderScreen />],
         [
@@ -162,12 +164,6 @@ const TaskList = forwardRef((_, ref) => {
           ),
         ],
       ])()}
-
-      {/* spacing for the mobile bottom toolbar */}
-      <Hidden smUp>
-        <Toolbar />
-        <Toolbar />
-      </Hidden>
 
       <Tooltip title="Create task (Space bar)" enterDelay={500} arrow>
         <Fab
