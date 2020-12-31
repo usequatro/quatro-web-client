@@ -12,6 +12,7 @@ import Radio from '@material-ui/core/Radio';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
+import { useMixpanel } from '../../tracking/MixpanelContext';
 import {
   selectCalendarName,
   selectCalendarColor,
@@ -26,6 +27,10 @@ import { TextFieldWithTypography } from '../../ui/InputWithTypography';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import calendarColors from '../../../constants/calendarColors';
+import {
+  GOOGLE_CALENDAR_DISCONNECTED,
+  GOOGLE_CALENDAR_COLOR_CHANGED,
+} from '../../../constants/mixpanelEvents';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -58,6 +63,7 @@ const useColorSelectorStyles = makeStyles(() =>
 );
 
 const CalendarEditView = ({ id }) => {
+  const mixpanel = useMixpanel();
   const dispatch = useDispatch();
   const classes = useStyles();
   const colorSelectorClasses = useColorSelectorStyles();
@@ -110,7 +116,10 @@ const CalendarEditView = ({ id }) => {
                     key={key}
                     value={value}
                     checked={color === value}
-                    onClick={() => fetchUpdateCalendar(id, { color: value })}
+                    onClick={() => {
+                      fetchUpdateCalendar(id, { color: value });
+                      mixpanel.track(GOOGLE_CALENDAR_COLOR_CHANGED, { color: value });
+                    }}
                     control={
                       <Radio
                         classes={{
@@ -131,6 +140,7 @@ const CalendarEditView = ({ id }) => {
           onConfirm={() => {
             dispatch(clearAllEvents());
             fetchDeleteCalendar(id);
+            mixpanel.track(GOOGLE_CALENDAR_DISCONNECTED);
           }}
           renderDialog={(open, onConfirm, onConfirmationClose) => (
             <ConfirmationDialog

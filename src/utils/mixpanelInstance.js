@@ -7,7 +7,7 @@ if (!process.env.REACT_APP_MIXPANEL_KEY) {
 mixpanel.init(process.env.REACT_APP_MIXPANEL_KEY, {
   // debug true shows requests in console.
   // note that if Do Not Track is enabled, Mixpanel doesn't send data
-  debug: process.env.REACT_APP_DEVELOPMENT == 1, // eslint-disable-line eqeqeq
+  debug: Boolean(process.env.REACT_APP_DEVELOPMENT),
 });
 
 if (process.env.REACT_APP_DEVELOPMENT) {
