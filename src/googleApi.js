@@ -1,4 +1,13 @@
 import formatISO from 'date-fns/formatISO';
+import firebase from './firebase';
+import REGION from './constants/region';
+import debugConsole from './utils/debugConsole';
+import {
+  PROFILE,
+  EMAIL,
+  CALENDAR_LIST_READ,
+  CALENDAR_EVENTS_MANAGE,
+} from './constants/googleApiScopes';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -8,7 +17,7 @@ const clientLoadPromise = new Promise((resolve) => {
     window.gapi.client.init({
       clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
       apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-      scope: process.env.REACT_APP_GOOGLE_AUTH_SCOPES,
+      scope: `${PROFILE} ${EMAIL}`,
     }),
   )
   .then(() => window.gapi.client);
@@ -16,18 +25,54 @@ const clientLoadPromise = new Promise((resolve) => {
 // When getting the client, we use this promise so nobody calls it before its ready
 const getGapiClient = () => clientLoadPromise;
 
+export const gapiGetAuthInstance = (() => {
+  let promise;
+  return () => {
+    if (promise) {
+      return promise;
+    }
+    promise = getGapiClient().then(() => window.gapi.auth2.getAuthInstance());
+    return promise;
+  };
+})();
+
 /**
+ * @link https://github.com/google/google-api-javascript-client/blob/master/docs/reference.md#----gapiclientrequestargs--
+ */
+const request = async (obj) => {
+  debugConsole.log('Google API', `${obj.method} ${obj.path}`, obj.params, obj.body);
+  const client = await getGapiClient();
+  return client.request(obj);
+};
+
+export const gapiGrantCalendarManagementScope = async () => {
+  const auth2 = await gapiGetAuthInstance();
+  const currentUser = auth2.currentUser.get();
+  if (currentUser.hasGrantedScopes(`${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`)) {
+    return true;
+  }
+  return auth2
+    .grantOfflineAccess({
+      scope: `${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`,
+    })
+    .then(({ code }) => {
+      debugConsole.log('Google API', 'Retrieved offline code. Sending to backend now');
+      const storeAuthCode = firebase.app().functions(REGION).httpsCallable('storeAuthCode');
+
+      return storeAuthCode({ code });
+    });
+};
+
+/**
+ * @link https://developers.google.com/calendar/v3/reference/events/list
  * @param {string} providerCalendarId
  * @param {Date} startDate
  * @param {Date} endDate
  * @return {Promise}
  */
 export const gapiListCalendarEvents = async (providerCalendarId, startDate, endDate) => {
-  const client = await getGapiClient();
-  // @see https://github.com/google/google-api-javascript-client/blob/master/docs/reference.md#----gapiclientrequestargs--
-  return client.request({
+  return request({
     method: 'GET',
-    // @see https://developers.google.com/calendar/v3/reference/events/list
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
       maxAttendees: 1, // only return the current user, not the others (not needed)
@@ -39,16 +84,23 @@ export const gapiListCalendarEvents = async (providerCalendarId, startDate, endD
   });
 };
 
+/**
+ * @link https://developers.google.com/calendar/v3/reference/calendarList/list
+ */
 export const gapiListCalendars = async () => {
-  const client = await getGapiClient();
-  // @see https://github.com/google/google-api-javascript-client/blob/master/docs/reference.md#----gapiclientrequestargs--
-  return client.request({
+  return request({
     method: 'GET',
-    // @see https://developers.google.com/calendar/v3/reference/calendarList/list
     path: '/calendar/v3/users/me/calendarList',
     params: { maxResults: 25, minAccessRole: 'writer' },
   });
 };
 
-export const gapiGetAuthInstance = () =>
-  getGapiClient().then(() => window.gapi.auth2.getAuthInstance());
+/**
+ * @todo scopes should be revoked as well from a backend function if the tokens are persisted
+ * @link https://developers.google.com/identity/sign-in/web/reference#googleauthdisconnect
+ */
+export const revokeAllScopes = async () => {
+  const auth2 = await gapiGetAuthInstance();
+  const currentUser = auth2.currentUser.get();
+  return currentUser.isSignedIn() ? currentUser.disconnect() : undefined;
+};

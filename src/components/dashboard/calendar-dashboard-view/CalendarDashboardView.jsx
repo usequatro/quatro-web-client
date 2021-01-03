@@ -12,6 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import {
   selectGapiUserSignedIn,
+  selectGapiUserHasCalendarAccess,
   selectGoogleFirebaseAuthProvider,
   selectGapiUserLoading,
 } from '../../../modules/session';
@@ -21,6 +22,7 @@ import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
 import GoogleButton from '../../ui/GoogleButton';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import LoaderScreen from '../../ui/LoaderScreen';
+import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
 
 const useStyles = makeStyles((theme) => ({
   googleAvatar: {
@@ -29,8 +31,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const emptyStateText = ['Connect to your Google Calendar account,', 'and sync your Quatro tasks.'];
-
 const CalendarDashboardView = () => {
   const classes = useStyles();
   const history = useHistory();
@@ -38,6 +38,10 @@ const CalendarDashboardView = () => {
   const gapiUserLoading = useSelector(selectGapiUserLoading);
   const fetchingCalendars = useSelector(selectCalendarsAreFetching);
   const gapiUserSignedIn = useSelector(selectGapiUserSignedIn);
+  const gapiUserHasCalendarAccess = useSelector(selectGapiUserHasCalendarAccess);
+  const userHasGrantedGoogleCalendarOfflineAccess = useSelector(
+    selectUserHasGrantedGoogleCalendarOfflineAccess,
+  );
   const calendarIds = useSelector(selectCalendarIds);
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
@@ -49,20 +53,30 @@ const CalendarDashboardView = () => {
   const {
     signInToConnectGoogleAccount,
     signInAlreadyConnectedGoogleAccount,
+    grantAccessToGoogleCalendar,
   } = useGoogleApiSignIn();
 
   const [signingIn, setSigningIn] = useState(false);
   const handleSignInToConnectGoogleAccount = () => {
     setSigningIn(true);
-    signInToConnectGoogleAccount()
-      .then(() => setSigningIn(false))
-      .catch(() => setSigningIn(false));
+    signInToConnectGoogleAccount().then(
+      () => setSigningIn(false),
+      () => setSigningIn(false),
+    );
+  };
+  const handleGrantAccessToCalendar = () => {
+    setSigningIn(true);
+    grantAccessToGoogleCalendar().then(
+      () => setSigningIn(false),
+      () => setSigningIn(false),
+    );
   };
   const handleSignInAlreadyConnectedGoogleAccount = () => {
     setSigningIn(true);
-    signInAlreadyConnectedGoogleAccount()
-      .then(() => setSigningIn(false))
-      .catch(() => setSigningIn(false));
+    signInAlreadyConnectedGoogleAccount().then(
+      () => setSigningIn(false),
+      () => setSigningIn(false),
+    );
   };
 
   return (
@@ -101,7 +115,13 @@ const CalendarDashboardView = () => {
         [
           () => !gapiUserSignedIn,
           () => (
-            <EmptyState image={IMAGE_CALENDAR} text={emptyStateText}>
+            <EmptyState
+              image={IMAGE_CALENDAR}
+              text={[
+                'Connect to your Google account,',
+                'and sync your Quatro tasks to Google Calendar.',
+              ]}
+            >
               <GoogleButton
                 onClick={handleSignInToConnectGoogleAccount}
                 data-qa="connect-google-button"
@@ -114,10 +134,39 @@ const CalendarDashboardView = () => {
             </EmptyState>
           ),
         ],
+
+        [
+          () => !gapiUserHasCalendarAccess || !userHasGrantedGoogleCalendarOfflineAccess,
+          () => (
+            <EmptyState
+              image={IMAGE_CALENDAR}
+              text={[
+                'Grant access to display your calendars and create events,',
+                'and sync your Quatro tasks to Google Calendar.',
+              ]}
+            >
+              <GoogleButton
+                onClick={handleGrantAccessToCalendar}
+                data-qa="grant-calendar-access-google-button"
+                endIcon={
+                  signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                }
+              >
+                Grant access
+              </GoogleButton>
+            </EmptyState>
+          ),
+        ],
         [
           () => calendarIds.length === 0,
           () => (
-            <EmptyState image={IMAGE_CALENDAR} text={emptyStateText}>
+            <EmptyState
+              image={IMAGE_CALENDAR}
+              text={[
+                'Choose a calendar to connect,',
+                'and sync your Quatro tasks to Google Calendar.',
+              ]}
+            >
               <Button variant="contained" color="primary" onClick={() => showGoogleCalendarList()}>
                 Connect Calendar
               </Button>

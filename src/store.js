@@ -11,6 +11,7 @@ import taskFormSlice from './modules/taskForm';
 import registrationSlice from './modules/registration';
 import calendarsSlice from './modules/calendars';
 import calendarEventsSlice from './modules/calendarEvents';
+import userExternalConfigSlice from './modules/userExternalConfig';
 
 export default () => {
   const store = configureStore({
@@ -29,6 +30,7 @@ export default () => {
       [calendarEventsSlice.name]: calendarEventsSlice.reducer,
       [sessionSlice.name]: sessionSlice.reducer,
       [taskFormSlice.name]: taskFormSlice.reducer,
+      [userExternalConfigSlice.name]: userExternalConfigSlice.reducer,
       [registrationSlice.name]: registrationSlice.reducer,
     },
   });

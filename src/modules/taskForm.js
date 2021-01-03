@@ -17,6 +17,11 @@ export const selectScheduledStart = (state) => state[name].scheduledStart;
 export const selectDue = (state) => state[name].due;
 export const selectBlockedBy = (state) => state[name].blockedBy;
 export const selectRecurringConfig = (state) => state[name].recurringConfig;
+export const selectCalendarBlockCalendarId = (state) => state[name].calendarBlockCalendarId;
+export const selectCalendarBlockProviderEventId = (state) =>
+  state[name].calendarBlockProviderEventId;
+export const selectCalendarBlockStart = (state) => state[name].calendarBlockStart;
+export const selectCalendarBlockEnd = (state) => state[name].calendarBlockEnd;
 
 export const selectBlockedByTaskIds = createSelector(selectBlockedBy, (blockedBy) =>
   (blockedBy || [])
@@ -36,6 +41,10 @@ const initialState = {
   due: null,
   blockedBy: [],
   recurringConfig: null,
+  calendarBlockCalendarId: null,
+  calendarBlockProviderEventId: null,
+  calendarBlockStart: null,
+  calendarBlockEnd: null,
 };
 
 /* eslint-disable no-param-reassign */
@@ -79,8 +88,20 @@ const slice = createSlice({
     setRecurringConfig: (state, { payload }) => {
       state.recurringConfig = payload;
     },
+    setCalendarBlockCalendarId: (state, { payload }) => {
+      state.calendarBlockCalendarId = payload;
+    },
+    setCalendarBlockProviderEventId: (state, { payload }) => {
+      state.calendarBlockProviderEventId = payload;
+    },
+    setCalendarBlockStart: (state, { payload }) => {
+      state.calendarBlockStart = payload;
+    },
+    setCalendarBlockEnd: (state, { payload }) => {
+      state.calendarBlockEnd = payload;
+    },
     setNewTaskInitialState: () => initialState,
-    setAll: (state, { payload }) => ({ ...state, ...payload }),
+    setAll: (state, { payload }) => payload,
   },
 });
 /* eslint-enable no-param-reassign */
@@ -98,6 +119,10 @@ export const {
   addFreeTextBlocker,
   removeBlockerByIndex,
   setRecurringConfig,
+  setCalendarBlockCalendarId,
+  setCalendarBlockProviderEventId,
+  setCalendarBlockStart,
+  setCalendarBlockEnd,
   setNewTaskInitialState,
 } = slice.actions;
 

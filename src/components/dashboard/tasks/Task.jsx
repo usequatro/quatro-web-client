@@ -9,6 +9,7 @@ import {
   selectTaskScore,
   selectTaskCompleted,
   selectTaskScheduledStart,
+  selectTaskCalendarBlockDuration,
   selectTaskDue,
   selectTaskPrioritizedAheadOf,
   completeTask,
@@ -26,6 +27,7 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
   const score = useSelector((state) => selectTaskScore(state, id));
   const completed = useSelector((state) => selectTaskCompleted(state, id));
   const scheduledStart = useSelector((state) => selectTaskScheduledStart(state, id));
+  const calendarBlockDuration = useSelector((state) => selectTaskCalendarBlockDuration(state, id));
   const due = useSelector((state) => selectTaskDue(state, id));
   const prioritizedAheadOf = useSelector((state) => selectTaskPrioritizedAheadOf(state, id));
   const hasRecurringConfig = !!useSelector((state) =>
@@ -83,6 +85,7 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
       score={score}
       completed={visualCompleted}
       scheduledStart={scheduledStart}
+      calendarBlockDuration={calendarBlockDuration}
       due={due}
       prioritizedAheadOf={prioritizedAheadOf}
       hasRecurringConfig={hasRecurringConfig}

@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { gapiGetAuthInstance } from '../../googleApi';
+import { gapiGetAuthInstance, gapiGrantCalendarManagementScope } from '../../googleApi';
 import firebase, {
   firebaseUpdateUserProfile,
   firebaseConnectGoogleAccountFromGapiCredential,
 } from '../../firebase';
 import { CALENDARS as CALENDARS_PATH } from '../../constants/paths';
-import { setUserFromFirebaseUser } from '../../modules/session';
+import { setUserFromFirebaseUser, setGapiUser } from '../../modules/session';
 import debugConsole from '../../utils/debugConsole';
 import { useNotification } from '../Notification';
 
@@ -26,6 +26,25 @@ export default function useGoogleApiSignIn() {
     const authInstance = await gapiGetAuthInstance();
     return authInstance.signIn();
   }, []);
+
+  const grantAccessToGoogleCalendar = useCallback(() => {
+    return gapiGrantCalendarManagementScope()
+      .then(async () => {
+        // Refresh scopes in Redux
+        const authInstance = await gapiGetAuthInstance();
+        dispatch(
+          setGapiUser(authInstance.isSignedIn.get() ? authInstance.currentUser.get() : null),
+        );
+      })
+      .catch((error) => {
+        if (error.code === 'auth/popup-closed-by-user') {
+          console.info(error); // eslint-disable-line no-console
+          return;
+        }
+        console.error(error); // eslint-disable-line no-console
+        notifyError('An error happened');
+      });
+  }, [notifyError, dispatch]);
 
   const signInToConnectGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase
@@ -158,5 +177,6 @@ export default function useGoogleApiSignIn() {
     signInToConnectGoogleAccount,
     signInAlreadyConnectedGoogleAccount,
     signOut,
+    grantAccessToGoogleCalendar,
   };
 }

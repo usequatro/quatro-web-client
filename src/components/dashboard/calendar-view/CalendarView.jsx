@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import format from 'date-fns/format';
@@ -10,15 +9,13 @@ import getYear from 'date-fns/getYear';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { selectCalendarIds } from '../../../modules/calendars';
-import { loadEvents, selectCalendarEventsNeedLoading } from '../../../modules/calendarEvents';
-
+import useLoadEvents from './useLoadEvents';
 import CalendarNavBar from './CalendarNavBar';
 import Ticks from './Ticks';
 import CalendarDayEventsList from './CalendarDayEventsList';
 import AllDayEventsSection from './AllDayEventsSection';
 import CurrentTimeLine from './CurrentTimeLine';
-import { selectGapiUserSignedIn } from '../../../modules/session';
+import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -56,9 +53,7 @@ const getInitialDate = (history) => {
 const CalendarView = () => {
   const classes = useStyles();
   const history = useHistory();
-  const dispatch = useDispatch();
 
-  const [fetching, setFetching] = useState(false);
   const [date, setDate] = useState(getInitialDate(history));
 
   // Management of URL parameter for date
@@ -75,46 +70,7 @@ const CalendarView = () => {
     }
   }, [history, date]);
 
-  // Interval to trigger state updates so we can select again eventsNeedLoading
-  const [currentTime, setCurrentTime] = useState(Date.now());
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Calendar event fecthing
-  const googleSignedIn = useSelector(selectGapiUserSignedIn);
-  const calendarIds = useSelector(selectCalendarIds);
-  const eventsNeedLoading = useSelector((state) =>
-    selectCalendarEventsNeedLoading(state, date, currentTime),
-  );
-  useEffect(() => {
-    if (!googleSignedIn || !eventsNeedLoading) {
-      return undefined;
-    }
-    setFetching(true);
-
-    let unsubscribed = false;
-    let finished = false;
-
-    dispatch(
-      loadEvents(calendarIds, date, () => {
-        if (unsubscribed) {
-          return;
-        }
-        finished = true;
-        setFetching(false);
-      }),
-    );
-    return () => {
-      if (!finished) {
-        setFetching(false);
-        unsubscribed = true;
-      }
-    };
-  }, [dispatch, eventsNeedLoading, googleSignedIn, calendarIds, date]);
+  const { fetching } = useLoadEvents(date);
 
   // Management of current time bar and scrolling
   const today = isToday(date);
@@ -138,8 +94,11 @@ const CalendarView = () => {
         <CalendarDayEventsList
           firstEventCardScrollAnchorRef={firstEventCardScrollAnchorRef}
           date={date}
+          tickHeight={TICK_HEIGHT}
+          ticksPerHour={TICKS_PER_HOUR}
+          selectableEvents
         />
-        <Ticks />
+        <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
         {today && <CurrentTimeLine ref={currentTimeRef} />}
       </Box>
     </>

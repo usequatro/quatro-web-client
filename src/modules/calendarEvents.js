@@ -1,21 +1,17 @@
 import uniq from 'lodash/uniq';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
-import cond from 'lodash/cond';
 import { createSlice } from '@reduxjs/toolkit';
 
 import parseISO from 'date-fns/parseISO';
-import differenceInMinutes from 'date-fns/differenceInMinutes';
 import isEqual from 'date-fns/isEqual';
 import format from 'date-fns/format';
 import isBefore from 'date-fns/isBefore';
 import isAfter from 'date-fns/isAfter';
-import isPast from 'date-fns/isPast';
 import startOfDay from 'date-fns/startOfDay';
 import endOfDay from 'date-fns/endOfDay';
 import isValid from 'date-fns/isValid';
 
-import { TICK_HEIGHT, TICKS_PER_HOUR } from '../constants/tickConstants';
 import debugConsole from '../utils/debugConsole';
 import { selectCalendarProviderCalendarId } from './calendars';
 import { gapiListCalendarEvents } from '../googleApi';
@@ -51,14 +47,21 @@ export const selectCalendarEventHtmlLink = (state, id) => get(state[name].byId[i
 export const selectCalendarEventLocation = (state, id) => get(state[name].byId[id], 'location');
 export const selectCalendarEventStartDateTime = (state, id) =>
   get(state[name].byId[id], 'start.dateTime');
+export const selectCalendarEventStartTimestamp = (state, id) =>
+  get(state[name].byId[id], 'start.timestamp');
 export const selectCalendarEventEndDateTime = (state, id) =>
   get(state[name].byId[id], 'end.dateTime');
+export const selectCalendarEventEndTimestamp = (state, id) =>
+  get(state[name].byId[id], 'end.timestamp');
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
 export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
+export const selectCalendarEventCollisionCount = (state, id) =>
+  get(state[name].byId[id], 'collisionCount');
+export const selectCalendarEventCollisionOrder = (state, id) =>
+  get(state[name].byId[id], 'collisionOrder');
 export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId[id], 'calendarId');
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
-export const selectCalendarEventStyle = (state, id) => get(state[name].byId[id], 'style');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -73,19 +76,6 @@ export const selectAllDayCalendarEventIds = (state, dateKey) => {
 };
 
 // Helpers
-
-const minutesForOneTick = 60 / TICKS_PER_HOUR;
-
-const getEventDisplayHeight = (startDate, endDate) => {
-  const eventDurationInMinutes = differenceInMinutes(endDate, startDate);
-  const eventDurationInTicks = eventDurationInMinutes / minutesForOneTick;
-  return Math.floor(TICK_HEIGHT * eventDurationInTicks);
-};
-const getEventDisplayTop = (startDate) => {
-  const eventStartInMinutes = differenceInMinutes(startDate, startOfDay(startDate));
-  const eventStartInTicks = eventStartInMinutes / minutesForOneTick;
-  return Math.floor(eventStartInTicks * TICK_HEIGHT);
-};
 
 export const getCollisions = (event, events) => {
   const startTimestamp = event.start.timestamp;
@@ -111,37 +101,6 @@ export const getCollisions = (event, events) => {
 const isItemDeclined = (item) => {
   const seltAttendee = (item.attendees || []).find((attendee) => attendee.self);
   return seltAttendee && seltAttendee.responseStatus === 'declined';
-};
-
-const PAST_EVENT_OPACITY = 0.7;
-const DECLINED_EVENT_OPACITY = 0.2;
-
-const getEventOpacity = cond([
-  [(event) => event.declined, () => DECLINED_EVENT_OPACITY],
-  [(event) => isPast(event.end.timestamp), () => PAST_EVENT_OPACITY],
-  [() => true, () => 1],
-]);
-
-const getEventCardStyle = (event) => {
-  if (event.allDay) {
-    return {};
-  }
-
-  const height = getEventDisplayHeight(event.start.timestamp, event.end.timestamp);
-
-  const width = Math.floor(100 / (1 + (event.collisionCount || 0)));
-  const left = (event.collisionOrder || 0) * width;
-
-  return {
-    height,
-    transform: `translateY(${getEventDisplayTop(event.start.timestamp)}px)`,
-    left: `${left}%`,
-    width: `${width}%`,
-    opacity: getEventOpacity(event),
-    position: 'absolute',
-    zIndex: 1,
-    textDecoration: event.declined ? 'line-through' : 'initial',
-  };
 };
 
 const isEventAllDay = (startDate, endDate, startOfDayDate, endOfDayDate) => {
@@ -206,23 +165,6 @@ const slice = createSlice({
       );
 
       // Optimization to avoid doing it on every render:
-      // Add style to events depending on their properties
-      const dayEventsByIdWithStyle = Object.entries(dayEventsByIdWithCollisions).reduce(
-        (memo, [id, event]) => {
-          const eventWithStyle = {
-            ...event,
-            style: getEventCardStyle(event),
-          };
-
-          return {
-            ...memo,
-            [id]: eventWithStyle,
-          };
-        },
-        {},
-      );
-
-      // Optimization to avoid doing it on every render:
       // Sort IDs by start time
       const allIds = uniq(events.map(({ id }) => id));
       const idTimestampPairs = allIds.map((id) => {
@@ -234,7 +176,7 @@ const slice = createSlice({
       return {
         byId: {
           ...state.byId,
-          ...dayEventsByIdWithStyle,
+          ...dayEventsByIdWithCollisions,
         },
         byDate: {
           ...state.byDate,
@@ -290,8 +232,6 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     id,
     selectCalendarProviderCalendarId(state, id),
   ]);
-
-  debugConsole.log('Google API', `fetching events for ${dateKey} ${JSON.stringify(calendarIds)}`);
 
   const promises = providerCalendarIds.map(([calendarId, providerCalendarId]) =>
     gapiListCalendarEvents(providerCalendarId, startOfDayDate, endOfDayDate)

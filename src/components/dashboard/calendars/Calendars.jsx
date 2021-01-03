@@ -13,7 +13,11 @@ import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
-import { selectGapiUserSignedIn, selectGoogleFirebaseAuthProvider } from '../../../modules/session';
+import {
+  selectGapiUserSignedIn,
+  selectGapiUserHasCalendarAccess,
+  selectGoogleFirebaseAuthProvider,
+} from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
 import GoogleButton from '../../ui/GoogleButton';
 import LoaderScreen from '../../ui/LoaderScreen';
@@ -41,6 +45,7 @@ const Calendars = () => {
   const connectNewCalendarButton = useRef();
 
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
+  const googleUserHasCalendarAccess = useSelector(selectGapiUserHasCalendarAccess);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
 
@@ -117,7 +122,7 @@ const Calendars = () => {
           ])()}
         </Box>
 
-        {!calendarsAreFetching && (
+        {!calendarsAreFetching && googleUserHasCalendarAccess && (
           <Box display="flex" justifyContent="center">
             <Button
               ref={connectNewCalendarButton}

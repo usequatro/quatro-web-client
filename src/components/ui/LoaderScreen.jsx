@@ -25,7 +25,7 @@ const circularProgressPropsBySize = {
   medium: { thickness: 4, size: 60 },
 };
 
-const LoaderScreen = ({ background, color, delay, size }) => {
+const LoaderScreen = ({ className, background, color, delay, size }) => {
   const backgroundWithVariation = addVariation(background);
   const colorWithVariation = addVariation(color);
 
@@ -42,7 +42,7 @@ const LoaderScreen = ({ background, color, delay, size }) => {
       alignItems="center"
       flexShrink={0}
       flexGrow={1}
-      className={classes.box}
+      className={`${classes.box} ${className}`}
     >
       {showLoader && (
         <CircularProgress
@@ -56,6 +56,7 @@ const LoaderScreen = ({ background, color, delay, size }) => {
 };
 
 LoaderScreen.propTypes = {
+  className: PropTypes.string,
   background: PropTypes.string,
   color: PropTypes.string,
   delay: PropTypes.number,
@@ -63,6 +64,7 @@ LoaderScreen.propTypes = {
 };
 
 LoaderScreen.defaultProps = {
+  className: '',
   background: 'transparent',
   color: 'secondary.main',
   delay: 500,

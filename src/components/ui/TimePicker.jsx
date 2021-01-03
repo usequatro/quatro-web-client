@@ -201,7 +201,7 @@ const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
 };
 
 TimePicker.propTypes = {
-  dateTime: PropTypes.oneOfType([PropTypes.number, PropTypes.object]).isRequired,
+  dateTime: PropTypes.oneOfType([PropTypes.number, PropTypes.instanceOf(Date)]).isRequired,
   onChangeCommitted: PropTypes.func.isRequired,
   format: PropTypes.string.isRequired,
 };
