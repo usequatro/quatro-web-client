@@ -21,6 +21,7 @@ import firebase, {
   firebaseDeleteUser,
   firebaseReauthenticateUserWithPassword,
 } from '../../../firebase';
+import { revokeAllScopes } from '../../../googleApi';
 import PasswordTextField from '../../ui/PasswordTextField';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
@@ -189,14 +190,20 @@ const AccountSettings = () => {
   };
 
   const handleDeleteAccount = () => {
-    firebaseDeleteUser().catch((error) => {
-      if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
-        setRecentLoginCallback(() => handleDeleteAccount);
-        return;
-      }
-      console.error(error); // eslint-disable-line no-console
-      notifyError(userFacingErrors[error.code] || 'Error saving changes');
-    });
+    revokeAllScopes()
+      .then(() => firebaseDeleteUser())
+      .then(() => {
+        // Redirect to initial screen to reset the Redux
+        window.location = window.location.origin;
+      })
+      .catch((error) => {
+        if (ERROR_LIST_REQUIRES_RECENT_LOGIN.includes(error.code)) {
+          setRecentLoginCallback(() => handleDeleteAccount);
+          return;
+        }
+        console.error(error); // eslint-disable-line no-console
+        notifyError(userFacingErrors[error.code] || 'Error saving changes');
+      });
   };
 
   const handleRecentLoginWithPassword = (password) => {

@@ -62,6 +62,7 @@ const TaskView = ({
   editable,
   title,
   scheduledStart,
+  calendarBlockDuration,
   due,
   prioritizedAheadOf,
   showBlockers,
@@ -120,6 +121,7 @@ const TaskView = ({
         {scheduledStart && (
           <TaskViewSubtitle tooltip="Start date" Icon={EventRoundedIcon} onClick={() => {}}>
             {formatDateTime(scheduledStart)}
+            {calendarBlockDuration && ` - ${calendarBlockDuration} minutes blocked`}
           </TaskViewSubtitle>
         )}
 
@@ -190,6 +192,7 @@ TaskView.propTypes = {
   hasRecurringConfig: PropTypes.bool.isRequired,
   score: PropTypes.number,
   scheduledStart: PropTypes.number,
+  calendarBlockDuration: PropTypes.number,
   due: PropTypes.number,
   prioritizedAheadOf: PropTypes.string,
   completed: PropTypes.number,
@@ -202,6 +205,7 @@ TaskView.defaultProps = {
   position: undefined,
   score: undefined,
   scheduledStart: undefined,
+  calendarBlockDuration: undefined,
   due: undefined,
   prioritizedAheadOf: undefined,
   completed: undefined,

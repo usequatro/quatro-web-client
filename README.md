@@ -4,7 +4,7 @@
 
 ## Environments
 
-### Dev
+### Dev (Default)
 
 * [https://dev.usequatro.com](https://dev.usequatro.com)
 * [Firebase project: quatro-dev-88030](https://console.firebase.google.com/u/0/project/quatro-dev-88030/overview)

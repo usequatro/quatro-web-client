@@ -6,6 +6,9 @@ import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
 
+import isValid from 'date-fns/isValid';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
+
 import calculateTaskScore from '../utils/calculateTaskScore';
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
@@ -42,6 +45,13 @@ export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
 export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
+
+export const selectTaskCalendarBlockDuration = (state, id) => {
+  const task = selectTask(state, id);
+  const start = get(task, 'calendarBlockStart');
+  const end = get(task, 'calendarBlockEnd');
+  return isValid(start) && isValid(end) ? differenceInMinutes(end, start) : undefined;
+};
 
 const selectAllTaskIds = (state) => state[name].allIds;
 const selectAllTaskIdsAsMap = createSelector(selectAllTaskIds, (ids) =>

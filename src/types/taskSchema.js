@@ -39,6 +39,13 @@ export const taskSchema = Joi.object({
     )
     .default([]),
   recurringConfigId: Joi.string().allow(null).default(null),
+
+  calendarBlockStart: Joi.number().allow(null),
+  calendarBlockEnd: Joi.number().allow(null),
+  calendarBlockCalendarId: Joi.string().allow(null),
+
+  // these two below are managed by the backend of Firebase Functions
+  calendarBlockProviderEventId: Joi.string().allow(null),
 });
 
 /**

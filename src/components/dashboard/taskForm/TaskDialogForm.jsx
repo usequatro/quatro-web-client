@@ -7,6 +7,8 @@ import addHours from 'date-fns/addHours';
 import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
+import addMinutes from 'date-fns/addMinutes';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -43,11 +45,17 @@ import {
   selectBlockedBy,
   selectBlockedByTaskIds,
   selectRecurringConfig,
+  selectCalendarBlockCalendarId,
+  selectCalendarBlockStart,
+  selectCalendarBlockEnd,
   setTitle,
   setDescription,
   setImpact,
   setEffort,
   setScheduledStart,
+  setCalendarBlockCalendarId,
+  setCalendarBlockStart,
+  setCalendarBlockEnd,
   setDue,
   addTaskBlocker,
   addFreeTextBlocker,
@@ -64,6 +72,7 @@ import {
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
+import ScheduledStartDialog from './ScheduledStartDialog';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
 import RecurringConfigMenu from '../tasks/RecurringConfigMenu';
@@ -127,7 +136,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const initialScheduledDate = addHours(startOfTomorrow(), 9);
+const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 const initialDueDate = addHours(addWeeks(startOfWeek(new Date()), 1), 9);
 
 const getBlockerTitle = cond([
@@ -181,6 +190,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const blockedBy = useSelector(selectBlockedBy);
   const blockedByTaskIds = useSelector(selectBlockedByTaskIds);
   const recurringConfig = useSelector(selectRecurringConfig);
+  const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
+  const calendarBlockStart = useSelector(selectCalendarBlockStart);
+  const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
 
   const [showDescription, setShowDescription] = useState(Boolean(description));
   const [showDueDialog, setShowDueDialog] = useState(false);
@@ -212,6 +224,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
     setSubmitting(true);
 
+    const hasCalendarBlock = Boolean(calendarBlockStart && calendarBlockEnd);
+
     const taskPromise = editTaskDialogId
       ? // updating a task isn't async, so let's fake it 😇
         Promise.resolve().then(() => {
@@ -224,6 +238,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
               blockedBy,
+              calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
+              calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
               // Make sure to clear recurringConfigId if we don't have any repeat info set
               ...(!recurringConfig ? { recurringConfigId: null } : {}),
             }),
@@ -240,6 +257,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
               blockedBy,
+              calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
+              calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
             },
             ({ notificationButtonText, notificationButtonLink }) => {
               notifyInfo({
@@ -278,6 +298,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         } else if (editRecurringConfigId && !recurringConfig) {
           dispatch(deleteRecurringConfig(editRecurringConfigId));
         }
+        return tId;
       })
       .then(() => {
         onClose();
@@ -407,6 +428,16 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               >
                 {'Start Date: '}
                 {formatDateTime(scheduledStartTimestamp)}
+
+                {calendarBlockStart && calendarBlockEnd && (
+                  <>
+                    <br />
+                    {`${differenceInMinutes(
+                      calendarBlockEnd,
+                      calendarBlockStart,
+                    )} minutes blocked in calendar`}
+                  </>
+                )}
               </Button>
             )}
             {dueTimestamp && (
@@ -544,22 +575,33 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         )}
       </DialogActions>
 
-      <DateTimeDialog
-        label="Start date"
-        id="scheduled-start-dialog"
+      <ScheduledStartDialog
         open={showScheduledStartDialog}
         onClose={() => setShowScheduledStartDialog(false)}
-        value={scheduledStartTimestamp}
-        onChangeCommitted={(value) => {
-          const scheduled = value instanceof Date ? value.getTime() : value;
-          dispatch(setScheduledStart(scheduled));
+        timestamp={scheduledStartTimestamp}
+        blocksCalendar={Boolean(calendarBlockStart)}
+        calendarBlockCalendarId={calendarBlockCalendarId}
+        calendarBlockDuration={
+          calendarBlockEnd && calendarBlockStart
+            ? differenceInMinutes(calendarBlockEnd, calendarBlockStart)
+            : null
+        }
+        initialDateTimestamp={initialScheduledDateTimestamp}
+        onDone={({ timestamp, blocksCalendar, duration, calendarId }) => {
+          dispatch(setScheduledStart(timestamp));
+          dispatch(setCalendarBlockCalendarId(timestamp && blocksCalendar ? calendarId : null));
+          dispatch(setCalendarBlockStart(timestamp && blocksCalendar ? timestamp : null));
+          dispatch(
+            setCalendarBlockEnd(
+              timestamp && blocksCalendar ? addMinutes(timestamp, duration).getTime() : null,
+            ),
+          );
 
           // If we remove the scheduled start and there was repeat, also clear it
-          if (!value && recurringConfig) {
+          if (!timestamp && recurringConfig) {
             dispatch(setRecurringConfig(null));
           }
         }}
-        initialDate={initialScheduledDate}
       />
 
       <DateTimeDialog

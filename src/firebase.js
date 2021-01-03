@@ -2,6 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/storage';
 import 'firebase/firestore';
+import 'firebase/functions';
 
 import debugConsole from './utils/debugConsole';
 
@@ -17,6 +18,12 @@ if (!firebase.apps.length) {
 
 if (process.env.REACT_APP_DEVELOPMENT) {
   window.firebase = firebase;
+}
+
+if (process.env.REACT_APP_FIREBASE_EMULATOR && window.location.hostname === 'localhost') {
+  debugConsole.log('Firebase', 'Using emulator for auth() and functions()');
+  firebase.auth().useEmulator('http://localhost:9099/');
+  firebase.app().functions().useEmulator('localhost', 5001);
 }
 
 export default firebase;

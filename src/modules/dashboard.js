@@ -154,13 +154,24 @@ const tabTextAndLink = {
  * @param {string} [params.description]
  * @param {Date} [params.due]
  * @param {Date} [params.scheduledStart]
+ * @param {string} [params.calendarBlockCalendarId]
+ * @param {number} [params.calendarBlockStart]
+ * @param {number} [params.calendarBlockEnd]
  * @returns {Promise<string>} - Promise resolving with the new task ID
  */
 export const createTask = (
   title,
   impact,
   effort,
-  { description, due, scheduledStart, blockedBy } = {},
+  {
+    description,
+    due,
+    scheduledStart,
+    blockedBy,
+    calendarBlockCalendarId,
+    calendarBlockStart,
+    calendarBlockEnd,
+  } = {},
   callback = () => {},
 ) => (dispatch, getState, { mixpanel }) => {
   const state = getState();
@@ -175,6 +186,9 @@ export const createTask = (
     scheduledStart,
     blockedBy,
     userId,
+    calendarBlockCalendarId,
+    calendarBlockStart,
+    calendarBlockEnd,
     created: Date.now(),
     source: SOURCES.USER,
   };

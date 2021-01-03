@@ -29,6 +29,7 @@ import {
   selectIsDataInSync,
 } from '../../modules/dashboard';
 import { listenToCalendarsList } from '../../modules/calendars';
+import { listenToUserExternalConfig } from '../../modules/userExternalConfig';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
@@ -124,6 +125,7 @@ const Dashboard = () => {
   // Snapshot listeners
   useEffect(() => dispatch(listenToDashboardTasks()), [dispatch]);
   useEffect(() => dispatch(listenToCalendarsList()), [dispatch]);
+  useEffect(() => dispatch(listenToUserExternalConfig()), [dispatch]);
 
   const [selectedMobileTab, setSelectedMobileTab] = useState(1);
 

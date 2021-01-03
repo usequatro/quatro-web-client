@@ -1,5 +1,6 @@
 import get from 'lodash/get';
 import { createSlice } from '@reduxjs/toolkit';
+import { CALENDAR_LIST_READ, CALENDAR_EVENTS_MANAGE } from '../constants/googleApiScopes';
 
 const name = 'session';
 
@@ -30,6 +31,10 @@ export const selectGapiUserId = (state) => get(state[name], 'gapiUser.id');
 export const selectGapiUserName = (state) => get(state[name], 'gapiUser.name');
 export const selectGapiUserEmail = (state) => get(state[name], 'gapiUser.email');
 export const selectGapiUserImageUrl = (state) => get(state[name], 'gapiUser.imageUrl');
+export const selectGapiUserHasCalendarAccess = (state) => {
+  const scopes = get(state[name], 'gapiUser.scopes', []);
+  return scopes.includes(CALENDAR_LIST_READ) && scopes.includes(CALENDAR_EVENTS_MANAGE);
+};
 
 // Slice
 
@@ -83,6 +88,7 @@ const slice = createSlice({
                 name: gapiUser.getBasicProfile().getName(),
                 email: gapiUser.getBasicProfile().getEmail(),
                 imageUrl: gapiUser.getBasicProfile().getImageUrl(),
+                scopes: gapiUser.getGrantedScopes().split(' '),
               },
       }),
     },

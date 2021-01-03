@@ -28,9 +28,9 @@ const CurrentTimeLine = (props, ref) => {
 
   const [minutesToEndOfDay, setMinutesToEndOfDay] = useState(getCurrentMinutes());
 
-  const differenceDuration = Math.floor(minutesToEndOfDay / minutesForOneTick);
-  const topDifferenceTicks = differenceDuration + 2;
-  const top = -Math.abs(topDifferenceTicks * TICK_HEIGHT);
+  const differenceDuration = minutesToEndOfDay / minutesForOneTick;
+  const topDifferenceTicks = differenceDuration + 1;
+  const top = -Math.floor(Math.abs(topDifferenceTicks * TICK_HEIGHT));
 
   // Refresh line every minute
   useEffect(() => {

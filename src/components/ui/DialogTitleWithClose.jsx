@@ -51,7 +51,7 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
 
 DialogTitleWithClose.propTypes = {
   onClose: PropTypes.func.isRequired,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.node.isRequired,
   TypographyProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   extraButtons: PropTypes.node,
 };
