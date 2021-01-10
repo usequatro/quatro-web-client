@@ -25,7 +25,7 @@ export default function useLoadEvents(timestamp, { autoRefresh = true } = {}) {
     }
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
