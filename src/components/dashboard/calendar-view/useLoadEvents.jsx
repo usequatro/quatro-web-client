@@ -8,12 +8,12 @@ import { selectGapiUserSignedIn } from '../../../modules/session';
 /**
  * Hook to group the logic for fetching calendar events and re-fetching them when necessary
  *
- * @param {Date|number} date
+ * @param {number} timestamp
  * @param {Object} [options]
  * @param {bool} [options.autoRefresh] - default true
  * @return {Object}
  */
-export default function useLoadEvents(date, { autoRefresh = true } = {}) {
+export default function useLoadEvents(timestamp, { autoRefresh = true } = {}) {
   const dispatch = useDispatch();
   const [fetching, setFetching] = useState(false);
 
@@ -33,7 +33,7 @@ export default function useLoadEvents(date, { autoRefresh = true } = {}) {
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
   const calendarIds = useSelector(selectCalendarIds);
   const eventsNeedLoading = useSelector((state) =>
-    selectCalendarEventsNeedLoading(state, date, currentTime),
+    selectCalendarEventsNeedLoading(state, timestamp, currentTime),
   );
   useEffect(() => {
     if (!googleSignedIn || !eventsNeedLoading) {
@@ -45,7 +45,7 @@ export default function useLoadEvents(date, { autoRefresh = true } = {}) {
     let finished = false;
 
     dispatch(
-      loadEvents(calendarIds, date, () => {
+      loadEvents(calendarIds, timestamp, () => {
         if (unsubscribed) {
           return;
         }
@@ -59,7 +59,7 @@ export default function useLoadEvents(date, { autoRefresh = true } = {}) {
         unsubscribed = true;
       }
     };
-  }, [dispatch, eventsNeedLoading, googleSignedIn, calendarIds, date]);
+  }, [dispatch, eventsNeedLoading, googleSignedIn, calendarIds, timestamp]);
 
   return { fetching };
 }

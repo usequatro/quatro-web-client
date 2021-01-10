@@ -68,7 +68,7 @@ const CalendarSchedulingThumbnail = ({
         role="presentation"
       >
         <CalendarDayEventsList
-          date={startDateTimestamp}
+          timestamp={startDateTimestamp}
           tickHeight={TICK_HEIGHT}
           ticksPerHour={TICKS_PER_HOUR}
           width="80%"

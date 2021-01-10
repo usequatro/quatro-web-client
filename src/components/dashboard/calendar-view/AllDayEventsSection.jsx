@@ -29,11 +29,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AllDayEventsSection = ({ date }) => {
+const AllDayEventsSection = ({ timestamp }) => {
   const classes = useStyles();
-  const allDayCalendarEventIds = useSelector((state) => selectAllDayCalendarEventIds(state, date));
+  const allDayCalendarEventIds = useSelector((state) =>
+    selectAllDayCalendarEventIds(state, timestamp),
+  );
 
-  const past = useMemo(() => isPast(endOfDay(date)), [date]);
+  const past = useMemo(() => isPast(endOfDay(timestamp)), [timestamp]);
 
   if (allDayCalendarEventIds.length === 0) {
     return null;
@@ -59,7 +61,7 @@ const AllDayEventsSection = ({ date }) => {
 };
 
 AllDayEventsSection.propTypes = {
-  date: PropTypes.instanceOf(Date).isRequired,
+  timestamp: PropTypes.number.isRequired,
 };
 AllDayEventsSection.defaultProps = {};
 

@@ -37,7 +37,7 @@ const DATE_URL_PARAM_FORMAT = 'yyyy-MM-dd';
 const getInitialDate = (history) => {
   const formattedDateParam = new URLSearchParams(history.location.search).get('date');
   const dateParamDate = formattedDateParam
-    ? parse(formattedDateParam, DATE_URL_PARAM_FORMAT, new Date())
+    ? parse(formattedDateParam, DATE_URL_PARAM_FORMAT, new Date()).getTime()
     : null;
   if (
     !isValid(dateParamDate) ||
@@ -45,7 +45,7 @@ const getInitialDate = (history) => {
     getYear(dateParamDate) > currentYear + 2 ||
     getYear(dateParamDate) < currentYear - 2
   ) {
-    return new Date();
+    return Date.now();
   }
   return dateParamDate;
 };
@@ -54,26 +54,26 @@ const CalendarView = () => {
   const classes = useStyles();
   const history = useHistory();
 
-  const [date, setDate] = useState(getInitialDate(history));
+  const [timestamp, setTimestamp] = useState(getInitialDate(history));
 
   // Management of URL parameter for date
   useEffect(() => {
-    if (!date) {
+    if (!timestamp) {
       return;
     }
     const dateParam = new URLSearchParams(history.location.search).get('date');
-    const formattedDate = format(date, DATE_URL_PARAM_FORMAT);
+    const formattedDate = format(timestamp, DATE_URL_PARAM_FORMAT);
     if (!dateParam || `${dateParam}` !== `${formattedDate}`) {
       const updatedSearch = new URLSearchParams(history.location.search);
       updatedSearch.set('date', formattedDate);
       history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
     }
-  }, [history, date]);
+  }, [history, timestamp]);
 
-  const { fetching } = useLoadEvents(date);
+  const { fetching } = useLoadEvents(timestamp);
 
   // Management of current time bar and scrolling
-  const today = isToday(date);
+  const today = isToday(timestamp);
   const currentTimeRef = useRef();
   const firstEventCardScrollAnchorRef = useRef();
   useEffect(() => {
@@ -88,12 +88,16 @@ const CalendarView = () => {
 
   return (
     <>
-      <CalendarNavBar date={date} onChange={(newDate) => setDate(newDate)} fetching={fetching} />
-      <AllDayEventsSection date={date} />
+      <CalendarNavBar
+        timestamp={timestamp}
+        onChange={(newDate) => setTimestamp(newDate instanceof Date ? newDate.getTime() : newDate)}
+        fetching={fetching}
+      />
+      <AllDayEventsSection timestamp={timestamp} />
       <Box className={classes.container}>
         <CalendarDayEventsList
           firstEventCardScrollAnchorRef={firstEventCardScrollAnchorRef}
-          date={date}
+          timestamp={timestamp}
           tickHeight={TICK_HEIGHT}
           ticksPerHour={TICKS_PER_HOUR}
           selectableEvents

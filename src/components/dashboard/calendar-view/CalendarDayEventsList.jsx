@@ -19,7 +19,7 @@ const useStyles = makeStyles(() => ({
 
 const CalendarDayEventsList = ({
   firstEventCardScrollAnchorRef,
-  date,
+  timestamp,
   width,
   tickHeight,
   ticksPerHour,
@@ -27,7 +27,9 @@ const CalendarDayEventsList = ({
   selectableEvents,
 }) => {
   const classes = useStyles();
-  const sortedCalendarEventIds = useSelector((state) => selectSortedCalendarEventIds(state, date));
+  const sortedCalendarEventIds = useSelector((state) =>
+    selectSortedCalendarEventIds(state, timestamp),
+  );
 
   return (
     <Box className={classes.listContainer} width={width}>
@@ -56,7 +58,7 @@ const CalendarDayEventsList = ({
 
 CalendarDayEventsList.propTypes = {
   firstEventCardScrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
-  date: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.number]).isRequired,
+  timestamp: PropTypes.number.isRequired,
   tickHeight: PropTypes.number.isRequired,
   selectableEvents: PropTypes.bool.isRequired,
   width: PropTypes.string,
