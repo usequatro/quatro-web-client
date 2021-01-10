@@ -13,8 +13,11 @@ import endOfDay from 'date-fns/endOfDay';
 import isValid from 'date-fns/isValid';
 
 import debugConsole from '../utils/debugConsole';
-import { selectCalendarProviderCalendarId } from './calendars';
 import { gapiListCalendarEvents } from '../googleApi';
+
+// Allow dependency cycle because it's just for selectors
+// eslint-disable-next-line import/no-cycle
+import { selectCalendarProviderCalendarId } from './calendars';
 
 const name = 'calendarEvents';
 
@@ -187,11 +190,26 @@ const slice = createSlice({
         },
       };
     },
+    // @todo: improve this so we're only flagging the calendar that had changes
+    //        or even better, pull those changes only
+    staleAllEvents: (state) => ({
+      ...state,
+      byDate: Object.keys(state.byDate).reduce(
+        (memo, dateKey) => ({
+          ...memo,
+          [dateKey]: {
+            ...state[dateKey],
+            fetchedAt: 0,
+          },
+        }),
+        {},
+      ),
+    }),
   },
 });
 
 export default slice;
-export const { clearAllEvents } = slice.actions;
+export const { clearAllEvents, staleAllEvents } = slice.actions;
 
 // Helpers
 

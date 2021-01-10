@@ -6,6 +6,10 @@ import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import debugConsole from '../utils/debugConsole';
 import { selectUserId } from './session';
 
+// Allow dependency cycle because it's just for selectors
+// eslint-disable-next-line import/no-cycle
+import { staleAllEvents } from './calendarEvents';
+
 const name = 'calendars';
 
 const INITIAL = 'initial';
@@ -17,6 +21,8 @@ export const selectCalendarsAreFetching = (state) => state[name].status === INIT
 export const selectCalendarIds = (state) => state[name].allIds;
 export const selectCalendarName = (state, id) => get(state[name].byId[id], 'name');
 export const selectCalendarColor = (state, id) => get(state[name].byId[id], 'color');
+const selectCalendarWatcherLastUpdated = (state, id) =>
+  get(state[name].byId[id], 'watcherLastUpdated');
 export const selectCalendarProvider = (state, id) => get(state[name].byId[id], 'provider');
 export const selectCalendarProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
@@ -52,6 +58,25 @@ export default slice;
 
 // Thunks
 
+/**
+ * Check if the calendar received updates via webhook
+ * @param {Object} previousState
+ * @param {Object} newState
+ * @returns {boolean}
+ */
+const hasWatcherUpdates = (previousState, newState) => {
+  const calendarIds = selectCalendarIds(previousState);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const calendarId of calendarIds) {
+    const previousWatcherLastUpdated = selectCalendarWatcherLastUpdated(previousState, calendarId);
+    const newWatcherLastUpdated = selectCalendarWatcherLastUpdated(newState, calendarId);
+    if (newWatcherLastUpdated && newWatcherLastUpdated > previousWatcherLastUpdated) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = () => {}) => (
   dispatch,
   getState,
@@ -68,7 +93,14 @@ export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = (
       hasLocalUnsavedChanges,
     });
     if (hasEntityChanges || initial) {
+      const previousState = getState();
       dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
+
+      // If the calendar received updates via webhook, we flag its events as stale
+      if (hasWatcherUpdates(previousState, getState())) {
+        debugConsole.log('Firestore', 'listenToCalendarsList', 'calendar watcher update datected');
+        dispatch(staleAllEvents());
+      }
       initial = false;
     }
     nextCallback(hasLocalUnsavedChanges);

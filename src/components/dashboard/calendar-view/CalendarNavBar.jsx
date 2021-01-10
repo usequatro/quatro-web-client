@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CalendarNavBar = ({ date, fetching, onChange }) => {
+const CalendarNavBar = ({ timestamp, fetching, onChange }) => {
   const classes = useStyles();
 
   // Introduce a delay before the spinner shows
@@ -55,12 +55,14 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
   const longFormat = useMediaQuery((theme) => theme.breakpoints.up('md'));
 
   const formattedDate = useMemo(() => {
-    if (!isValid(date)) {
+    if (!isValid(timestamp)) {
       return '';
     }
-    const fullDate = longFormat ? format(date, 'PPPP') : format(date, 'ccc, MMM do, yyyy');
-    return isThisYear(date) ? fullDate.replace(/,\s[0-9]{4}/, '') : fullDate;
-  }, [date, longFormat]);
+    const fullDate = longFormat
+      ? format(timestamp, 'PPPP')
+      : format(timestamp, 'ccc, MMM do, yyyy');
+    return isThisYear(timestamp) ? fullDate.replace(/,\s[0-9]{4}/, '') : fullDate;
+  }, [timestamp, longFormat]);
 
   return (
     <AppBar position="static" color="inherit" className={classes.sectionTitleAppBar} elevation={0}>
@@ -68,7 +70,7 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
         <Box display="flex" flexDirection="row" alignItems="center" width="50%">
           <IconButton
             variant="text"
-            onClick={() => onChange(addDays(date, -1))}
+            onClick={() => onChange(addDays(timestamp, -1).getTime())}
             edge="start"
             aria-label="Previous day"
           >
@@ -79,7 +81,7 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
 
           <IconButton
             variant="text"
-            onClick={() => onChange(addDays(date, 1))}
+            onClick={() => onChange(addDays(timestamp, 1).getTime())}
             edge="end"
             aria-label="Next day"
           >
@@ -99,8 +101,8 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
           <Box mr={1}>
             <Button
               variant="outlined"
-              disabled={isToday(date)}
-              onClick={() => onChange(new Date())}
+              disabled={isToday(timestamp)}
+              onClick={() => onChange(Date.now())}
             >
               Today
             </Button>
@@ -112,7 +114,7 @@ const CalendarNavBar = ({ date, fetching, onChange }) => {
 };
 
 CalendarNavBar.propTypes = {
-  date: PropTypes.instanceOf(Date).isRequired,
+  timestamp: PropTypes.number.isRequired,
   fetching: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
 };
