@@ -47,10 +47,7 @@ const request = async (obj) => {
 
 export const gapiGrantCalendarManagementScope = async () => {
   const auth2 = await gapiGetAuthInstance();
-  const currentUser = auth2.currentUser.get();
-  if (currentUser.hasGrantedScopes(`${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`)) {
-    return true;
-  }
+  // don't check if user already has access already, as we still need a new auth code
   return auth2
     .grantOfflineAccess({
       scope: `${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`,

@@ -98,3 +98,15 @@ export const firebaseConnectGoogleAccountFromGapiCredential = (idToken, accessTo
       return firebase.auth().signInWithCredential(result.credential);
     });
 };
+
+/**
+ * This function should go followed by executing the callable processProviderUnlink
+ * @param {string} providerId
+ * @returns {Promise<firebase.User>}
+ */
+export const firebaseUnlinkProvider = (providerId) => {
+  if (providerId !== 'google.com') {
+    throw new Error('Not implemented');
+  }
+  return firebase.auth().currentUser.unlink(providerId);
+};
