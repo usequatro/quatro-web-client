@@ -8,6 +8,11 @@ export const calendarSchema = Joi.object({
   provider: Joi.valid('google'),
   color: Joi.string(),
   name: Joi.string(),
+  watcherChannelId: Joi.string().allow(null),
+  // The resourceId property is a stable, version-independent ID for the resource
+  watcherResourceId: Joi.string().allow(null),
+  watcherExpiration: Joi.number().allow(null),
+  watcherLastUpdated: Joi.number().allow(null),
 });
 
 /**
