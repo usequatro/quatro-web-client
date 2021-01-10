@@ -80,7 +80,7 @@ const CalendarEditView = ({ id }) => {
   const isCalendarUserSignedUpWithGoogle = gapiUserId === providerUserId;
 
   return (
-    <ListItem className={classes.container} disableGutters>
+    <ListItem className={classes.container} disableGutters data-id={id}>
       <Box pb={2}>
         <Typography variant="body2">{providerCalendarId}</Typography>
 
