@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import format from 'date-fns/format';
@@ -54,7 +54,8 @@ const CalendarView = () => {
   const classes = useStyles();
   const history = useHistory();
 
-  const [timestamp, setTimestamp] = useState(getInitialDate(history));
+  const initialDate = useMemo(() => getInitialDate(history), [history]);
+  const [timestamp, setTimestamp] = useState(initialDate);
 
   // Management of URL parameter for date
   useEffect(() => {
