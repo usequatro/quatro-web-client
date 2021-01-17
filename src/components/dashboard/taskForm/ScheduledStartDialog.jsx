@@ -33,6 +33,7 @@ const ScheduledStartDialog = ({
   blocksCalendar,
   calendarBlockCalendarId,
   calendarBlockDuration,
+  blockCalendarDisabled,
 }) => {
   // Scheduled start date
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || initialDateTimestamp);
@@ -63,7 +64,12 @@ const ScheduledStartDialog = ({
 
   const handleClear = () => {
     onClose();
-    onDone(null);
+    onDone({
+      timestamp: null,
+      blocksCalendar: false,
+      duration: 0,
+      calendarId: null,
+    });
   };
 
   const handleDone = () => {
@@ -139,6 +145,7 @@ const ScheduledStartDialog = ({
         </Box>
 
         <FormControlLabel
+          disabled={blockCalendarDisabled}
           control={
             <Switch
               checked={currentlyBlocksCalendar}
@@ -194,6 +201,7 @@ ScheduledStartDialog.propTypes = {
   onDone: PropTypes.func.isRequired,
   initialDateTimestamp: PropTypes.number.isRequired,
   calendarBlockCalendarId: PropTypes.string,
+  blockCalendarDisabled: PropTypes.bool.isRequired,
 };
 
 ScheduledStartDialog.defaultProps = {

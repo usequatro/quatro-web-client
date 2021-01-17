@@ -41,6 +41,8 @@ import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import debugConsole from '../../../utils/debugConsole';
+import { useMixpanel } from '../../tracking/MixpanelContext';
+import { GOOGLE_ACCOUNT_UNLINKED } from '../../../constants/mixpanelEvents';
 
 const useStyles = makeStyles(() => ({
   listItem: {
@@ -77,6 +79,7 @@ PermissionInfoDialog.propTypes = {
 const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const { notifyError } = useNotification();
   const dispatch = useDispatch();
+  const mixpanel = useMixpanel();
   const classes = useStyles();
   const gapiUserId = useSelector(selectGapiUserId);
   const isCurrentlyConnected = uid === gapiUserId;
@@ -105,6 +108,11 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const handleDisconnect = () => {
     setDisconectingProvider(true);
     firebaseUnlinkProvider(providerId)
+      .then(() => {
+        if (providerId === 'google.com') {
+          mixpanel.track(GOOGLE_ACCOUNT_UNLINKED);
+        }
+      })
       .then(async () => {
         if (providerId === 'google.com') {
           if (isCurrentlyConnected) {

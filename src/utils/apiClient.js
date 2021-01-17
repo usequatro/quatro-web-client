@@ -104,7 +104,7 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
  */
 export const fetchUpdateTask = async (taskId, updates) => {
   const validatedUpdates = await validateTaskSchema(updates, { isUpdate: true });
-  return db.collection(TASKS).doc(taskId).set(validatedUpdates, { merge: true });
+  return db.collection(TASKS).doc(taskId).update(validatedUpdates);
 };
 
 /**

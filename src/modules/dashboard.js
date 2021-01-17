@@ -8,7 +8,6 @@ import { NOW } from '../constants/dashboardTabs';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as paths from '../constants/paths';
 import * as SOURCES from '../constants/taskSources';
-import { TASK_CREATED } from '../constants/mixpanelEvents';
 
 import * as apiClient from '../utils/apiClient';
 
@@ -173,7 +172,7 @@ export const createTask = (
     calendarBlockEnd,
   } = {},
   callback = () => {},
-) => (dispatch, getState, { mixpanel }) => {
+) => (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);
 
@@ -205,12 +204,6 @@ export const createTask = (
       task,
       notificationButtonText: isSameTab ? '' : `See ${text}`,
       notificationButtonLink: isSameTab ? '' : link,
-    });
-
-    mixpanel.track(TASK_CREATED, {
-      hasBlockers: blockedBy.length > 0,
-      hasScheduledStart: !!scheduledStart,
-      hasDueDate: !!due,
     });
 
     return id;

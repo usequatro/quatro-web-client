@@ -69,6 +69,9 @@ import {
   deleteRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
 } from '../../../modules/recurringConfigs';
+import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
+import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
+import { selectCalendarCount } from '../../../modules/calendars';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
@@ -91,6 +94,8 @@ import {
   effortSliderMarks,
 } from '../../../constants/taskFormConstants';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
+import { useMixpanel } from '../../tracking/MixpanelContext';
+import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -168,6 +173,7 @@ const runDelayed = (fn, timeout) => setTimeout(fn, timeout);
 
 const TaskDialogForm = ({ onClose, taskId }) => {
   const dispatch = useDispatch();
+  const mixpanel = useMixpanel();
   const classes = useStyles();
 
   const { notifyError, notifyInfo } = useNotification();
@@ -193,6 +199,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
+
+  const calendarCount = useSelector(selectCalendarCount);
+  const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
+  const userHasGrantedCalendarOfflineAccess = useSelector(
+    selectUserHasGrantedGoogleCalendarOfflineAccess,
+  );
 
   const [showDescription, setShowDescription] = useState(Boolean(description));
   const [showDueDialog, setShowDueDialog] = useState(false);
@@ -244,7 +256,15 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               // Make sure to clear recurringConfigId if we don't have any repeat info set
               ...(!recurringConfig ? { recurringConfigId: null } : {}),
             }),
-          );
+          ).then(() => {
+            mixpanel.track(TASK_UPDATED, {
+              hasBlockers: blockedBy.length > 0,
+              hasScheduledStart: Boolean(scheduledStartTimestamp),
+              hasDueDate: Boolean(dueTimestamp),
+              isRecurring: Boolean(recurringConfig),
+              hasCalendarBlock,
+            });
+          });
           return editTaskDialogId;
         })
       : dispatch(
@@ -277,7 +297,15 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               });
             },
           ),
-        );
+        ).then(() => {
+          mixpanel.track(TASK_CREATED, {
+            hasBlockers: blockedBy.length > 0,
+            hasScheduledStart: Boolean(scheduledStartTimestamp),
+            hasDueDate: Boolean(dueTimestamp),
+            isRecurring: Boolean(recurringConfig),
+            hasCalendarBlock,
+          });
+        });
 
     taskPromise
       // Recurring config handling
@@ -576,6 +604,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       </DialogActions>
 
       <ScheduledStartDialog
+        blockCalendarDisabled={
+          !gapiHasAllCalendarScopes || !userHasGrantedCalendarOfflineAccess || calendarCount === 0
+        }
         open={showScheduledStartDialog}
         onClose={() => setShowScheduledStartDialog(false)}
         timestamp={scheduledStartTimestamp}

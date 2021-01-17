@@ -287,9 +287,7 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
   };
 };
 
-export const updateTask = (id, updates) => () => {
-  fetchUpdateTask(id, updates);
-};
+export const updateTask = (id, updates) => () => fetchUpdateTask(id, updates);
 
 export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
   dispatch,
