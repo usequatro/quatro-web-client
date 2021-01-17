@@ -53,7 +53,7 @@ export default function useGoogleApiSignIn() {
         console.error(error); // eslint-disable-line no-console
         notifyError('An error happened');
       });
-  }, [notifyError, dispatch]);
+  }, [notifyError, dispatch, mixpanel]);
 
   const signInToConnectGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase
@@ -133,7 +133,7 @@ export default function useGoogleApiSignIn() {
           );
         })
     );
-  }, [dispatch, history, notifyError]);
+  }, [dispatch, history, notifyError, mixpanel]);
 
   const signInAlreadyConnectedGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase
