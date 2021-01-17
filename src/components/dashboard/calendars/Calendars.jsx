@@ -15,7 +15,7 @@ import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import {
   selectGapiUserSignedIn,
-  selectGapiUserHasCalendarAccess,
+  selectGapiHasAllCalendarScopes,
   selectGoogleFirebaseAuthProvider,
 } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
@@ -45,7 +45,7 @@ const Calendars = () => {
   const connectNewCalendarButton = useRef();
 
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
-  const googleUserHasCalendarAccess = useSelector(selectGapiUserHasCalendarAccess);
+  const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
 
@@ -54,10 +54,7 @@ const Calendars = () => {
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const {
-    signInToConnectGoogleAccount,
-    signInAlreadyConnectedGoogleAccount,
-  } = useGoogleApiSignIn();
+  const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
 
   const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
 
@@ -67,6 +64,7 @@ const Calendars = () => {
         <Typography variant="h6" component="h3" paragraph>
           Connected Account
         </Typography>
+
         {googleFirebaseAuthProvider ? (
           <List>
             <ConnectedAccount
@@ -80,16 +78,11 @@ const Calendars = () => {
         ) : (
           <Typography paragraph>No account connected</Typography>
         )}
-        {!googleSignedIn && (
+
+        {!googleFirebaseAuthProvider && (
           <Box display="flex" alignItems="center" flexDirection="column">
             <Box display="flex" justifyContent="center">
-              <GoogleButton
-                onClick={
-                  googleFirebaseAuthProvider
-                    ? signInAlreadyConnectedGoogleAccount
-                    : signInToConnectGoogleAccount
-                }
-              >
+              <GoogleButton onClick={signInToConnectGoogleAccount}>
                 Sign in with Google
               </GoogleButton>
             </Box>
@@ -122,7 +115,7 @@ const Calendars = () => {
           ])()}
         </Box>
 
-        {!calendarsAreFetching && googleUserHasCalendarAccess && (
+        {!calendarsAreFetching && gapiHasAllCalendarScopes && (
           <Box display="flex" justifyContent="center">
             <Button
               ref={connectNewCalendarButton}

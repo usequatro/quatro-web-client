@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
 import {
   selectGapiUserSignedIn,
-  selectGapiUserHasCalendarAccess,
+  selectGapiHasAllCalendarScopes,
   selectGoogleFirebaseAuthProvider,
   selectGapiUserLoading,
 } from '../../../modules/session';
@@ -25,7 +25,7 @@ const CalendarDashboardView = () => {
   const gapiUserLoading = useSelector(selectGapiUserLoading);
   const fetchingCalendars = useSelector(selectCalendarsAreFetching);
   const gapiUserSignedIn = useSelector(selectGapiUserSignedIn);
-  const gapiUserHasCalendarAccess = useSelector(selectGapiUserHasCalendarAccess);
+  const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
   const userHasGrantedGoogleCalendarOfflineAccess = useSelector(
     selectUserHasGrantedGoogleCalendarOfflineAccess,
   );
@@ -44,7 +44,7 @@ const CalendarDashboardView = () => {
         [
           () =>
             !gapiUserSignedIn ||
-            !gapiUserHasCalendarAccess ||
+            !gapiHasAllCalendarScopes ||
             !userHasGrantedGoogleCalendarOfflineAccess ||
             calendarIds.length === 0,
           () => {

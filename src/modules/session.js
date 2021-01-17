@@ -31,10 +31,17 @@ export const selectGapiUserId = (state) => get(state[name], 'gapiUser.id');
 export const selectGapiUserName = (state) => get(state[name], 'gapiUser.name');
 export const selectGapiUserEmail = (state) => get(state[name], 'gapiUser.email');
 export const selectGapiUserImageUrl = (state) => get(state[name], 'gapiUser.imageUrl');
-export const selectGapiUserHasCalendarAccess = (state) => {
+
+export const selectGapiHasCalendarListScope = (state) => {
   const scopes = get(state[name], 'gapiUser.scopes', []);
-  return scopes.includes(CALENDAR_LIST_READ) && scopes.includes(CALENDAR_EVENTS_MANAGE);
+  return scopes.includes(CALENDAR_LIST_READ);
 };
+export const selectGapiHasEventsManageScope = (state) => {
+  const scopes = get(state[name], 'gapiUser.scopes', []);
+  return scopes.includes(CALENDAR_EVENTS_MANAGE);
+};
+export const selectGapiHasAllCalendarScopes = (state) =>
+  selectGapiHasCalendarListScope(state) && selectGapiHasEventsManageScope(state);
 
 // Slice
 
