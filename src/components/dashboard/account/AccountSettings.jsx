@@ -211,10 +211,16 @@ const AccountSettings = () => {
 
     const recentLoginCallbackReference = recentLoginCallback;
 
-    firebaseReauthenticateUserWithPassword(password).then(() => {
-      setRecentLoginCallback(null);
-      return recentLoginCallbackReference();
-    });
+    firebaseReauthenticateUserWithPassword(password)
+      .then(() => {
+        setRecentLoginCallback(null);
+        return recentLoginCallbackReference();
+      })
+      .catch((error) => {
+        setSubmitting(false);
+        console.error(error); // eslint-disable-line no-console
+        notifyError(userFacingErrors[error.code] || 'Error saving changes');
+      });
   };
 
   const hasChanges =
