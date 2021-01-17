@@ -49,9 +49,10 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 5,
     color: declined ? color : theme.palette.getContrastText(color),
     backgroundColor: declined ? theme.palette.background.paper : color,
-    border: `solid 1px ${color}`,
+    border: `solid 1px ${declined ? color : theme.palette.getContrastText(color)}`,
     outline: 'none',
     textDecoration: declined ? 'line-through' : 'initial',
+    clipPath: 'border-box', // needed by iOS Safari, otherwise it shows overflowing text (ignores overflow hidden)
   }),
   scrollAnchor: {
     width: 0,
