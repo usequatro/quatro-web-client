@@ -4,15 +4,21 @@ import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
 
 import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import IconButton from '@material-ui/core/IconButton';
 import MuiLink from '@material-ui/core/Link';
 import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
 import { makeStyles } from '@material-ui/core/styles';
+
+import HelpOutlineRoundedIcon from '@material-ui/icons/HelpOutlineRounded';
 
 import firebase, { firebaseUnlinkProvider } from '../../../firebase';
 import REGION from '../../../constants/region';
@@ -21,8 +27,11 @@ import { useNotification } from '../../Notification';
 import GoogleButton from '../../ui/GoogleButton';
 import {
   selectGapiUserId,
-  selectGapiUserHasCalendarAccess,
+  selectGapiHasAllCalendarScopes,
+  selectGapiHasCalendarListScope,
+  selectGapiHasEventsManageScope,
   selectPasswordFirebaseAuthProvider,
+  selectGoogleFirebaseAuthProvider,
   setUserFromFirebaseUser,
   setGapiUser,
 } from '../../../modules/session';
@@ -30,31 +39,59 @@ import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../module
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
+import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import debugConsole from '../../../utils/debugConsole';
 
-const useStyles = makeStyles((theme) => ({
-  listItemWithSecondaryAction: {
-    paddingRight: theme.spacing(10), // increased padding bc disconnect button isn't an IconButton
-  },
-  secondaryActionContainer: {
-    right: 0,
+const useStyles = makeStyles(() => ({
+  listItem: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
 }));
+
+const PermissionInfoDialog = ({ title, contentText, children }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {children(setOpen)}
+
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitleWithClose onClose={() => setOpen(false)} title={title} />
+        <DialogContent>
+          <DialogContentText>{contentText}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Done</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+PermissionInfoDialog.propTypes = {
+  title: PropTypes.string.isRequired,
+  contentText: PropTypes.string.isRequired,
+  children: PropTypes.func.isRequired,
+};
 
 const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const { notifyError } = useNotification();
   const dispatch = useDispatch();
   const classes = useStyles();
   const gapiUserId = useSelector(selectGapiUserId);
-  const isConnectedAccount = uid === gapiUserId;
+  const isCurrentlyConnected = uid === gapiUserId;
 
-  const googleUserHasCalendarAccess = useSelector(selectGapiUserHasCalendarAccess);
+  const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
+  const gapiHasCalendarListAccess = useSelector(selectGapiHasCalendarListScope);
+  const gapiHasEventsManageAccess = useSelector(selectGapiHasEventsManageScope);
+
   const userHasGrantedGoogleCalendarOfflineAccess = useSelector(
     selectUserHasGrantedGoogleCalendarOfflineAccess,
   );
   const passwordProvider = useSelector(selectPasswordFirebaseAuthProvider);
+  const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const { grantAccessToGoogleCalendar } = useGoogleApiSignIn();
+  const { grantAccessToGoogleCalendar, signInAlreadyConnectedGoogleAccount } = useGoogleApiSignIn();
   const [signingIn, setSigningIn] = useState(false);
   const [disconnectingProvider, setDisconectingProvider] = useState(false);
   const handleGrantAccessToCalendar = () => {
@@ -70,7 +107,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
     firebaseUnlinkProvider(providerId)
       .then(async () => {
         if (providerId === 'google.com') {
-          if (isConnectedAccount) {
+          if (isCurrentlyConnected) {
             debugConsole.info('Google API', 'Revoking scopes and signing out from Google API');
             return revokeAllScopes().then(async () => (await gapiGetAuthInstance()).signOut());
           }
@@ -124,45 +161,25 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   }
 
   return (
-    <ListItem disableGutters classes={{ secondaryAction: classes.listItemWithSecondaryAction }}>
-      <ListItemAvatar>
-        <Avatar
-          alt={name || email}
-          src={imageUrl}
-          style={{ opacity: isConnectedAccount ? 1 : 0.5 }}
-        />
-      </ListItemAvatar>
-      <ListItemText
-        primary={`${[name, email].filter(Boolean).join(' ')}`}
-        secondaryTypographyProps={{ component: 'div' }}
-        secondary={cond([
-          [() => !isConnectedAccount, () => 'Not signed in with Google'],
-          [
-            () => !googleUserHasCalendarAccess || !userHasGrantedGoogleCalendarOfflineAccess,
-            () => (
-              <Box mt={2}>
-                <p>
-                  Grant access to display your calendars and create events, and sync your Quatro
-                  tasks to Google Calendar.
-                </p>
-                <GoogleButton
-                  onClick={handleGrantAccessToCalendar}
-                  data-qa="connect-google-button"
-                  endIcon={
-                    signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
-                  }
-                >
-                  Grant access
-                </GoogleButton>
-              </Box>
-            ),
-          ],
-        ])()}
-      />
+    <ListItem disableGutters className={classes.listItem}>
+      <Box display="flex" mb={2} alignItems="center">
+        <ListItemAvatar>
+          <Avatar
+            alt={name || email}
+            src={imageUrl}
+            style={{ opacity: isCurrentlyConnected ? 1 : 0.5 }}
+          />
+        </ListItemAvatar>
 
-      {/* if there's a password provider, we can let users disconnect other providers */}
-      {passwordProvider && (
-        <ListItemSecondaryAction className={classes.secondaryActionContainer}>
+        <Box display="flex" flexDirection="column" flexGrow={1}>
+          <Typography variant="body1">{name}</Typography>
+          <Typography variant="body2" color="textSecondary">
+            {email}
+          </Typography>
+        </Box>
+
+        {/* if there's a password provider, we can let users disconnect other providers */}
+        {passwordProvider && (
           <Confirm
             onConfirm={handleDisconnect}
             renderDialog={(open, onConfirm, onConfirmationClose) => (
@@ -176,11 +193,11 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
                   `Are you sure you want to disconnect the Google account "${email}"?`,
                   `This will remove from Quatro any connected calendars of that account.`,
 
-                  isConnectedAccount && googleUserHasCalendarAccess
+                  isCurrentlyConnected && gapiHasAllCalendarScopes
                     ? `Additionally, we'll automatically revoke Quatro's access to your Google Calendar events.`
                     : null,
 
-                  !isConnectedAccount && googleUserHasCalendarAccess && (
+                  !isCurrentlyConnected && gapiHasAllCalendarScopes && (
                     <>
                       {`Since you aren't currently signed in to Google in Quatro, we can't
                       automatically revoke our access to your events. In order for you to do that,
@@ -211,8 +228,134 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
               </Button>
             )}
           />
-        </ListItemSecondaryAction>
+        )}
+      </Box>
+      {isCurrentlyConnected && (
+        <Box>
+          <ul>
+            <Typography
+              variant="body2"
+              color={gapiHasEventsManageAccess ? 'textSecondary' : 'error'}
+              component="li"
+            >
+              {gapiHasEventsManageAccess
+                ? 'Access to view and edit events'
+                : 'No access to view and edit events'}
+              <PermissionInfoDialog
+                title="Access to view and edit events"
+                contentText="Quatro uses access to view your events to display them for you on the
+                  Top 4 screen. Quatro uses access to edit your events to sync Quatro tasks to your
+                  calendar."
+              >
+                {(setOpen) => (
+                  <IconButton
+                    size="small"
+                    aria-label="Show information about why view and edit events access is needed"
+                    onClick={() => setOpen(true)}
+                  >
+                    <HelpOutlineRoundedIcon fontSize="small" />
+                  </IconButton>
+                )}
+              </PermissionInfoDialog>
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color={gapiHasCalendarListAccess ? 'textSecondary' : 'error'}
+              component="li"
+            >
+              {gapiHasCalendarListAccess
+                ? 'Access to list calendars'
+                : 'No access to list calendars'}
+              <PermissionInfoDialog
+                title="Access to list calendars"
+                contentText="Quatro uses access to list calendars to enable you to connect the calendars of
+                  your Google account."
+              >
+                {(setOpen) => (
+                  <IconButton
+                    size="small"
+                    aria-label="Show information about why view and edit events access is needed"
+                    onClick={() => setOpen(true)}
+                  >
+                    <HelpOutlineRoundedIcon fontSize="small" />
+                  </IconButton>
+                )}
+              </PermissionInfoDialog>
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color={userHasGrantedGoogleCalendarOfflineAccess ? 'textSecondary' : 'error'}
+              component="li"
+            >
+              {userHasGrantedGoogleCalendarOfflineAccess
+                ? 'Offline access (in the background)'
+                : 'No offline access (in the background)'}
+
+              <PermissionInfoDialog
+                title="Offline access (in the background)"
+                contentText="Quatro uses offline access to your calendar to refresh the list of events when
+                  changes happen to events in your calendar."
+              >
+                {(setOpen) => (
+                  <IconButton
+                    size="small"
+                    aria-label="Show information about why offline access is needed"
+                    onClick={() => setOpen(true)}
+                  >
+                    <HelpOutlineRoundedIcon fontSize="small" />
+                  </IconButton>
+                )}
+              </PermissionInfoDialog>
+            </Typography>
+          </ul>
+        </Box>
       )}
+
+      <Box>
+        {cond([
+          [
+            () => !isCurrentlyConnected,
+            () => (
+              <>
+                <Typography variant="body2" color="textSecondary" component="div">
+                  {`Sign in with Google again to ${googleFirebaseAuthProvider.email} to view your calendars`}
+                </Typography>
+                <Box mt={2} display="flex" justifyContent="center">
+                  <GoogleButton
+                    onClick={signInAlreadyConnectedGoogleAccount}
+                    data-qa="sign-in-google-button"
+                    endIcon={
+                      signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                    }
+                  >
+                    Sign in with Google
+                  </GoogleButton>
+                </Box>
+              </>
+            ),
+          ],
+          [
+            () => !gapiHasAllCalendarScopes || !userHasGrantedGoogleCalendarOfflineAccess,
+            () => (
+              <>
+                <Box mt={2} display="flex" justifyContent="center">
+                  <GoogleButton
+                    onClick={handleGrantAccessToCalendar}
+                    data-qa="connect-google-button"
+                    endIcon={
+                      signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                    }
+                  >
+                    Grant access with Google
+                  </GoogleButton>
+                </Box>
+              </>
+            ),
+          ],
+        ])()}
+      </Box>
     </ListItem>
   );
 };

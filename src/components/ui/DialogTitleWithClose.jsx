@@ -37,7 +37,12 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
       elevation={0}
     >
       {title && (
-        <Typography variant="h2" {...TypographyProps} className={classes.dialogTitleTypography}>
+        <Typography
+          variant="h5"
+          component="h2"
+          {...TypographyProps}
+          className={classes.dialogTitleTypography}
+        >
           {title}
         </Typography>
       )}
