@@ -93,6 +93,7 @@ const CalendarEditView = ({ id }) => {
         <TextFieldWithTypography
           typography="body1"
           fullWidth
+          disabled={!isCalendarUserSignedUpWithGoogle}
           value={currentName}
           onChange={(e) => {
             setCurrentName(e.target.value);
@@ -106,27 +107,34 @@ const CalendarEditView = ({ id }) => {
         />
       </Box>
 
-      <Box display="flex">
+      <Box display="flex" alignItems="center">
         <Box flexGrow={1}>
           <FormControl component="fieldset" aria-label="color">
-            <RadioGroup row>
+            <RadioGroup
+              row
+              onChange={(event) => {
+                const newColor = event.target.value;
+                fetchUpdateCalendar(id, { color: newColor });
+                mixpanel.track(GOOGLE_CALENDAR_COLOR_CHANGED, { color: newColor });
+              }}
+            >
               {Object.values(colors).map(({ key, value }) => {
                 return (
                   <FormControlLabel
                     key={key}
                     value={value}
                     checked={color === value}
-                    onClick={() => {
-                      fetchUpdateCalendar(id, { color: value });
-                      mixpanel.track(GOOGLE_CALENDAR_COLOR_CHANGED, { color: value });
-                    }}
+                    disabled={!isCalendarUserSignedUpWithGoogle}
                     control={
                       <Radio
                         classes={{
                           root: colorSelectorClasses[key],
                           checked: colorSelectorClasses[`checked-${key}`],
                         }}
-                        inputProps={{ 'aria-label': `color ${key}` }}
+                        inputProps={{
+                          'aria-label': `color ${key}`,
+                          disabled: !isCalendarUserSignedUpWithGoogle,
+                        }}
                       />
                     }
                   />
@@ -151,7 +159,7 @@ const CalendarEditView = ({ id }) => {
               title="Disconnect calendar"
               body={`Are you sure you want to disconnect the calendar ${
                 currentName || providerCalendarId
-              }`}
+              }? You'll be able to connect it again later.`}
               buttonText="Disconnect"
             />
           )}
