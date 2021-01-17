@@ -198,7 +198,7 @@ const slice = createSlice({
         (memo, dateKey) => ({
           ...memo,
           [dateKey]: {
-            ...state[dateKey],
+            ...state.byDate[dateKey],
             fetchedAt: 0,
           },
         }),
