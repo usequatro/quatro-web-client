@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import Button from '@material-ui/core/Button';
@@ -12,37 +12,43 @@ import PasswordTextField from '../../ui/PasswordTextField';
 
 export default function PasswordConfirmDialog({ open, onClose, onConfirm }) {
   const [password, setPassword] = useState('');
-  const handleConfirm = () => onConfirm(password);
+  const handleConfirm = (event) => {
+    event.preventDefault();
+    onConfirm(password);
+    onClose();
+  };
+
+  useEffect(() => {
+    setPassword('');
+  }, [open]);
 
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby="password-confirm-title">
       <DialogTitle id="password-confirm-title">Before moving on</DialogTitle>
-      <DialogContent>
-        <DialogContentText>Please confirm your current password to save changes</DialogContentText>
+      <form onSubmit={handleConfirm}>
+        <DialogContent>
+          <DialogContentText>
+            Please confirm your current password to save changes
+          </DialogContentText>
 
-        <PasswordTextField
-          label="Current password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          fullWidth
-          margin="normal"
-        />
-      </DialogContent>
+          <PasswordTextField
+            label="Current password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            fullWidth
+            margin="normal"
+          />
+        </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined">
-          Cancel
-        </Button>
-        <Button
-          onClick={handleConfirm}
-          variant="outlined"
-          color="primary"
-          autoFocus
-          disabled={!password}
-        >
-          Continue
-        </Button>
-      </DialogActions>
+        <DialogActions>
+          <Button onClick={onClose} variant="outlined">
+            Cancel
+          </Button>
+          <Button type="submit" variant="outlined" color="primary" autoFocus disabled={!password}>
+            Continue
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }
