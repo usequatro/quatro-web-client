@@ -43,15 +43,15 @@ import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
 
 const useStyles = makeStyles((theme) => ({
-  eventCard: ({ color, selectable }) => ({
+  eventCard: ({ color, declined }) => ({
     width: '100%',
     padding: `${theme.spacing(1) / 2}px ${theme.spacing(1)}px`,
     borderRadius: 5,
-    color: theme.palette.getContrastText(color),
-    backgroundColor: color,
-    border: `solid 1px ${theme.palette.getContrastText(color)}`,
+    color: declined ? color : theme.palette.getContrastText(color),
+    backgroundColor: declined ? theme.palette.background.paper : color,
+    border: `solid 1px ${color}`,
     outline: 'none',
-    cursor: selectable ? 'pointer' : 'auto',
+    textDecoration: declined ? 'line-through' : 'initial',
   }),
   scrollAnchor: {
     width: 0,
@@ -96,7 +96,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
-  const classes = useStyles({ color, selectable });
+  const classes = useStyles({ color, declined });
 
   const [focused, setFocused] = useState(false);
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
@@ -129,12 +129,12 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
             tickHeight * (startTimeInMinutes / minutesForOneTick),
           )}px)`,
           opacity: cond([
-            [() => declined, () => 0.2],
             [() => !allDay && isPast(endTimestamp), () => 0.7],
+            [() => declined, () => 0.7],
             [() => true, () => 1],
           ])(),
+          cursor: selectable ? 'pointer' : 'auto',
           zIndex: 1,
-          textDecoration: declined ? 'line-through' : 'initial',
           ...(!allDay
             ? {
                 position: 'absolute',
