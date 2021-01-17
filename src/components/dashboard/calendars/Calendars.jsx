@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
@@ -48,6 +49,7 @@ const Calendars = () => {
   const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
+  const [signingInToGoogle, setSigningInToGoogle] = useState(false);
 
   const calendarsAreFetching = useSelector(selectCalendarsAreFetching);
   const calendarIds = useSelector(selectCalendarIds);
@@ -57,6 +59,14 @@ const Calendars = () => {
   const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
 
   const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
+
+  const handleSignInWithGoogle = () => {
+    setSigningInToGoogle(true);
+    signInToConnectGoogleAccount().then(
+      () => setSigningInToGoogle(false),
+      () => setSigningInToGoogle(false),
+    );
+  };
 
   return (
     <Box className={classes.mainContainer}>
@@ -82,7 +92,14 @@ const Calendars = () => {
         {!googleFirebaseAuthProvider && (
           <Box display="flex" alignItems="center" flexDirection="column">
             <Box display="flex" justifyContent="center">
-              <GoogleButton onClick={signInToConnectGoogleAccount}>
+              <GoogleButton
+                onClick={handleSignInWithGoogle}
+                endIcon={
+                  signingInToGoogle && (
+                    <CircularProgress color="inherit" thickness={6} size="1rem" />
+                  )
+                }
+              >
                 Sign in with Google
               </GoogleButton>
             </Box>

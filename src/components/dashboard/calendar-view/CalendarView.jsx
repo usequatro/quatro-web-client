@@ -73,17 +73,24 @@ const CalendarView = () => {
 
   const { fetching } = useLoadEvents(timestamp);
 
+  // If we've already scrolled, we prevent scrolling when events reload in the background
+  const scrollAlreadyApplied = useRef(false);
+  useEffect(() => {
+    scrollAlreadyApplied.current = false;
+  }, [timestamp]);
+
   // Management of current time bar and scrolling
   const today = isToday(timestamp);
   const currentTimeRef = useRef();
   const firstEventCardScrollAnchorRef = useRef();
   useEffect(() => {
-    if (fetching) {
+    if (fetching || scrollAlreadyApplied.current) {
       return;
     }
     const validRef = today ? currentTimeRef : firstEventCardScrollAnchorRef;
     if (validRef && validRef.current) {
       validRef.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      scrollAlreadyApplied.current = true;
     }
   }, [today, fetching]);
 
