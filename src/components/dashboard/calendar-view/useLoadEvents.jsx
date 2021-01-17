@@ -5,6 +5,20 @@ import { selectCalendarIds } from '../../../modules/calendars';
 import { loadEvents, selectCalendarEventsNeedLoading } from '../../../modules/calendarEvents';
 import { selectGapiUserSignedIn } from '../../../modules/session';
 
+const useTick = (enabled, timeout) => {
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, timeout);
+    return () => clearInterval(interval);
+  }, [enabled, timeout]);
+  return currentTime;
+};
+
 /**
  * Hook to group the logic for fetching calendar events and re-fetching them when necessary
  *
@@ -18,16 +32,7 @@ export default function useLoadEvents(timestamp, { autoRefresh = true } = {}) {
   const [fetching, setFetching] = useState(false);
 
   // Interval to trigger state updates so we can select again eventsNeedLoading
-  const [currentTime, setCurrentTime] = useState(Date.now());
-  useEffect(() => {
-    if (!autoRefresh) {
-      return undefined;
-    }
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
+  const currentTime = useTick(autoRefresh, 5000);
 
   // Calendar event fecthing
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
