@@ -108,5 +108,6 @@ export const firebaseUnlinkProvider = (providerId) => {
   if (providerId !== 'google.com') {
     throw new Error('Not implemented');
   }
+  debugConsole.info('Firebase', `Unlinking provider ${providerId}`);
   return firebase.auth().currentUser.unlink(providerId);
 };

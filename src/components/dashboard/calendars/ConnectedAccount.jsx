@@ -30,6 +30,7 @@ import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../module
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
+import debugConsole from '../../../utils/debugConsole';
 
 const useStyles = makeStyles((theme) => ({
   listItemWithSecondaryAction: {
@@ -55,6 +56,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
 
   const { grantAccessToGoogleCalendar } = useGoogleApiSignIn();
   const [signingIn, setSigningIn] = useState(false);
+  const [disconnectingProvider, setDisconectingProvider] = useState(false);
   const handleGrantAccessToCalendar = () => {
     setSigningIn(true);
     grantAccessToGoogleCalendar().then(
@@ -64,11 +66,22 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   };
 
   const handleDisconnect = () => {
+    setDisconectingProvider(true);
     firebaseUnlinkProvider(providerId)
       .then(async () => {
-        return providerId === 'google.com' && isConnectedAccount
-          ? revokeAllScopes().then(async () => (await gapiGetAuthInstance()).signOut())
-          : undefined;
+        if (providerId === 'google.com') {
+          if (isConnectedAccount) {
+            debugConsole.info('Google API', 'Revoking scopes and signing out from Google API');
+            return revokeAllScopes().then(async () => (await gapiGetAuthInstance()).signOut());
+          }
+          debugConsole.info(
+            'Google API',
+            'Not revoking scopes and signing out because account not signed in now',
+          );
+          return undefined;
+        }
+        debugConsole.info(`Unknown provider unlinked ${providerId}`);
+        return undefined;
       })
       // We run the callable after the important things, as it'd be less bad if this failed
       .then(() => {
@@ -76,8 +89,11 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
           .app()
           .functions(REGION)
           .httpsCallable('processProviderUnlink');
+        debugConsole.info(`Processing provider unlink ${providerId}`);
         return processProviderUnlink({
           unlinkedProviderId: providerId,
+        }).then(() => {
+          debugConsole.info(`Done processing provider unlink ${providerId}`);
         });
       })
       .catch((error) => {
@@ -96,7 +112,11 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
             ),
           );
         }
-      });
+      })
+      .then(
+        () => setDisconectingProvider(false),
+        () => setDisconectingProvider(false),
+      );
   };
 
   if (providerId !== 'google.com') {
@@ -178,8 +198,16 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
               />
             )}
             renderContent={(onClick) => (
-              <Button onClick={onClick} size="small">
-                Disconnect
+              <Button
+                onClick={onClick}
+                size="small"
+                endIcon={
+                  disconnectingProvider && (
+                    <CircularProgress color="inherit" thickness={6} size="1rem" />
+                  )
+                }
+              >
+                {disconnectingProvider ? 'Disconnecting' : 'Disconnect'}
               </Button>
             )}
           />

@@ -56,7 +56,9 @@ export const gapiGrantCalendarManagementScope = async () => {
       debugConsole.log('Google API', 'Retrieved offline code. Sending to backend now');
       const storeAuthCode = firebase.app().functions(REGION).httpsCallable('storeAuthCode');
 
-      return storeAuthCode({ code });
+      return storeAuthCode({ code }).then(() => {
+        debugConsole.log('Google API', 'Code processed');
+      });
     });
 };
 
