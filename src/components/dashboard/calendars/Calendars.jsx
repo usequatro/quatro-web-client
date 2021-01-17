@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   mainContainer: {
     padding: `${theme.spacing(4)}px ${theme.spacing(6)}px`,
     flexGrow: 1,
-    width: '30rem',
+    width: '35rem',
     maxWidth: '100vw',
     display: 'flex',
     flexDirection: 'column',

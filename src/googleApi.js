@@ -47,10 +47,7 @@ const request = async (obj) => {
 
 export const gapiGrantCalendarManagementScope = async () => {
   const auth2 = await gapiGetAuthInstance();
-  const currentUser = auth2.currentUser.get();
-  if (currentUser.hasGrantedScopes(`${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`)) {
-    return true;
-  }
+  // don't check if user already has access already, as we still need a new auth code
   return auth2
     .grantOfflineAccess({
       scope: `${CALENDAR_LIST_READ} ${CALENDAR_EVENTS_MANAGE}`,
@@ -59,7 +56,9 @@ export const gapiGrantCalendarManagementScope = async () => {
       debugConsole.log('Google API', 'Retrieved offline code. Sending to backend now');
       const storeAuthCode = firebase.app().functions(REGION).httpsCallable('storeAuthCode');
 
-      return storeAuthCode({ code });
+      return storeAuthCode({ code }).then(() => {
+        debugConsole.log('Google API', 'Code processed');
+      });
     });
 };
 
