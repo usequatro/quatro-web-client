@@ -19,6 +19,7 @@ const LOADED = 'loaded';
 
 export const selectCalendarsAreFetching = (state) => state[name].status === INITIAL;
 export const selectCalendarIds = (state) => state[name].allIds;
+export const selectCalendarCount = (state) => state[name].allIds.length;
 export const selectCalendarName = (state, id) => get(state[name].byId[id], 'name');
 export const selectCalendarColor = (state, id) => get(state[name].byId[id], 'color');
 const selectCalendarWatcherLastUpdated = (state, id) =>

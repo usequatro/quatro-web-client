@@ -10,6 +10,11 @@ import { CALENDARS as CALENDARS_PATH } from '../../constants/paths';
 import { setUserFromFirebaseUser, setGapiUser } from '../../modules/session';
 import debugConsole from '../../utils/debugConsole';
 import { useNotification } from '../Notification';
+import {
+  GOOGLE_ACCOUNT_CALENDAR_SCOPE_GRANTED,
+  GOOGLE_ACCOUNT_LINKED,
+} from '../../constants/mixpanelEvents';
+import { useMixpanel } from '../tracking/MixpanelContext';
 
 /**
  * This hook exists because of how complex the different cases for signing in with Google API are
@@ -18,6 +23,7 @@ export default function useGoogleApiSignIn() {
   const dispatch = useDispatch();
   const { notifyError } = useNotification();
   const history = useHistory();
+  const mixpanel = useMixpanel();
 
   const signInFromRegistration = useCallback(async () => {
     if (firebase.auth().currentUser) {
@@ -29,6 +35,9 @@ export default function useGoogleApiSignIn() {
 
   const grantAccessToGoogleCalendar = useCallback(() => {
     return gapiGrantCalendarManagementScope()
+      .then(() => {
+        mixpanel.track(GOOGLE_ACCOUNT_CALENDAR_SCOPE_GRANTED);
+      })
       .then(async () => {
         // Refresh scopes in Redux
         const authInstance = await gapiGetAuthInstance();
@@ -73,26 +82,37 @@ export default function useGoogleApiSignIn() {
             });
           });
         })
+        .then(() => {
+          mixpanel.track(GOOGLE_ACCOUNT_LINKED);
+        })
         // Update user in Redux
         .then(() => {
           const newFirebaseUser = firebase.auth().currentUser;
           dispatch(setUserFromFirebaseUser(newFirebaseUser));
         })
-        // If the user didn't have a photo URL previously, set the one they use in Google
+        // If the user didn't have a photo URL or displayName previously,
+        // set the ones they use in Google
         .then(() => {
           const newFirebaseUser = firebase.auth().currentUser;
-          if (!newFirebaseUser.photoURL) {
-            const googlePhotoURL = (
-              newFirebaseUser.providerData.find(({ providerId }) => providerId === 'google.com') ||
-              {}
-            ).photoURL;
-            if (googlePhotoURL) {
-              // We intentionally don't return this promise so we don't wait on it
-              firebaseUpdateUserProfile({ photoURL: googlePhotoURL }).then(() => {
-                // Refresh user in Redux
-                dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
-              });
-            }
+          const googleProvider = newFirebaseUser.providerData.find(
+            ({ providerId }) => providerId === 'google.com',
+          );
+          const newPhotoUrl = !newFirebaseUser.photoURL
+            ? (googleProvider || {}).photoURL
+            : undefined;
+          const newDisplayName = !newFirebaseUser.displayName
+            ? (googleProvider || {}).displayName
+            : undefined;
+
+          if (newPhotoUrl || newDisplayName) {
+            // We intentionally don't return this promise so we don't wait on it
+            firebaseUpdateUserProfile({
+              ...(newPhotoUrl ? { photoURL: newPhotoUrl } : {}),
+              ...(newDisplayName ? { displayName: newDisplayName } : {}),
+            }).then(() => {
+              // Refresh user in Redux
+              dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
+            });
           }
         })
         // Redirect to let them connect calendars

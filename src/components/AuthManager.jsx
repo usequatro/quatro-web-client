@@ -6,6 +6,10 @@ import firebase, { firebaseSignInWithCredential } from '../firebase';
 import { gapiGetAuthInstance } from '../googleApi';
 import debugConsole from '../utils/debugConsole';
 import { setUserFromFirebaseUser, setGapiUser } from '../modules/session';
+import {
+  SIGNED_IN_WITH_PASSWORD,
+  SIGNED_IN_WITH_GOOGLE,
+} from '../constants/mixpanelUserProperties';
 
 const isFirebaseSignedIn = () => Boolean(firebase.auth().currentUser);
 
@@ -68,10 +72,18 @@ const AuthManager = () => {
       if (user && user.uid) {
         try {
           mixpanel.identify(user.uid);
+
+          // These properties are updated for Mixpanel when logging-in and on every refresh
           mixpanel.people.set({
             $name: user.displayName,
             $email: user.email,
             $created: user.metadata.creationTime,
+            [SIGNED_IN_WITH_PASSWORD]: Boolean(
+              user.providerData.find(({ providerId }) => providerId === 'password'),
+            ),
+            [SIGNED_IN_WITH_GOOGLE]: Boolean(
+              user.providerData.find(({ providerId }) => providerId === 'google.com'),
+            ),
           });
         } catch (error) {
           console.error(error); // eslint-disable-line no-console
