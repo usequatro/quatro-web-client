@@ -28,6 +28,8 @@ import calendarColors from '../../../constants/calendarColors';
 import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
 import { GOOGLE_CALENDAR_CONNECTED } from '../../../constants/mixpanelEvents';
 
+const keepAlphanumericChars = (string) => string.replace(/[^a-z0-9]/gi, '');
+
 export default function CalendarSelectionDialog({ open, onClose }) {
   const { notifyError } = useNotification();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
@@ -135,9 +137,14 @@ export default function CalendarSelectionDialog({ open, onClose }) {
                   const selected = alreadyAdded || calendarIdsSelected.includes(calendar.id);
                   return (
                     <ListItem key={calendar.id} disabled={alreadyAdded}>
-                      <ListItemText style={{ wordBreak: 'break-word' }}>{calendar.id}</ListItemText>
+                      <ListItemText style={{ wordBreak: 'break-word' }}>
+                        <label htmlFor={`button-select-${keepAlphanumericChars(calendar.id)}`}>
+                          {calendar.id}
+                        </label>
+                      </ListItemText>
                       <ListItemSecondaryAction>
                         <IconButton
+                          id={`button-select-${keepAlphanumericChars(calendar.id)}`}
                           aria-label="select"
                           edge="end"
                           color={selected ? 'primary' : 'default'}
