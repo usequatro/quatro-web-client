@@ -11,11 +11,11 @@ export default function calculateTaskScore(impact, effort, due) {
   const normalizedImpact = normalizeBase(impact + 1, 6, 10);
   const normalizedEffort = normalizeBase(effort + 1, 6, 10);
 
-  const weightenedImpact = normalizedImpact ** 1.5;
-  const weightenedEffort = normalizedEffort ** 1;
+  const weightedImpact = normalizedImpact ** 1.5;
+  const weightedEffort = normalizedEffort ** 1;
 
   // https://www.wolframalpha.com/input/?i=plot+2%2Fx
   const daysUntilFactor = due ? 1 + 2 / Math.min(getDaysDue(due), 10000) : 1;
 
-  return round((weightenedImpact / weightenedEffort) * daysUntilFactor, 3);
+  return round((weightedImpact / weightedEffort) * daysUntilFactor, 3);
 }
