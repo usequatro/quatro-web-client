@@ -604,9 +604,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       </DialogActions>
 
       <ScheduledStartDialog
-        blockCalendarDisabled={
-          !gapiHasAllCalendarScopes || !userHasGrantedCalendarOfflineAccess || calendarCount === 0
-        }
+        blockCalendarDisabledReason={cond([
+          [() => !gapiHasAllCalendarScopes || !userHasGrantedCalendarOfflineAccess, () => 'access'],
+          [() => calendarCount === 0, () => 'noCalendars'],
+          [() => true, () => ''],
+        ])()}
         open={showScheduledStartDialog}
         onClose={() => setShowScheduledStartDialog(false)}
         timestamp={scheduledStartTimestamp}

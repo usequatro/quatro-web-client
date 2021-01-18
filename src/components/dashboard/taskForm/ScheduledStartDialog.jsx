@@ -10,6 +10,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import Switch from '@material-ui/core/Switch';
 
 import DateFnsUtils from '@date-io/date-fns';
@@ -33,7 +34,7 @@ const ScheduledStartDialog = ({
   blocksCalendar,
   calendarBlockCalendarId,
   calendarBlockDuration,
-  blockCalendarDisabled,
+  blockCalendarDisabledReason,
 }) => {
   // Scheduled start date
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || initialDateTimestamp);
@@ -145,7 +146,7 @@ const ScheduledStartDialog = ({
         </Box>
 
         <FormControlLabel
-          disabled={blockCalendarDisabled}
+          disabled={Boolean(blockCalendarDisabledReason)}
           control={
             <Switch
               checked={currentlyBlocksCalendar}
@@ -156,6 +157,16 @@ const ScheduledStartDialog = ({
           }
           label="Block time in connected calendar"
         />
+        {blockCalendarDisabledReason && (
+          <FormHelperText>
+            {{
+              access: (
+                <>You need to grant permissions for Google Calendar to block time for this task.</>
+              ),
+              noCalendars: <>You need to connect a calendar to block time for this task.</>,
+            }[blockCalendarDisabledReason] || ''}
+          </FormHelperText>
+        )}
 
         {currentlyBlocksCalendar && isValid(currentTimestamp) && (
           <Box mt={2} mb={2}>
@@ -201,7 +212,7 @@ ScheduledStartDialog.propTypes = {
   onDone: PropTypes.func.isRequired,
   initialDateTimestamp: PropTypes.number.isRequired,
   calendarBlockCalendarId: PropTypes.string,
-  blockCalendarDisabled: PropTypes.bool.isRequired,
+  blockCalendarDisabledReason: PropTypes.string.isRequired,
 };
 
 ScheduledStartDialog.defaultProps = {
