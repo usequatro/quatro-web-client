@@ -33,7 +33,7 @@ const NavigationSidebarContent = () => {
   return (
     <>
       <List disablePadding>
-        <Tooltip title="Top 4" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Top 4" placement="right" arrow>
           <ListItem
             button
             component={Link}
@@ -47,7 +47,7 @@ const NavigationSidebarContent = () => {
           </ListItem>
         </Tooltip>
 
-        <Tooltip title="Backlog" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Backlog" placement="right" arrow>
           <ListItem
             button
             component={Link}
@@ -61,7 +61,7 @@ const NavigationSidebarContent = () => {
           </ListItem>
         </Tooltip>
 
-        <Tooltip title="Scheduled" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Scheduled" placement="right" arrow>
           <ListItem
             button
             component={Link}
@@ -75,7 +75,7 @@ const NavigationSidebarContent = () => {
           </ListItem>
         </Tooltip>
 
-        <Tooltip title="Blocked" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Blocked" placement="right" arrow>
           <ListItem
             button
             component={Link}
@@ -91,7 +91,7 @@ const NavigationSidebarContent = () => {
 
         <Divider />
 
-        <Tooltip title="Completed" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Completed" placement="right" arrow>
           <ListItem
             button
             component={Link}
@@ -105,7 +105,7 @@ const NavigationSidebarContent = () => {
           </ListItem>
         </Tooltip>
 
-        <Tooltip title="Calendars" placement="right" enterDelay={1000} arrow>
+        <Tooltip title="Calendars" placement="right" arrow>
           <ListItem
             button
             component={Link}
