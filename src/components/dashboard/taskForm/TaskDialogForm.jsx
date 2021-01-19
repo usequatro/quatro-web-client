@@ -297,7 +297,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               });
             },
           ),
-        ).then(() => {
+        ).then((tId) => {
           mixpanel.track(TASK_CREATED, {
             hasBlockers: blockedBy.length > 0,
             hasScheduledStart: Boolean(scheduledStartTimestamp),
@@ -305,6 +305,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             isRecurring: Boolean(recurringConfig),
             hasCalendarBlock,
           });
+          return tId;
         });
 
     taskPromise
