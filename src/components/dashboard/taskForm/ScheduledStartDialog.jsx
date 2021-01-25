@@ -117,16 +117,22 @@ const ScheduledStartDialog = ({
       />
 
       <DialogContent>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Calendar
-            date={currentTimestamp ? new Date(currentTimestamp) : new Date(initialDateTimestamp)}
-            onChange={(newDate) => setCurrentTimestamp(newDate.getTime())}
-          />
-        </MuiPickersUtilsProvider>
+        <Box display="flex" justifyContent="center">
+          <Box width="18rem">
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <Calendar
+                date={
+                  currentTimestamp ? new Date(currentTimestamp) : new Date(initialDateTimestamp)
+                }
+                onChange={(newDate) => setCurrentTimestamp(newDate.getTime())}
+              />
+            </MuiPickersUtilsProvider>
+          </Box>
+        </Box>
 
-        <Box display="flex" justifyContent="stretch" flexDirection="column" mb={2}>
+        <Box display="flex" alignItems="center" flexDirection="column" my={2}>
           <TimePicker
-            dateTime={currentTimestamp}
+            timestamp={currentTimestamp}
             format="h:mm a"
             onChangeCommitted={(newTime) => {
               if (newTime) {
