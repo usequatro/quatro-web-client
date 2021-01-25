@@ -1,58 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import parse from 'date-fns/parse';
 import formatFunction from 'date-fns/format';
 
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
+import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
-import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
-import SendRoundedIcon from '@material-ui/icons/SendRounded';
-
-import LabeledIconButton from './LabeledIconButton';
 
 const useStyles = makeStyles((theme) => ({
-  popoverPaper: {
-    display: 'flex',
-    flexDirection: 'column',
+  timepickerNumber: {
+    marginRight: theme.spacing(1),
+    textAlign: 'center',
+    width: '2.5rem',
   },
-  currentValueContainer: {
-    padding: theme.spacing(2),
-    paddingBottom: 0,
+  input: {
+    textAlign: 'center',
+    '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
+      '-webkit-appearance': 'none',
+      margin: 0,
+    },
+    '&[type="number]': {
+      '-moz-appearance': 'textfield',
+    },
   },
-  footer: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  menuArea: {
-    display: 'flex',
-    padding: theme.spacing(2),
-    paddingRight: 0,
-  },
-  menu: {
-    maxHeight: '50vh',
-    overflow: 'auto',
-  },
-  buttonLabel: {
-    justifyContent: 'space-between',
-  },
-  dateTime: {
-    marginLeft: '10rem',
+  option: {
+    padding: theme.spacing(1), // reducing a bit option paddings, so the menu is thinner
   },
 }));
 
-const hours = ['12', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'];
-const minutes = Array(60)
+const HOURS = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+const MINUTES = Array(60)
   .fill('')
   .map((e, i) => `${i < 10 ? '0' : ''}${i}`);
-const amPm = ['AM', 'PM'];
+const MERIDIEMS = ['AM', 'PM'];
 
 const parseSafe = (value, format, fallback) => {
   if (!value) {
@@ -65,145 +50,168 @@ const parseSafe = (value, format, fallback) => {
   }
 };
 
-const TimePicker = ({ dateTime, onChangeCommitted, format }) => {
+const getIsHourSelected = (option, value) => option === value;
+const getIsMinuteSelected = (option, value) => option === value || option === `0${value}`;
+
+const getApproximateHour = (inputValue) =>
+  HOURS.find((option) => getIsHourSelected(option, inputValue));
+const getApproximateMinute = (inputValue) =>
+  MINUTES.find((option) => getIsMinuteSelected(option, inputValue));
+
+const filterMinuteOptions = (options) =>
+  options.filter(
+    (option) => option === '00' || option === '15' || option === '30' || option === '45',
+  );
+
+const renderInput = (autocompleteParams, inputProps = {}) => {
+  const params = {
+    ...autocompleteParams,
+    InputProps: {
+      ...autocompleteParams.InputProps,
+      endAdornment: undefined, // don't display arrow
+    },
+    inputProps: {
+      ...autocompleteParams.inputProps,
+      ...inputProps,
+    },
+  };
+  return <TextField {...params} />;
+};
+const renderNumberInput = (autocompleteParams) =>
+  renderInput(autocompleteParams, {
+    type: 'number',
+    pattern: '[0-9]*',
+  });
+
+const TimePicker = ({ timestamp, onChangeCommitted }) => {
   const classes = useStyles();
 
-  const [open, setOpen] = useState(false);
-  const [readyForScroll, setReadyForScroll] = useState(false);
-  const anchor = useRef();
+  // Value is the selected value by Autocomplete
+  const [hourValue, setHourValue] = useState(HOURS[10]);
+  const [minuteValue, setMinuteValue] = useState(MINUTES[0]);
+  const [meridiemValue, setMeridiemValue] = useState(MERIDIEMS[0]);
 
-  const [currentHour, setCurrentHour] = useState('');
-  const [currentMinute, setCurrentMinute] = useState('');
-  const [currentAmPm, setCurrentAmPm] = useState('');
-
-  const selectedHourRef = useRef();
-  const selectedMinuteRef = useRef();
+  // Input value is what shows on the input as the user types
+  const [hourInputValue, setHourInputValue] = useState(hourValue);
+  const [minuteInputValue, setMinuteInputValue] = useState(minuteValue);
 
   useEffect(() => {
-    setCurrentHour(formatFunction(dateTime, 'hh'));
-    setCurrentMinute(formatFunction(dateTime, 'mm'));
-    setCurrentAmPm(formatFunction(dateTime, 'a'));
-  }, [dateTime]);
+    setHourValue(formatFunction(timestamp, 'h'));
+    setMinuteValue(formatFunction(timestamp, 'mm'));
+    setMeridiemValue(formatFunction(timestamp, 'a'));
+    setHourInputValue(formatFunction(timestamp, 'h'));
+    setMinuteInputValue(formatFunction(timestamp, 'mm'));
+  }, [timestamp]);
 
-  const displayFallback = format.replace(/h/gi, '-').replace(/m/gi, '-').replace(/a/gi, '--');
-
-  const handleChangesDone = () => {
-    onChangeCommitted(
-      currentHour && currentMinute && currentAmPm
-        ? parseSafe(`${currentHour}:${currentMinute} ${currentAmPm}`, 'hh:mm a', null)
-        : null,
+  const handleChange = ({ hour, minute, meridiem }) => {
+    if (hour) {
+      setHourValue(hour);
+    }
+    if (minute) {
+      setMinuteValue(minute);
+    }
+    if (meridiem) {
+      setMeridiemValue(meridiem);
+    }
+    const dateValue = parseSafe(
+      `${hour || hourValue}:${minute || minuteValue} ${meridiem || meridiemValue}`,
+      'hh:mm a',
+      null,
     );
-    setOpen(false);
+    onChangeCommitted(dateValue);
   };
 
-  useEffect(() => {
-    if (!open || !readyForScroll) {
-      return;
-    }
-    if (selectedHourRef && selectedHourRef.current) {
-      selectedHourRef.current.scrollIntoView();
-    }
-    if (selectedMinuteRef && selectedMinuteRef.current) {
-      selectedMinuteRef.current.scrollIntoView();
-    }
-  }, [readyForScroll, open]);
+  // Stop propagation because the @material-ui/pickers Calendar is picking it up
+  const stopPropagation = (event) => {
+    event.stopPropagation();
+  };
 
   return (
-    <>
-      <Button
+    <Box display="flex">
+      <Box mr={1}>
+        <QueryBuilderRoundedIcon />
+      </Box>
+
+      <Autocomplete
+        // common
+        autoComplete
+        disableClearable
+        autoSelect
+        forcePopupIcon={false}
         fullWidth
-        startIcon={<QueryBuilderRoundedIcon />}
-        endIcon={<ArrowForwardIosIcon />}
-        onClick={() => setOpen(true)}
-        ref={anchor}
-        classes={{
-          label: classes.buttonLabel,
+        onKeyDown={stopPropagation}
+        // config
+        options={HOURS}
+        getOptionLabel={(option) => option}
+        renderInput={renderNumberInput}
+        getOptionSelected={getIsHourSelected}
+        // control
+        value={hourValue}
+        onChange={(event, newValue) => handleChange({ hour: newValue })}
+        inputValue={hourInputValue}
+        onInputChange={(event, newInputValue) => setHourInputValue(newInputValue)}
+        onBlur={(event) => {
+          if (hourValue !== hourInputValue) {
+            const value = getApproximateHour(event.target.value);
+            if (value) {
+              handleChange({ hour: value });
+            }
+          }
         }}
-      >
-        <Typography component="p">Time</Typography>
-        <Box className={classes.dateTime}>
-          {dateTime ? formatFunction(dateTime, format) : displayFallback}
-        </Box>
-      </Button>
-      <Popover
-        open={open}
-        onClose={handleChangesDone}
-        anchorEl={anchor.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+        // ui/ux
+        classes={{ input: classes.input, option: classes.option, root: classes.timepickerNumber }}
+      />
+
+      <Autocomplete
+        // common
+        autoComplete
+        disableClearable
+        autoSelect
+        forcePopupIcon={false}
+        fullWidth
+        onKeyDown={stopPropagation}
+        // config
+        options={MINUTES}
+        getOptionLabel={(option) => option}
+        renderInput={renderNumberInput}
+        getOptionSelected={getIsMinuteSelected}
+        filterOptions={filterMinuteOptions}
+        // control
+        value={minuteValue}
+        onChange={(event, newValue) => handleChange({ minute: newValue })}
+        inputValue={minuteInputValue}
+        onInputChange={(event, newInputValue) => setMinuteInputValue(newInputValue)}
+        onBlur={(event) => {
+          if (minuteValue !== minuteInputValue) {
+            const value = getApproximateMinute(event.target.value);
+            if (value) {
+              handleChange({ minute: value });
+            }
+          }
         }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        PaperProps={{ className: classes.popoverPaper }}
-        onEnter={() => setReadyForScroll(false)}
-        onEntering={() => setReadyForScroll(true)}
-      >
-        <Box className={classes.currentValueContainer}>
-          <Typography align="center" component="p" variant="h6">
-            {`${currentHour || '--'}:${currentMinute || '--'} ${currentAmPm || '--'}`}
-          </Typography>
-        </Box>
+        // ui/ux
+        classes={{ input: classes.input, option: classes.option, root: classes.timepickerNumber }}
+      />
 
-        <Box className={classes.menuArea}>
-          <MenuList className={classes.menu}>
-            {hours.map((hour) => (
-              <MenuItem
-                key={hour}
-                selected={hour === currentHour}
-                ref={hour === currentHour ? selectedHourRef : undefined}
-                onClick={() => setCurrentHour(hour)}
-              >
-                {hour}
-              </MenuItem>
-            ))}
-          </MenuList>
-
-          <MenuList className={classes.menu}>
-            {minutes.map((minute) => (
-              <MenuItem
-                key={minute}
-                selected={minute === currentMinute}
-                ref={minute === currentMinute ? selectedMinuteRef : undefined}
-                onClick={() => setCurrentMinute(minute)}
-              >
-                {minute}
-              </MenuItem>
-            ))}
-          </MenuList>
-
-          <MenuList className={classes.menu}>
-            {amPm.map((option) => (
-              <MenuItem
-                key={option}
-                selected={option === currentAmPm}
-                onClick={() => setCurrentAmPm(option)}
-              >
-                {option}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Box>
-
-        <Box className={classes.footer}>
-          <LabeledIconButton
-            color="primary"
-            label="Done"
-            icon={<SendRoundedIcon />}
-            onClick={handleChangesDone}
-          />
-        </Box>
-      </Popover>
-    </>
+      <FormControl className={classes.formControl}>
+        <Select
+          aria-label="Meridiem"
+          native
+          value={meridiemValue}
+          onChange={(event) => handleChange({ meridiem: event.target.value })}
+          inputProps={{ name: 'meridiem' }}
+        >
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </Select>
+      </FormControl>
+    </Box>
   );
 };
 
 TimePicker.propTypes = {
-  dateTime: PropTypes.oneOfType([PropTypes.number, PropTypes.instanceOf(Date)]).isRequired,
+  timestamp: PropTypes.number.isRequired,
   onChangeCommitted: PropTypes.func.isRequired,
-  format: PropTypes.string.isRequired,
 };
 
 export default TimePicker;

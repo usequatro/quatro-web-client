@@ -35,16 +35,20 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
       />
 
       <DialogContent>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Calendar
-            date={currentValue ? new Date(currentValue) : initialDate}
-            onChange={(newDate) => setCurrentValue(newDate.getTime())}
-          />
-        </MuiPickersUtilsProvider>
+        <Box display="flex" justifyContent="center">
+          <Box width="18rem">
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <Calendar
+                date={currentValue ? new Date(currentValue) : initialDate}
+                onChange={(newDate) => setCurrentValue(newDate.getTime())}
+              />
+            </MuiPickersUtilsProvider>
+          </Box>
+        </Box>
 
-        <Box display="flex" justifyContent="stretch" flexDirection="column">
+        <Box display="flex" alignItems="center" flexDirection="column" my={2}>
           <TimePicker
-            dateTime={currentValue}
+            timestamp={currentValue}
             format="h:mm a"
             onChangeCommitted={(newTime) => {
               if (newTime) {
