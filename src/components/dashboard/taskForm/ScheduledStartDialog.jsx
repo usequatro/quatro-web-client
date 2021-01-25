@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import isValid from 'date-fns/isValid';
 import format from 'date-fns/format';
@@ -13,17 +14,20 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Switch from '@material-ui/core/Switch';
 
-import DateFnsUtils from '@date-io/date-fns';
-import { Calendar, MuiPickersUtilsProvider } from '@material-ui/pickers';
-
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
+import DatePicker from '../../ui/DatePicker';
 import TimePicker from '../../ui/TimePicker';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
-import CalendarBlockEditor from './CalendarBlockEditor';
+import { selectCalendarIds } from '../../../modules/calendars';
+import CalendarBlockEditor, {
+  ERROR_BAD_DURATION,
+  ERROR_NO_CALENDAR_ID,
+  ERROR_UNKNOWN_CALENDAR_ID,
+} from './CalendarBlockEditor';
 
 const ScheduledStartDialog = ({
   open,
@@ -44,10 +48,15 @@ const ScheduledStartDialog = ({
   const [duration, setDuration] = useState(calendarBlockDuration || 15);
   const [calendarId, setCalendarId] = useState(null);
 
+  const [errors, setErrors] = useState([]);
+
+  const calendarIds = useSelector(selectCalendarIds);
+
   // Reset state when opening
   const previousOpen = useRef();
   useEffect(() => {
     if (!previousOpen.current && open) {
+      setErrors([]);
       setBlocksCalendar(blocksCalendar);
       setCurrentTimestamp(timestamp || initialDateTimestamp);
       setDuration(calendarBlockDuration || 15);
@@ -74,6 +83,19 @@ const ScheduledStartDialog = ({
   };
 
   const handleDone = () => {
+    // validation
+    if (currentlyBlocksCalendar) {
+      const currentErrors = [
+        !calendarId && ERROR_NO_CALENDAR_ID,
+        !calendarIds.includes(calendarId) && ERROR_UNKNOWN_CALENDAR_ID,
+        (!duration || duration < 0) && ERROR_BAD_DURATION,
+      ].filter(Boolean);
+      setErrors(currentErrors);
+      if (currentErrors.length) {
+        return;
+      }
+    }
+
     onClose();
     onDone({
       timestamp: currentTimestamp,
@@ -106,7 +128,10 @@ const ScheduledStartDialog = ({
               arrow
               title={
                 isValid(currentTimestamp)
-                  ? `This task will appear in your Top 4 on ${format(currentTimestamp, 'PPPP')}`
+                  ? `This task will appear in your Top 4 on ${format(
+                      currentTimestamp,
+                      'PPPP',
+                    )} at ${format(currentTimestamp, 'h:mm a')}`
                   : 'Set the date and time for this task to appear in your Top 4'
               }
             >
@@ -118,20 +143,14 @@ const ScheduledStartDialog = ({
       />
 
       <DialogContent>
-        <Box display="flex" justifyContent="center">
-          <Box width="18rem">
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Calendar
-                date={
-                  currentTimestamp ? new Date(currentTimestamp) : new Date(initialDateTimestamp)
-                }
-                onChange={(newDate) => setCurrentTimestamp(newDate.getTime())}
-              />
-            </MuiPickersUtilsProvider>
-          </Box>
+        <Box display="flex" mb={3}>
+          <DatePicker
+            timestamp={currentTimestamp || initialDateTimestamp}
+            onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
+          />
         </Box>
 
-        <Box display="flex" alignItems="center" flexDirection="column" my={2}>
+        <Box display="flex" flexDirection="column" mt={1} mb={3}>
           <TimePicker
             timestamp={currentTimestamp}
             format="h:mm a"
@@ -150,6 +169,9 @@ const ScheduledStartDialog = ({
             }}
           />
         </Box>
+
+        <Divider />
+        <Box mb={2} />
 
         <FormControlLabel
           disabled={Boolean(blockCalendarDisabledReason)}
@@ -183,11 +205,12 @@ const ScheduledStartDialog = ({
               onDurationChange={(newDuration) => setDuration(newDuration)}
               calendarId={calendarId}
               onCalendarIdChange={(newCalendarId) => setCalendarId(newCalendarId)}
+              errors={errors}
             />
           </Box>
         )}
       </DialogContent>
-      <Divider light />
+
       <DialogActions>
         <Box flexGrow={1}>
           <LabeledIconButton
