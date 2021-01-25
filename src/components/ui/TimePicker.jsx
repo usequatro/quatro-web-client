@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
   timepickerNumber: {
     marginRight: theme.spacing(1),
     textAlign: 'center',
-    width: '2.5rem',
+    width: '3rem',
   },
   input: {
     textAlign: 'center',
@@ -127,7 +127,7 @@ const TimePicker = ({ timestamp, onChangeCommitted }) => {
   };
 
   return (
-    <Box display="flex">
+    <Box display="flex" alignItems="center">
       <Box mr={1}>
         <QueryBuilderRoundedIcon />
       </Box>

@@ -20,7 +20,7 @@ ProviderCalendarId.propTypes = {
   calendarId: PropTypes.string.isRequired,
 };
 
-const ConnectedCalendarSelect = ({ value, onChange }) => {
+const ConnectedCalendarSelect = ({ value, onChange, error }) => {
   const calendarIds = useSelector(selectCalendarIds);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const ConnectedCalendarSelect = ({ value, onChange }) => {
   }, [value, calendarIds, onChange]);
 
   return (
-    <FormControl margin="normal" fullWidth>
+    <FormControl fullWidth error={error}>
       <InputLabel id="connected-calendar-select">Calendar</InputLabel>
       <Select
         labelId="connected-calendar-select"
@@ -51,6 +51,7 @@ const ConnectedCalendarSelect = ({ value, onChange }) => {
 ConnectedCalendarSelect.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
+  error: PropTypes.bool.isRequired,
 };
 
 ConnectedCalendarSelect.defaultProps = {

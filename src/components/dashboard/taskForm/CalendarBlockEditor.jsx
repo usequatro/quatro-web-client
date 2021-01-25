@@ -7,6 +7,10 @@ import CalendarSchedulingThumbnail from './CalendarSchedulingThumbnail';
 import DurationField from './DurationField';
 import ConnectedCalendarSelect from './ConnectedCalendarSelect';
 
+export const ERROR_BAD_DURATION = 'badDuration';
+export const ERROR_NO_CALENDAR_ID = 'noCalendarId';
+export const ERROR_UNKNOWN_CALENDAR_ID = 'unknownCalendarId';
+
 const CalendarBlockEditor = ({
   startDateTimestamp,
   onChangeStartDateTimestamp,
@@ -14,20 +18,33 @@ const CalendarBlockEditor = ({
   onDurationChange,
   calendarId,
   onCalendarIdChange,
+  errors,
 }) => {
   return (
-    <Box display="flex" mb={1}>
+    <Box display="flex" mb={1} flexDirection="column">
+      <Box ml={1} mb={2} display="flex" alignItems="center">
+        <DurationField
+          duration={duration}
+          onChange={onDurationChange}
+          error={errors.includes(ERROR_BAD_DURATION)}
+        />
+
+        <Box ml={2} />
+
+        <ConnectedCalendarSelect
+          value={calendarId}
+          onChange={onCalendarIdChange}
+          error={
+            errors.includes(ERROR_NO_CALENDAR_ID) || errors.includes(ERROR_UNKNOWN_CALENDAR_ID)
+          }
+        />
+      </Box>
+
       <CalendarSchedulingThumbnail
         startDateTimestamp={startDateTimestamp}
         duration={duration}
         onChangeStartDateTimestamp={onChangeStartDateTimestamp}
       />
-
-      <Box ml={1} width="6rem" display="flex" flexDirection="column">
-        <DurationField duration={duration} onChange={onDurationChange} />
-
-        <ConnectedCalendarSelect value={calendarId} onChange={onCalendarIdChange} />
-      </Box>
     </Box>
   );
 };
@@ -39,6 +56,8 @@ CalendarBlockEditor.propTypes = {
   onChangeStartDateTimestamp: PropTypes.func.isRequired,
   onDurationChange: PropTypes.func.isRequired,
   onCalendarIdChange: PropTypes.func.isRequired,
+  errors: PropTypes.oneOf([ERROR_BAD_DURATION, ERROR_NO_CALENDAR_ID, ERROR_UNKNOWN_CALENDAR_ID])
+    .isRequired,
 };
 
 CalendarBlockEditor.defaultProps = {

@@ -18,14 +18,26 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     overflow: 'hidden',
     position: 'relative',
-    maxHeight: theme.spacing(20),
+    maxHeight: theme.spacing(15),
+    [theme.breakpoints.up('sm')]: {
+      maxHeight: theme.spacing(25),
+    },
+    [theme.breakpoints.up('md')]: {
+      maxHeight: theme.spacing(35),
+    },
   },
   scrollContainer: {
     overflow: 'auto',
     display: 'flex',
-    maxHeight: theme.spacing(20),
     flexDirection: 'column',
     transition: theme.transitions.create('opacity'),
+    maxHeight: theme.spacing(15),
+    [theme.breakpoints.up('sm')]: {
+      maxHeight: theme.spacing(25),
+    },
+    [theme.breakpoints.up('md')]: {
+      maxHeight: theme.spacing(35),
+    },
   },
   loader: {
     zIndex: 3,

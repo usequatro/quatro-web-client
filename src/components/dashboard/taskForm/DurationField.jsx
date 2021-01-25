@@ -35,7 +35,7 @@ const DEFAULT = 15;
 const MIN = 5;
 const STEP = 5;
 
-const DurationField = ({ duration: passedDuration, onChange }) => {
+const DurationField = ({ duration: passedDuration, onChange, error }) => {
   const classes = useStyles();
   const [duration, setDuration] = useState(passedDuration);
 
@@ -74,7 +74,7 @@ const DurationField = ({ duration: passedDuration, onChange }) => {
   };
 
   return (
-    <FormControl>
+    <FormControl error={error}>
       <InputLabel shrink htmlFor="duration-input">
         Duration
       </InputLabel>
@@ -109,6 +109,7 @@ const DurationField = ({ duration: passedDuration, onChange }) => {
 DurationField.propTypes = {
   duration: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
+  error: PropTypes.bool.isRequired,
 };
 
 DurationField.defaultProps = {};

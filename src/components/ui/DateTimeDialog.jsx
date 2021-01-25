@@ -7,15 +7,13 @@ import Box from '@material-ui/core/Box';
 import DialogContent from '@material-ui/core/DialogContent';
 import Divider from '@material-ui/core/Divider';
 
-import DateFnsUtils from '@date-io/date-fns';
-import { Calendar, MuiPickersUtilsProvider } from '@material-ui/pickers';
-
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
 import TimePicker from './TimePicker';
 import LabeledIconButton from './LabeledIconButton';
 import DialogTitleWithClose from './DialogTitleWithClose';
+import DatePicker from './DatePicker';
 
 const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, initialDate }) => {
   const [currentValue, setCurrentValue] = useState(value || initialDate);
@@ -35,18 +33,14 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
       />
 
       <DialogContent>
-        <Box display="flex" justifyContent="center">
-          <Box width="18rem">
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Calendar
-                date={currentValue ? new Date(currentValue) : initialDate}
-                onChange={(newDate) => setCurrentValue(newDate.getTime())}
-              />
-            </MuiPickersUtilsProvider>
-          </Box>
+        <Box display="flex" justifyContent="center" mb={3}>
+          <DatePicker
+            timestamp={currentValue}
+            onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
+          />
         </Box>
 
-        <Box display="flex" alignItems="center" flexDirection="column" my={2}>
+        <Box display="flex" alignItems="center" mb={3}>
           <TimePicker
             timestamp={currentValue}
             format="h:mm a"
