@@ -29,6 +29,7 @@ import formatDateTime from '../../../utils/formatDateTime';
 const useStyles = makeStyles((theme) => ({
   outerContainer: {
     display: 'flex',
+    flexShrink: 0,
     alignItems: 'center',
     padding: `${theme.spacing(2)}px ${theme.spacing(1)}px`,
     borderBottom: `solid 1px ${theme.palette.divider}`,
