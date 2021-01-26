@@ -30,8 +30,12 @@ import Task from './Task';
 import Sortable from './Sortable';
 import TaskSiblingListDropArea, { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
 import LoaderScreen from '../../ui/LoaderScreen';
-import EmptyState, { IMAGE_SCHEDULED, IMAGE_NOW, IMAGE_BLOCKED, IMAGE_BACKLOG } from './EmptyState';
+import EmptyState from './EmptyState';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
+import BalanceIcon from '../../icons/BalanceIcon';
+import BreakfastIcon from '../../icons/BreakfastIcon';
+import BeachIcon from '../../icons/BeachIcon';
+import RunawayIcon from '../../icons/RunawayIcon';
 
 const emptyArray = [];
 
@@ -49,11 +53,11 @@ const shouldShowPosition = memoize((tab) =>
 
 const mapIds = memoize((tasks) => tasks.map(([id]) => id));
 
-const emptyStateImages = {
-  [dashboardTabs.SCHEDULED]: IMAGE_SCHEDULED,
-  [dashboardTabs.NOW]: IMAGE_NOW,
-  [dashboardTabs.BLOCKED]: IMAGE_BLOCKED,
-  [dashboardTabs.BACKLOG]: IMAGE_BACKLOG,
+const emptyStateElementTypes = {
+  [dashboardTabs.NOW]: BalanceIcon,
+  [dashboardTabs.BACKLOG]: BreakfastIcon,
+  [dashboardTabs.SCHEDULED]: BeachIcon,
+  [dashboardTabs.BLOCKED]: RunawayIcon,
 };
 const emptyStateTexts = {
   [dashboardTabs.SCHEDULED]: [
@@ -112,7 +116,7 @@ const TaskList = forwardRef((_, ref) => {
         [() => loading, () => <LoaderScreen />],
         [
           () => taskIds.length === 0,
-          () => <EmptyState image={emptyStateImages[tab]} text={emptyStateTexts[tab]} />,
+          () => <EmptyState Image={emptyStateElementTypes[tab]} text={emptyStateTexts[tab]} />,
         ],
         [
           () => true,
