@@ -13,6 +13,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import SvgIcon from '@material-ui/core/SvgIcon';
 import MuiLink from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -34,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appBarLogo: {
     height: theme.spacing(3),
+    color: theme.palette.common.white,
   },
   appBarToolbar: {
     display: 'flex',
@@ -118,7 +120,12 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
         </Hidden>
 
         <div className={classes.appBarCenter}>
-          <Logo className={classes.appBarLogo} title="Quatro logo" />
+          <SvgIcon
+            viewBox="0 0 76.87 68.04"
+            component={Logo}
+            className={classes.appBarLogo}
+            title="Quatro logo"
+          />
         </div>
 
         <Box className={classes.appBarEdge} justifyContent="flex-end">
