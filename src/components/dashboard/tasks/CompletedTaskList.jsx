@@ -15,7 +15,8 @@ import { useNotification } from '../../Notification';
 import { selectUserId } from '../../../modules/session';
 import { undoCompleteTask } from '../../../modules/tasks';
 import TaskView from './TaskView';
-import EmptyState, { IMAGE_COMPLETED } from './EmptyState';
+import EmptyState from './EmptyState';
+import TimerIcon from '../../icons/TimerIcon';
 import LoaderScreen from '../../ui/LoaderScreen';
 import useCreateTaskShortcut from './useCreateTaskShortcut';
 import { useStyles as useTaskListStyles } from './TaskList';
@@ -165,7 +166,7 @@ const CompletedTaskList = () => {
       {cond([
         [() => status === ERROR, () => null],
         [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
-        [() => completedTasks.length === 0, () => <EmptyState image={IMAGE_COMPLETED} text="" />],
+        [() => completedTasks.length === 0, () => <EmptyState Image={TimerIcon} text="" />],
         [
           () => true,
           () => (

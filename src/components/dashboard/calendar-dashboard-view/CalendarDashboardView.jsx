@@ -15,7 +15,8 @@ import {
 } from '../../../modules/session';
 import CalendarView from '../calendar-view/CalendarView';
 import * as paths from '../../../constants/paths';
-import EmptyState, { IMAGE_CALENDAR } from '../tasks/EmptyState';
+import EmptyState from '../tasks/EmptyState';
+import ScheduledIcon from '../../icons/ScheduledIcon';
 import LoaderScreen from '../../ui/LoaderScreen';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
 
@@ -51,7 +52,7 @@ const CalendarDashboardView = () => {
             const hasConnectedAccount = googleFirebaseAuthProvider && !gapiUserSignedIn;
             return (
               <EmptyState
-                image={IMAGE_CALENDAR}
+                Image={ScheduledIcon}
                 text={
                   hasConnectedAccount
                     ? `Sign in with Google again to ${googleFirebaseAuthProvider.email} to view your calendars`
