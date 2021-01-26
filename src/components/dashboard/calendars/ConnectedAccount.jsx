@@ -76,6 +76,36 @@ PermissionInfoDialog.propTypes = {
   children: PropTypes.func.isRequired,
 };
 
+const GoogleOAuthBetaMessage = () => (
+  /* eslint-disable react/jsx-curly-brace-presence */
+  <>
+    <Typography variant="body2" color="textSecondary" paragraph>
+      {`Heads up! Quatro is still in beta mode and we haven't finished the `}
+      <MuiLink href="https://support.google.com/cloud/answer/7454865" target="_blank">
+        Google OAuth API verification
+      </MuiLink>
+      {` process.`}
+    </Typography>
+
+    <Typography variant="body2" color="textSecondary" paragraph>
+      {`When granting access to your calendar, you'll see a security warning from Google. Click "Advanced" to reveal the option "Go to Quatro".`}
+    </Typography>
+
+    <Typography variant="body2" color="textSecondary" paragraph>
+      {`For more information, check out our `}
+      <MuiLink href="https://usequatro.com/faq" target="_blank">
+        FAQs
+      </MuiLink>
+      {` and review our `}
+      <MuiLink href="https://usequatro.com/privacy-policy" target="_blank">
+        Privacy Policy
+      </MuiLink>
+      {`.`}
+    </Typography>
+  </>
+  /* eslint-enable react/jsx-curly-brace-presence */
+);
+
 const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const { notifyError } = useNotification();
   const dispatch = useDispatch();
@@ -348,16 +378,20 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
             () => !gapiHasAllCalendarScopes || !userHasGrantedGoogleCalendarOfflineAccess,
             () => (
               <>
-                <Box mt={2} display="flex" justifyContent="center">
-                  <GoogleButton
-                    onClick={handleGrantAccessToCalendar}
-                    data-qa="connect-google-button"
-                    endIcon={
-                      signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
-                    }
-                  >
-                    Grant access with Google
-                  </GoogleButton>
+                <Box mt={2} display="flex" flexDirection="column">
+                  <GoogleOAuthBetaMessage />
+
+                  <Box display="flex" justifyContent="center">
+                    <GoogleButton
+                      onClick={handleGrantAccessToCalendar}
+                      data-qa="connect-google-button"
+                      endIcon={
+                        signingIn && <CircularProgress color="inherit" thickness={6} size="1rem" />
+                      }
+                    >
+                      Grant access with Google
+                    </GoogleButton>
+                  </Box>
                 </Box>
               </>
             ),
