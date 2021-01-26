@@ -24,7 +24,7 @@ import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import useDebouncedState from '../../hooks/useDebouncedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
-import { ReactComponent as Logo } from './logo-white.svg';
+import { ReactComponent as Logo } from './logo-plain.svg';
 import UserIcon from '../../icons/UserIcon';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
