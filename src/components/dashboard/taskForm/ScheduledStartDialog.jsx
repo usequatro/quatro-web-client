@@ -154,19 +154,7 @@ const ScheduledStartDialog = ({
           <TimePicker
             timestamp={currentTimestamp}
             format="h:mm a"
-            onChangeCommitted={(newTime) => {
-              if (newTime) {
-                const updatedDate = new Date(currentTimestamp || initialDateTimestamp);
-                updatedDate.setHours(newTime.getHours());
-                updatedDate.setMinutes(newTime.getMinutes());
-                setCurrentTimestamp(updatedDate.getTime());
-              } else {
-                const updatedDate = new Date(currentTimestamp);
-                updatedDate.setHours(new Date(initialDateTimestamp).getHours());
-                updatedDate.setMinutes(new Date(initialDateTimestamp).getMinutes());
-                setCurrentTimestamp(updatedDate.getTime());
-              }
-            }}
+            onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
           />
         </Box>
 
