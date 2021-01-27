@@ -1,6 +1,6 @@
 import React, { useState, useRef, memo } from 'react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import cond from 'lodash/cond';
 
@@ -35,12 +35,15 @@ import {
   selectCalendarEventCollisionCount,
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
+  selectCalendarEventTaskId,
+  selectCalendarEventTaskCompleted,
   selectCalendarEventProviderCalendarId,
 } from '../../../modules/calendarEvents';
+import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
 import TextWithLinks from '../../ui/TextWithLinks';
-import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
+import CompleteButton from '../tasks/CompleteButton';
 
 const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, declined }) => ({
@@ -53,6 +56,9 @@ const useStyles = makeStyles((theme) => ({
     outline: 'none',
     textDecoration: declined ? 'line-through' : 'initial',
     clipPath: 'border-box', // needed by iOS Safari, otherwise it shows overflowing text (ignores overflow hidden)
+    display: 'flex',
+    flexShrink: 0,
+    alignItems: 'flex-start',
   }),
   scrollAnchor: {
     width: 0,
@@ -63,6 +69,7 @@ const useStyles = makeStyles((theme) => ({
   eventName: {
     fontSize: theme.typography.body2.fontSize,
     lineHeight: 'inherit',
+    flexGrow: 1,
   },
   eventDate: {
     fontSize: `${parseFloat(theme.typography.body2.fontSize) * 0.8}rem`,
@@ -73,12 +80,23 @@ const useStyles = makeStyles((theme) => ({
       maxWidth: '60vw !important',
     },
   },
+  eventPopoverName: {
+    flexGrow: 1,
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
+  },
   eventPopoverDescription: {
     whiteSpace: 'pre-wrap',
+  },
+  completeButtonIddle: {},
+  completeButtonSuccess: {
+    color: theme.palette.success.main,
   },
 }));
 
 const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }) => {
+  const dispatch = useDispatch();
+
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
@@ -95,6 +113,8 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
   const collisionCount = useSelector((state) => selectCalendarEventCollisionCount(state, id));
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
+  const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
+  const taskCompleted = useSelector((state) => selectCalendarEventTaskCompleted(state, id));
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
   const classes = useStyles({ color, declined });
@@ -130,7 +150,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
             tickHeight * (startTimeInMinutes / minutesForOneTick),
           )}px)`,
           opacity: cond([
-            [() => !allDay && isPast(endTimestamp), () => 0.7],
+            [() => !allDay && isPast(endTimestamp) && !(taskId && !taskCompleted), () => 0.7],
             [() => declined, () => 0.7],
             [() => true, () => 1],
           ])(),
@@ -185,6 +205,17 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
             </span>
           )}
         </Typography>
+
+        {taskId && (
+          <CompleteButton
+            taskId={taskId}
+            completed={taskCompleted}
+            onCompleteTask={() => dispatch(completeTask(taskId))}
+            onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
+            fontSize="default"
+            size="small"
+          />
+        )}
       </Card>
 
       {selectable && (
@@ -195,28 +226,29 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
           classes={{ paper: classes.eventPopoverPaper }}
           anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
           transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+          aria-labelledby={`event-popover-title-${id}`}
         >
-          <DialogTitleWithClose
-            onClose={() => setCalendarDetailsOpen(false)}
-            title={summary || '(No title)'}
-            TypographyProps={{ variant: 'h5', component: 'h2' }}
-            extraButtons={
-              <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
-                <IconButton
-                  edge="end"
-                  color="inherit"
-                  href={htmlLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="open in calendar app"
-                >
-                  <LaunchRoundedIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            }
-          />
+          <Box px={3} pt={1} pb={3}>
+            <Box display="flex" alignItems="flex-start">
+              <Typography
+                className={classes.eventPopoverName}
+                variant="h5"
+                component="h2"
+                id={`event-popover-title-${id}`}
+              >
+                {summary || '(No title)'}
+              </Typography>
 
-          <Box px={3} pb={3}>
+              {taskId && (
+                <CompleteButton
+                  taskId={taskId}
+                  completed={taskCompleted}
+                  onCompleteTask={() => dispatch(completeTask(taskId))}
+                  onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
+                  fontSize="default"
+                />
+              )}
+            </Box>
             <Typography variant="body2" gutterBottom>
               {allDay
                 ? 'All Day'
@@ -245,7 +277,23 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
           )}
 
           <Box px={3} pb={3}>
-            <Typography variant="body2">{`Calendar: ${providerCalendarId}`}</Typography>
+            <Typography variant="body2">
+              {`Calendar: ${providerCalendarId} `}
+
+              <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
+                <IconButton
+                  edge="end"
+                  size="small"
+                  color="inherit"
+                  href={htmlLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="open in calendar app"
+                >
+                  <LaunchRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
           </Box>
         </Popover>
       )}

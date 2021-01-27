@@ -44,7 +44,7 @@ export const taskSchema = Joi.object({
   calendarBlockEnd: Joi.number().allow(null),
   calendarBlockCalendarId: Joi.string().allow(null),
 
-  // these two below are managed by the backend of Firebase Functions
+  // these below are managed by the backend of Firebase Functions
   calendarBlockProviderEventId: Joi.string().allow(null),
 });
 

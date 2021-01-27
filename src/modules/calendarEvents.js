@@ -65,6 +65,9 @@ export const selectCalendarEventCollisionOrder = (state, id) =>
 export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId[id], 'calendarId');
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
+export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
+export const selectCalendarEventTaskCompleted = (state, id) =>
+  get(state[name].byId[id], 'taskCompleted');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -253,10 +256,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
 
   const promises = providerCalendarIds.map(([calendarId, providerCalendarId]) =>
     gapiListCalendarEvents(providerCalendarId, startOfDayDate, endOfDayDate)
-      .then((response) => {
-        // console.log(response.result.items);
-        return response.result.items;
-      })
+      .then((response) => response.result.items)
       // Add IDs to returned items here so we can keep track of them
       .then((items) => items.map((item) => ({ ...item, calendarId, providerCalendarId }))),
   );
@@ -275,6 +275,11 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     const successResults = results.filter(({ status }) => status === 'fulfilled');
     const allItems = successResults.reduce((memo, { value }) => [...memo, ...value], []);
     const itemsWithTimestamps = addTimestamps(allItems);
+
+    const getCompleted = (item) => {
+      const completed = get(item, 'extendedProperties.private.taskCompleted', null);
+      return completed ? parseInt(completed, 10) : completed; // extendedProperties are strings
+    };
 
     const events = itemsWithTimestamps.map((item) => ({
       id: item.id,
@@ -297,6 +302,8 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       },
       allDay: isEventAllDay(item.start.timestamp, item.end.timestamp, startOfDayDate, endOfDayDate),
       declined: isItemDeclined(item),
+      taskId: get(item, 'extendedProperties.private.taskId', null),
+      taskCompleted: getCompleted(item),
     }));
 
     dispatch(slice.actions.setDayEvents({ events, dateKey }));

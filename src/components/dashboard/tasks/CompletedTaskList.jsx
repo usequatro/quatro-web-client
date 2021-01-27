@@ -13,7 +13,7 @@ import TaskListHeader from './TaskListHeader';
 import { fetchListCompletedTasks, COMPLETED_TASKS_PAGE_SIZE } from '../../../utils/apiClient';
 import { useNotification } from '../../Notification';
 import { selectUserId } from '../../../modules/session';
-import { undoCompleteTask } from '../../../modules/tasks';
+import { markTaskIncomplete } from '../../../modules/tasks';
 import TaskView from './TaskView';
 import EmptyState from './EmptyState';
 import TimerIcon from '../../icons/TimerIcon';
@@ -119,28 +119,14 @@ const CompletedTaskList = () => {
     };
   }, [completedTasks, status, endReached, notifyError, userId]);
 
-  const handleUncompleteTask = (id) => {
-    // @TODO: handle clicking fast on a task uncompleted, should undo the uncompletion
-
-    const completedTaskPair = completedTasks.find(([ctid]) => ctid === id);
-    if (!completedTaskPair) {
-      notifyError('Error updating task: not found');
-      return;
-    }
-
-    // add the task, and dispatch the update that will be tracked
-    dispatch(undoCompleteTask(id));
-
-    // Mark as not completed so UI updates
-    setCompletedTasks(
-      completedTasks.map(([ctid, ctask]) =>
-        ctid === id ? [ctid, { ...ctask, overrideCompletedCheckbox: true }] : [ctid, ctask],
-      ),
-    );
-    // Remove task.
-    setTimeout(() => {
+  const handleMarkIncompleteTask = (id) => {
+    const timeout = setTimeout(() => {
+      // add the task, and dispatch the update that will be tracked
+      dispatch(markTaskIncomplete(id));
+      // Remove task from list
       setCompletedTasks(completedTasks.filter(([ctid]) => ctid !== id));
     }, 750);
+    return () => clearTimeout(timeout);
   };
 
   useCreateTaskShortcut();
@@ -157,7 +143,10 @@ const CompletedTaskList = () => {
       showBlockers={false}
       hasRecurringConfig={false}
       completed={task.overrideCompletedCheckbox ? undefined : task.completed}
-      onComplete={handleUncompleteTask}
+      onCompleteTask={() => {
+        console.warn('Unexpected onCompleteTask'); /* eslint-disable-line no-console */
+      }}
+      onMarkTaskIncomplete={() => handleMarkIncompleteTask(id)}
     />
   );
 

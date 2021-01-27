@@ -360,7 +360,7 @@ export const completeTask = (id) => (dispatch, getState, { mixpanel }) => {
   };
 };
 
-export const undoCompleteTask = (id) => (dispatch, _, { mixpanel }) => {
+export const markTaskIncomplete = (id) => (dispatch, _, { mixpanel }) => {
   fetchUpdateTask(id, { completed: null });
   mixpanel.track(TASK_UNDO_COMPLETE);
 };

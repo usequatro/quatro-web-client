@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import TaskView from './TaskView';
@@ -13,14 +13,13 @@ import {
   selectTaskDue,
   selectTaskPrioritizedAheadOf,
   completeTask,
-  undoCompleteTask,
+  markTaskIncomplete,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
-import { useNotification } from '../../Notification';
 
 const Task = ({ id, position, component, highlighted, showBlockers, editable }) => {
-  const { notifyInfo } = useNotification();
+  const dispatch = useDispatch();
 
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
@@ -36,42 +35,9 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
 
   const [, openEditTaskDialog] = useEditTaskDialogRouterControl();
 
-  const dispatch = useDispatch();
   const handleClick = useCallback(() => {
     openEditTaskDialog(id);
   }, [openEditTaskDialog, id]);
-
-  const [visualCompleted, setVisualCompleted] = useState(completed);
-  const cancelCompletion = useRef();
-  const closeNotificationRef = useRef();
-  const handleComplete = useCallback(
-    (tid) => {
-      if (!visualCompleted) {
-        setVisualCompleted(Date.now());
-        closeNotificationRef.current = notifyInfo({
-          icon: '🎉',
-          message: 'Task Completed!',
-          buttons: [
-            {
-              children: 'Undo',
-              onClick: () => {
-                dispatch(undoCompleteTask(tid));
-              },
-            },
-          ],
-        });
-
-        cancelCompletion.current = dispatch(completeTask(tid));
-      } else if (cancelCompletion.current) {
-        if (closeNotificationRef.current) {
-          closeNotificationRef.current();
-        }
-        cancelCompletion.current();
-        setVisualCompleted(null);
-      }
-    },
-    [visualCompleted, dispatch, notifyInfo],
-  );
 
   return (
     <TaskView
@@ -83,15 +49,16 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
       title={title}
       description={description}
       score={score}
-      completed={visualCompleted}
+      completed={completed}
       scheduledStart={scheduledStart}
       calendarBlockDuration={calendarBlockDuration}
       due={due}
       prioritizedAheadOf={prioritizedAheadOf}
       hasRecurringConfig={hasRecurringConfig}
       showBlockers={showBlockers}
-      onComplete={handleComplete}
       onClick={editable ? handleClick : undefined}
+      onCompleteTask={() => dispatch(completeTask(id))}
+      onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(id))}
     />
   );
 };
