@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import isToday from 'date-fns/isToday';
 import enUsLocale from 'date-fns/locale/en-US';
 
 import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 import DateFnsUtils from '@date-io/date-fns';
 import { DatePicker as MuiDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -51,6 +53,12 @@ const DatePicker = ({ timestamp, onChange }) => {
           TextFieldComponent={DatePickerTextFieldComponent}
         />
       </MuiPickersUtilsProvider>
+
+      <Box ml={1}>
+        <Button variant="text" disabled={isToday(timestamp)} onClick={() => onChange(Date.now())}>
+          Today
+        </Button>
+      </Box>
     </Box>
   );
 };

@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
+import set from 'date-fns/set';
+import getMonth from 'date-fns/getMonth';
+import getYear from 'date-fns/getYear';
+import getDate from 'date-fns/getDate';
+import getHours from 'date-fns/getHours';
+import getMinutes from 'date-fns/getMinutes';
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
@@ -44,7 +51,14 @@ const DateTimeDialog = ({
         <Box display="flex" justifyContent="center" mb={3}>
           <DatePicker
             timestamp={currentValue}
-            onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
+            onChange={(newTimestamp) => {
+              const updatedDate = set(currentValue, {
+                year: getYear(newTimestamp),
+                month: getMonth(newTimestamp),
+                date: getDate(newTimestamp),
+              });
+              setCurrentValue(updatedDate.getTime());
+            }}
           />
         </Box>
 
@@ -52,19 +66,13 @@ const DateTimeDialog = ({
           <TimePicker
             timestamp={currentValue}
             format="h:mm a"
-            onChangeCommitted={(newTime) => {
-              if (newTime) {
-                const updatedDate = new Date(currentValue || initialTimestamp);
-                updatedDate.setHours(newTime.getHours());
-                updatedDate.setMinutes(newTime.getMinutes());
-                setCurrentValue(updatedDate.getTime());
-              } else {
-                const updatedDate = new Date(currentValue);
-                const initialDate = new Date(initialTimestamp);
-                updatedDate.setHours(initialDate.getHours());
-                updatedDate.setMinutes(initialDate.getMinutes());
-                setCurrentValue(updatedDate.getTime());
-              }
+            onChangeCommitted={(newTimestamp) => {
+              const updatedDate = set(currentValue, {
+                hours: getHours(newTimestamp),
+                minutes: getMinutes(newTimestamp),
+                seconds: 0,
+              });
+              setCurrentValue(updatedDate.getTime());
             }}
           />
         </Box>
