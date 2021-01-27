@@ -142,7 +142,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
-const initialDueDate = addHours(addWeeks(startOfWeek(new Date()), 1), 9);
+const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
 
 const getBlockerTitle = cond([
   [
@@ -643,9 +643,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         id="due-dialog"
         open={showDueDialog}
         onClose={() => setShowDueDialog(false)}
-        value={dueTimestamp}
         onChangeCommitted={(value) => dispatch(setDue(value))}
-        initialDate={initialDueDate}
+        timestamp={dueTimestamp}
+        initialTimestamp={initialDueDateTimestamp}
       />
 
       <BlockerSelectionDialog
