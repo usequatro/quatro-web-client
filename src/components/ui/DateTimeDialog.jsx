@@ -15,14 +15,22 @@ import LabeledIconButton from './LabeledIconButton';
 import DialogTitleWithClose from './DialogTitleWithClose';
 import DatePicker from './DatePicker';
 
-const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, initialDate }) => {
-  const [currentValue, setCurrentValue] = useState(value || initialDate);
+const DateTimeDialog = ({
+  id,
+  label,
+  open,
+  onClose,
+  timestamp,
+  onChangeCommitted,
+  initialTimestamp,
+}) => {
+  const [currentValue, setCurrentValue] = useState(timestamp || initialTimestamp);
 
   useEffect(() => {
-    if (value !== currentValue && value !== null) {
-      setCurrentValue(value);
+    if (timestamp !== currentValue && timestamp !== null) {
+      setCurrentValue(timestamp);
     }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timestamp]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby={id} fullWidth maxWidth="xs">
@@ -46,12 +54,13 @@ const DateTimeDialog = ({ id, label, open, onClose, value, onChangeCommitted, in
             format="h:mm a"
             onChangeCommitted={(newTime) => {
               if (newTime) {
-                const updatedDate = new Date(currentValue || initialDate);
+                const updatedDate = new Date(currentValue || initialTimestamp);
                 updatedDate.setHours(newTime.getHours());
                 updatedDate.setMinutes(newTime.getMinutes());
                 setCurrentValue(updatedDate.getTime());
               } else {
                 const updatedDate = new Date(currentValue);
+                const initialDate = new Date(initialTimestamp);
                 updatedDate.setHours(initialDate.getHours());
                 updatedDate.setMinutes(initialDate.getMinutes());
                 setCurrentValue(updatedDate.getTime());
@@ -93,13 +102,13 @@ DateTimeDialog.propTypes = {
   label: PropTypes.string.isRequired,
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  value: PropTypes.number,
+  timestamp: PropTypes.number,
   onChangeCommitted: PropTypes.func.isRequired,
-  initialDate: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  initialTimestamp: PropTypes.number.isRequired,
 };
 
 DateTimeDialog.defaultProps = {
-  value: null,
+  timestamp: null,
 };
 
 export default DateTimeDialog;
