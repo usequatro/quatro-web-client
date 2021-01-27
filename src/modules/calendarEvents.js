@@ -66,8 +66,6 @@ export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
-export const selectCalendarEventTaskCompleted = (state, id) =>
-  get(state[name].byId[id], 'taskCompleted');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -276,11 +274,6 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
     const allItems = successResults.reduce((memo, { value }) => [...memo, ...value], []);
     const itemsWithTimestamps = addTimestamps(allItems);
 
-    const getCompleted = (item) => {
-      const completed = get(item, 'extendedProperties.private.taskCompleted', null);
-      return completed ? parseInt(completed, 10) : completed; // extendedProperties are strings
-    };
-
     const events = itemsWithTimestamps.map((item) => ({
       id: item.id,
       calendarId: item.calendarId,
@@ -303,7 +296,6 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       allDay: isEventAllDay(item.start.timestamp, item.end.timestamp, startOfDayDate, endOfDayDate),
       declined: isItemDeclined(item),
       taskId: get(item, 'extendedProperties.private.taskId', null),
-      taskCompleted: getCompleted(item),
     }));
 
     dispatch(slice.actions.setDayEvents({ events, dateKey }));

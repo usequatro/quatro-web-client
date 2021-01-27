@@ -36,7 +36,6 @@ import {
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
   selectCalendarEventTaskId,
-  selectCalendarEventTaskCompleted,
   selectCalendarEventProviderCalendarId,
 } from '../../../modules/calendarEvents';
 import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
@@ -114,7 +113,6 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
-  const taskCompleted = useSelector((state) => selectCalendarEventTaskCompleted(state, id));
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
   const classes = useStyles({ color, declined });
@@ -150,7 +148,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
             tickHeight * (startTimeInMinutes / minutesForOneTick),
           )}px)`,
           opacity: cond([
-            [() => !allDay && isPast(endTimestamp) && !(taskId && !taskCompleted), () => 0.7],
+            [() => !allDay && isPast(endTimestamp), () => 0.7],
             [() => declined, () => 0.7],
             [() => true, () => 1],
           ])(),
@@ -209,7 +207,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
         {taskId && (
           <CompleteButton
             taskId={taskId}
-            completed={taskCompleted}
+            completed={false}
             onCompleteTask={() => dispatch(completeTask(taskId))}
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
             fontSize="default"
@@ -242,7 +240,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
               {taskId && (
                 <CompleteButton
                   taskId={taskId}
-                  completed={taskCompleted}
+                  completed={false}
                   onCompleteTask={() => dispatch(completeTask(taskId))}
                   onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
                   fontSize="default"
