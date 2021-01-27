@@ -56,8 +56,9 @@ CalendarBlockEditor.propTypes = {
   onChangeStartDateTimestamp: PropTypes.func.isRequired,
   onDurationChange: PropTypes.func.isRequired,
   onCalendarIdChange: PropTypes.func.isRequired,
-  errors: PropTypes.oneOf([ERROR_BAD_DURATION, ERROR_NO_CALENDAR_ID, ERROR_UNKNOWN_CALENDAR_ID])
-    .isRequired,
+  errors: PropTypes.arrayOf(
+    PropTypes.oneOf([ERROR_BAD_DURATION, ERROR_NO_CALENDAR_ID, ERROR_UNKNOWN_CALENDAR_ID]),
+  ).isRequired,
 };
 
 CalendarBlockEditor.defaultProps = {
