@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import isToday from 'date-fns/isToday';
+import set from 'date-fns/set';
+import getYear from 'date-fns/getYear';
+import getMonth from 'date-fns/getMonth';
+import getDate from 'date-fns/getDate';
 import enUsLocale from 'date-fns/locale/en-US';
 
 import Box from '@material-ui/core/Box';
@@ -33,6 +37,15 @@ const enUsLocaleCustomized = {
 };
 
 const DatePicker = ({ timestamp, onChange }) => {
+  const handleSetToday = () => {
+    const today = set(timestamp, {
+      year: getYear(Date.now()),
+      month: getMonth(Date.now()),
+      date: getDate(Date.now()),
+    });
+    onChange(today.getTime());
+  };
+
   return (
     <Box display="flex" width="100%" alignItems="center">
       <Box mr={1}>
@@ -55,7 +68,7 @@ const DatePicker = ({ timestamp, onChange }) => {
       </MuiPickersUtilsProvider>
 
       <Box ml={1}>
-        <Button variant="text" disabled={isToday(timestamp)} onClick={() => onChange(Date.now())}>
+        <Button variant="text" disabled={isToday(timestamp)} onClick={handleSetToday}>
           Today
         </Button>
       </Box>

@@ -39,12 +39,12 @@ const MINUTES = Array(60)
   .map((e, i) => `${i < 10 ? '0' : ''}${i}`);
 const MERIDIEMS = ['AM', 'PM'];
 
-const parseSafe = (value, format, fallback) => {
+const parseSafe = (value, format, referenceTimestamp, fallback = null) => {
   if (!value) {
     return fallback;
   }
   try {
-    return parse(value, format, new Date());
+    return parse(value, format, referenceTimestamp).getTime();
   } catch (error) {
     return fallback;
   }
@@ -113,12 +113,12 @@ const TimePicker = ({ timestamp, onChangeCommitted }) => {
     if (meridiem) {
       setMeridiemValue(meridiem);
     }
-    const dateValue = parseSafe(
+    const newTimestamp = parseSafe(
       `${hour || hourValue}:${minute || minuteValue} ${meridiem || meridiemValue}`,
       'hh:mm a',
-      null,
+      timestamp,
     );
-    onChangeCommitted(dateValue);
+    onChangeCommitted(newTimestamp);
   };
 
   // Stop propagation because the @material-ui/pickers Calendar is picking it up
