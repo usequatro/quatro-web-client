@@ -181,7 +181,7 @@ const Dashboard = () => {
             [
               (tab) => tab === dashboardTabs.NOW && mdUp,
               () => (
-                <Box display="flex" justifyContent="stretch" flexGrow={1} height="100vh">
+                <Box display="flex" justifyContent="stretch" flexGrow={1} height="100%">
                   <Box
                     width="50%"
                     display="flex"
@@ -208,7 +208,7 @@ const Dashboard = () => {
                   justifyContent="stretch"
                   alignItems="stretch"
                   flexGrow={1}
-                  height="100vh"
+                  height="100%"
                 >
                   <Toolbar className={classes.placeholderToolbar} />
                   <Tabs
