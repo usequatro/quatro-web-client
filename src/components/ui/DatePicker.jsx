@@ -68,7 +68,7 @@ const DatePicker = ({ timestamp, onChange }) => {
       </MuiPickersUtilsProvider>
 
       <Box ml={1}>
-        <Button variant="text" disabled={isToday(timestamp)} onClick={handleSetToday}>
+        <Button variant="outlined" disabled={isToday(timestamp)} onClick={handleSetToday}>
           Today
         </Button>
       </Box>
