@@ -15,6 +15,26 @@ const useStyles = makeStyles((theme) => ({
   completeButtonSuccess: {
     color: theme.palette.success.main,
   },
+
+  // CSS hack to show white background inside the complete icon with the same proportions
+  label: {
+    position: 'relative',
+  },
+  background: {
+    width: 'calc(100% - 0.5rem)',
+    height: 'calc(100% - 0.5rem)',
+    top: '0.25rem',
+    left: '0.25rem',
+    backgroundColor: theme.palette.common.white,
+    position: 'absolute',
+    borderRadius: '100%',
+  },
+  icon: {
+    zIndex: 1,
+  },
+  placeholderIcon: {
+    visibility: 'hidden',
+  },
 }));
 
 const CompleteButton = ({
@@ -83,12 +103,20 @@ const CompleteButton = ({
         aria-label={completed ? 'Mark incomplete' : 'Complete'}
         size={size}
         onClick={completed ? handleMarkIncomplete : handleComplete}
-        className={visuallyCompleted ? classes.completeButtonSuccess : classes.completeButtonIddle}
+        classes={{
+          root: visuallyCompleted ? classes.completeButtonSuccess : classes.completeButtonIddle,
+          label: classes.label,
+        }}
       >
+        {/* CSS hack to show white background inside the complete icon with the same proportions */}
+        <span className={classes.background} aria-hidden>
+          <CheckCircleOutlineRoundedIcon fontSize={fontSize} className={classes.placeholderIcon} />
+        </span>
+
         {visuallyCompleted ? (
-          <CheckCircleOutlineRoundedIcon fontSize={fontSize} />
+          <CheckCircleOutlineRoundedIcon className={classes.icon} fontSize={fontSize} />
         ) : (
-          <RadioButtonUncheckedRoundedIcon fontSize={fontSize} />
+          <RadioButtonUncheckedRoundedIcon className={classes.icon} fontSize={fontSize} />
         )}
       </IconButton>
     </Tooltip>
