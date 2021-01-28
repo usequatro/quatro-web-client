@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react';
+import React, { memo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
@@ -6,14 +6,10 @@ import isPast from 'date-fns/isPast';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import Tooltip from '@material-ui/core/Tooltip';
 import ListItem from '@material-ui/core/ListItem';
-import IconButton from '@material-ui/core/IconButton';
 
 import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
-import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
-import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 import CalendarViewDayRoundedIcon from '@material-ui/icons/CalendarViewDayRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
@@ -25,13 +21,16 @@ import TaskViewBlockersList from './TaskViewBlockersList';
 import TextWithLinks from '../../ui/TextWithLinks';
 import { clearRelativePrioritization } from '../../../modules/tasks';
 import formatDateTime from '../../../utils/formatDateTime';
+import CompleteButton from './CompleteButton';
 
 const useStyles = makeStyles((theme) => ({
   outerContainer: {
     display: 'flex',
     flexShrink: 0,
     alignItems: 'center',
-    padding: `${theme.spacing(2)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(
+      1,
+    )}px`,
     borderBottom: `solid 1px ${theme.palette.divider}`,
     whiteSpace: 'normal',
   },
@@ -71,19 +70,12 @@ const TaskView = ({
   score,
   hasRecurringConfig,
   completed,
-  onComplete,
   onClick,
+  onCompleteTask,
+  onMarkTaskIncomplete,
 }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-
-  const handleCompleteClick = useCallback(
-    (event) => {
-      event.stopPropagation();
-      onComplete(id);
-    },
-    [id, onComplete],
-  );
 
   // Using ListItem when editable, so that along with 'button' prop, we get interaction animations
   const Component = editable ? ListItem : 'div';
@@ -165,19 +157,12 @@ const TaskView = ({
       </Box>
 
       <Box flexShrink={0}>
-        <Tooltip title="Complete" arrow enterDelay={1000}>
-          <IconButton
-            aria-label="Complete"
-            onClick={handleCompleteClick}
-            className={completed ? classes.completeButtonSuccess : classes.completeButtonIddle}
-          >
-            {completed ? (
-              <CheckCircleOutlineRoundedIcon fontSize="large" />
-            ) : (
-              <RadioButtonUncheckedRoundedIcon fontSize="large" />
-            )}
-          </IconButton>
-        </Tooltip>
+        <CompleteButton
+          taskId={id}
+          completed={completed}
+          onCompleteTask={onCompleteTask}
+          onMarkTaskIncomplete={onMarkTaskIncomplete}
+        />
       </Box>
     </Component>
   );
@@ -189,7 +174,8 @@ TaskView.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   showBlockers: PropTypes.bool.isRequired,
-  onComplete: PropTypes.func.isRequired,
+  onCompleteTask: PropTypes.func.isRequired,
+  onMarkTaskIncomplete: PropTypes.func.isRequired,
   hasRecurringConfig: PropTypes.bool.isRequired,
   score: PropTypes.number,
   scheduledStart: PropTypes.number,

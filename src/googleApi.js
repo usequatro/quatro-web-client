@@ -80,6 +80,9 @@ export const gapiListCalendarEvents = async (providerCalendarId, startDate, endD
       maxResults: 25,
       singleEvents: true,
     },
+  }).then((response) => {
+    // console.log(response.result.items);
+    return response;
   });
 };
 

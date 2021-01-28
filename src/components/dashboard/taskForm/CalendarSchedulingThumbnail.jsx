@@ -20,10 +20,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
     maxHeight: theme.spacing(15),
     [theme.breakpoints.up('sm')]: {
-      maxHeight: theme.spacing(25),
-    },
-    [theme.breakpoints.up('md')]: {
-      maxHeight: theme.spacing(35),
+      maxHeight: theme.spacing(20),
     },
   },
   scrollContainer: {

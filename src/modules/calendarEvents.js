@@ -65,6 +65,7 @@ export const selectCalendarEventCollisionOrder = (state, id) =>
 export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId[id], 'calendarId');
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
+export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -253,10 +254,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
 
   const promises = providerCalendarIds.map(([calendarId, providerCalendarId]) =>
     gapiListCalendarEvents(providerCalendarId, startOfDayDate, endOfDayDate)
-      .then((response) => {
-        // console.log(response.result.items);
-        return response.result.items;
-      })
+      .then((response) => response.result.items)
       // Add IDs to returned items here so we can keep track of them
       .then((items) => items.map((item) => ({ ...item, calendarId, providerCalendarId }))),
   );
@@ -297,6 +295,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       },
       allDay: isEventAllDay(item.start.timestamp, item.end.timestamp, startOfDayDate, endOfDayDate),
       declined: isItemDeclined(item),
+      taskId: get(item, 'extendedProperties.private.taskId', null),
     }));
 
     dispatch(slice.actions.setDayEvents({ events, dateKey }));
