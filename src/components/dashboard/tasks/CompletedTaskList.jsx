@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import get from 'lodash/get';
 import cond from 'lodash/cond';
@@ -45,6 +45,8 @@ const CompletedTaskList = () => {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [endReached, setEndReached] = useState(false);
 
+  const taskListContainer = useRef();
+
   const { todayTasks, yesterdayTasks, thisWeekTasks, restTasks } = useMemo(
     () => ({
       todayTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'today'),
@@ -80,15 +82,16 @@ const CompletedTaskList = () => {
   }, [notifyError, userId]);
 
   useEffect(() => {
+    const node = taskListContainer.current;
     const handleScroll = () => {
       if (endReached || status === FETCHING) {
         return;
       }
 
-      const bottom =
-        window.innerHeight + window.pageYOffset >= document.body.scrollHeight - SCROLL_OFFSET;
+      const rect = node.getBoundingClientRect();
+      const bottomReached = rect.height + node.scrollTop > node.scrollHeight - SCROLL_OFFSET;
 
-      if (!bottom) {
+      if (!bottomReached) {
         return;
       }
 
@@ -113,9 +116,13 @@ const CompletedTaskList = () => {
           setStatus(FETCHED);
         });
     };
-    window.addEventListener('scroll', handleScroll);
+    if (node) {
+      node.addEventListener('scroll', handleScroll);
+    }
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      if (node) {
+        node.removeEventListener('scroll', handleScroll);
+      }
     };
   }, [completedTasks, status, endReached, notifyError, userId]);
 
@@ -151,7 +158,7 @@ const CompletedTaskList = () => {
   );
 
   return (
-    <Box className={classes.taskListContainer}>
+    <Box className={classes.taskListContainer} ref={taskListContainer}>
       {cond([
         [() => status === ERROR, () => null],
         [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
