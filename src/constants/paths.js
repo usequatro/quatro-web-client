@@ -16,6 +16,8 @@ export const CALENDARS = '/dashboard/calendars';
 
 export const ACCOUNT_SETTINGS = '/account';
 
+export const TASK = '/task/:taskIdFromPath';
+
 export const PATHS_TO_DASHBOARD_TABS = {
   [NOW]: dashboardTabs.NOW,
   [BACKLOG]: dashboardTabs.BACKLOG,

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
+import invert from 'lodash/invert';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -22,17 +23,22 @@ import AccountSettings from './account/AccountSettings';
 import CalendarDashboardView from './calendar-dashboard-view/CalendarDashboardView';
 import Calendars from './calendars/Calendars';
 
+import { useNotification } from '../Notification';
 import {
   listenToDashboardTasks,
   setDashboardActiveTab,
   selectDashboardActiveTab,
   selectIsDataInSync,
+  selectDashboadIsLoaded,
 } from '../../modules/dashboard';
+import { selectTaskDashboardTab } from '../../modules/tasks';
 import { listenToCalendarsList } from '../../modules/calendars';
 import { listenToUserExternalConfig } from '../../modules/userExternalConfig';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
+
+const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -111,16 +117,43 @@ const Dashboard = () => {
     }
   }, [location.pathname, navigationOpen, previousPathname]);
 
+  // Prevent user from closing if there are unsaved changes
   useEffect(() => {
     window.onbeforeunload = !isDataInSync ? confirmBeforeLeaving : () => undefined;
   }, [isDataInSync]);
 
+  // Keeping in sync activeTab
   useEffect(() => {
-    const tab = PATHS_TO_DASHBOARD_TABS[location.pathname];
+    const tab = PATHS_TO_DASHBOARD_TABS[location.pathname] || dashboardTabs.NOW;
     if (tab && tab !== activeTab) {
       dispatch(setDashboardActiveTab(tab));
     }
   }, [location.pathname, activeTab, dispatch]);
+
+  // For paths like /task/:id to redirect to the appropriate tab
+  const { notifyError } = useNotification();
+  const history = useHistory();
+  const { taskIdFromPath } = useParams();
+  const pathTaskDashboardTab = useSelector((state) =>
+    taskIdFromPath ? selectTaskDashboardTab(state, taskIdFromPath) : undefined,
+  );
+  const dashboardLoaded = useSelector(selectDashboadIsLoaded);
+  useEffect(() => {
+    if (!dashboardLoaded || !taskIdFromPath) {
+      return;
+    }
+    if (pathTaskDashboardTab && DASHBOARD_TABS_TO_PATHS[pathTaskDashboardTab]) {
+      const updatedSearch = new URLSearchParams(history.location.search);
+      updatedSearch.set('tid', taskIdFromPath);
+      history.replace({
+        pathname: DASHBOARD_TABS_TO_PATHS[pathTaskDashboardTab],
+        search: updatedSearch.toString(),
+      });
+    } else {
+      notifyError('Not found');
+      history.push(DASHBOARD_TABS_TO_PATHS[dashboardTabs.NOW]);
+    }
+  }, [taskIdFromPath, pathTaskDashboardTab, dashboardLoaded, history, dispatch, notifyError]);
 
   // Snapshot listeners
   useEffect(() => dispatch(listenToDashboardTasks()), [dispatch]);

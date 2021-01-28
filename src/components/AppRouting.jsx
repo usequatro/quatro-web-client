@@ -35,7 +35,10 @@ const AppRouting = () => {
       () => true,
       () => (
         <Switch>
-          <Route path={[paths.DASHBOARD, paths.ACCOUNT_SETTINGS]} component={Dashboard} />
+          <Route
+            path={[paths.DASHBOARD, paths.ACCOUNT_SETTINGS, paths.TASK]}
+            component={Dashboard}
+          />
           {/* fallback */}
           <Redirect to={paths.NOW} />
         </Switch>
