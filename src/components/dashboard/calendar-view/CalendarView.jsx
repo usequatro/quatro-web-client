@@ -6,7 +6,6 @@ import parse from 'date-fns/parse';
 import isToday from 'date-fns/isToday';
 import isValid from 'date-fns/isValid';
 import getYear from 'date-fns/getYear';
-import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
 import useLoadEvents from './useLoadEvents';
@@ -16,9 +15,11 @@ import CalendarDayEventsList from './CalendarDayEventsList';
 import AllDayEventsSection from './AllDayEventsSection';
 import CurrentTimeLine from './CurrentTimeLine';
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
+import CalendarDroppable from './CalendarDroppable';
 
 const useStyles = makeStyles((theme) => ({
   container: {
+    position: 'relative',
     width: '100%',
     paddingTop: theme.spacing(5),
     display: 'flex',
@@ -102,7 +103,7 @@ const CalendarView = () => {
         fetching={fetching}
       />
       <AllDayEventsSection timestamp={timestamp} />
-      <Box className={classes.container}>
+      <CalendarDroppable droppableId="calendar-view-dropppable" className={classes.container}>
         <CalendarDayEventsList
           firstEventCardScrollAnchorRef={firstEventCardScrollAnchorRef}
           timestamp={timestamp}
@@ -112,7 +113,7 @@ const CalendarView = () => {
         />
         <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
         {today && <CurrentTimeLine ref={currentTimeRef} />}
-      </Box>
+      </CalendarDroppable>
     </>
   );
 };

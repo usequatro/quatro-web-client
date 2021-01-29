@@ -124,7 +124,7 @@ const TaskList = forwardRef((_, ref) => {
             <>
               <List disablePadding>
                 <Sortable
-                  id={`sortable-${tab}`}
+                  id={`sortable-${tab.replace(/[^a-z0-9]/i, '')}`}
                   enabled={showPosition}
                   dropAreaHeight={DROP_AREA_HEIGHT}
                   itemIds={taskIds}
