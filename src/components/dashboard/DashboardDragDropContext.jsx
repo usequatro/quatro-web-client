@@ -1,4 +1,4 @@
-import React, { useState, createContext, useMemo, useContext } from 'react';
+import React, { useState, createContext, useMemo, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 import { useDispatch } from 'react-redux';
@@ -24,43 +24,40 @@ DropArea.propTypes = {
   render: PropTypes.func.isRequired,
 };
 
-const DraggingState = createContext();
+const AppDragDropContext = createContext({});
 
 const isTaskDroppable = (droppableId) => /droppable-list-[0-9]+-.*/.test(droppableId);
 const isMoveToBacklogDroppable = (droppableId) => /droppable-bottom-.*/.test(droppableId);
 const isMoveToTop4Droppable = (droppableId) => /droppable-top-.*/.test(droppableId);
-// const isCalendarDroppable = (droppableId) => /droppable-calendar*/.test(droppableId);
+const isCalendarDroppable = (droppableId) => droppableId === 'droppable-calendar';
+
+const getTaskIdFromDraggableId = (draggableId) => get(/draggable-.*-([^-]+)$/.exec(draggableId), 1);
 
 const getTaskDroppableOffset = (droppableId) =>
   parseInt(get(/droppable-[^-]+-([0-9]+)-.*/.exec(droppableId), 1, 0), 10);
 
-const DashboardDragDropContext = ({
-  // id,
-  // enabled,
-  // itemIds,
-  // renderItem,
-  // renderDropAreaStart,
-  // renderDropAreaEnd,
-  children,
-  // dropAreaHeight,
-  // indexOffset ,
-}) => {
+const DashboardDragDropContext = ({ children }) => {
   const dispatch = useDispatch();
 
-  const [dragging, setDragging] = useState(false);
+  const [activeDraggableId, setActiveDraggableId] = useState(null);
 
-  const onBeforeCapture = () => {
-    setDragging(true);
+  const getCalendarDragPlaceholderPositionRef = useRef(() => {
+    console.warn('getCalendarDragPlaceholderPositionRef not set'); // eslint-disable-line no-console
+  });
+
+  const onBeforeCapture = ({ draggableId }) => {
+    setActiveDraggableId(draggableId);
 
     // If there's a drop area at the top, we add its height to scroll, so the dnd lib doesn't get
     // confused when calculating the relative position of the draggable to the cursor
+    // const sourceDroppableId = source.droppableId;
     // if (renderDropAreaStart && dropAreaHeight) {
     //   window.scroll(0, window.scrollY + parseInt(dropAreaHeight, 10), 10);
     // }
   };
 
-  const onDragEnd = ({ source, destination }) => {
-    setDragging(false);
+  const onDragEnd = ({ draggableId, source, destination }) => {
+    setActiveDraggableId(null);
 
     // If there's a drop area at the top, remove the previous increase on scroll so it doesn't bump
     // when releasing
@@ -87,32 +84,34 @@ const DashboardDragDropContext = ({
     } else if (isMoveToTop4Droppable(droppableId)) {
       const indexOffset = getTaskDroppableOffset(droppableId);
       dispatch(setRelativePrioritization(source.index + indexOffset, 3)); // @todo: dehardcode
+    } else if (isCalendarDroppable(droppableId)) {
+      const placeholderPosition = getCalendarDragPlaceholderPositionRef.current();
+      console.log(
+        `Task ${getTaskIdFromDraggableId(draggableId)}
+        moved to ${placeholderPosition.minutes} min (tick #${placeholderPosition.ticks})`,
+      );
     } else {
       console.warn(`Unknown droppableId format: ${droppableId}`); // eslint-disable-line no-console
     }
   };
 
-  const draggingState = useMemo(
+  const contextState = useMemo(
     () => ({
-      dragging,
+      dragging: Boolean(activeDraggableId),
+      draggableTaskId: getTaskIdFromDraggableId(activeDraggableId),
+      getCalendarDragPlaceholderPositionRef,
     }),
-    [dragging],
+    [activeDraggableId],
   );
 
   return (
-    <DragDropContext onDragEnd={onDragEnd} onBeforeCapture={onBeforeCapture}>
-      <DraggingState.Provider value={draggingState}>{children}</DraggingState.Provider>
+    <DragDropContext onBeforeCapture={onBeforeCapture} onDragEnd={onDragEnd}>
+      <AppDragDropContext.Provider value={contextState}>{children}</AppDragDropContext.Provider>
     </DragDropContext>
   );
 };
 
 DashboardDragDropContext.propTypes = {
-  // id: PropTypes.string.isRequired,
-  // enabled: PropTypes.bool.isRequired,
-  // dropAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  // itemIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-  // renderItem: PropTypes.func.isRequired,
-  // indexOffset: PropTypes.number.isRequired,
   children: PropTypes.node.isRequired,
 };
 
@@ -120,4 +119,4 @@ DashboardDragDropContext.defaultProps = {};
 
 export default DashboardDragDropContext;
 
-export const useDraggingState = () => useContext(DraggingState);
+export const useAppDragDropContext = () => useContext(AppDragDropContext);

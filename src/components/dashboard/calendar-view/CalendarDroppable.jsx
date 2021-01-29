@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
+import get from 'lodash/get';
 import { Droppable } from 'react-beautiful-dnd';
 import Card from '@material-ui/core/Card';
 
 import { makeStyles } from '@material-ui/core/styles';
+
+import { useAppDragDropContext } from '../DashboardDragDropContext';
 
 const useStyles = makeStyles((theme) => ({
   '@keyframes blinker': {
@@ -25,28 +28,62 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Placeholder = ({ containerRef }) => {
+const clientYGetters = {
+  touchmove: (event) => get(event, 'touches[0].clientY'),
+  mousemove: (event) => get(event, 'clientY'),
+};
+const noop = () => {};
+
+const round = (value, step) => {
+  const factor = value / step;
+  const floor = Math.floor(factor);
+  const times = floor + (Math.abs(factor - floor) < 0.5 ? 0 : 1);
+  return times * step;
+};
+
+const Placeholder = ({ containerRef, tickHeight, ticksPerHour }) => {
   const classes = useStyles();
-  const [y, setY] = useState({});
+  const [y, setY] = useState(0);
+
+  const { getCalendarDragPlaceholderPositionRef } = useAppDragDropContext();
 
   useEffect(() => {
     const updateMouseCoordinates = (event) => {
       if (!containerRef.current) {
         return;
       }
+
+      const clientY = (clientYGetters[event.type] || noop)(event);
+      if (clientY == null) {
+        console.warn('Invalid clientY on event', event); // eslint-disable-line no-console
+        return;
+      }
+
       const rect = containerRef.current.getBoundingClientRect();
-      setY(event.clientY - rect.top);
+      setY(clientY - rect.top + containerRef.current.scrollTop);
     };
     document.addEventListener('mousemove', updateMouseCoordinates);
-    return () => document.removeEventListener('mousemove', updateMouseCoordinates);
+    document.addEventListener('touchmove', updateMouseCoordinates);
+    return () => {
+      document.removeEventListener('mousemove', updateMouseCoordinates);
+      document.removeEventListener('touchmove', updateMouseCoordinates);
+    };
   }, [containerRef]);
+
+  const snapHeight = (ticksPerHour * tickHeight) / 4;
+  const snappedY = round(y, snapHeight);
+
+  getCalendarDragPlaceholderPositionRef.current = () => ({
+    ticks: snappedY / snapHeight / 4,
+    minutes: (snappedY / snapHeight / 4) * ticksPerHour * 60,
+  });
 
   return (
     <Card
       style={{
         height: 100,
         width: '100%',
-        transform: `translateY(${y}px)`,
+        transform: `translateY(${snappedY}px)`,
         zIndex: 3,
         position: 'absolute',
       }}
@@ -56,11 +93,17 @@ const Placeholder = ({ containerRef }) => {
   );
 };
 
-const CalendarDroppable = ({ droppableId, children, className }) => {
+Placeholder.propTypes = {
+  containerRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
+  tickHeight: PropTypes.number.isRequired,
+  ticksPerHour: PropTypes.number.isRequired,
+};
+
+const CalendarDroppable = ({ children, className, tickHeight, ticksPerHour }) => {
   const containerRef = useRef();
 
   return (
-    <Droppable droppableId={droppableId}>
+    <Droppable droppableId="droppable-calendar">
       {(droppableProvided, droppableSnapshot) => (
         <div
           {...droppableProvided.droppableProps}
@@ -72,9 +115,16 @@ const CalendarDroppable = ({ droppableId, children, className }) => {
         >
           {children}
 
-          {droppableSnapshot.isDraggingOver && <Placeholder containerRef={containerRef} />}
+          {droppableSnapshot.isDraggingOver && (
+            <Placeholder
+              containerRef={containerRef}
+              tickHeight={tickHeight}
+              ticksPerHour={ticksPerHour}
+            />
+          )}
 
-          <div>{droppableProvided.placeholder}</div>
+          {/* placeholder, although we never want to show it, so force it hidden */}
+          <div style={{ display: 'none' }}>{droppableProvided.placeholder}</div>
         </div>
       )}
     </Droppable>
@@ -82,9 +132,10 @@ const CalendarDroppable = ({ droppableId, children, className }) => {
 };
 
 CalendarDroppable.propTypes = {
-  droppableId: PropTypes.string.isRequired,
   className: PropTypes.string.isRequired,
-  children: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+  tickHeight: PropTypes.number.isRequired,
+  ticksPerHour: PropTypes.number.isRequired,
 };
 
 export default CalendarDroppable;
