@@ -43,6 +43,7 @@ import { selectCalendarColor } from '../../../modules/calendars';
 import TextWithLinks from '../../ui/TextWithLinks';
 import parseHtml from '../../../utils/parseHtml';
 import CompleteButton from '../tasks/CompleteButton';
+import { useAppDragDropContext } from '../DashboardDragDropContext';
 
 const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, declined }) => ({
@@ -96,6 +97,8 @@ const useStyles = makeStyles((theme) => ({
 const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }) => {
   const dispatch = useDispatch();
 
+  const { draggableTaskId } = useAppDragDropContext();
+
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
@@ -148,6 +151,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
             tickHeight * (startTimeInMinutes / minutesForOneTick),
           )}px)`,
           opacity: cond([
+            [() => draggableTaskId === taskId, () => 0.1],
             [() => !allDay && isPast(endTimestamp), () => 0.7],
             [() => declined, () => 0.7],
             [() => true, () => 1],

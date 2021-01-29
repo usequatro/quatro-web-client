@@ -20,7 +20,6 @@ import CalendarDroppable from './CalendarDroppable';
 const useStyles = makeStyles((theme) => ({
   container: {
     position: 'relative',
-    width: '100%',
     paddingTop: theme.spacing(5),
     display: 'flex',
     alignItems: 'center',
@@ -103,7 +102,11 @@ const CalendarView = () => {
         fetching={fetching}
       />
       <AllDayEventsSection timestamp={timestamp} />
-      <CalendarDroppable droppableId="calendar-view-dropppable" className={classes.container}>
+      <CalendarDroppable
+        className={classes.container}
+        tickHeight={TICK_HEIGHT}
+        ticksPerHour={TICKS_PER_HOUR}
+      >
         <CalendarDayEventsList
           firstEventCardScrollAnchorRef={firstEventCardScrollAnchorRef}
           timestamp={timestamp}

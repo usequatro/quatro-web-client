@@ -1,14 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import cond from 'lodash/cond';
-// import { useDispatch } from 'react-redux';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 import Paper from '@material-ui/core/Paper';
 
-import { useDraggingState } from '../DashboardDragDropContext';
-
-// import { setRelativePrioritization } from '../../../modules/tasks';
+import { useAppDragDropContext } from '../DashboardDragDropContext';
 
 const DropArea = ({ droppableId, render }) => (
   <Droppable droppableId={droppableId}>
@@ -35,50 +31,9 @@ const Sortable = ({
   renderItem,
   renderDropAreaStart,
   renderDropAreaEnd,
-  // dropAreaHeight,
   indexOffset,
 }) => {
-  // const dispatch = useDispatch();
-
-  // const [dragging, setDragging] = useState(false);
-
-  // const onBeforeCapture = () => {
-  //   setDragging(true);
-
-  //   // If there's a drop area at the top, we add its height to scroll, so the dnd lib doesn't get
-  //   // confused when calculating the relative position of the draggable to the cursor
-  //   if (renderDropAreaStart && dropAreaHeight) {
-  //     window.scroll(0, window.scrollY + parseInt(dropAreaHeight, 10), 10);
-  //   }
-  // };
-
-  // const onDragEnd = ({ source, destination }) => {
-  //   setDragging(false);
-
-  //   // If there's a drop area at the top, remove the previous increase on scroll so it doesn't bump
-  //   // when releasing
-  //   if (renderDropAreaStart && dropAreaHeight) {
-  //     window.scroll(0, window.scrollY - parseInt(dropAreaHeight, 10), 10);
-  //   }
-
-  //   // dropped outside the list
-  //   if (!destination) {
-  //     return;
-  //   }
-
-  //   const destinationIndex = cond([
-  //     [() => /-top$/.test(destination.droppableId), () => -1],
-  //     [() => /-bottom$/.test(destination.droppableId), () => itemIds.length + 1],
-  //     [
-  //       () => true,
-  //       () => (source.index < destination.index ? destination.index + 1 : destination.index),
-  //     ],
-  //   ])();
-
-  //   dispatch(setRelativePrioritization(source.index + indexOffset, destinationIndex + indexOffset));
-  // };
-
-  const { dragging } = useDraggingState();
+  const { dragging } = useAppDragDropContext();
 
   return (
     <>
@@ -103,7 +58,17 @@ const Sortable = ({
                     {...draggableProvided.draggableProps}
                     {...draggableProvided.dragHandleProps}
                     elevation={draggableSnapshot.isDragging ? 4 : 0}
-                    style={draggableProvided.draggableProps.style}
+                    style={{
+                      ...draggableProvided.draggableProps.style,
+                      opacity: draggableSnapshot.draggingOver === 'droppable-calendar' ? 0.5 : 1,
+                      // Removing the drop animation on the calendar bc its delay allows users to
+                      // move the placeholder away from where it was
+                      // @link https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/drop-animation.md#skipping-the-drop-animation
+                      ...(draggableSnapshot.draggingOver === 'droppable-calendar' &&
+                      draggableSnapshot.isDropAnimating
+                        ? { transitionDuration: `0.001s` }
+                        : {}),
+                    }}
                   >
                     {renderItem(itemId, index)}
                   </Paper>
@@ -115,7 +80,7 @@ const Sortable = ({
         )}
       </Droppable>
 
-      {dragging && renderDropAreaEnd && (
+      {dragging && renderDropAreaEnd && null && (
         <DropArea
           droppableId={`droppable-bottom-${indexOffset}-${id}`}
           render={renderDropAreaEnd}
