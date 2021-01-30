@@ -1,5 +1,6 @@
 import once from 'lodash/once';
 import { createSlice } from '@reduxjs/toolkit';
+import startOfDay from 'date-fns/startOfDay';
 
 import { listenToTaskList, selectTaskDashboardTab } from './tasks';
 import { listenToRecurringConfigList } from './recurringConfigs';
@@ -27,6 +28,7 @@ export const selectDashboadIsLoading = (state) => state[name].status === LOADING
 export const selectDashboadIsLoaded = (state) => state[name].status === LOADED;
 export const selectDashboardActiveTab = (state) => state[name].activeTab;
 export const selectHighlightedTaskId = (state) => state[name].highlightedTaskId;
+export const selectCalendarDisplayTimestamp = (state) => state[name].calendarDisplayTimestamp;
 
 export const selectIsDataInSync = (state) =>
   state[name].tasksSyncStatus === IN_SYNC && state[name].recurringConfigsSyncStatus === IN_SYNC;
@@ -39,6 +41,7 @@ const initialState = {
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
   recurringConfigsSyncStatus: IN_SYNC,
+  calendarDisplayTimestamp: startOfDay(new Date()).getTime(),
 };
 
 /* eslint-disable no-param-reassign */
@@ -61,12 +64,15 @@ const slice = createSlice({
     setRecurringConfigsListenerStatus: (state, { payload }) => {
       state.recurringConfigsSyncStatus = payload;
     },
+    setCalendarDisplayTimestamp: (state, { payload }) => {
+      state.calendarDisplayTimestamp = payload;
+    },
   },
 });
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const { setDashboardActiveTab } = slice.actions;
+export const { setDashboardActiveTab, setCalendarDisplayTimestamp } = slice.actions;
 
 // Thunks
 

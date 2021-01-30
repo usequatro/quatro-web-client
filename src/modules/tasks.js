@@ -7,6 +7,7 @@ import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
 
 import isValid from 'date-fns/isValid';
+import add from 'date-fns/add';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import calculateTaskScore from '../utils/calculateTaskScore';
@@ -16,6 +17,8 @@ import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiC
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
+import { selectDefaultCalendarId } from './calendars';
+import { validateTimestamp } from '../utils/validators';
 
 import {
   selectRecurringConfigIdByMostRecentTaskId,
@@ -45,6 +48,8 @@ export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
 export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
+const selectTaskCalendarBlockCalendarId = (state, id) =>
+  get(selectTask(state, id), 'calendarBlockCalendarId');
 
 export const selectTaskCalendarBlockDuration = (state, id) => {
   const task = selectTask(state, id);
@@ -382,4 +387,29 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   }
 
   mixpanel.track(TASK_DELETED);
+};
+
+export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
+  validateTimestamp(calendarBlockStart);
+
+  const state = getState();
+  const calendarBlockCalendarId =
+    selectTaskCalendarBlockCalendarId(state, id) || selectDefaultCalendarId(state);
+
+  const EFFORT_TO_DURATION = [15, 30, 60, 150, 360];
+  const FALLBACK = 60;
+
+  const duration =
+    selectTaskCalendarBlockDuration(state, id) ||
+    EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
+    FALLBACK;
+
+  dispatch(
+    updateTask(id, {
+      calendarBlockCalendarId,
+      scheduledStart: calendarBlockStart,
+      calendarBlockStart,
+      calendarBlockEnd: add(calendarBlockStart, { minutes: duration }).getTime(),
+    }),
+  );
 };

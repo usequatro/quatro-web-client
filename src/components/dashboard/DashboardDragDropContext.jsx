@@ -1,10 +1,12 @@
 import React, { useState, createContext, useMemo, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
-import { useDispatch } from 'react-redux';
+import set from 'date-fns/set';
+import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
-import { setRelativePrioritization } from '../../modules/tasks';
+import { setRelativePrioritization, timeboxTask } from '../../modules/tasks';
+import { selectCalendarDisplayTimestamp } from '../../modules/dashboard';
 
 const DropArea = ({ droppableId, render }) => (
   <Droppable droppableId={droppableId}>
@@ -40,6 +42,8 @@ const DashboardDragDropContext = ({ children }) => {
   const dispatch = useDispatch();
 
   const [activeDraggableId, setActiveDraggableId] = useState(null);
+
+  const calendarDisplayTimestamp = useSelector(selectCalendarDisplayTimestamp);
 
   const getCalendarDragPlaceholderPositionRef = useRef(() => {
     console.warn('getCalendarDragPlaceholderPositionRef not set'); // eslint-disable-line no-console
@@ -85,11 +89,13 @@ const DashboardDragDropContext = ({ children }) => {
       const indexOffset = getTaskDroppableOffset(droppableId);
       dispatch(setRelativePrioritization(source.index + indexOffset, 3)); // @todo: dehardcode
     } else if (isCalendarDroppable(droppableId)) {
+      const taskId = getTaskIdFromDraggableId(draggableId);
+
       const placeholderPosition = getCalendarDragPlaceholderPositionRef.current();
-      console.log(
-        `Task ${getTaskIdFromDraggableId(draggableId)}
-        moved to ${placeholderPosition.minutes} min (tick #${placeholderPosition.ticks})`,
-      );
+      const calendarBlockStart = set(calendarDisplayTimestamp, {
+        minutes: placeholderPosition.minutes,
+      }).getTime();
+      dispatch(timeboxTask(taskId, calendarBlockStart));
     } else {
       console.warn(`Unknown droppableId format: ${droppableId}`); // eslint-disable-line no-console
     }

@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import format from 'date-fns/format';
@@ -16,6 +17,10 @@ import AllDayEventsSection from './AllDayEventsSection';
 import CurrentTimeLine from './CurrentTimeLine';
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
 import CalendarDroppable from './CalendarDroppable';
+import {
+  selectCalendarDisplayTimestamp,
+  setCalendarDisplayTimestamp,
+} from '../../../modules/dashboard';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -36,26 +41,31 @@ const DATE_URL_PARAM_FORMAT = 'yyyy-MM-dd';
 
 const getInitialDate = (history) => {
   const formattedDateParam = new URLSearchParams(history.location.search).get('date');
-  const dateParamDate = formattedDateParam
+  const dateParamTimestamp = formattedDateParam
     ? parse(formattedDateParam, DATE_URL_PARAM_FORMAT, new Date()).getTime()
     : null;
-  if (
-    !isValid(dateParamDate) ||
-    // Only let select some years in the past and the future
-    getYear(dateParamDate) > currentYear + 2 ||
-    getYear(dateParamDate) < currentYear - 2
-  ) {
-    return Date.now();
-  }
-  return dateParamDate;
+  const YEAR_THRESHOLD = 2;
+  return isValid(dateParamTimestamp) &&
+    getYear(dateParamTimestamp) < currentYear + YEAR_THRESHOLD &&
+    getYear(dateParamTimestamp) > currentYear - YEAR_THRESHOLD
+    ? dateParamTimestamp
+    : undefined;
 };
 
 const CalendarView = () => {
+  const dispatch = useDispatch();
   const classes = useStyles();
   const history = useHistory();
 
-  const initialDate = useMemo(() => getInitialDate(history), [history]);
-  const [timestamp, setTimestamp] = useState(initialDate);
+  const timestamp = useSelector(selectCalendarDisplayTimestamp);
+
+  // URL containing the date to use
+  useEffect(() => {
+    const initialDate = getInitialDate(history);
+    if (initialDate) {
+      dispatch(setCalendarDisplayTimestamp(initialDate));
+    }
+  }, [dispatch, history]);
 
   // Management of URL parameter for date
   useEffect(() => {
@@ -98,7 +108,7 @@ const CalendarView = () => {
     <>
       <CalendarNavBar
         timestamp={timestamp}
-        onChange={(newDate) => setTimestamp(newDate instanceof Date ? newDate.getTime() : newDate)}
+        onChange={(newDate) => dispatch(setCalendarDisplayTimestamp(newDate))}
         fetching={fetching}
       />
       <AllDayEventsSection timestamp={timestamp} />
