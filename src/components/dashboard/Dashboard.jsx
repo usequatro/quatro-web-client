@@ -64,6 +64,14 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     width: '100%',
   },
+  calendarAndListContainer: {
+    // some css here, other in the Box attributes
+    display: 'flex',
+    justifyContent: 'stretch',
+    flexGrow: 1,
+    height: '100%',
+    overflow: 'hidden', // needed for Safari iOS (iPad)
+  },
   navigationBackdrop: {
     zIndex: theme.zIndex.drawer - 1,
   },
@@ -183,7 +191,7 @@ const Dashboard = () => {
               [
                 (tab) => tab === dashboardTabs.NOW && mdUp,
                 () => (
-                  <Box display="flex" justifyContent="stretch" flexGrow={1} height="100%">
+                  <Box className={classes.calendarAndListContainer}>
                     <Box
                       width="50%"
                       display="flex"
@@ -205,12 +213,9 @@ const Dashboard = () => {
                 (tab) => tab === dashboardTabs.NOW && !mdUp,
                 () => (
                   <Box
-                    display="flex"
+                    className={classes.calendarAndListContainer}
                     flexDirection="column"
-                    justifyContent="stretch"
                     alignItems="stretch"
-                    flexGrow={1}
-                    height="100%"
                   >
                     <Toolbar className={classes.placeholderToolbar} />
                     <Tabs
