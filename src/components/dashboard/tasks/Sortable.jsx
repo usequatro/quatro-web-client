@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 import Paper from '@material-ui/core/Paper';
 
 import { useAppDragDropContext } from '../DashboardDragDropContext';
+import { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
 
 const DropArea = ({ droppableId, render }) => (
   <Droppable droppableId={droppableId}>
@@ -25,15 +26,33 @@ DropArea.propTypes = {
 };
 
 const Sortable = ({
-  id,
+  dashboardTab,
   enabled,
   itemIds,
   renderItem,
   renderDropAreaStart,
   renderDropAreaEnd,
   indexOffset,
+  scrollContainerRef,
 }) => {
   const { dragging } = useAppDragDropContext();
+
+  const id = dashboardTab.replace(/[^a-z1-9]/i, '');
+
+  // force a scroll after dragging starts so the appearance of the "Top 4" droppable doesn't
+  // disrupt where the dragging cursor is placed.
+  // @todo: only works when backlog list overflows. Handle too when it doesn't
+  // @todo: better considering placing a fixed droppable on the top or nav bar
+  useEffect(() => {
+    if (dragging && renderDropAreaStart && scrollContainerRef && scrollContainerRef.current) {
+      const node = scrollContainerRef.current;
+      node.scroll(0, node.scrollTop + parseInt(DROP_AREA_HEIGHT, 10));
+      return () => {
+        node.scroll(0, node.scrollTop - parseInt(DROP_AREA_HEIGHT, 10));
+      };
+    }
+    return undefined;
+  }, [renderDropAreaStart, dragging, scrollContainerRef]);
 
   return (
     <>
@@ -80,7 +99,7 @@ const Sortable = ({
         )}
       </Droppable>
 
-      {dragging && renderDropAreaEnd && null && (
+      {dragging && renderDropAreaEnd && (
         <DropArea
           droppableId={`droppable-bottom-${indexOffset}-${id}`}
           render={renderDropAreaEnd}
@@ -91,7 +110,7 @@ const Sortable = ({
 };
 
 Sortable.propTypes = {
-  id: PropTypes.string.isRequired,
+  dashboardTab: PropTypes.string.isRequired,
   enabled: PropTypes.bool.isRequired,
   dropAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   itemIds: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -99,6 +118,9 @@ Sortable.propTypes = {
   indexOffset: PropTypes.number.isRequired,
   renderDropAreaStart: PropTypes.func,
   renderDropAreaEnd: PropTypes.func,
+  scrollContainerRef: PropTypes.shape({
+    current: PropTypes.instanceOf(Element),
+  }).isRequired,
 };
 
 Sortable.defaultProps = {

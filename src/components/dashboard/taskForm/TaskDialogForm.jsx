@@ -87,12 +87,8 @@ import SliderField from '../../ui/SliderField';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
-import {
-  impactLabels,
-  impactSliderMarks,
-  effortLabels,
-  effortSliderMarks,
-} from '../../../constants/taskFormConstants';
+import { IMPACT_LABELS, IMPACT_SLIDER_MARKS } from '../../../constants/impact';
+import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
@@ -430,9 +426,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             id="impact-slider"
             label="What impact will this task have?"
             value={impact}
-            getValueText={(i) => impactLabels[i] || '-'}
+            getValueText={(i) => IMPACT_LABELS[i] || '-'}
             onChange={(value) => dispatch(setImpact(value))}
-            marks={impactSliderMarks}
+            marks={IMPACT_SLIDER_MARKS}
           />
         </Box>
 
@@ -441,9 +437,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             id="effort-slider"
             label="How much time will this task require?"
             value={effort}
-            getValueText={(e) => effortLabels[e] || '-'}
+            getValueText={(e) => EFFORT_LABELS[e] || '-'}
             onChange={(value) => dispatch(setEffort(value))}
-            marks={effortSliderMarks}
+            marks={EFFORT_SLIDER_MARKS}
           />
         </Box>
 

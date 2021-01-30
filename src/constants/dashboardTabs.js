@@ -1,7 +1,7 @@
-export const NOW = 'Top 4';
-export const BACKLOG = 'Backlog';
-export const SCHEDULED = 'Scheduled';
-export const BLOCKED = 'Blocked';
-export const COMPLETED = 'Completed';
+export const NOW = 'top4';
+export const BACKLOG = 'backlog';
+export const SCHEDULED = 'scheduled';
+export const BLOCKED = 'blocked';
+export const COMPLETED = 'completed';
 export const ACCOUNT_SETTINGS = 'accountSettings';
-export const CALENDARS = 'Calendars';
+export const CALENDARS = 'calendars';

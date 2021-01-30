@@ -30,6 +30,7 @@ import {
   TASK_UNDO_COMPLETE,
   TASK_MANUALLY_ARRANGED,
 } from '../constants/mixpanelEvents';
+import { EFFORT_TO_DURATION } from '../constants/effort';
 
 const name = 'tasks';
 
@@ -48,7 +49,7 @@ export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
 export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
-const selectTaskCalendarBlockCalendarId = (state, id) =>
+export const selectTaskCalendarBlockCalendarId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockCalendarId');
 
 export const selectTaskCalendarBlockDuration = (state, id) => {
@@ -396,13 +397,10 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
   const calendarBlockCalendarId =
     selectTaskCalendarBlockCalendarId(state, id) || selectDefaultCalendarId(state);
 
-  const EFFORT_TO_DURATION = [15, 30, 60, 150, 360];
-  const FALLBACK = 60;
-
   const duration =
     selectTaskCalendarBlockDuration(state, id) ||
     EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
-    FALLBACK;
+    EFFORT_TO_DURATION[2];
 
   dispatch(
     updateTask(id, {
