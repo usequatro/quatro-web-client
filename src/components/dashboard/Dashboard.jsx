@@ -18,7 +18,7 @@ import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar, { getTopBarHeight } from './navigation-app-bar/DashboardAppBar';
-import DashboardViewBar from './DashboardViewBar';
+import DashboardViewBar, { SECTION_TITLES_BY_TAB } from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
 import CalendarDashboardRouting from './dashboard-calendar/CalendarDashboardRouting';
 import Calendars from './calendars/Calendars';
@@ -231,7 +231,7 @@ const Dashboard = () => {
                         aria-controls="scrollable-auto-tabpanel-calendar"
                       />
                       <Tab
-                        label={activeTab}
+                        label={SECTION_TITLES_BY_TAB[dashboardTabs.NOW]}
                         id="tab-task-list"
                         aria-controls="scrollable-auto-tabpanel-task-list"
                       />
