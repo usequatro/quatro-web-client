@@ -108,7 +108,7 @@ const TaskView = ({
         )}
 
         {scheduledStart && (
-          <TaskViewSubtitle tooltip="Start date" Icon={EventRoundedIcon} onClick={() => {}}>
+          <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
             {formatDateTime(scheduledStart)}
             {calendarBlockDuration && ` - ${calendarBlockDuration} minutes blocked`}
           </TaskViewSubtitle>

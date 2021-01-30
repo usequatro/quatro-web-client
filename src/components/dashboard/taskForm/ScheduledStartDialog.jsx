@@ -40,7 +40,6 @@ const ScheduledStartDialog = ({
   calendarBlockDuration,
   blockCalendarDisabledReason,
 }) => {
-  // Scheduled start date
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || initialDateTimestamp);
 
   // Calendar blocking
@@ -121,7 +120,7 @@ const ScheduledStartDialog = ({
         TypographyProps={{ id: 'scheduled-start-dialog', variant: 'h6' }}
         title={
           <>
-            Start Date
+            Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
             <Tooltip
               aria-hidden
