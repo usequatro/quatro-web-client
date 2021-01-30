@@ -3,7 +3,10 @@ name: Dev Continuous Deployment
 on:
   push:
     branches:
+      # main branch CD
       - master
+      # meant for large development branches
+      - release/*
 
 jobs:
   deploy:
