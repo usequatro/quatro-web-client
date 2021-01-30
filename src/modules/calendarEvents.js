@@ -107,13 +107,16 @@ const isItemDeclined = (item) => {
   return seltAttendee && seltAttendee.responseStatus === 'declined';
 };
 
-const isEventAllDay = (startDate, endDate, startOfDayDate, endOfDayDate) => {
-  return Boolean(
-    isValid(startDate) &&
-      isValid(endDate) &&
-      (isEqual(startDate, startOfDayDate) || isBefore(startDate, startOfDayDate)) &&
-      (isEqual(endDate, endOfDayDate) || isAfter(endDate, endOfDayDate)),
+const ALL_DAY_DATE_REGEXP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/; // all day date yyyy-MM-dd
+const isEventAllDay = (start, end, startOfDayDate, endOfDayDate) => {
+  const isAllDay = ALL_DAY_DATE_REGEXP.test(start.date) && ALL_DAY_DATE_REGEXP.test(end.date);
+  const isEventLastingMoreThanToday = Boolean(
+    isValid(start.timestamp) &&
+      isValid(end.timestamp) &&
+      (isEqual(start.timestamp, startOfDayDate) || isBefore(start.timestamp, startOfDayDate)) &&
+      (isEqual(end.timestamp, endOfDayDate) || isAfter(end.timestamp, endOfDayDate)),
   );
+  return isAllDay || isEventLastingMoreThanToday;
 };
 
 // Slice
@@ -293,7 +296,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
         timestamp: item.end.timestamp,
         timeZone: item.end.timeZone,
       },
-      allDay: isEventAllDay(item.start.timestamp, item.end.timestamp, startOfDayDate, endOfDayDate),
+      allDay: isEventAllDay(item.start, item.end, startOfDayDate, endOfDayDate),
       declined: isItemDeclined(item),
       taskId: get(item, 'extendedProperties.private.taskId', null),
     }));

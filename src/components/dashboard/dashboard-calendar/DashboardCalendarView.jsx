@@ -9,12 +9,12 @@ import isValid from 'date-fns/isValid';
 import getYear from 'date-fns/getYear';
 import { makeStyles } from '@material-ui/core/styles';
 
-import useLoadEvents from './useLoadEvents';
-import CalendarNavBar from './CalendarNavBar';
-import Ticks from './Ticks';
-import CalendarDayEventsList from './CalendarDayEventsList';
-import AllDayEventsSection from './AllDayEventsSection';
-import CurrentTimeLine from './CurrentTimeLine';
+import useLoadEvents from '../calendar-view/useLoadEvents';
+import CalendarNavBar from '../calendar-view/CalendarNavBar';
+import Ticks from '../calendar-view/Ticks';
+import CalendarDayEventsList from '../calendar-view/CalendarDayEventsList';
+import AllDayEventsSection from '../calendar-view/AllDayEventsSection';
+import CurrentTimeLine from '../calendar-view/CurrentTimeLine';
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
 import CalendarDroppable from './CalendarDroppable';
 import {
@@ -52,7 +52,7 @@ const getInitialDate = (history) => {
     : undefined;
 };
 
-const CalendarView = () => {
+const DashboardCalendarView = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const history = useHistory();
@@ -122,7 +122,7 @@ const CalendarView = () => {
           timestamp={timestamp}
           tickHeight={TICK_HEIGHT}
           ticksPerHour={TICKS_PER_HOUR}
-          selectableEvents
+          interactive
         />
         <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
         {today && <CurrentTimeLine ref={currentTimeRef} />}
@@ -131,4 +131,4 @@ const CalendarView = () => {
   );
 };
 
-export default CalendarView;
+export default DashboardCalendarView;

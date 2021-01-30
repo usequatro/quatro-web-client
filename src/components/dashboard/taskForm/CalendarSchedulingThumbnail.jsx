@@ -85,7 +85,7 @@ const CalendarSchedulingThumbnail = ({
             start: startDateTimestamp,
             end: addMinutes(startDateTimestamp, duration).getTime(),
           }}
-          selectableEvents={false}
+          interactive={false}
         />
         <Ticks
           tickHeight={TICK_HEIGHT}

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
-import EventCard from './EventCard';
+import CalendarEvent from '../event-card/CalendarEvent';
 import TickLabel from './TickLabel';
 import { selectAllDayCalendarEventIds } from '../../../modules/calendarEvents';
 
@@ -46,13 +46,13 @@ const AllDayEventsSection = ({ timestamp }) => {
       <TickLabel className={classes.label}>All day</TickLabel>
       <Box className={classes.allDayListContainer} style={{ opacity: past ? 0.7 : 1 }}>
         {allDayCalendarEventIds.map((calendarEventId) => (
-          <EventCard
+          <CalendarEvent
             scrollAnchorRef={undefined}
             key={calendarEventId}
             id={calendarEventId}
             tickHeight={100} // irrelevant for allDay events
             ticksPerHour={1}
-            selectable
+            interactive
           />
         ))}
       </Box>
