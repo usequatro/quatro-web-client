@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
+import throttle from 'lodash/throttle';
 import { Droppable } from 'react-beautiful-dnd';
 import Card from '@material-ui/core/Card';
 
@@ -48,7 +49,7 @@ const Placeholder = ({ containerRef, tickHeight, ticksPerHour }) => {
   const { getCalendarDragPlaceholderPositionRef } = useAppDragDropContext();
 
   useEffect(() => {
-    const updateMouseCoordinates = (event) => {
+    const updateMouseCoordinates = throttle((event) => {
       if (!containerRef.current) {
         return;
       }
@@ -60,8 +61,12 @@ const Placeholder = ({ containerRef, tickHeight, ticksPerHour }) => {
       }
 
       const rect = containerRef.current.getBoundingClientRect();
-      setY(clientY - rect.top + containerRef.current.scrollTop);
-    };
+      const paddingTop = window
+        .getComputedStyle(containerRef.current, null)
+        .getPropertyValue('padding-top');
+      const paddingTopInt = parseInt(paddingTop, 10);
+      setY(clientY - rect.top - paddingTopInt + containerRef.current.scrollTop);
+    }, 10);
     document.addEventListener('mousemove', updateMouseCoordinates);
     document.addEventListener('touchmove', updateMouseCoordinates);
     return () => {
