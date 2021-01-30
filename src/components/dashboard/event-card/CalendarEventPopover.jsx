@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import format from 'date-fns/format';
 import isValid from 'date-fns/isValid';
@@ -10,9 +11,16 @@ import Box from '@material-ui/core/Box';
 import Popover from '@material-ui/core/Popover';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import { makeStyles } from '@material-ui/core/styles';
 
 import LaunchRoundedIcon from '@material-ui/icons/LaunchRounded';
+import NotesIcon from '@material-ui/icons/Notes';
+import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
+import RoomRoundedIcon from '@material-ui/icons/RoomRounded';
+import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 
 import {
   selectCalendarEventSummary,
@@ -27,11 +35,12 @@ import {
   selectCalendarEventTaskId,
   selectCalendarEventProviderCalendarId,
 } from '../../../modules/calendarEvents';
-import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
+import { completeTask } from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
 import TextWithLinks from '../../ui/TextWithLinks';
+import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
-import CompleteButton from '../tasks/CompleteButton';
+import { getTaskPath } from '../../../constants/paths';
 
 const useStyles = makeStyles((theme) => ({
   eventPopoverPaper: {
@@ -50,9 +59,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const InformativeIcon = ({ Icon, title }) => (
+  <Box mr={2} display="flex">
+    <Tooltip title={title}>
+      <Icon color="action" fontSize="small" />
+    </Tooltip>
+  </Box>
+);
+
+InformativeIcon.propTypes = {
+  Icon: PropTypes.elementType.isRequired,
+  title: PropTypes.string.isRequired,
+};
+
 const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const dispatch = useDispatch();
-
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
@@ -80,73 +101,84 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
       transformOrigin={{ horizontal: 'center', vertical: 'top' }}
       aria-labelledby={`event-popover-title-${id}`}
     >
-      <Box px={3} pt={1} pb={3}>
-        <Box display="flex" alignItems="flex-start">
-          <Typography
-            className={classes.eventPopoverName}
-            variant="h5"
-            component="h2"
-            id={`event-popover-title-${id}`}
-          >
-            {summary || '(No title)'}
-          </Typography>
+      <DialogTitleWithClose
+        TypographyProps={{ id: `event-popover-title-${id}`, variant: 'h5', component: 'h2' }}
+        title={summary || '(No title)'}
+        onClose={onClose}
+      />
 
-          {taskId && (
-            <CompleteButton
-              taskId={taskId}
-              completed={null}
-              onCompleteTask={() => dispatch(completeTask(taskId))}
-              onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
-              fontSize="default"
-            />
-          )}
+      <DialogContent>
+        <Box display="flex" mb={2}>
+          <InformativeIcon title="Time" Icon={QueryBuilderRoundedIcon} />
+          <Typography variant="body2">
+            {allDay
+              ? 'All Day'
+              : `${isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''} - ${
+                  isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''
+                }`}
+          </Typography>
         </Box>
-        <Typography variant="body2" gutterBottom>
-          {allDay
-            ? 'All Day'
-            : `${isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''} - ${
-                isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''
-              }`}
-        </Typography>
 
         {location && (
-          <Typography variant="body2">
-            <TextWithLinks text={location} />
-          </Typography>
+          <Box display="flex" mb={2}>
+            <InformativeIcon title="Location" Icon={RoomRoundedIcon} />
+            <Typography variant="body2">
+              <TextWithLinks text={location} />
+            </Typography>
+          </Box>
         )}
-      </Box>
 
-      {description && (
-        <Box px={3} pb={3}>
-          <Typography
-            variant="body2"
-            className={classes.eventPopoverDescription}
-            dangerouslySetInnerHTML={{
-              __html: parseHtml(description),
-            }}
-          />
+        {description && (
+          <Box mb={3} display="flex">
+            <InformativeIcon title="Description" Icon={NotesIcon} />
+
+            <Typography
+              variant="body2"
+              className={classes.eventPopoverDescription}
+              dangerouslySetInnerHTML={{
+                __html: parseHtml(description),
+              }}
+            />
+          </Box>
+        )}
+
+        <Box display="flex" alignItems="center">
+          <Box mr={2} ml={-1.5} display="flex">
+            <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
+              <IconButton
+                edge="end"
+                color="default"
+                href={htmlLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="open in calendar app"
+              >
+                <LaunchRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <Typography variant="body2">{`${providerCalendarId} `}</Typography>
         </Box>
-      )}
+        {taskId && (
+          <DialogActions>
+            <Button variant="outlined" color="default" component={Link} to={getTaskPath(taskId)}>
+              Edit Task
+            </Button>
 
-      <Box px={3} pb={3}>
-        <Typography variant="body2">
-          {`Calendar: ${providerCalendarId} `}
-
-          <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
-            <IconButton
-              edge="end"
-              size="small"
-              color="inherit"
-              href={htmlLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="open in calendar app"
+            <Button
+              variant="outlined"
+              color="default"
+              endIcon={<RadioButtonUncheckedRoundedIcon color="action" />}
+              onClick={() => {
+                dispatch(completeTask(taskId));
+              }}
             >
-              <LaunchRoundedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Typography>
-      </Box>
+              Complete Task
+            </Button>
+          </DialogActions>
+        )}
+      </DialogContent>
     </Popover>
   );
 };
