@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme) => ({
 const EventCardView = forwardRef(function EventCardViewComponent(
   {
     id,
+    className,
     scrollAnchorRef,
     elevated,
     summary,
@@ -101,7 +102,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
               }
             : {}),
         }}
-        className={classes.eventCard}
+        className={[classes.eventCard, className].filter(Boolean).join(' ')}
         elevation={elevated || focused ? 8 : 0}
         ref={ref}
         {...(selectable
@@ -159,6 +160,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
 
 EventCardView.propTypes = {
   id: PropTypes.string.isRequired,
+  className: PropTypes.string,
   elevated: PropTypes.bool.isRequired,
   scrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   summary: PropTypes.string.isRequired,
@@ -182,6 +184,7 @@ EventCardView.propTypes = {
 
 EventCardView.defaultProps = {
   scrollAnchorRef: undefined,
+  className: undefined,
   taskId: null,
 };
 

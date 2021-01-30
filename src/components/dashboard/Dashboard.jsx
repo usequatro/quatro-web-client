@@ -18,7 +18,7 @@ import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar, { getTopBarHeight } from './navigation-app-bar/DashboardAppBar';
-import DashboardViewBar from './DashboardViewBar';
+import DashboardViewBar, { SECTION_TITLES_BY_TAB } from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
 import CalendarDashboardRouting from './dashboard-calendar/CalendarDashboardRouting';
 import Calendars from './calendars/Calendars';
@@ -63,6 +63,14 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     overflow: 'hidden',
     width: '100%',
+  },
+  calendarAndListContainer: {
+    // some css here, other in the Box attributes
+    display: 'flex',
+    justifyContent: 'stretch',
+    flexGrow: 1,
+    height: '100%',
+    overflow: 'hidden', // needed for Safari iOS (iPad)
   },
   navigationBackdrop: {
     zIndex: theme.zIndex.drawer - 1,
@@ -183,7 +191,7 @@ const Dashboard = () => {
               [
                 (tab) => tab === dashboardTabs.NOW && mdUp,
                 () => (
-                  <Box display="flex" justifyContent="stretch" flexGrow={1} height="100%">
+                  <Box className={classes.calendarAndListContainer}>
                     <Box
                       width="50%"
                       display="flex"
@@ -205,12 +213,9 @@ const Dashboard = () => {
                 (tab) => tab === dashboardTabs.NOW && !mdUp,
                 () => (
                   <Box
-                    display="flex"
+                    className={classes.calendarAndListContainer}
                     flexDirection="column"
-                    justifyContent="stretch"
                     alignItems="stretch"
-                    flexGrow={1}
-                    height="100%"
                   >
                     <Toolbar className={classes.placeholderToolbar} />
                     <Tabs
@@ -226,7 +231,7 @@ const Dashboard = () => {
                         aria-controls="scrollable-auto-tabpanel-calendar"
                       />
                       <Tab
-                        label={activeTab}
+                        label={SECTION_TITLES_BY_TAB[dashboardTabs.NOW]}
                         id="tab-task-list"
                         aria-controls="scrollable-auto-tabpanel-task-list"
                       />
