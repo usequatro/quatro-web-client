@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
-import EventCard from './EventCard';
+import CalendarEvent from '../event-card/CalendarEvent';
 import PlaceholderCard from './PlaceholderCard';
 import { selectSortedCalendarEventIds } from '../../../modules/calendarEvents';
 
@@ -24,7 +24,7 @@ const CalendarDayEventsList = ({
   tickHeight,
   ticksPerHour,
   placeholder,
-  selectableEvents,
+  interactive,
 }) => {
   const classes = useStyles();
   const sortedCalendarEventIds = useSelector((state) =>
@@ -34,13 +34,13 @@ const CalendarDayEventsList = ({
   return (
     <Box className={classes.listContainer} width={width}>
       {sortedCalendarEventIds.map((calendarEventId, index) => (
-        <EventCard
+        <CalendarEvent
           key={calendarEventId}
           scrollAnchorRef={index === 0 ? firstEventCardScrollAnchorRef : undefined}
           id={calendarEventId}
           tickHeight={tickHeight}
           ticksPerHour={ticksPerHour}
-          selectable={selectableEvents}
+          interactive={interactive}
         />
       ))}
 
@@ -60,7 +60,7 @@ CalendarDayEventsList.propTypes = {
   firstEventCardScrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   timestamp: PropTypes.number.isRequired,
   tickHeight: PropTypes.number.isRequired,
-  selectableEvents: PropTypes.bool.isRequired,
+  interactive: PropTypes.bool.isRequired,
   width: PropTypes.string,
   ticksPerHour: PropTypes.number.isRequired,
   placeholder: PropTypes.shape({

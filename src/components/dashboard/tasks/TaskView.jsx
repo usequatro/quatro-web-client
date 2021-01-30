@@ -40,10 +40,6 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     whiteSpace: 'normal',
   },
-  completeButtonIddle: {},
-  completeButtonSuccess: {
-    color: theme.palette.success.main,
-  },
   blockersIcon: {
     marginRight: theme.spacing(1),
     marginTop: '6px', // to align with first blocker row

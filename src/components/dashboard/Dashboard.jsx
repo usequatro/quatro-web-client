@@ -20,7 +20,7 @@ import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar, { getTopBarHeight } from './navigation-app-bar/DashboardAppBar';
 import DashboardViewBar from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
-import CalendarDashboardView from './calendar-dashboard-view/CalendarDashboardView';
+import CalendarDashboardRouting from './dashboard-calendar/CalendarDashboardRouting';
 import Calendars from './calendars/Calendars';
 
 import { useNotification } from '../Notification';
@@ -191,7 +191,7 @@ const Dashboard = () => {
                       className={classes.calendarDesktopViewContainer}
                     >
                       <Toolbar className={classes.placeholderToolbar} />
-                      <CalendarDashboardView />
+                      <CalendarDashboardRouting />
                     </Box>
                     <Box width="50%" display="flex" flexDirection="column">
                       <Toolbar className={classes.placeholderToolbar} />
@@ -247,7 +247,7 @@ const Dashboard = () => {
                       hidden={selectedMobileTab === 1}
                       className={selectedMobileTab === 1 ? '' : classes.mobileTabPanel}
                     >
-                      <CalendarDashboardView />
+                      <CalendarDashboardRouting />
                     </div>
                   </Box>
                 ),
