@@ -79,7 +79,7 @@ const Sortable = ({
                     elevation={draggableSnapshot.isDragging ? 4 : 0}
                     style={{
                       ...draggableProvided.draggableProps.style,
-                      opacity: draggableSnapshot.draggingOver === 'droppable-calendar' ? 0.5 : 1,
+                      opacity: draggableSnapshot.draggingOver === 'droppable-calendar' ? 0 : 1,
                       // Removing the drop animation on the calendar bc its delay allows users to
                       // move the placeholder away from where it was
                       // @link https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/drop-animation.md#skipping-the-drop-animation
