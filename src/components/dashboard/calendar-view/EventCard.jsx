@@ -207,7 +207,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
         {taskId && (
           <CompleteButton
             taskId={taskId}
-            completed={false}
+            completed={null}
             onCompleteTask={() => dispatch(completeTask(taskId))}
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
             fontSize="default"
@@ -240,7 +240,7 @@ const EventCard = ({ id, scrollAnchorRef, selectable, tickHeight, ticksPerHour }
               {taskId && (
                 <CompleteButton
                   taskId={taskId}
-                  completed={false}
+                  completed={null}
                   onCompleteTask={() => dispatch(completeTask(taskId))}
                   onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
                   fontSize="default"
