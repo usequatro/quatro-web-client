@@ -35,6 +35,8 @@ const getSection = cond([
   [() => true, () => 'rest'],
 ]);
 
+const millisToMinutes = (millis) => millis / (1000 * 60);
+
 const CompletedTaskList = () => {
   const { notifyError } = useNotification();
   const userId = useSelector(selectUserId);
@@ -146,6 +148,12 @@ const CompletedTaskList = () => {
       description={task.description}
       scheduledStart={task.scheduledStart}
       due={task.due}
+      effort={task.effort}
+      calendarBlockDuration={
+        task.calendarBlockEnd && task.calendarBlockStart
+          ? millisToMinutes(task.calendarBlockEnd - task.calendarBlockStart)
+          : undefined
+      }
       prioritizedAheadOf={undefined}
       showBlockers={false}
       hasRecurringConfig={false}

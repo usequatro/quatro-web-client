@@ -224,7 +224,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const errors = [title === '' && 'title'].filter(Boolean);
+    const errors = [title.trim() === '' && 'title'].filter(Boolean);
     setValidationErrors(errors);
     if (errors.length) {
       return;
@@ -384,6 +384,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               dispatch(setTitle(event.target.value));
               if (validationErrors.includes('title')) {
                 setValidationErrors(validationErrors.filter((e) => e !== 'title'));
+              }
+            }}
+            onBlur={() => {
+              // Prevent leaving whitespaces saved at beginning or end
+              if (title !== title.trim()) {
+                dispatch(setTitle(title.trim()));
               }
             }}
             error={validationErrors.includes('title')}

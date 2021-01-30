@@ -14,6 +14,7 @@ import {
   selectTaskPrioritizedAheadOf,
   completeTask,
   markTaskIncomplete,
+  selectTaskEffort,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
@@ -24,6 +25,7 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
+  const effort = useSelector((state) => selectTaskEffort(state, id));
   const completed = useSelector((state) => selectTaskCompleted(state, id));
   const scheduledStart = useSelector((state) => selectTaskScheduledStart(state, id));
   const calendarBlockDuration = useSelector((state) => selectTaskCalendarBlockDuration(state, id));
@@ -50,6 +52,7 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
       description={description}
       score={score}
       completed={completed}
+      effort={effort}
       scheduledStart={scheduledStart}
       calendarBlockDuration={calendarBlockDuration}
       due={due}
