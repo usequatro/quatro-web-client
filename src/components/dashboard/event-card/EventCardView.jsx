@@ -112,7 +112,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
               onBlur: () => setFocused(false),
               onClick: onSelect,
               onKeyPress: () => (event) => {
-                console.log(event);
+                // @todo: figure out why this doesn't work
                 if (event.key === ' ' || event.key === 'Enter') {
                   event.stopPropagation();
                   onSelect(event);
