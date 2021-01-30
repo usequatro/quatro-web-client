@@ -158,7 +158,7 @@ const getBlockerTitle = cond([
 
 const RepeatButtonDisabledTooltip = ({ mounted, children }) =>
   mounted ? (
-    <Tooltip title="Add a Start Date to enable" enterDelay={0} arrow>
+    <Tooltip title="Add a Scheduled Date to enable" enterDelay={0} arrow>
       <span>{children}</span>
     </Tooltip>
   ) : (
@@ -455,7 +455,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 startIcon={<EventRoundedIcon />}
                 className={classes.settingButton}
               >
-                {'Start Date: '}
+                {'Scheduled Date: '}
                 {formatDateTime(scheduledStartTimestamp)}
 
                 {calendarBlockStart && calendarBlockEnd && (
@@ -536,7 +536,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       <DialogActions className={classes.dialogActionBar} disableSpacing>
         <Box flexGrow={1}>
           <LabeledIconButton
-            label="Start Date"
+            label="Schedule"
             color="inherit"
             icon={<EventRoundedIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
