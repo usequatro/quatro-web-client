@@ -44,8 +44,8 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const durationInMinutes = differenceInMinutes(endTimestamp, startTimestamp);
   const startTimeInMinutes = differenceInMinutes(startTimestamp, startOfDay(startTimestamp));
 
-  const cardWidth = allDay ? 100 : Math.floor(100 / (1 + (collisionCount || 0)));
-  const cardLeft = allDay ? 0 : (collisionOrder || 0) * cardWidth;
+  const cardWidth = Math.floor(100 / (1 + (collisionCount || 0)));
+  const cardLeft = (collisionOrder || 0) * cardWidth;
 
   return (
     <>

@@ -115,7 +115,7 @@ export const getCollisions = (event, events) => {
   const endTimestamp = event.end.timestamp;
 
   const collisionIds = events.reduce((memo, item) => {
-    if (item.id === event.id) {
+    if (item.id === event.id || item.allDay !== event.allDay) {
       return memo;
     }
 
@@ -176,15 +176,13 @@ function addCollisionsToCalendarEvents(state, dateKey) {
   const dateEventIds = get(state.byDate, [dateKey, 'allIds'], []);
   const dateEvents = dateEventIds.map((id) => state.byId[id]);
 
-  const timedEvents = dateEvents.filter((event) => !event.allDay);
   const dateEventsReset = dateEvents.map((event) => ({
     ...event,
     collisionCount: 0,
     collisionOrder: 0,
   }));
   const dateEventsWithCollisionsById = dateEventsReset.reduce((memo, event) => {
-    // @TODO: handle all day collisions
-    const collisionIds = getCollisions(event, timedEvents);
+    const collisionIds = getCollisions(event, dateEvents);
     const eventWithCollisionCount = {
       ...event,
       collisionCount: collisionIds.length,
