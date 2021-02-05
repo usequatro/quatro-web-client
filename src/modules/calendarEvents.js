@@ -234,15 +234,19 @@ const slice = createSlice({
   reducers: {
     clearAllEvents: () => initialState,
     setDayEvents: {
-      prepare: (payload) => {
-        const errors = payload.events
-          .map((event) => calendarEventSchema.validate(event).error)
-          .filter(Boolean);
+      prepare: (dateKey, events) => {
+        const results = events.map((event) => calendarEventSchema.validate(event));
+        const errors = results.filter((result) => result.error);
 
         if (errors.length) {
-          throw new Error(errors[0]);
+          throw new Error(errors[0].error);
         }
-        return { payload };
+        return {
+          payload: {
+            dateKey,
+            events: results.map(({ value }) => value),
+          },
+        };
       },
       reducer: (state, { payload }) => {
         const { dateKey, events } = payload;
@@ -290,11 +294,11 @@ const slice = createSlice({
 
     addSynchingCalendarEvent: {
       prepare: (payload) => {
-        const { error } = calendarEventSchema.validate({ ...payload, id: 'mock' });
+        const { error, value } = calendarEventSchema.validate({ ...payload, id: 'mock' });
         if (error) {
           throw new Error(error);
         }
-        return { payload };
+        return { payload: value };
       },
       reducer: (state, { payload: event }) => {
         const id = `_${uuidv4()}`;
@@ -439,7 +443,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       taskId: get(item, 'extendedProperties.private.taskId', null),
     }));
 
-    dispatch(slice.actions.setDayEvents({ events, dateKey }));
+    dispatch(slice.actions.setDayEvents(dateKey, events));
     callback();
   });
 
