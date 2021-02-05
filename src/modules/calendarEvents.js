@@ -2,6 +2,7 @@ import uniq from 'lodash/uniq';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
 import omit from 'lodash/omit';
+import flow from 'lodash/flow';
 import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import Joi from '@hapi/joi';
@@ -219,6 +220,11 @@ function addCollisionsToCalendarEvents(state, dateKey) {
   };
 }
 
+const organizeState = flow(
+  (state, dateKey) => ({ dateKey, state: sortIdsByStartTimestamp(state, dateKey) }),
+  ({ dateKey, state }) => addCollisionsToCalendarEvents(state, dateKey),
+);
+
 // Slice
 
 const initialState = {
@@ -266,26 +272,25 @@ const slice = createSlice({
           },
         };
 
-        const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
-        const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+        const organizedState = organizeState(stateWithNewEvents, dateKey);
 
         // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
         const eventTaskIds = events
           .filter((event) => !event.synching && event.taskId)
           .map((event) => event.taskId);
-        const idsToRemove = stateWithNewEventsSorted.byDate[dateKey].allIds.filter((id) => {
-          const event = stateWithNewEventsSorted.byId[id];
+        const idsToRemove = organizedState.byDate[dateKey].allIds.filter((id) => {
+          const event = organizedState.byId[id];
           return event.synching && eventTaskIds.includes(event.taskId);
         });
-        const dateKeyAllIds = stateWithNewEventsSorted.byDate[dateKey].allIds.filter(
+        const dateKeyAllIds = organizedState.byDate[dateKey].allIds.filter(
           (id) => !idsToRemove.includes(id),
         );
-        const byId = omit(stateWithNewEventsSorted.byId, idsToRemove);
+        const byId = omit(organizedState.byId, idsToRemove);
 
         // Update state
         state.byId = byId;
         state.byDate[dateKey] = {
-          ...(stateWithNewEventsSorted.byDate[dateKey] || {}),
+          ...(organizedState.byDate[dateKey] || {}),
           fetchedAt: Date.now(),
           allIds: dateKeyAllIds,
         };
@@ -319,10 +324,9 @@ const slice = createSlice({
           },
         };
 
-        const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
-        const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+        const organizedState = organizeState(stateWithNewEvents, dateKey);
 
-        return stateWithNewEventsSorted;
+        return organizedState;
       },
     },
 
