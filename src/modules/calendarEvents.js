@@ -4,8 +4,10 @@ import sortBy from 'lodash/sortBy';
 import omit from 'lodash/omit';
 import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
+import Joi from '@hapi/joi';
 
 import parseISO from 'date-fns/parseISO';
+import parse from 'date-fns/parse';
 import isEqual from 'date-fns/isEqual';
 import format from 'date-fns/format';
 import isBefore from 'date-fns/isBefore';
@@ -16,6 +18,7 @@ import isValid from 'date-fns/isValid';
 
 import debugConsole from '../utils/debugConsole';
 import { gapiListCalendarEvents } from '../googleApi';
+import { timestampSchema } from '../utils/validators';
 
 // Allow dependency cycle because it's just for selectors
 // eslint-disable-next-line import/no-cycle
@@ -27,6 +30,29 @@ const name = 'calendarEvents';
 const RELOAD_EVENTS_INTERVAL_MS = 5 * 60 * 1000;
 // Format for the date key grouping calendar events in the store
 const DATE_KEY_FORMAT = 'yyyy-MM-dd';
+
+const calendarEventSchema = Joi.object({
+  id: Joi.string().required(),
+  calendarId: Joi.string().required(),
+  providerCalendarId: Joi.string(),
+  htmlLink: Joi.string(),
+  summary: Joi.string().required(),
+  description: Joi.string(),
+  location: Joi.string(),
+  start: Joi.object({
+    dateTime: Joi.string(),
+    timestamp: timestampSchema,
+    timeZone: Joi.string(),
+  }).default({}),
+  end: Joi.object({
+    dateTime: Joi.string(),
+    timestamp: timestampSchema,
+    timeZone: Joi.string(),
+  }).default({}),
+  allDay: Joi.bool(),
+  declined: Joi.bool(),
+  taskId: Joi.string().allow(null),
+});
 
 // Selectors
 
@@ -207,70 +233,93 @@ const slice = createSlice({
   initialState,
   reducers: {
     clearAllEvents: () => initialState,
-    setDayEvents: (state, { payload: { events, dateKey } }) => {
-      // Add to state
-      const stateWithNewEvents = {
-        byId: {
-          ...state.byId,
-          ...events.reduce((memo, event) => ({ ...memo, [event.id]: event }), {}),
-        },
-        byDate: {
-          ...state.byDate,
-          [dateKey]: {
-            fetchedAt: Date.now(),
-            allIds: uniq(events.map((event) => event.id)),
+    setDayEvents: {
+      prepare: (payload) => {
+        const errors = payload.events
+          .map((event) => calendarEventSchema.validate(event).error)
+          .filter(Boolean);
+
+        if (errors.length) {
+          throw new Error(errors[0]);
+        }
+        return { payload };
+      },
+      reducer: (state, { payload }) => {
+        const { dateKey, events } = payload;
+
+        // Add to state
+        const stateWithNewEvents = {
+          byId: {
+            ...state.byId,
+            ...events.reduce((memo, event) => ({ ...memo, [event.id]: event }), {}),
           },
-        },
-      };
+          byDate: {
+            ...state.byDate,
+            [dateKey]: {
+              fetchedAt: Date.now(),
+              allIds: uniq(events.map((event) => event.id)),
+            },
+          },
+        };
 
-      const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
-      const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+        const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
+        const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
 
-      // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
-      const eventTaskIds = events
-        .filter((event) => !event.synching && event.taskId)
-        .map((event) => event.taskId);
-      const idsToRemove = stateWithNewEventsSorted.byDate[dateKey].allIds.filter((id) => {
-        const event = stateWithNewEventsSorted.byId[id];
-        return event.synching && eventTaskIds.includes(event.taskId);
-      });
-      const dateKeyAllIds = stateWithNewEventsSorted.byDate[dateKey].allIds.filter(
-        (id) => !idsToRemove.includes(id),
-      );
-      const byId = omit(stateWithNewEventsSorted.byId, idsToRemove);
+        // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
+        const eventTaskIds = events
+          .filter((event) => !event.synching && event.taskId)
+          .map((event) => event.taskId);
+        const idsToRemove = stateWithNewEventsSorted.byDate[dateKey].allIds.filter((id) => {
+          const event = stateWithNewEventsSorted.byId[id];
+          return event.synching && eventTaskIds.includes(event.taskId);
+        });
+        const dateKeyAllIds = stateWithNewEventsSorted.byDate[dateKey].allIds.filter(
+          (id) => !idsToRemove.includes(id),
+        );
+        const byId = omit(stateWithNewEventsSorted.byId, idsToRemove);
 
-      // Update state
-      state.byId = byId;
-      state.byDate[dateKey] = {
-        ...(stateWithNewEventsSorted.byDate[dateKey] || {}),
-        fetchedAt: Date.now(),
-        allIds: dateKeyAllIds,
-      };
+        // Update state
+        state.byId = byId;
+        state.byDate[dateKey] = {
+          ...(stateWithNewEventsSorted.byDate[dateKey] || {}),
+          fetchedAt: Date.now(),
+          allIds: dateKeyAllIds,
+        };
+      },
     },
 
-    addSynchingCalendarEvent: (state, { payload: event }) => {
-      const id = `_${uuidv4()}`;
-      const dateKey = format(event.start.timestamp, DATE_KEY_FORMAT);
+    addSynchingCalendarEvent: {
+      prepare: (payload) => {
+        const { error } = calendarEventSchema.validate({ ...payload, id: 'mock' });
+        if (error) {
+          throw new Error(error);
+        }
+        return { payload };
+      },
+      reducer: (state, { payload: event }) => {
+        const id = `_${uuidv4()}`;
+        const dateKey = format(event.start.timestamp, DATE_KEY_FORMAT);
 
-      // Add to state
-      const stateWithNewEvents = {
-        byId: {
-          ...state.byId,
-          [id]: { ...event, id, synching: true },
-        },
-        byDate: {
-          ...state.byDate,
-          [dateKey]: {
-            ...(state.byDate[dateKey] || {}),
-            allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(id)),
+        // Add to state
+        const stateWithNewEvents = {
+          byId: {
+            ...state.byId,
+            [id]: { ...event, id, synching: true },
           },
-        },
-      };
+          byDate: {
+            ...state.byDate,
+            [dateKey]: {
+              ...(state.byDate[dateKey] || {}),
+              allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(id)),
+            },
+          },
+        };
 
-      const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
-      const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+        const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
+        const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
 
-      return stateWithNewEventsSorted;
+        return stateWithNewEventsSorted;
+      },
     },
 
     // @todo: improve this so we're only flagging the calendar that had changes
@@ -297,16 +346,26 @@ export const { clearAllEvents, staleAllEvents, addSynchingCalendarEvent } = slic
 
 // Helpers
 
+const parseTimestamp = (dateObject) => {
+  if (dateObject.dateTime) {
+    return parseISO(dateObject.dateTime).getTime();
+  }
+  if (dateObject.date) {
+    return parse(dateObject.date, 'yyyy-MM-dd', startOfDay(new Date())).getTime();
+  }
+  return undefined;
+};
+
 export const addTimestamps = (events) =>
   events.map((event) => ({
     ...event,
     start: {
       ...event.start,
-      timestamp: parseISO(event.start.dateTime).getTime(),
+      timestamp: parseTimestamp(event.start),
     },
     end: {
       ...event.end,
-      timestamp: parseISO(event.end.dateTime).getTime(),
+      timestamp: parseTimestamp(event.end),
     },
   }));
 
@@ -361,7 +420,6 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       id: item.id,
       calendarId: item.calendarId,
       providerCalendarId: item.providerCalendarId,
-      status: item.status,
       htmlLink: item.htmlLink,
       summary: item.summary,
       description: item.description,

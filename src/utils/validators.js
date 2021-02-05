@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi';
 import isValid from 'date-fns/isValid';
 
-const timestampSchema = Joi.number().custom((value, helpers) =>
+export const timestampSchema = Joi.number().custom((value, helpers) =>
   isValid(value) ? value : helpers.error('invalid date'),
 );
 
