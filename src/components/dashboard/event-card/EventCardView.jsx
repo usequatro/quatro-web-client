@@ -10,6 +10,8 @@ import isToday from 'date-fns/isToday';
 import isValid from 'date-fns/isValid';
 
 import Typography from '@material-ui/core/Typography';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -60,6 +62,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
     declined,
     taskId,
     showComplete,
+    showLoader,
     selectable,
     onSelect,
     isBeingRedragged,
@@ -88,6 +91,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           transform: `translateY(${translateYValue})`,
           opacity: cond([
             [() => isBeingRedragged, () => 0.1],
+            [() => showLoader, () => 0.7],
             [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
             [() => declined, () => 0.7],
             [() => true, () => 1],
@@ -131,6 +135,12 @@ const EventCardView = forwardRef(function EventCardViewComponent(
             className={classes.scrollAnchor}
           />
         )}
+        {showLoader && (
+          <Box mr={1}>
+            <CircularProgress thickness={4} size="1.25rem" color="inherit" />
+          </Box>
+        )}
+
         <Typography component="p" className={classes.eventName}>
           {summary || '(No title)'}
           {!allDay && (
@@ -170,6 +180,7 @@ EventCardView.propTypes = {
   declined: PropTypes.bool.isRequired,
   taskId: PropTypes.string,
   showComplete: PropTypes.bool.isRequired,
+  showLoader: PropTypes.bool.isRequired,
   selectable: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,
   isBeingRedragged: PropTypes.bool.isRequired,

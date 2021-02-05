@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
@@ -31,6 +32,7 @@ import {
   TASK_MANUALLY_ARRANGED,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
+import { addSynchingCalendarEvent } from './calendarEvents';
 
 const name = 'tasks';
 
@@ -51,6 +53,8 @@ export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
 export const selectTaskCalendarBlockCalendarId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockCalendarId');
+const selectTaskCalendarBlockProviderEventId = (state, id) =>
+  get(selectTask(state, id), 'calendarBlockProviderEventId');
 
 export const selectTaskCalendarBlockDuration = (state, id) => {
   const task = selectTask(state, id);
@@ -402,12 +406,34 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
     EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
     EFFORT_TO_DURATION[2];
 
+  const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
+
   dispatch(
     updateTask(id, {
       calendarBlockCalendarId,
       scheduledStart: calendarBlockStart,
       calendarBlockStart,
-      calendarBlockEnd: add(calendarBlockStart, { minutes: duration }).getTime(),
+      calendarBlockEnd,
+    }),
+  );
+
+  const title = selectTaskTitle(state, id);
+  const calendarEventId = selectTaskCalendarBlockProviderEventId(state, id);
+
+  dispatch(
+    addSynchingCalendarEvent({
+      id: calendarEventId || `_${uuidv4()}`,
+      calendarId: calendarBlockCalendarId,
+      summary: title,
+      start: {
+        timestamp: calendarBlockStart,
+      },
+      end: {
+        timestamp: calendarBlockEnd,
+      },
+      allDay: false,
+      declined: false,
+      taskId: id,
     }),
   );
 };

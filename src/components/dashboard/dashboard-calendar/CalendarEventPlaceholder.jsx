@@ -125,6 +125,7 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
       declined={false}
       taskId={draggableTaskId}
       showComplete={false}
+      showLoader={false}
       selectable={false}
       isBeingRedragged={false}
       color={color}

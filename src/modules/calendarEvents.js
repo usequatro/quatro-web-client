@@ -1,9 +1,13 @@
 import uniq from 'lodash/uniq';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
+import omit from 'lodash/omit';
+import flow from 'lodash/flow';
 import { createSlice } from '@reduxjs/toolkit';
+import Joi from '@hapi/joi';
 
 import parseISO from 'date-fns/parseISO';
+import parse from 'date-fns/parse';
 import isEqual from 'date-fns/isEqual';
 import format from 'date-fns/format';
 import isBefore from 'date-fns/isBefore';
@@ -14,6 +18,7 @@ import isValid from 'date-fns/isValid';
 
 import debugConsole from '../utils/debugConsole';
 import { gapiListCalendarEvents } from '../googleApi';
+import { timestampSchema } from '../utils/validators';
 
 // Allow dependency cycle because it's just for selectors
 // eslint-disable-next-line import/no-cycle
@@ -25,6 +30,29 @@ const name = 'calendarEvents';
 const RELOAD_EVENTS_INTERVAL_MS = 5 * 60 * 1000;
 // Format for the date key grouping calendar events in the store
 const DATE_KEY_FORMAT = 'yyyy-MM-dd';
+
+const calendarEventSchema = Joi.object({
+  id: Joi.string().required(),
+  calendarId: Joi.string().required(),
+  providerCalendarId: Joi.string(),
+  htmlLink: Joi.string(),
+  summary: Joi.string().required(),
+  description: Joi.string(),
+  location: Joi.string(),
+  start: Joi.object({
+    dateTime: Joi.string(),
+    timestamp: timestampSchema,
+    timeZone: Joi.string(),
+  }).default({}),
+  end: Joi.object({
+    dateTime: Joi.string(),
+    timestamp: timestampSchema,
+    timeZone: Joi.string(),
+  }).default({}),
+  allDay: Joi.bool(),
+  declined: Joi.bool(),
+  taskId: Joi.string().allow(null),
+});
 
 // Selectors
 
@@ -66,6 +94,7 @@ export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
+export const selectCalendarEventSynching = (state, id) => get(state[name].byId[id], 'synching');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -119,6 +148,82 @@ const isEventAllDay = (start, end, startOfDayDate, endOfDayDate) => {
   return isAllDay || isEventLastingMoreThanToday;
 };
 
+function sortIdsByStartTimestamp(state, dateKey) {
+  const dateEventIds = get(state.byDate, [dateKey, 'allIds'], []);
+
+  const idTimestampPairs = dateEventIds.map((id) => {
+    return {
+      id,
+      timestamp: get(state.byId, [id, 'start', 'timestamp'], Infinity),
+    };
+  });
+  const sortedPairs = sortBy(idTimestampPairs, 'timestamp');
+  const sortedIds = sortedPairs.map(({ id }) => id);
+
+  return {
+    ...state,
+    byDate: {
+      ...state.byDate,
+      [dateKey]: {
+        ...state.byDate[dateKey],
+        allIds: sortedIds,
+      },
+    },
+  };
+}
+
+function addCollisionsToCalendarEvents(state, dateKey) {
+  const dateEventIds = get(state.byDate, [dateKey, 'allIds'], []);
+  const dateEvents = dateEventIds.map((id) => state.byId[id]);
+
+  const timedEvents = dateEvents.filter((event) => !event.allDay);
+  const dateEventsReset = dateEvents.map((event) => ({
+    ...event,
+    collisionCount: 0,
+    collisionOrder: 0,
+  }));
+  const dateEventsWithCollisionsById = dateEventsReset.reduce((memo, event) => {
+    // @TODO: handle all day collisions
+    const collisionIds = getCollisions(event, timedEvents);
+    const eventWithCollisionCount = {
+      ...event,
+      collisionCount: collisionIds.length,
+      collisionOrder: event.collisionOrder || 0,
+    };
+    const otherEventsWithCollisionOrderField = collisionIds.reduce(
+      (acc, collisionId) => ({
+        ...acc,
+        [collisionId]: {
+          ...(memo[collisionId] || {}),
+          collisionOrder:
+            memo[collisionId] && memo[collisionId].collisionOrder
+              ? memo[collisionId].collisionOrder + 1
+              : 1,
+        },
+      }),
+      {},
+    );
+    return {
+      ...memo,
+      [event.id]: eventWithCollisionCount,
+      ...otherEventsWithCollisionOrderField,
+    };
+  }, {});
+
+  return {
+    ...state,
+    byId: {
+      ...state.byId,
+      ...dateEventsWithCollisionsById,
+    },
+  };
+}
+
+const organizeState = flow(
+  (state, dateKey) => ({ dateKey, state: sortIdsByStartTimestamp(state, dateKey) }),
+  ({ dateKey, state }) => addCollisionsToCalendarEvents(state, dateKey),
+);
+
 // Slice
 
 const initialState = {
@@ -127,73 +232,102 @@ const initialState = {
   byDate: {},
 };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
   reducers: {
     clearAllEvents: () => initialState,
-    setDayEvents: (state, { payload: { events, dateKey } }) => {
-      const dayEventsById = events.reduce((memo, item) => ({ ...memo, [item.id]: item }), {});
+    setDayEvents: {
+      prepare: (dateKey, events) => {
+        const results = events.map((event) => calendarEventSchema.validate(event));
+        const errors = results.filter((result) => result.error);
 
-      // Optimization to avoid doing it on every render:
-      // Add number of collisions and horizontal order to show cards
-      const allTimedEvents = events.filter((event) => !event.allDay);
-      const dayEventsByIdWithCollisions = Object.entries(dayEventsById).reduce(
-        (memo, [id, event]) => {
-          // @TODO: handle all day collisions
-          const collisionIds = getCollisions(event, allTimedEvents);
-
-          const eventWithCollisionCount = {
-            ...event,
-            collisionCount: collisionIds.length,
-            collisionOrder: event.collisionOrder || 0,
-          };
-          const otherEventsWithCollisionOrderField = collisionIds.reduce(
-            (acc, collisionId) => ({
-              ...acc,
-              [collisionId]: {
-                ...(memo[collisionId] || {}),
-                collisionOrder:
-                  memo[collisionId] && memo[collisionId].collisionOrder
-                    ? memo[collisionId].collisionOrder + 1
-                    : 1,
-              },
-            }),
-            {},
-          );
-
-          return {
-            ...memo,
-            [id]: eventWithCollisionCount,
-            ...otherEventsWithCollisionOrderField,
-          };
-        },
-        {},
-      );
-
-      // Optimization to avoid doing it on every render:
-      // Sort IDs by start time
-      const allIds = uniq(events.map(({ id }) => id));
-      const idTimestampPairs = allIds.map((id) => {
-        return { id, timestamp: get(dayEventsById, [id, 'start', 'timestamp'], Infinity) };
-      });
-      const sortedPairs = sortBy(idTimestampPairs, 'timestamp');
-      const sortedIds = sortedPairs.map(({ id }) => id);
-
-      return {
-        byId: {
-          ...state.byId,
-          ...dayEventsByIdWithCollisions,
-        },
-        byDate: {
-          ...state.byDate,
-          [dateKey]: {
-            fetchedAt: Date.now(),
-            allIds: sortedIds,
+        if (errors.length) {
+          throw new Error(errors[0].error);
+        }
+        return {
+          payload: {
+            dateKey,
+            events: results.map(({ value }) => value),
           },
-        },
-      };
+        };
+      },
+      reducer: (state, { payload }) => {
+        const { dateKey, events } = payload;
+
+        // Add to state
+        const stateWithNewEvents = {
+          byId: {
+            ...state.byId,
+            ...events.reduce((memo, event) => ({ ...memo, [event.id]: event }), {}),
+          },
+          byDate: {
+            ...state.byDate,
+            [dateKey]: {
+              fetchedAt: Date.now(),
+              allIds: uniq(events.map((event) => event.id)),
+            },
+          },
+        };
+
+        const organizedState = organizeState(stateWithNewEvents, dateKey);
+
+        // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
+        const eventTaskIds = events
+          .filter((event) => !event.synching && event.taskId)
+          .map((event) => event.taskId);
+        const idsToRemove = organizedState.byDate[dateKey].allIds.filter((id) => {
+          const event = organizedState.byId[id];
+          return event.synching && eventTaskIds.includes(event.taskId);
+        });
+        const dateKeyAllIds = organizedState.byDate[dateKey].allIds.filter(
+          (id) => !idsToRemove.includes(id),
+        );
+        const byId = omit(organizedState.byId, idsToRemove);
+
+        // Update state
+        state.byId = byId;
+        state.byDate[dateKey] = {
+          ...(organizedState.byDate[dateKey] || {}),
+          fetchedAt: Date.now(),
+          allIds: dateKeyAllIds,
+        };
+      },
     },
+
+    addSynchingCalendarEvent: {
+      prepare: (payload) => {
+        const { error, value } = calendarEventSchema.validate(payload);
+        if (error) {
+          throw new Error(error);
+        }
+        return { payload: value };
+      },
+      reducer: (state, { payload: event }) => {
+        const dateKey = format(event.start.timestamp, DATE_KEY_FORMAT);
+
+        // Add to state
+        const stateWithNewEvents = {
+          byId: {
+            ...state.byId,
+            [event.id]: { ...event, synching: true },
+          },
+          byDate: {
+            ...state.byDate,
+            [dateKey]: {
+              ...(state.byDate[dateKey] || {}),
+              allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(event.id)),
+            },
+          },
+        };
+
+        const organizedState = organizeState(stateWithNewEvents, dateKey);
+
+        return organizedState;
+      },
+    },
+
     // @todo: improve this so we're only flagging the calendar that had changes
     //        or even better, pull those changes only
     staleAllEvents: (state) => ({
@@ -211,22 +345,33 @@ const slice = createSlice({
     }),
   },
 });
+/* eslint-enable no-param-reassign */
 
 export default slice;
-export const { clearAllEvents, staleAllEvents } = slice.actions;
+export const { clearAllEvents, staleAllEvents, addSynchingCalendarEvent } = slice.actions;
 
 // Helpers
+
+const parseTimestamp = (dateObject) => {
+  if (dateObject.dateTime) {
+    return parseISO(dateObject.dateTime).getTime();
+  }
+  if (dateObject.date) {
+    return parse(dateObject.date, 'yyyy-MM-dd', startOfDay(new Date())).getTime();
+  }
+  return undefined;
+};
 
 export const addTimestamps = (events) =>
   events.map((event) => ({
     ...event,
     start: {
       ...event.start,
-      timestamp: parseISO(event.start.dateTime).getTime(),
+      timestamp: parseTimestamp(event.start),
     },
     end: {
       ...event.end,
-      timestamp: parseISO(event.end.dateTime).getTime(),
+      timestamp: parseTimestamp(event.end),
     },
   }));
 
@@ -281,7 +426,6 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       id: item.id,
       calendarId: item.calendarId,
       providerCalendarId: item.providerCalendarId,
-      status: item.status,
       htmlLink: item.htmlLink,
       summary: item.summary,
       description: item.description,
@@ -301,7 +445,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       taskId: get(item, 'extendedProperties.private.taskId', null),
     }));
 
-    dispatch(slice.actions.setDayEvents({ events, dateKey }));
+    dispatch(slice.actions.setDayEvents(dateKey, events));
     callback();
   });
 
