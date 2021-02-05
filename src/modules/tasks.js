@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
@@ -52,6 +53,8 @@ export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
 export const selectTaskCalendarBlockCalendarId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockCalendarId');
+const selectTaskCalendarBlockProviderEventId = (state, id) =>
+  get(selectTask(state, id), 'calendarBlockProviderEventId');
 
 export const selectTaskCalendarBlockDuration = (state, id) => {
   const task = selectTask(state, id);
@@ -415,9 +418,11 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
   );
 
   const title = selectTaskTitle(state, id);
+  const calendarEventId = selectTaskCalendarBlockProviderEventId(state, id);
 
   dispatch(
     addSynchingCalendarEvent({
+      id: calendarEventId || `_${uuidv4()}`,
       calendarId: calendarBlockCalendarId,
       summary: title,
       start: {

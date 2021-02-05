@@ -4,7 +4,6 @@ import sortBy from 'lodash/sortBy';
 import omit from 'lodash/omit';
 import flow from 'lodash/flow';
 import { createSlice } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
 import Joi from '@hapi/joi';
 
 import parseISO from 'date-fns/parseISO';
@@ -299,27 +298,26 @@ const slice = createSlice({
 
     addSynchingCalendarEvent: {
       prepare: (payload) => {
-        const { error, value } = calendarEventSchema.validate({ ...payload, id: 'mock' });
+        const { error, value } = calendarEventSchema.validate(payload);
         if (error) {
           throw new Error(error);
         }
         return { payload: value };
       },
       reducer: (state, { payload: event }) => {
-        const id = `_${uuidv4()}`;
         const dateKey = format(event.start.timestamp, DATE_KEY_FORMAT);
 
         // Add to state
         const stateWithNewEvents = {
           byId: {
             ...state.byId,
-            [id]: { ...event, id, synching: true },
+            [event.id]: { ...event, synching: true },
           },
           byDate: {
             ...state.byDate,
             [dateKey]: {
               ...(state.byDate[dateKey] || {}),
-              allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(id)),
+              allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(event.id)),
             },
           },
         };
