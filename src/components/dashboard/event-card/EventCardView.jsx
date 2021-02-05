@@ -98,13 +98,9 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           ])(),
           zIndex: 1,
           cursor: selectable ? 'pointer' : 'auto',
-          ...(!allDay
-            ? {
-                position: 'absolute',
-                width,
-                left: coordinates.x,
-              }
-            : {}),
+          width,
+          left: coordinates.x,
+          position: allDay ? 'static' : 'absolute',
         }}
         className={[classes.eventCard, className].filter(Boolean).join(' ')}
         elevation={elevated || focused ? 8 : 0}
