@@ -31,6 +31,7 @@ import {
   TASK_MANUALLY_ARRANGED,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
+import { addSynchingCalendarEvent } from './calendarEvents';
 
 const name = 'tasks';
 
@@ -402,12 +403,32 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
     EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
     EFFORT_TO_DURATION[2];
 
+  const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
+
   dispatch(
     updateTask(id, {
       calendarBlockCalendarId,
       scheduledStart: calendarBlockStart,
       calendarBlockStart,
-      calendarBlockEnd: add(calendarBlockStart, { minutes: duration }).getTime(),
+      calendarBlockEnd,
+    }),
+  );
+
+  const title = selectTaskTitle(state, id);
+
+  dispatch(
+    addSynchingCalendarEvent({
+      calendarId: calendarBlockCalendarId,
+      summary: title,
+      start: {
+        timestamp: calendarBlockStart,
+      },
+      end: {
+        timestamp: calendarBlockEnd,
+      },
+      allDay: false,
+      declined: false,
+      taskId: id,
     }),
   );
 };

@@ -15,6 +15,7 @@ import {
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
   selectCalendarEventTaskId,
+  selectCalendarEventSynching,
 } from '../../../modules/calendarEvents';
 import { selectCalendarColor } from '../../../modules/calendars';
 import EventCardView from './EventCardView';
@@ -33,6 +34,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
+  const synching = useSelector((state) => selectCalendarEventSynching(state, id));
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
@@ -52,6 +54,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
         key={id}
         scrollAnchorRef={scrollAnchorRef}
         elevated={calendarDetailsOpen}
+        showLoader={Boolean(synching)}
         summary={summary}
         startTimestamp={startTimestamp}
         endTimestamp={endTimestamp}

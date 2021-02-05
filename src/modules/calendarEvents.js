@@ -1,7 +1,9 @@
 import uniq from 'lodash/uniq';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
+import omit from 'lodash/omit';
 import { createSlice } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
 
 import parseISO from 'date-fns/parseISO';
 import isEqual from 'date-fns/isEqual';
@@ -66,6 +68,7 @@ export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
+export const selectCalendarEventSynching = (state, id) => get(state[name].byId[id], 'synching');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -119,6 +122,77 @@ const isEventAllDay = (start, end, startOfDayDate, endOfDayDate) => {
   return isAllDay || isEventLastingMoreThanToday;
 };
 
+function sortIdsByStartTimestamp(state, dateKey) {
+  const dateEventIds = get(state.byDate, [dateKey, 'allIds'], []);
+
+  const idTimestampPairs = dateEventIds.map((id) => {
+    return {
+      id,
+      timestamp: get(state.byId, [id, 'start', 'timestamp'], Infinity),
+    };
+  });
+  const sortedPairs = sortBy(idTimestampPairs, 'timestamp');
+  const sortedIds = sortedPairs.map(({ id }) => id);
+
+  return {
+    ...state,
+    byDate: {
+      ...state.byDate,
+      [dateKey]: {
+        ...state.byDate[dateKey],
+        allIds: sortedIds,
+      },
+    },
+  };
+}
+
+function addCollisionsToCalendarEvents(state, dateKey) {
+  const dateEventIds = get(state.byDate, [dateKey, 'allIds'], []);
+  const dateEvents = dateEventIds.map((id) => state.byId[id]);
+
+  const timedEvents = dateEvents.filter((event) => !event.allDay);
+  const dateEventsReset = dateEvents.map((event) => ({
+    ...event,
+    collisionCount: 0,
+    collisionOrder: 0,
+  }));
+  const dateEventsWithCollisionsById = dateEventsReset.reduce((memo, event) => {
+    // @TODO: handle all day collisions
+    const collisionIds = getCollisions(event, timedEvents);
+    const eventWithCollisionCount = {
+      ...event,
+      collisionCount: collisionIds.length,
+      collisionOrder: event.collisionOrder || 0,
+    };
+    const otherEventsWithCollisionOrderField = collisionIds.reduce(
+      (acc, collisionId) => ({
+        ...acc,
+        [collisionId]: {
+          ...(memo[collisionId] || {}),
+          collisionOrder:
+            memo[collisionId] && memo[collisionId].collisionOrder
+              ? memo[collisionId].collisionOrder + 1
+              : 1,
+        },
+      }),
+      {},
+    );
+    return {
+      ...memo,
+      [event.id]: eventWithCollisionCount,
+      ...otherEventsWithCollisionOrderField,
+    };
+  }, {});
+
+  return {
+    ...state,
+    byId: {
+      ...state.byId,
+      ...dateEventsWithCollisionsById,
+    },
+  };
+}
+
 // Slice
 
 const initialState = {
@@ -127,73 +201,78 @@ const initialState = {
   byDate: {},
 };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
   reducers: {
     clearAllEvents: () => initialState,
     setDayEvents: (state, { payload: { events, dateKey } }) => {
-      const dayEventsById = events.reduce((memo, item) => ({ ...memo, [item.id]: item }), {});
-
-      // Optimization to avoid doing it on every render:
-      // Add number of collisions and horizontal order to show cards
-      const allTimedEvents = events.filter((event) => !event.allDay);
-      const dayEventsByIdWithCollisions = Object.entries(dayEventsById).reduce(
-        (memo, [id, event]) => {
-          // @TODO: handle all day collisions
-          const collisionIds = getCollisions(event, allTimedEvents);
-
-          const eventWithCollisionCount = {
-            ...event,
-            collisionCount: collisionIds.length,
-            collisionOrder: event.collisionOrder || 0,
-          };
-          const otherEventsWithCollisionOrderField = collisionIds.reduce(
-            (acc, collisionId) => ({
-              ...acc,
-              [collisionId]: {
-                ...(memo[collisionId] || {}),
-                collisionOrder:
-                  memo[collisionId] && memo[collisionId].collisionOrder
-                    ? memo[collisionId].collisionOrder + 1
-                    : 1,
-              },
-            }),
-            {},
-          );
-
-          return {
-            ...memo,
-            [id]: eventWithCollisionCount,
-            ...otherEventsWithCollisionOrderField,
-          };
-        },
-        {},
-      );
-
-      // Optimization to avoid doing it on every render:
-      // Sort IDs by start time
-      const allIds = uniq(events.map(({ id }) => id));
-      const idTimestampPairs = allIds.map((id) => {
-        return { id, timestamp: get(dayEventsById, [id, 'start', 'timestamp'], Infinity) };
-      });
-      const sortedPairs = sortBy(idTimestampPairs, 'timestamp');
-      const sortedIds = sortedPairs.map(({ id }) => id);
-
-      return {
+      // Add to state
+      const stateWithNewEvents = {
         byId: {
           ...state.byId,
-          ...dayEventsByIdWithCollisions,
+          ...events.reduce((memo, event) => ({ ...memo, [event.id]: event }), {}),
         },
         byDate: {
           ...state.byDate,
           [dateKey]: {
             fetchedAt: Date.now(),
-            allIds: sortedIds,
+            allIds: uniq(events.map((event) => event.id)),
           },
         },
       };
+
+      const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
+      const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+
+      // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
+      const eventTaskIds = events
+        .filter((event) => !event.synching && event.taskId)
+        .map((event) => event.taskId);
+      const idsToRemove = stateWithNewEventsSorted.byDate[dateKey].allIds.filter((id) => {
+        const event = stateWithNewEventsSorted.byId[id];
+        return event.synching && eventTaskIds.includes(event.taskId);
+      });
+      const dateKeyAllIds = stateWithNewEventsSorted.byDate[dateKey].allIds.filter(
+        (id) => !idsToRemove.includes(id),
+      );
+      const byId = omit(stateWithNewEventsSorted.byId, idsToRemove);
+
+      // Update state
+      state.byId = byId;
+      state.byDate[dateKey] = {
+        ...(stateWithNewEventsSorted.byDate[dateKey] || {}),
+        fetchedAt: Date.now(),
+        allIds: dateKeyAllIds,
+      };
     },
+
+    addSynchingCalendarEvent: (state, { payload: event }) => {
+      const id = `_${uuidv4()}`;
+      const dateKey = format(event.start.timestamp, DATE_KEY_FORMAT);
+
+      // Add to state
+      const stateWithNewEvents = {
+        byId: {
+          ...state.byId,
+          [id]: { ...event, id, synching: true },
+        },
+        byDate: {
+          ...state.byDate,
+          [dateKey]: {
+            ...(state.byDate[dateKey] || {}),
+            allIds: uniq(get(state.byDate, [dateKey, 'allIds'], []).concat(id)),
+          },
+        },
+      };
+
+      const stateWithCollisions = addCollisionsToCalendarEvents(stateWithNewEvents, dateKey);
+      const stateWithNewEventsSorted = sortIdsByStartTimestamp(stateWithCollisions, dateKey);
+
+      return stateWithNewEventsSorted;
+    },
+
     // @todo: improve this so we're only flagging the calendar that had changes
     //        or even better, pull those changes only
     staleAllEvents: (state) => ({
@@ -211,9 +290,10 @@ const slice = createSlice({
     }),
   },
 });
+/* eslint-enable no-param-reassign */
 
 export default slice;
-export const { clearAllEvents, staleAllEvents } = slice.actions;
+export const { clearAllEvents, staleAllEvents, addSynchingCalendarEvent } = slice.actions;
 
 // Helpers
 
