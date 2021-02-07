@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment } from 'react';
+import React, { useRef, Fragment } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
@@ -92,7 +92,7 @@ export const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TaskList = forwardRef((_, ref) => {
+const TaskList = () => {
   const classes = useStyles();
 
   const tab = useSelector(selectDashboardActiveTab);
@@ -110,8 +110,10 @@ const TaskList = forwardRef((_, ref) => {
   const [, showNewTaskDialog] = useNewTaskDialogRouterControl();
   useCreateTaskShortcut();
 
+  const scrollContainerRef = useRef();
+
   return (
-    <Box ref={ref} className={classes.taskListContainer}>
+    <Box ref={scrollContainerRef} className={classes.taskListContainer}>
       {cond([
         [() => loading, () => <LoaderScreen />],
         [
@@ -124,11 +126,12 @@ const TaskList = forwardRef((_, ref) => {
             <>
               <List disablePadding>
                 <Sortable
-                  id={`sortable-${tab}`}
+                  dashboardTab={tab}
                   enabled={showPosition}
                   dropAreaHeight={DROP_AREA_HEIGHT}
                   itemIds={taskIds}
                   indexOffset={positionOffset}
+                  scrollContainerRef={scrollContainerRef}
                   renderItem={(id, index) => (
                     <Task
                       key={id}
@@ -181,6 +184,6 @@ const TaskList = forwardRef((_, ref) => {
       </Tooltip>
     </Box>
   );
-});
+};
 
 export default TaskList;

@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
+import memoizeFunction from 'lodash/memoize';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -13,6 +14,7 @@ import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
 import CalendarViewDayRoundedIcon from '@material-ui/icons/CalendarViewDayRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
+import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
 
 import TaskTitle from './TaskTitle';
 import TaskRecurringLabel from './TaskRecurringLabel';
@@ -22,6 +24,34 @@ import TextWithLinks from '../../ui/TextWithLinks';
 import { clearRelativePrioritization } from '../../../modules/tasks';
 import formatDateTime from '../../../utils/formatDateTime';
 import CompleteButton from './CompleteButton';
+import { EFFORT_SLIDER_MARKS } from '../../../constants/effort';
+
+const getTimeEstimateForEffort = memoizeFunction((effort) => {
+  const mark = EFFORT_SLIDER_MARKS.find(({ value }) => value === effort);
+  return mark ? mark.label : undefined;
+});
+
+const formatMinutes = (totalMinutes) => {
+  const totalHours = Math.floor(totalMinutes / 60);
+  const days = Math.floor(totalHours / 24);
+
+  const hours = totalHours % 24;
+  const minutes = totalMinutes % 60;
+
+  const HOUR_LABELS = { plural: 'hours', singular: 'hour' };
+  const MINUTE_LABELS = { plural: 'minutes', singular: 'minute' };
+  const DAY_LABELS = { plural: 'days', singular: 'day' };
+
+  const getLabel = (value, labels) => (value === 1 ? labels.singular : labels.plural);
+
+  return [
+    days > 0 ? `${days} ${getLabel(days, DAY_LABELS)}` : '',
+    hours > 0 ? `${hours} ${getLabel(hours, HOUR_LABELS)}` : '',
+    minutes > 0 ? `${minutes} ${getLabel(minutes, MINUTE_LABELS)}` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+};
 
 const useStyles = makeStyles((theme) => ({
   outerContainer: {
@@ -39,10 +69,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     whiteSpace: 'normal',
-  },
-  completeButtonIddle: {},
-  completeButtonSuccess: {
-    color: theme.palette.success.main,
   },
   blockersIcon: {
     marginRight: theme.spacing(1),
@@ -62,6 +88,7 @@ const TaskView = ({
   editable,
   title,
   scheduledStart,
+  effort,
   calendarBlockDuration,
   due,
   prioritizedAheadOf,
@@ -98,7 +125,7 @@ const TaskView = ({
       </Box>
 
       <Box className={classes.copyContainer}>
-        <Typography paragraph>{title}</Typography>
+        <Typography paragraph>{title.trim() || '(no title)'}</Typography>
 
         {description && (
           <Typography
@@ -112,9 +139,20 @@ const TaskView = ({
         )}
 
         {scheduledStart && (
-          <TaskViewSubtitle tooltip="Start date" Icon={EventRoundedIcon} onClick={() => {}}>
+          <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
             {formatDateTime(scheduledStart)}
-            {calendarBlockDuration && ` - ${calendarBlockDuration} minutes blocked`}
+          </TaskViewSubtitle>
+        )}
+
+        {(calendarBlockDuration || getTimeEstimateForEffort(effort)) && (
+          <TaskViewSubtitle
+            tooltip={calendarBlockDuration ? 'Time blocked in calendar' : 'Time estimated'}
+            Icon={QueryBuilderRoundedIcon}
+            onClick={() => {}}
+          >
+            {calendarBlockDuration
+              ? `${formatMinutes(calendarBlockDuration)}`
+              : `${getTimeEstimateForEffort(effort)} estimated`}
           </TaskViewSubtitle>
         )}
 
@@ -172,6 +210,7 @@ TaskView.propTypes = {
   id: PropTypes.string.isRequired,
   position: PropTypes.number,
   title: PropTypes.string.isRequired,
+  effort: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
   showBlockers: PropTypes.bool.isRequired,
   onCompleteTask: PropTypes.func.isRequired,

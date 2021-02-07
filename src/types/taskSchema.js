@@ -1,5 +1,4 @@
 import Joi from '@hapi/joi';
-
 import * as blockerTypes from '../constants/blockerTypes';
 
 export const taskSchema = Joi.object({
@@ -43,8 +42,10 @@ export const taskSchema = Joi.object({
   calendarBlockStart: Joi.number().allow(null),
   calendarBlockEnd: Joi.number().allow(null),
   calendarBlockCalendarId: Joi.string().allow(null),
+  calendarBlockProviderCalendarId: Joi.string().allow(null),
 
   // these below are managed by the backend of Firebase Functions
+  calendarBlockProvider: Joi.string().allow(null),
   calendarBlockProviderEventId: Joi.string().allow(null),
 });
 

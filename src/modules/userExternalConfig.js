@@ -12,9 +12,13 @@ const LOADED = 'loaded';
 
 // Selectors
 
+/** @returns {boolean} */
 export const selectUserExternalConfigIsFetching = (state) => state[name].status === INITIAL;
+/** @returns {boolean} */
 export const selectUserHasGrantedGoogleCalendarOfflineAccess = (state) =>
   Boolean(get(state[name].data, 'gapiCalendarOfflineAccess', false));
+/** @returns {string|null} */
+export const selectUserDefaultCalendarId = (state) => get(state[name].data, 'defaultCalendarId');
 
 // Slice
 

@@ -23,7 +23,7 @@ import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import LoaderScreen from '../../ui/LoaderScreen';
 import { selectAllConnectedProviderCalendarIds } from '../../../modules/calendars';
 import { selectUserId, selectGapiUserSignedIn } from '../../../modules/session';
-import { fetchCreateCalendar } from '../../../utils/apiClient';
+import { fetchCreateCalendar, fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
 import calendarColors from '../../../constants/calendarColors';
 import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
 import { GOOGLE_CALENDAR_CONNECTED } from '../../../constants/mixpanelEvents';
@@ -39,11 +39,11 @@ export default function CalendarSelectionDialog({ open, onClose }) {
 
   const [fetching, setFetching] = useState(false);
   const [calendarsAvailable, setCalendarsAvailable] = useState([]);
-  const [calendarIdsSelected, setCalendarIdsSelected] = useState([]);
+  const [calendarProviderIdsSelected, setCalendarProviderIdsSelected] = useState([]);
 
   useEffect(() => {
     if (!open) {
-      setCalendarIdsSelected([]);
+      setCalendarProviderIdsSelected([]);
     }
   }, [open]);
 
@@ -80,14 +80,18 @@ export default function CalendarSelectionDialog({ open, onClose }) {
       notifyError(`An error ocurred. User isn't signed in to Google`);
       return;
     }
-    if (calendarIdsSelected.length <= 0) {
+    if (calendarProviderIdsSelected.length <= 0) {
       return;
     }
-    calendarIdsSelected.forEach((selectedCalendarId) => {
-      const calendar = calendarsAvailable.find(({ id }) => id === selectedCalendarId);
+
+    const newDefaultCalendarProviderId =
+      connectedProviderCalendarIds.length === 0 ? calendarProviderIdsSelected[0] : undefined;
+
+    calendarProviderIdsSelected.forEach((calendarProviderId) => {
+      const calendar = calendarsAvailable.find(({ id }) => id === calendarProviderId);
       if (!calendar) {
         console.error('No calendar'); // eslint-disable-line no-console
-        notifyError(`An error ocurred adding ${selectedCalendarId}`);
+        notifyError(`An error ocurred adding ${calendarProviderId}`);
         return;
       }
 
@@ -99,11 +103,17 @@ export default function CalendarSelectionDialog({ open, onClose }) {
         providerUserEmail: currentUser.getBasicProfile().getEmail(),
         color: calendarColors[0],
         name: calendar.summary,
+      }).then((data) => {
+        // We mark the first calendar created as default
+        if (calendarProviderId === newDefaultCalendarProviderId) {
+          return fetchUpdateUserExternalConfig({ defaultCalendarId: data.id });
+        }
+        return undefined;
       });
     });
 
     mixpanel.track(GOOGLE_CALENDAR_CONNECTED, {
-      newCalendarsConncted: calendarIdsSelected.length,
+      newCalendarsConncted: calendarProviderIdsSelected.length,
     });
     onClose();
   };
@@ -134,7 +144,8 @@ export default function CalendarSelectionDialog({ open, onClose }) {
               <List>
                 {calendarsAvailable.map((calendar) => {
                   const alreadyAdded = connectedProviderCalendarIds.includes(calendar.id);
-                  const selected = alreadyAdded || calendarIdsSelected.includes(calendar.id);
+                  const selected =
+                    alreadyAdded || calendarProviderIdsSelected.includes(calendar.id);
                   return (
                     <ListItem key={calendar.id} disabled={alreadyAdded}>
                       <ListItemText style={{ wordBreak: 'break-word' }}>
@@ -151,10 +162,10 @@ export default function CalendarSelectionDialog({ open, onClose }) {
                           disabled={alreadyAdded}
                           onClick={() => {
                             return selected
-                              ? setCalendarIdsSelected((ids) =>
+                              ? setCalendarProviderIdsSelected((ids) =>
                                   ids.filter((i) => i !== calendar.id),
                                 )
-                              : setCalendarIdsSelected((ids) => ids.concat(calendar.id));
+                              : setCalendarProviderIdsSelected((ids) => ids.concat(calendar.id));
                           }}
                         >
                           {selected ? (
@@ -175,7 +186,7 @@ export default function CalendarSelectionDialog({ open, onClose }) {
 
       <DialogActions>
         <Button
-          disabled={fetching || calendarIdsSelected.length === 0}
+          disabled={fetching || calendarProviderIdsSelected.length === 0}
           color="primary"
           variant="contained"
           onClick={handleConnect}

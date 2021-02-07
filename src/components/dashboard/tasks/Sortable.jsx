@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import cond from 'lodash/cond';
-import { useDispatch } from 'react-redux';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 import Paper from '@material-ui/core/Paper';
 
-import { setRelativePrioritization } from '../../../modules/tasks';
+import { useAppDragDropContext } from '../DashboardDragDropContext';
+import { DROP_AREA_HEIGHT } from './TaskSiblingListDropArea';
 
 const DropArea = ({ droppableId, render }) => (
   <Droppable droppableId={droppableId}>
@@ -27,62 +26,41 @@ DropArea.propTypes = {
 };
 
 const Sortable = ({
-  id,
+  dashboardTab,
   enabled,
   itemIds,
   renderItem,
   renderDropAreaStart,
   renderDropAreaEnd,
-  dropAreaHeight,
   indexOffset,
+  scrollContainerRef,
 }) => {
-  const dispatch = useDispatch();
+  const { dragging } = useAppDragDropContext();
 
-  const [dragging, setDragging] = useState(false);
+  const id = dashboardTab.replace(/[^a-z1-9]/i, '');
 
-  const onBeforeCapture = () => {
-    setDragging(true);
-
-    // If there's a drop area at the top, we add its height to scroll, so the dnd lib doesn't get
-    // confused when calculating the relative position of the draggable to the cursor
-    if (renderDropAreaStart && dropAreaHeight) {
-      window.scroll(0, window.scrollY + parseInt(dropAreaHeight, 10), 10);
+  // force a scroll after dragging starts so the appearance of the "Top 4" droppable doesn't
+  // disrupt where the dragging cursor is placed.
+  // @todo: only works when backlog list overflows. Handle too when it doesn't
+  // @todo: better considering placing a fixed droppable on the top or nav bar
+  useEffect(() => {
+    if (dragging && renderDropAreaStart && scrollContainerRef && scrollContainerRef.current) {
+      const node = scrollContainerRef.current;
+      node.scroll(0, node.scrollTop + parseInt(DROP_AREA_HEIGHT, 10));
+      return () => {
+        node.scroll(0, node.scrollTop - parseInt(DROP_AREA_HEIGHT, 10));
+      };
     }
-  };
-
-  const onDragEnd = ({ source, destination }) => {
-    setDragging(false);
-
-    // If there's a drop area at the top, remove the previous increase on scroll so it doesn't bump
-    // when releasing
-    if (renderDropAreaStart && dropAreaHeight) {
-      window.scroll(0, window.scrollY - parseInt(dropAreaHeight, 10), 10);
-    }
-
-    // dropped outside the list
-    if (!destination) {
-      return;
-    }
-
-    const destinationIndex = cond([
-      [() => /-top$/.test(destination.droppableId), () => -1],
-      [() => /-bottom$/.test(destination.droppableId), () => itemIds.length + 1],
-      [
-        () => true,
-        () => (source.index < destination.index ? destination.index + 1 : destination.index),
-      ],
-    ])();
-
-    dispatch(setRelativePrioritization(source.index + indexOffset, destinationIndex + indexOffset));
-  };
+    return undefined;
+  }, [renderDropAreaStart, dragging, scrollContainerRef]);
 
   return (
-    <DragDropContext onDragEnd={onDragEnd} onBeforeCapture={onBeforeCapture}>
+    <>
       {dragging && renderDropAreaStart && (
-        <DropArea droppableId={`droppable-${id}-top`} render={renderDropAreaStart} />
+        <DropArea droppableId={`droppable-top-${indexOffset}-${id}`} render={renderDropAreaStart} />
       )}
 
-      <Droppable droppableId={`droppable-${id}-main`}>
+      <Droppable droppableId={`droppable-list-${indexOffset}-${id}`}>
         {(droppableProvided) => (
           <div {...droppableProvided.droppableProps} ref={droppableProvided.innerRef}>
             {itemIds.map((itemId, index) => (
@@ -99,7 +77,17 @@ const Sortable = ({
                     {...draggableProvided.draggableProps}
                     {...draggableProvided.dragHandleProps}
                     elevation={draggableSnapshot.isDragging ? 4 : 0}
-                    style={draggableProvided.draggableProps.style}
+                    style={{
+                      ...draggableProvided.draggableProps.style,
+                      opacity: draggableSnapshot.draggingOver === 'droppable-calendar' ? 0 : 1,
+                      // Removing the drop animation on the calendar bc its delay allows users to
+                      // move the placeholder away from where it was
+                      // @link https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/drop-animation.md#skipping-the-drop-animation
+                      ...(draggableSnapshot.draggingOver === 'droppable-calendar' &&
+                      draggableSnapshot.isDropAnimating
+                        ? { transitionDuration: `0.001s` }
+                        : {}),
+                    }}
                   >
                     {renderItem(itemId, index)}
                   </Paper>
@@ -112,14 +100,17 @@ const Sortable = ({
       </Droppable>
 
       {dragging && renderDropAreaEnd && (
-        <DropArea droppableId={`droppable-${id}-bottom`} render={renderDropAreaEnd} />
+        <DropArea
+          droppableId={`droppable-bottom-${indexOffset}-${id}`}
+          render={renderDropAreaEnd}
+        />
       )}
-    </DragDropContext>
+    </>
   );
 };
 
 Sortable.propTypes = {
-  id: PropTypes.string.isRequired,
+  dashboardTab: PropTypes.string.isRequired,
   enabled: PropTypes.bool.isRequired,
   dropAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   itemIds: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -127,6 +118,9 @@ Sortable.propTypes = {
   indexOffset: PropTypes.number.isRequired,
   renderDropAreaStart: PropTypes.func,
   renderDropAreaEnd: PropTypes.func,
+  scrollContainerRef: PropTypes.shape({
+    current: PropTypes.instanceOf(Element),
+  }).isRequired,
 };
 
 Sortable.defaultProps = {

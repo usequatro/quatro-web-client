@@ -71,7 +71,7 @@ import {
 } from '../../../modules/recurringConfigs';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
-import { selectCalendarCount } from '../../../modules/calendars';
+import { selectCalendarCount, selectCalendarProviderCalendarId } from '../../../modules/calendars';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
@@ -87,12 +87,8 @@ import SliderField from '../../ui/SliderField';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
-import {
-  impactLabels,
-  impactSliderMarks,
-  effortLabels,
-  effortSliderMarks,
-} from '../../../constants/taskFormConstants';
+import { IMPACT_LABELS, IMPACT_SLIDER_MARKS } from '../../../constants/impact';
+import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
@@ -158,7 +154,7 @@ const getBlockerTitle = cond([
 
 const RepeatButtonDisabledTooltip = ({ mounted, children }) =>
   mounted ? (
-    <Tooltip title="Add a Start Date to enable" enterDelay={0} arrow>
+    <Tooltip title="Add a Scheduled Date to enable" enterDelay={0} arrow>
       <span>{children}</span>
     </Tooltip>
   ) : (
@@ -206,6 +202,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
     selectUserHasGrantedGoogleCalendarOfflineAccess,
   );
 
+  const calendarProviderCalendarId = useSelector((state) =>
+    calendarBlockCalendarId
+      ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
+      : undefined,
+  );
+
   const [showDescription, setShowDescription] = useState(Boolean(description));
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
@@ -228,7 +230,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const errors = [title === '' && 'title'].filter(Boolean);
+    const errors = [title.trim() === '' && 'title'].filter(Boolean);
     setValidationErrors(errors);
     if (errors.length) {
       return;
@@ -251,6 +253,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               scheduledStart: scheduledStartTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
               // Make sure to clear recurringConfigId if we don't have any repeat info set
@@ -390,6 +393,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 setValidationErrors(validationErrors.filter((e) => e !== 'title'));
               }
             }}
+            onBlur={() => {
+              // Prevent leaving whitespaces saved at beginning or end
+              if (title !== title.trim()) {
+                dispatch(setTitle(title.trim()));
+              }
+            }}
             error={validationErrors.includes('title')}
           />
 
@@ -430,9 +439,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             id="impact-slider"
             label="What impact will this task have?"
             value={impact}
-            getValueText={(i) => impactLabels[i] || '-'}
+            getValueText={(i) => IMPACT_LABELS[i] || '-'}
             onChange={(value) => dispatch(setImpact(value))}
-            marks={impactSliderMarks}
+            marks={IMPACT_SLIDER_MARKS}
           />
         </Box>
 
@@ -441,9 +450,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             id="effort-slider"
             label="How much time will this task require?"
             value={effort}
-            getValueText={(e) => effortLabels[e] || '-'}
+            getValueText={(e) => EFFORT_LABELS[e] || '-'}
             onChange={(value) => dispatch(setEffort(value))}
-            marks={effortSliderMarks}
+            marks={EFFORT_SLIDER_MARKS}
           />
         </Box>
 
@@ -455,7 +464,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 startIcon={<EventRoundedIcon />}
                 className={classes.settingButton}
               >
-                {'Start Date: '}
+                {'Scheduled Date: '}
                 {formatDateTime(scheduledStartTimestamp)}
 
                 {calendarBlockStart && calendarBlockEnd && (
@@ -536,7 +545,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       <DialogActions className={classes.dialogActionBar} disableSpacing>
         <Box flexGrow={1}>
           <LabeledIconButton
-            label="Start Date"
+            label="Schedule"
             color="inherit"
             icon={<EventRoundedIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}

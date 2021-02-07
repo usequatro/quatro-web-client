@@ -6,6 +6,7 @@ import firebase from '../firebase';
 import { validateTaskSchema } from '../types/taskSchema';
 import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
 import { validateCalendarSchema } from '../types/calendarSchema';
+import { validateExternalConfigSchema } from '../types/userExternalConfigSchema';
 import debugConsole from './debugConsole';
 
 const TASKS = 'tasks';
@@ -267,3 +268,14 @@ export const listenToUserExternalConfigDocument = (userId, onNext, onError) =>
         onError(error);
       },
     );
+
+/**
+ * Updates the external config for the currently logged-in user
+ * @param {Object} updates
+ * @return {Promise<void>}
+ */
+export const fetchUpdateUserExternalConfig = async (updates) => {
+  const id = firebase.auth().currentUser.uid;
+  const validEntity = await validateExternalConfigSchema(updates, { isUpdate: true });
+  return db.collection(USER_EXTERNAL_CONFIGS).doc(id).set(validEntity, { merge: true });
+};

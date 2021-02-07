@@ -13,14 +13,14 @@ import {
   selectGoogleFirebaseAuthProvider,
   selectGapiUserLoading,
 } from '../../../modules/session';
-import CalendarView from '../calendar-view/CalendarView';
+import DashboardCalendarView from './DashboardCalendarView';
 import * as paths from '../../../constants/paths';
 import EmptyState from '../tasks/EmptyState';
 import ScheduledIcon from '../../icons/ScheduledIcon';
 import LoaderScreen from '../../ui/LoaderScreen';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
 
-const CalendarDashboardView = () => {
+const CalendarDashboardRouting = () => {
   const history = useHistory();
 
   const gapiUserLoading = useSelector(selectGapiUserLoading);
@@ -66,10 +66,10 @@ const CalendarDashboardView = () => {
             );
           },
         ],
-        [() => true, () => <CalendarView />],
+        [() => true, () => <DashboardCalendarView />],
       ])}
     </Box>
   );
 };
 
-export default CalendarDashboardView;
+export default CalendarDashboardRouting;

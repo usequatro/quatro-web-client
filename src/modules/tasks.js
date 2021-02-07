@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
@@ -7,6 +8,7 @@ import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
 
 import isValid from 'date-fns/isValid';
+import add from 'date-fns/add';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import calculateTaskScore from '../utils/calculateTaskScore';
@@ -16,6 +18,9 @@ import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiC
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
+import { selectFallbackCalendarId } from './calendars';
+import { selectUserDefaultCalendarId } from './userExternalConfig';
+import { validateTimestamp } from '../utils/validators';
 
 import {
   selectRecurringConfigIdByMostRecentTaskId,
@@ -27,6 +32,8 @@ import {
   TASK_UNDO_COMPLETE,
   TASK_MANUALLY_ARRANGED,
 } from '../constants/mixpanelEvents';
+import { EFFORT_TO_DURATION } from '../constants/effort';
+import { addSynchingCalendarEvent } from './calendarEvents';
 
 const name = 'tasks';
 
@@ -45,6 +52,10 @@ export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
 export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
+export const selectTaskCalendarBlockCalendarId = (state, id) =>
+  get(selectTask(state, id), 'calendarBlockCalendarId');
+const selectTaskCalendarBlockProviderEventId = (state, id) =>
+  get(selectTask(state, id), 'calendarBlockProviderEventId');
 
 export const selectTaskCalendarBlockDuration = (state, id) => {
   const task = selectTask(state, id);
@@ -382,4 +393,50 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   }
 
   mixpanel.track(TASK_DELETED);
+};
+
+export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
+  validateTimestamp(calendarBlockStart);
+
+  const state = getState();
+  const calendarBlockCalendarId =
+    selectTaskCalendarBlockCalendarId(state, id) ||
+    selectUserDefaultCalendarId(state) ||
+    selectFallbackCalendarId(state);
+
+  const duration =
+    selectTaskCalendarBlockDuration(state, id) ||
+    EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
+    EFFORT_TO_DURATION[2];
+
+  const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
+
+  dispatch(
+    updateTask(id, {
+      calendarBlockCalendarId,
+      scheduledStart: calendarBlockStart,
+      calendarBlockStart,
+      calendarBlockEnd,
+    }),
+  );
+
+  const title = selectTaskTitle(state, id);
+  const calendarEventId = selectTaskCalendarBlockProviderEventId(state, id);
+
+  dispatch(
+    addSynchingCalendarEvent({
+      id: calendarEventId || `_${uuidv4()}`,
+      calendarId: calendarBlockCalendarId,
+      summary: title,
+      start: {
+        timestamp: calendarBlockStart,
+      },
+      end: {
+        timestamp: calendarBlockEnd,
+      },
+      allDay: false,
+      declined: false,
+      taskId: id,
+    }),
+  );
 };

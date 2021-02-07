@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import format from 'date-fns/format';
@@ -6,20 +7,24 @@ import parse from 'date-fns/parse';
 import isToday from 'date-fns/isToday';
 import isValid from 'date-fns/isValid';
 import getYear from 'date-fns/getYear';
-import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
-import useLoadEvents from './useLoadEvents';
-import CalendarNavBar from './CalendarNavBar';
-import Ticks from './Ticks';
-import CalendarDayEventsList from './CalendarDayEventsList';
-import AllDayEventsSection from './AllDayEventsSection';
-import CurrentTimeLine from './CurrentTimeLine';
+import useLoadEvents from '../calendar-view/useLoadEvents';
+import CalendarNavBar from '../calendar-view/CalendarNavBar';
+import Ticks from '../calendar-view/Ticks';
+import CalendarDayEventsList from '../calendar-view/CalendarDayEventsList';
+import AllDayEventsSection from '../calendar-view/AllDayEventsSection';
+import CurrentTimeLine from '../calendar-view/CurrentTimeLine';
 import { TICK_HEIGHT, TICKS_PER_HOUR } from '../../../constants/tickConstants';
+import CalendarDroppable from './CalendarDroppable';
+import {
+  selectCalendarDisplayTimestamp,
+  setCalendarDisplayTimestamp,
+} from '../../../modules/dashboard';
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    width: '100%',
+    position: 'relative',
     paddingTop: theme.spacing(5),
     display: 'flex',
     alignItems: 'center',
@@ -36,26 +41,31 @@ const DATE_URL_PARAM_FORMAT = 'yyyy-MM-dd';
 
 const getInitialDate = (history) => {
   const formattedDateParam = new URLSearchParams(history.location.search).get('date');
-  const dateParamDate = formattedDateParam
+  const dateParamTimestamp = formattedDateParam
     ? parse(formattedDateParam, DATE_URL_PARAM_FORMAT, new Date()).getTime()
     : null;
-  if (
-    !isValid(dateParamDate) ||
-    // Only let select some years in the past and the future
-    getYear(dateParamDate) > currentYear + 2 ||
-    getYear(dateParamDate) < currentYear - 2
-  ) {
-    return Date.now();
-  }
-  return dateParamDate;
+  const YEAR_THRESHOLD = 2;
+  return isValid(dateParamTimestamp) &&
+    getYear(dateParamTimestamp) < currentYear + YEAR_THRESHOLD &&
+    getYear(dateParamTimestamp) > currentYear - YEAR_THRESHOLD
+    ? dateParamTimestamp
+    : undefined;
 };
 
-const CalendarView = () => {
+const DashboardCalendarView = () => {
+  const dispatch = useDispatch();
   const classes = useStyles();
   const history = useHistory();
 
-  const initialDate = useMemo(() => getInitialDate(history), [history]);
-  const [timestamp, setTimestamp] = useState(initialDate);
+  const timestamp = useSelector(selectCalendarDisplayTimestamp);
+
+  // URL containing the date to use
+  useEffect(() => {
+    const initialDate = getInitialDate(history);
+    if (initialDate) {
+      dispatch(setCalendarDisplayTimestamp(initialDate));
+    }
+  }, [dispatch, history]);
 
   // Management of URL parameter for date
   useEffect(() => {
@@ -98,23 +108,27 @@ const CalendarView = () => {
     <>
       <CalendarNavBar
         timestamp={timestamp}
-        onChange={(newDate) => setTimestamp(newDate instanceof Date ? newDate.getTime() : newDate)}
+        onChange={(newDate) => dispatch(setCalendarDisplayTimestamp(newDate))}
         fetching={fetching}
       />
       <AllDayEventsSection timestamp={timestamp} />
-      <Box className={classes.container}>
+      <CalendarDroppable
+        className={classes.container}
+        tickHeight={TICK_HEIGHT}
+        ticksPerHour={TICKS_PER_HOUR}
+      >
         <CalendarDayEventsList
           firstEventCardScrollAnchorRef={firstEventCardScrollAnchorRef}
           timestamp={timestamp}
           tickHeight={TICK_HEIGHT}
           ticksPerHour={TICKS_PER_HOUR}
-          selectableEvents
+          interactive
         />
         <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
         {today && <CurrentTimeLine ref={currentTimeRef} />}
-      </Box>
+      </CalendarDroppable>
     </>
   );
 };
 
-export default CalendarView;
+export default DashboardCalendarView;
