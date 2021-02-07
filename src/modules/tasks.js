@@ -18,7 +18,8 @@ import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiC
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
-import { selectDefaultCalendarId } from './calendars';
+import { selectFallbackCalendarId } from './calendars';
+import { selectUserDefaultCalendarId } from './userExternalConfig';
 import { validateTimestamp } from '../utils/validators';
 
 import {
@@ -399,7 +400,9 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
 
   const state = getState();
   const calendarBlockCalendarId =
-    selectTaskCalendarBlockCalendarId(state, id) || selectDefaultCalendarId(state);
+    selectTaskCalendarBlockCalendarId(state, id) ||
+    selectUserDefaultCalendarId(state) ||
+    selectFallbackCalendarId(state);
 
   const duration =
     selectTaskCalendarBlockDuration(state, id) ||

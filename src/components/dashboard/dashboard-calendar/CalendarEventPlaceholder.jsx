@@ -18,7 +18,8 @@ import {
   selectTaskEffort,
   selectTaskCalendarBlockDuration,
 } from '../../../modules/tasks';
-import { selectCalendarColor, selectDefaultCalendarId } from '../../../modules/calendars';
+import { selectCalendarColor, selectFallbackCalendarId } from '../../../modules/calendars';
+import { selectUserDefaultCalendarId } from '../../../modules/userExternalConfig';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
 
 const useStyles = makeStyles(() => ({
@@ -106,7 +107,9 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
   const color =
     useSelector((state) => {
       const calendarId =
-        selectTaskCalendarBlockCalendarId(state, draggableTaskId) || selectDefaultCalendarId(state);
+        selectTaskCalendarBlockCalendarId(state, draggableTaskId) ||
+        selectUserDefaultCalendarId(state) ||
+        selectFallbackCalendarId(state);
       return selectCalendarColor(state, calendarId);
     }) || '#000000';
 
