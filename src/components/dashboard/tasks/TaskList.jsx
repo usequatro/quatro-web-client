@@ -1,4 +1,4 @@
-import React, { useRef, Fragment } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
@@ -89,6 +89,7 @@ export const useStyles = makeStyles((theme) => ({
     right: theme.spacing(4),
     height: '4rem',
     width: '4rem',
+    zIndex: theme.zIndex.speedDial,
   },
 }));
 
@@ -111,6 +112,12 @@ const TaskList = () => {
   useCreateTaskShortcut();
 
   const scrollContainerRef = useRef();
+
+  const [listWidth, setListWidth] = useState(0);
+  useEffect(() => {
+    const rect = scrollContainerRef.current.getBoundingClientRect();
+    setListWidth(rect.width);
+  }, []);
 
   return (
     <Box ref={scrollContainerRef} className={classes.taskListContainer}>
@@ -143,6 +150,7 @@ const TaskList = () => {
                         tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
                       }
                       editable
+                      parentContainerWidth={listWidth}
                     />
                   )}
                   renderDropAreaStart={

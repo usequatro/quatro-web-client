@@ -41,6 +41,10 @@ import isRequired from '../utils/isRequired';
 
 const name = 'tasks';
 
+// Constants
+
+export const COMPLETE_DELAY = 750;
+
 // Selectors
 
 export const selectTask = (state, id) => state[name].byId[id];
@@ -485,7 +489,7 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
     mixpanel.track(TASK_COMPLETED);
 
     // the visually completed status is cleared when the task is loaded again
-  }, 750);
+  }, COMPLETE_DELAY);
 
   taskCompletions[id] = {
     timeout,
