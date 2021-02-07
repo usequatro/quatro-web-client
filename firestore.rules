@@ -20,40 +20,42 @@ service cloud.firestore {
       return request.resource.data;
     }
 
-    function isUserIdChanging() {
-      return incomingData().diff(existingData()).affectedKeys().hasAny(['userId']);
+    // function notReceiving(field) {
+    //   return !(field in incomingData());
+    // }
+
+    // function notModifying(field) {
+    //   return incomingData()[field] == existingData()[field];
+    // }
+
+    // function notUpdating(field) {
+    //   return notReceiving(field) || notModifying(field);
+    // }
+
+    // @link https://firebase.google.com/docs/firestore/security/rules-fields#allowing_only_certain_fields_to_be_changed
+    function allowlistedChanges(keys) {
+      return incomingData().diff(existingData()).affectedKeys().hasOnly(keys);
     }
 
     match /tasks/{docId} {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
-      allow update: if isSignedIn() && isCurrentUser(existingData().userId) && !isUserIdChanging();
-      allow read, list, delete: if isSignedIn() && isCurrentUser(existingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
 
     match /recurringConfigs/{docId} {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
-      allow update: if isSignedIn() && isCurrentUser(existingData().userId) && !isUserIdChanging();
-      allow read, list, delete: if isSignedIn() && isCurrentUser(existingData().userId);
-    }
-
-    function hasInternalCalendarKeys()data {
-      return keys().hasAny(['watcherChannelId', 'watcherResourceId', 'watcherExpiration']);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
 
     match /calendars/{docId} {
-      allow create: if isSignedIn()
-        && isCurrentUser(incomingData().userId)
-        && !hasInternalCalendarKeys(incomingData().data);
-      allow update: if isSignedIn()
-        && isCurrentUser(existingData().userId)
-        && !hasInternalCalendarKeys(incomingData().data)
-        && !isUserIdChanging();
-      allow read, list, delete: if isSignedIn() && isCurrentUser(existingData().userId);
+      allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
+      allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
     }
 
     match /userExternalConfigs/{docId} {
-      allow create, list, update, delete: if false;
+      allow list, delete: if false;
       allow read: if isSignedIn() && isCurrentUser(docId);
+      allow create, update: if isSignedIn() && isCurrentUser(docId) && allowlistedChanges(['defaultCalendarId']);
     }
   }
 }

@@ -4,15 +4,18 @@ import PropTypes from 'prop-types';
 import { Droppable } from 'react-beautiful-dnd';
 
 import CalendarEventPlaceholder from './CalendarEventPlaceholder';
-import { selectDefaultCalendarId } from '../../../modules/calendars';
+import { selectFallbackCalendarId } from '../../../modules/calendars';
+import { selectUserDefaultCalendarId } from '../../../modules/userExternalConfig';
 
 const CalendarDroppable = ({ children, className, tickHeight, ticksPerHour }) => {
   const containerRef = useRef();
 
-  const isDropDisabled = useSelector((state) => !selectDefaultCalendarId(state));
+  const noCalendar = useSelector(
+    (state) => !(selectUserDefaultCalendarId(state) || selectFallbackCalendarId(state)),
+  );
 
   return (
-    <Droppable droppableId="droppable-calendar" isDropDisabled={isDropDisabled}>
+    <Droppable droppableId="droppable-calendar" isDropDisabled={noCalendar}>
       {(droppableProvided, droppableSnapshot) => (
         <div
           {...droppableProvided.droppableProps}

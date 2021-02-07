@@ -71,7 +71,7 @@ import {
 } from '../../../modules/recurringConfigs';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
-import { selectCalendarCount } from '../../../modules/calendars';
+import { selectCalendarCount, selectCalendarProviderCalendarId } from '../../../modules/calendars';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
@@ -202,6 +202,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
     selectUserHasGrantedGoogleCalendarOfflineAccess,
   );
 
+  const calendarProviderCalendarId = useSelector((state) =>
+    calendarBlockCalendarId
+      ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
+      : undefined,
+  );
+
   const [showDescription, setShowDescription] = useState(Boolean(description));
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
@@ -247,6 +253,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               scheduledStart: scheduledStartTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
               // Make sure to clear recurringConfigId if we don't have any repeat info set

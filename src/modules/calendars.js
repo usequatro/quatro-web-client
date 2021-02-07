@@ -35,7 +35,8 @@ export const selectCalendarProviderUserEmail = (state, id) =>
 export const selectAllConnectedProviderCalendarIds = (state) =>
   selectCalendarIds(state).map((id) => selectCalendarProviderCalendarId(state, id));
 
-export const selectDefaultCalendarId = (state) => {
+/** @returns {string|undefined} */
+export const selectFallbackCalendarId = (state) => {
   if (state[name].allIds.length === 0) {
     return undefined;
   }

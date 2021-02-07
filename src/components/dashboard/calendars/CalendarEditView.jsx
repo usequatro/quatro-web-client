@@ -21,8 +21,13 @@ import {
   selectCalendarProviderUserEmail,
 } from '../../../modules/calendars';
 import { selectGapiUserId } from '../../../modules/session';
+import { selectUserDefaultCalendarId } from '../../../modules/userExternalConfig';
 import { clearAllEvents } from '../../../modules/calendarEvents';
-import { fetchUpdateCalendar, fetchDeleteCalendar } from '../../../utils/apiClient';
+import {
+  fetchUpdateCalendar,
+  fetchDeleteCalendar,
+  fetchUpdateUserExternalConfig,
+} from '../../../utils/apiClient';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
@@ -75,6 +80,8 @@ const CalendarEditView = ({ id }) => {
   const providerUserEmail = useSelector((state) => selectCalendarProviderUserEmail(state, id));
   const gapiUserId = useSelector(selectGapiUserId);
 
+  const defaultCalendarId = useSelector(selectUserDefaultCalendarId);
+
   const [currentName, setCurrentName] = useState(name);
 
   const isCalendarUserSignedUpWithGoogle = gapiUserId === providerUserId;
@@ -82,7 +89,15 @@ const CalendarEditView = ({ id }) => {
   return (
     <ListItem className={classes.container} disableGutters data-id={id}>
       <Box pb={2}>
-        <Typography variant="body2">{providerCalendarId}</Typography>
+        <Typography variant="body2">
+          {providerCalendarId}
+          {defaultCalendarId === id && (
+            <Typography color="textSecondary" component="span" variant="body2">
+              {' - '}
+              Default Calendar
+            </Typography>
+          )}
+        </Typography>
 
         {!isCalendarUserSignedUpWithGoogle && (
           <Typography variant="body2" color="error">
@@ -144,6 +159,20 @@ const CalendarEditView = ({ id }) => {
           </FormControl>
         </Box>
 
+        {defaultCalendarId !== id && (
+          <Box mr={1}>
+            <Button
+              onClick={() => {
+                fetchUpdateUserExternalConfig({ defaultCalendarId: id });
+              }}
+              size="small"
+              variant="outlined"
+            >
+              Set as Default
+            </Button>
+          </Box>
+        )}
+
         <Confirm
           onConfirm={() => {
             dispatch(clearAllEvents());
@@ -156,15 +185,19 @@ const CalendarEditView = ({ id }) => {
               onClose={onConfirmationClose}
               onConfirm={onConfirm}
               id="confirm-disconnect-calendar"
-              title="Disconnect calendar"
-              body={`Are you sure you want to disconnect the calendar ${
-                currentName || providerCalendarId
-              }? You'll be able to connect it again later.`}
+              title="Disconnect calendar confirmation"
+              body={[
+                `Are you sure you want to disconnect the calendar ${
+                  currentName || providerCalendarId
+                }?`,
+                `Tasks will be unlinked from it and events in your calendar created from Quatro will be deleted.`,
+                `You'll be able to connect it again later.`,
+              ]}
               buttonText="Disconnect"
             />
           )}
           renderContent={(onClick) => (
-            <Button onClick={onClick} size="small">
+            <Button onClick={onClick} size="small" variant="outlined">
               {isCalendarUserSignedUpWithGoogle ? 'Disconnect' : 'Remove'}
             </Button>
           )}
