@@ -1,6 +1,8 @@
 import get from 'lodash/get';
 import { createSlice } from '@reduxjs/toolkit';
+import firebase from '../firebase';
 import { CALENDAR_LIST_READ, CALENDAR_EVENTS_MANAGE } from '../constants/googleApiScopes';
+import debugConsole from '../utils/debugConsole';
 
 const name = 'session';
 
@@ -104,3 +106,22 @@ const slice = createSlice({
 
 export const { setUserFromFirebaseUser, setGapiUser } = slice.actions;
 export default slice;
+
+// Thunks
+
+/**
+ * Sets the Firebase user as not logged-in if it still wasn't defined
+ * This is a fallback to take when firebase.auth().onAuthStateChanged() isn't called
+ */
+export const considerGivingUpFirebaseAuthStatusWait = () => (dispatch, getState) => {
+  const firebaseAuthStatusStillNotDefined = selectFirebaseUserLoading(getState());
+  if (!firebase.auth().currentUser && firebaseAuthStatusStillNotDefined) {
+    debugConsole.log(
+      'Firebase',
+      'onAuthStateChanged() not called after timeout, so considering user logged-out',
+    );
+    dispatch(setUserFromFirebaseUser(null));
+  } else {
+    debugConsole.log('Firebase', 'no need to force Firebase user status to logged-out');
+  }
+};

@@ -5,13 +5,15 @@ import { useMixpanel } from './tracking/MixpanelContext';
 import firebase, { firebaseSignInWithCredential } from '../firebase';
 import { gapiGetAuthInstance } from '../googleApi';
 import debugConsole from '../utils/debugConsole';
-import { setUserFromFirebaseUser, setGapiUser } from '../modules/session';
+import {
+  setUserFromFirebaseUser,
+  setGapiUser,
+  considerGivingUpFirebaseAuthStatusWait,
+} from '../modules/session';
 import {
   SIGNED_IN_WITH_PASSWORD,
   SIGNED_IN_WITH_GOOGLE,
 } from '../constants/mixpanelUserProperties';
-
-const isFirebaseSignedIn = () => Boolean(firebase.auth().currentUser);
 
 const AuthManager = () => {
   const mixpanel = useMixpanel();
@@ -23,7 +25,7 @@ const AuthManager = () => {
 
     gapiGetAuthInstance().then((gapiAuthInstance) => {
       // Initially, we could be logged in
-      const firebaseSignedIn = isFirebaseSignedIn();
+      const firebaseSignedIn = Boolean(firebase.auth().currentUser);
       const googleSignedIn = gapiAuthInstance.isSignedIn.get();
       debugConsole.log('Google API', 'initially signed in', googleSignedIn);
       debugConsole.log('firebase', 'initially signed in', firebaseSignedIn);
@@ -33,14 +35,15 @@ const AuthManager = () => {
       }
       dispatch(setGapiUser(googleSignedIn ? gapiAuthInstance.currentUser.get() : null));
 
-      // Listen for Google Auth sign-in state changes.
+      // Listen for Google API Auth sign-in state changes.
       gapiAuthInstance.isSignedIn.listen((signInState) => {
         debugConsole.log('Google API', 'listen: change in google sign in state to', signInState);
 
         dispatch(setGapiUser(signInState ? gapiAuthInstance.currentUser.get() : null));
 
+        // Log in with Firebase after logging in with Google API
         if (signInState) {
-          if (!isFirebaseSignedIn()) {
+          if (!firebase.auth().currentUser) {
             const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
             firebaseSignInWithCredential(authResponse.id_token, authResponse.access_token).then(
               () => {
@@ -53,6 +56,7 @@ const AuthManager = () => {
 
       // Subscribe to Firebase logging out on its own, we log out Google too
       unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+        debugConsole.log('firebase', 'onAuthStateChanged', Boolean(user));
         dispatch(setUserFromFirebaseUser(user));
 
         // If Firebase logs out, we log out Google too
@@ -62,6 +66,11 @@ const AuthManager = () => {
           });
         }
       });
+
+      const timeout = setTimeout(() => dispatch(considerGivingUpFirebaseAuthStatusWait()), 5000);
+      return () => {
+        clearTimeout(timeout);
+      };
     });
     return unsubscribe;
   }, [dispatch]);
