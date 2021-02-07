@@ -31,6 +31,7 @@ import {
   TASK_COMPLETED,
   TASK_UNDO_COMPLETE,
   TASK_MANUALLY_ARRANGED,
+  TASK_DRAGGED_TO_CALENDAR,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
 import { addSynchingCalendarEvent } from './calendarEvents';
@@ -422,7 +423,7 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   mixpanel.track(TASK_DELETED);
 };
 
-export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
+export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mixpanel }) => {
   validateTimestamp(calendarBlockStart);
 
   const state = getState();
@@ -431,8 +432,9 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
     selectUserDefaultCalendarId(state) ||
     selectFallbackCalendarId(state);
 
+  const previousCalendarBlockDuration = selectTaskCalendarBlockDuration(state, id);
   const duration =
-    selectTaskCalendarBlockDuration(state, id) ||
+    previousCalendarBlockDuration ||
     EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
     EFFORT_TO_DURATION[2];
 
@@ -466,4 +468,9 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState) => {
       taskId: id,
     }),
   );
+
+  mixpanel.track(TASK_DRAGGED_TO_CALENDAR, {
+    calendarEventDuration: duration,
+    alreadyHadCalendarBlock: Boolean(previousCalendarBlockDuration),
+  });
 };
