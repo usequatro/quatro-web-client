@@ -5,6 +5,9 @@ export const TASK_COMPLETED = 'Task Completed';
 export const TASK_UNDO_COMPLETE = 'Task Undo Complete';
 export const TASK_MANUALLY_ARRANGED = 'Task Manually Arranged';
 
+// Calendar integration
+export const TASK_DRAGGED_TO_CALENDAR = 'Task Dragged to Calendar';
+
 // Connect/Disconnect a Google Calendar is Quatro language
 export const GOOGLE_CALENDAR_CONNECTED = 'Google Calendar Connected';
 export const GOOGLE_CALENDAR_DISCONNECTED = 'Google Calendar Disconnected';
