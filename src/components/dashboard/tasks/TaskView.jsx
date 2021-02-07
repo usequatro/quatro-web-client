@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
@@ -21,10 +21,11 @@ import TaskRecurringLabel from './TaskRecurringLabel';
 import TaskViewSubtitle from './TaskViewSubtitle';
 import TaskViewBlockersList from './TaskViewBlockersList';
 import TextWithLinks from '../../ui/TextWithLinks';
-import { clearRelativePrioritization } from '../../../modules/tasks';
+import { clearRelativePrioritization, COMPLETE_DELAY } from '../../../modules/tasks';
 import formatDateTime from '../../../utils/formatDateTime';
 import CompleteButton from './CompleteButton';
 import { EFFORT_SLIDER_MARKS } from '../../../constants/effort';
+import AppLogoPlain from '../../icons/AppLogoPlain';
 
 const getTimeEstimateForEffort = memoizeFunction((effort) => {
   const mark = EFFORT_SLIDER_MARKS.find(({ value }) => value === effort);
@@ -53,8 +54,12 @@ const formatMinutes = (totalMinutes) => {
     .join(' ');
 };
 
+const COMPLETE_ANIMATION_DURATION = Math.round(COMPLETE_DELAY * 0.66);
+const COMPLETE_LOGO_SIZE = 25 * 16;
+
 const useStyles = makeStyles((theme) => ({
   outerContainer: {
+    position: 'relative',
     display: 'flex',
     flexShrink: 0,
     alignItems: 'center',
@@ -63,12 +68,25 @@ const useStyles = makeStyles((theme) => ({
     )}px`,
     borderBottom: `solid 1px ${theme.palette.divider}`,
     whiteSpace: 'normal',
+    overflow: 'hidden',
   },
   copyContainer: {
     flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
     whiteSpace: 'normal',
+  },
+  contentContainer: {
+    transition: ({ showCompletedAnimation }) =>
+      theme.transitions.create(['transform'], {
+        easing: showCompletedAnimation
+          ? theme.transitions.duration.easeIn
+          : theme.transitions.duration.easeOut,
+        duration: COMPLETE_ANIMATION_DURATION,
+      }),
+    // the contentContainer is usually 70-90% of the container, so 130% should cover it
+    transform: ({ showCompletedAnimation }) =>
+      showCompletedAnimation ? 'translateX(130%)' : 'translateX(0)',
   },
   blockersIcon: {
     marginRight: theme.spacing(1),
@@ -79,7 +97,46 @@ const useStyles = makeStyles((theme) => ({
       wordBreak: 'break-all',
     },
   },
+  completeAppLogo: {
+    position: 'absolute',
+    height: COMPLETE_LOGO_SIZE,
+    width: COMPLETE_LOGO_SIZE,
+    top: '50%',
+    right: '100%',
+    color: theme.palette.secondary.main,
+    transition: ({ showCompletedAnimation }) =>
+      theme.transitions.create('transform', {
+        duration: COMPLETE_ANIMATION_DURATION,
+        easing: showCompletedAnimation
+          ? theme.transitions.duration.easeIn
+          : theme.transitions.duration.easeOut,
+      }),
+    transform: ({ showCompletedAnimation, appLogoCompletionTranslation }) =>
+      showCompletedAnimation
+        ? `translate(${appLogoCompletionTranslation}, -50%)`
+        : 'translate(0, -50%)',
+  },
 }));
+
+/**
+ * This hook let us keep the SVG rendered a bit after showCompletedAnimation turns false
+ * @param {boolean} showCompletedAnimation
+ * @return {boolean}
+ */
+const useRenderCompletedAnimationIcon = (showCompletedAnimation) => {
+  const [render, setRender] = useState(showCompletedAnimation);
+  useEffect(() => {
+    if (showCompletedAnimation) {
+      setRender(true);
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      setRender(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [showCompletedAnimation]);
+  return render;
+};
 
 const TaskView = ({
   id,
@@ -97,15 +154,25 @@ const TaskView = ({
   score,
   hasRecurringConfig,
   completed,
+  showCompletedAnimation,
   onClick,
   onCompleteTask,
   onMarkTaskIncomplete,
+  parentContainerWidth,
 }) => {
-  const classes = useStyles();
+  // the app logo relative to the list width changes a lot between screens, so we must calculate
+  // the transform to take it all the way to the other side
+  const appLogoCompletionTranslation = `${100 * (1 + parentContainerWidth / COMPLETE_LOGO_SIZE)}%`;
+
+  const classes = useStyles({ showCompletedAnimation, appLogoCompletionTranslation });
   const dispatch = useDispatch();
 
   // Using ListItem when editable, so that along with 'button' prop, we get interaction animations
   const Component = editable ? ListItem : 'div';
+
+  // this hook let us keep the SVG rendered a bit after showCompletedAnimation turns false
+  const renderCompletedAnimationIcon =
+    useRenderCompletedAnimationIcon(showCompletedAnimation) || showCompletedAnimation;
 
   return (
     <Component
@@ -116,85 +183,92 @@ const TaskView = ({
       onClick={onClick}
       {...(editable ? { button: true } : {})}
     >
-      <Box width="3.5rem" align="center" flexShrink={0}>
-        {position !== undefined && (
-          <Typography component="p" variant="h4" color="primary" title={`Priority score: ${score}`}>
-            {position}
-          </Typography>
-        )}
+      <Box display="flex" flexGrow={1} alignItems="center" className={classes.contentContainer}>
+        <Box width="3.5rem" align="center" flexShrink={0}>
+          {position !== undefined && (
+            <Typography
+              component="p"
+              variant="h4"
+              color="primary"
+              title={`Priority score: ${score}`}
+            >
+              {position}
+            </Typography>
+          )}
+        </Box>
+
+        <Box className={classes.copyContainer}>
+          <Typography paragraph>{title.trim() || '(no title)'}</Typography>
+
+          {description && (
+            <Typography
+              variant="body2"
+              paragraph
+              className={classes.descriptionParagraph}
+              color="textSecondary"
+            >
+              <TextWithLinks text={description} maxLength={200} />
+            </Typography>
+          )}
+
+          {scheduledStart && (
+            <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
+              {formatDateTime(scheduledStart)}
+            </TaskViewSubtitle>
+          )}
+
+          {(calendarBlockDuration || getTimeEstimateForEffort(effort)) && (
+            <TaskViewSubtitle
+              tooltip={calendarBlockDuration ? 'Time blocked in calendar' : 'Time estimated'}
+              Icon={QueryBuilderRoundedIcon}
+              onClick={() => {}}
+            >
+              {calendarBlockDuration
+                ? `${formatMinutes(calendarBlockDuration)}`
+                : `${getTimeEstimateForEffort(effort)} estimated`}
+            </TaskViewSubtitle>
+          )}
+
+          {due && (
+            <TaskViewSubtitle
+              tooltip="Due date"
+              Icon={AccessAlarmRoundedIcon}
+              iconProps={{ color: isPast(due) ? 'error' : 'inherit' }}
+              onClick={() => {}}
+            >
+              {formatDateTime(due)}
+            </TaskViewSubtitle>
+          )}
+
+          {prioritizedAheadOf && (
+            <TaskViewSubtitle
+              tooltip="Remove custom priority"
+              Icon={CalendarViewDayRoundedIcon}
+              IconActive={ClearRoundedIcon}
+              onClick={(event) => {
+                event.stopPropagation();
+                dispatch(clearRelativePrioritization(id));
+              }}
+            >
+              {/* eslint-disable react/jsx-curly-brace-presence */}
+              {`Manually prioritized ahead of "`}
+              <TaskTitle id={prioritizedAheadOf} />
+              {'"'}
+              {/* eslint-enable react/jsx-curly-brace-presence */}
+            </TaskViewSubtitle>
+          )}
+
+          {hasRecurringConfig && (
+            <TaskViewSubtitle tooltip="Repeats" Icon={ReplayRoundedIcon} onClick={() => {}}>
+              <TaskRecurringLabel id={id} />
+            </TaskViewSubtitle>
+          )}
+
+          {showBlockers && <TaskViewBlockersList id={id} />}
+        </Box>
       </Box>
 
-      <Box className={classes.copyContainer}>
-        <Typography paragraph>{title.trim() || '(no title)'}</Typography>
-
-        {description && (
-          <Typography
-            variant="body2"
-            paragraph
-            className={classes.descriptionParagraph}
-            color="textSecondary"
-          >
-            <TextWithLinks text={description} maxLength={200} />
-          </Typography>
-        )}
-
-        {scheduledStart && (
-          <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
-            {formatDateTime(scheduledStart)}
-          </TaskViewSubtitle>
-        )}
-
-        {(calendarBlockDuration || getTimeEstimateForEffort(effort)) && (
-          <TaskViewSubtitle
-            tooltip={calendarBlockDuration ? 'Time blocked in calendar' : 'Time estimated'}
-            Icon={QueryBuilderRoundedIcon}
-            onClick={() => {}}
-          >
-            {calendarBlockDuration
-              ? `${formatMinutes(calendarBlockDuration)}`
-              : `${getTimeEstimateForEffort(effort)} estimated`}
-          </TaskViewSubtitle>
-        )}
-
-        {due && (
-          <TaskViewSubtitle
-            tooltip="Due date"
-            Icon={AccessAlarmRoundedIcon}
-            iconProps={{ color: isPast(due) ? 'error' : 'inherit' }}
-            onClick={() => {}}
-          >
-            {formatDateTime(due)}
-          </TaskViewSubtitle>
-        )}
-
-        {prioritizedAheadOf && (
-          <TaskViewSubtitle
-            tooltip="Remove custom priority"
-            Icon={CalendarViewDayRoundedIcon}
-            IconActive={ClearRoundedIcon}
-            onClick={(event) => {
-              event.stopPropagation();
-              dispatch(clearRelativePrioritization(id));
-            }}
-          >
-            {/* eslint-disable react/jsx-curly-brace-presence */}
-            {`Manually prioritized ahead of "`}
-            <TaskTitle id={prioritizedAheadOf} />
-            {'"'}
-            {/* eslint-enable react/jsx-curly-brace-presence */}
-          </TaskViewSubtitle>
-        )}
-
-        {hasRecurringConfig && (
-          <TaskViewSubtitle tooltip="Repeats" Icon={ReplayRoundedIcon} onClick={() => {}}>
-            <TaskRecurringLabel id={id} />
-          </TaskViewSubtitle>
-        )}
-
-        {showBlockers && <TaskViewBlockersList id={id} />}
-      </Box>
-
-      <Box flexShrink={0}>
+      <Box flexShrink={0} zIndex={1}>
         <CompleteButton
           taskId={id}
           completed={completed}
@@ -202,6 +276,10 @@ const TaskView = ({
           onMarkTaskIncomplete={onMarkTaskIncomplete}
         />
       </Box>
+
+      {renderCompletedAnimationIcon && (
+        <AppLogoPlain className={classes.completeAppLogo} aria-hidden="true" />
+      )}
     </Component>
   );
 };
@@ -222,9 +300,11 @@ TaskView.propTypes = {
   due: PropTypes.number,
   prioritizedAheadOf: PropTypes.string,
   completed: PropTypes.bool,
+  showCompletedAnimation: PropTypes.bool,
   onClick: PropTypes.func,
   highlighted: PropTypes.bool,
   editable: PropTypes.bool,
+  parentContainerWidth: PropTypes.number,
 };
 
 TaskView.defaultProps = {
@@ -235,8 +315,10 @@ TaskView.defaultProps = {
   due: undefined,
   prioritizedAheadOf: undefined,
   completed: undefined,
+  showCompletedAnimation: false,
   highlighted: undefined,
   editable: false,
+  parentContainerWidth: 700, // some arbitrary value in case upper measurements fail
   onClick: () => {},
 };
 

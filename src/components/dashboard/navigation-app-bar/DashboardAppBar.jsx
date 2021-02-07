@@ -13,7 +13,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import SvgIcon from '@material-ui/core/SvgIcon';
 import MuiLink from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -24,8 +23,8 @@ import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
 import useDelayedState from '../../hooks/useDelayedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
-import { ReactComponent as Logo } from './logo-plain.svg';
 import UserIcon from '../../icons/UserIcon';
+import AppLogoPlain from '../../icons/AppLogoPlain';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
 
@@ -120,12 +119,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
         </Hidden>
 
         <div className={classes.appBarCenter}>
-          <SvgIcon
-            viewBox="0 0 76.87 68.04"
-            component={Logo}
-            className={classes.appBarLogo}
-            title="Quatro logo"
-          />
+          <AppLogoPlain className={classes.appBarLogo} title="Quatro logo" />
         </div>
 
         <Box className={classes.appBarEdge} justifyContent="flex-end">

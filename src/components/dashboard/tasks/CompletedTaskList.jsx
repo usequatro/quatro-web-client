@@ -76,7 +76,7 @@ const CompletedTaskList = () => {
   const [endReached, setEndReached] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
 
-  const taskListContainer = useRef();
+  const taskListContainerRef = useRef();
 
   const { todayTasks, yesterdayTasks, thisWeekTasks, restTasks } = useMemo(
     () => ({
@@ -113,7 +113,7 @@ const CompletedTaskList = () => {
   }, [notifyError, userId]);
 
   useEffect(() => {
-    const node = taskListContainer.current;
+    const node = taskListContainerRef.current;
     const handleScroll = () => {
       if (endReached || status === FETCHING) {
         return;
@@ -167,6 +167,12 @@ const CompletedTaskList = () => {
     [setCompletedTasks, dispatch],
   );
 
+  const [listWidth, setListWidth] = useState(0);
+  useEffect(() => {
+    const rect = taskListContainerRef.current.getBoundingClientRect();
+    setListWidth(rect.width);
+  }, []);
+
   useCreateTaskShortcut();
 
   const renderTask = (id, task) => (
@@ -188,15 +194,17 @@ const CompletedTaskList = () => {
           showBlockers={false}
           hasRecurringConfig={false}
           completed={bufferedCompletedValue}
+          showCompletedAnimation={false}
           onMarkTaskIncomplete={onMarkTaskIncomplete}
           onCompleteTask={onCompleteTask}
+          parentContainerWidth={listWidth}
         />
       )}
     </CompletedPropBuffer>
   );
 
   return (
-    <Box className={classes.taskListContainer} ref={taskListContainer}>
+    <Box className={classes.taskListContainer} ref={taskListContainerRef}>
       {cond([
         [() => status === ERROR, () => null],
         [() => status === FETCHING && completedTasks.length === 0, () => <LoaderScreen />],
