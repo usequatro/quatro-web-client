@@ -19,7 +19,7 @@ import {
   selectGapiHasAllCalendarScopes,
   selectGoogleFirebaseAuthProvider,
 } from '../../../modules/session';
-import useDebouncedState from '../../hooks/useDebouncedState';
+import useDelayedState from '../../hooks/useDelayedState';
 import GoogleButton from '../../ui/GoogleButton';
 import LoaderScreen from '../../ui/LoaderScreen';
 
@@ -58,7 +58,7 @@ const Calendars = () => {
 
   const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
 
-  const showLoader = useDebouncedState(calendarsAreFetching, 500) && calendarsAreFetching;
+  const showLoader = useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching;
 
   const handleSignInWithGoogle = () => {
     setSigningInToGoogle(true);

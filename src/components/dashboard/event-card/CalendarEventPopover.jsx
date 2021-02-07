@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -21,6 +21,7 @@ import NotesIcon from '@material-ui/icons/Notes';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
 import RoomRoundedIcon from '@material-ui/icons/RoomRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
+import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 
 import {
   selectCalendarEventSummary,
@@ -35,12 +36,14 @@ import {
   selectCalendarEventTaskId,
   selectCalendarEventProviderCalendarId,
 } from '../../../modules/calendarEvents';
-import { completeTask } from '../../../modules/tasks';
+import { completeTask, selectTaskShowsAsCompleted, selectTaskExists } from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
 import TextWithLinks from '../../ui/TextWithLinks';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
+import usePrevious from '../../hooks/usePrevious';
 import { getTaskPath } from '../../../constants/paths';
+import { useNotification } from '../../Notification';
 
 const useStyles = makeStyles((theme) => ({
   eventPopoverPaper: {
@@ -74,6 +77,8 @@ InformativeIcon.propTypes = {
 
 const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const dispatch = useDispatch();
+  const { notifyInfo } = useNotification();
+
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
@@ -89,7 +94,20 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
+  const completed = useSelector((state) =>
+    taskId ? selectTaskShowsAsCompleted(state, taskId) : false,
+  );
+
   const classes = useStyles({ color, declined });
+
+  // Close popover when task goes away (likely because task was removed or completed)
+  const taskExists = useSelector((state) => (taskId ? selectTaskExists(state, taskId) : false));
+  const previouslyTaskExists = usePrevious(taskExists);
+  useEffect(() => {
+    if (previouslyTaskExists && !taskExists) {
+      onClose();
+    }
+  }, [previouslyTaskExists, taskExists, onClose]);
 
   return (
     <Popover
@@ -162,16 +180,28 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
         </Box>
         {taskId && (
           <DialogActions>
-            <Button variant="outlined" color="default" component={Link} to={getTaskPath(taskId)}>
+            <Button
+              variant="outlined"
+              color="default"
+              component={Link}
+              to={getTaskPath(taskId)}
+              onClick={onClose}
+            >
               Edit Task
             </Button>
 
             <Button
               variant="outlined"
               color="default"
-              endIcon={<RadioButtonUncheckedRoundedIcon color="action" />}
+              endIcon={
+                completed ? (
+                  <CheckCircleOutlineRoundedIcon color="primary" />
+                ) : (
+                  <RadioButtonUncheckedRoundedIcon color="action" />
+                )
+              }
               onClick={() => {
-                dispatch(completeTask(taskId));
+                dispatch(completeTask(taskId, notifyInfo));
               }}
             >
               Complete Task

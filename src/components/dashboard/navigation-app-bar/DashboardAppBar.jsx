@@ -22,7 +22,7 @@ import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 import * as paths from '../../../constants/paths';
 import { selectIsDataInSync } from '../../../modules/dashboard';
 import { selectUserPhotoURL } from '../../../modules/session';
-import useDebouncedState from '../../hooks/useDebouncedState';
+import useDelayedState from '../../hooks/useDelayedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import { ReactComponent as Logo } from './logo-plain.svg';
 import UserIcon from '../../icons/UserIcon';
@@ -89,7 +89,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const dashboardDataIsInSync = useSelector(selectIsDataInSync);
 
   // Introduce a delay before the spinner shows
-  const showSpinner = useDebouncedState(!dashboardDataIsInSync, 750) && !dashboardDataIsInSync;
+  const showSpinner = useDelayedState(!dashboardDataIsInSync, 750) && !dashboardDataIsInSync;
 
   const classes = useStyles({ userPhotoURL, navigationOpen });
 

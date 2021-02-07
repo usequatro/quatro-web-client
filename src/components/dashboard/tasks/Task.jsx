@@ -7,7 +7,7 @@ import {
   selectTaskTitle,
   selectTaskDescription,
   selectTaskScore,
-  selectTaskCompleted,
+  selectTaskShowsAsCompleted,
   selectTaskScheduledStart,
   selectTaskCalendarBlockDuration,
   selectTaskDue,
@@ -18,15 +18,17 @@ import {
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
+import { useNotification } from '../../Notification';
 
 const Task = ({ id, position, component, highlighted, showBlockers, editable }) => {
   const dispatch = useDispatch();
+  const { notifyInfo } = useNotification();
 
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
   const effort = useSelector((state) => selectTaskEffort(state, id));
-  const completed = useSelector((state) => selectTaskCompleted(state, id));
+  const completed = useSelector((state) => selectTaskShowsAsCompleted(state, id));
   const scheduledStart = useSelector((state) => selectTaskScheduledStart(state, id));
   const calendarBlockDuration = useSelector((state) => selectTaskCalendarBlockDuration(state, id));
   const due = useSelector((state) => selectTaskDue(state, id));
@@ -40,6 +42,14 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
   const handleClick = useCallback(() => {
     openEditTaskDialog(id);
   }, [openEditTaskDialog, id]);
+
+  const onCompleteTask = useCallback(() => {
+    dispatch(completeTask(id, notifyInfo));
+  }, [dispatch, notifyInfo, id]);
+
+  const onMarkTaskIncomplete = useCallback(() => {
+    dispatch(markTaskIncomplete(id));
+  }, [dispatch, id]);
 
   return (
     <TaskView
@@ -60,8 +70,8 @@ const Task = ({ id, position, component, highlighted, showBlockers, editable }) 
       hasRecurringConfig={hasRecurringConfig}
       showBlockers={showBlockers}
       onClick={editable ? handleClick : undefined}
-      onCompleteTask={() => dispatch(completeTask(id))}
-      onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(id))}
+      onCompleteTask={onCompleteTask}
+      onMarkTaskIncomplete={onMarkTaskIncomplete}
     />
   );
 };

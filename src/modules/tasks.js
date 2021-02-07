@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import sortBy from 'lodash/sortBy';
 import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
+import omit from 'lodash/omit';
 import get from 'lodash/get';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
@@ -34,7 +35,8 @@ import {
   TASK_DRAGGED_TO_CALENDAR,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
-import { addSynchingCalendarEvent } from './calendarEvents';
+import { addSynchingCalendarEvent, setCalendarEventSynching } from './calendarEvents';
+import isRequired from '../utils/isRequired';
 
 const name = 'tasks';
 
@@ -53,7 +55,7 @@ export const selectTaskEffort = (state, id) => get(selectTask(state, id), 'effor
 /** @returns {number} */
 export const selectTaskScore = (state, id) => get(selectTask(state, id), 'score');
 /** @returns {boolean} */
-export const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed');
+const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed');
 /** @returns {number} */
 export const selectTaskScheduledStart = (state, id) => get(selectTask(state, id), 'scheduledStart');
 /** @returns {number} */
@@ -69,6 +71,10 @@ export const selectTaskCalendarBlockCalendarId = (state, id) =>
 /** @returns {string|null|undefined} */
 const selectTaskCalendarBlockProviderEventId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockProviderEventId');
+
+/** @returns {boolean} */
+export const selectTaskShowsAsCompleted = (state, id) =>
+  Boolean(state[name].completedStatusById[id] || selectTaskCompleted(state, id));
 
 /** @returns {number|undefined} */
 export const selectTaskCalendarBlockDuration = (state, id) => {
@@ -282,8 +288,10 @@ const applyScores = (state) => ({
 const initialState = {
   allIds: [],
   byId: {},
+  completedStatusById: {},
 };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
@@ -292,10 +300,30 @@ const slice = createSlice({
     addChangesToLocalState: (state, { payload: { added, modified, removed } }) => {
       const newState = applyGroupedEntityChanges(state, { added, modified, removed });
       const newStateWithScores = applyScores(newState);
-      return newStateWithScores;
+      return {
+        ...newStateWithScores,
+        // Clear vistually completed state for added or removed tasks from the collection,
+        // so completed tasks are cleared and new tasks don't show up completed
+        completedStatusById: omit(state.completedStatusById, Object.keys({ ...added, ...removed })),
+      };
+    },
+    setVisuallyCompletedStatus: {
+      /** @param {string} id */
+      prepare: (id, status) => ({ payload: { id, status } }),
+      reducer: (state, { payload: { id, status } }) => {
+        state.completedStatusById[id] = Boolean(status);
+      },
+    },
+    clearVisuallyCompletedStatus: {
+      /** @param {string} id */
+      prepare: (id) => ({ payload: id }),
+      reducer: (state, { payload }) => {
+        delete state.completedStatusById[payload];
+      },
     },
   },
 });
+/* eslint-enable no-param-reassign */
 
 export default slice;
 
@@ -379,8 +407,59 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
 export const clearRelativePrioritization = (id) => () =>
   fetchUpdateTask(id, { prioritizedAheadOf: null });
 
-export const completeTask = (id) => (dispatch, getState, { mixpanel }) => {
+/** @var {Object.<number, Object>} - Properties to cancel a completion by task id */
+const taskCompletions = {};
+
+const cancelTaskCompletionNotExecutedYet = (id) => (dispatch) => {
+  if (taskCompletions[id]) {
+    clearTimeout(taskCompletions[id].timeout);
+    taskCompletions[id].closeNotification();
+    delete taskCompletions[id];
+  }
+  dispatch(slice.actions.clearVisuallyCompletedStatus(id));
+};
+
+export const markTaskIncomplete = (id = isRequired('id')) => (dispatch, _, { mixpanel }) => {
+  if (taskCompletions[id]) {
+    dispatch(cancelTaskCompletionNotExecutedYet(id));
+    return;
+  }
+  fetchUpdateTask(id, { completed: null });
+  mixpanel.track(TASK_UNDO_COMPLETE);
+};
+
+export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('notifyInfo')) => (
+  dispatch,
+  getState,
+  { mixpanel },
+) => {
+  // If already visually completed, then we cancel
+  if (taskCompletions[id]) {
+    dispatch(cancelTaskCompletionNotExecutedYet(id));
+    return;
+  }
+
+  dispatch(slice.actions.setVisuallyCompletedStatus(id, true));
+
+  const closeNotification = notifyInfo({
+    icon: '🎉',
+    message: 'Task Completed!',
+    buttons: [
+      {
+        children: 'Undo',
+        onClick: () => {
+          if (taskCompletions[id]) {
+            dispatch(cancelTaskCompletionNotExecutedYet(id));
+          } else {
+            dispatch(markTaskIncomplete(id));
+          }
+        },
+      },
+    ],
+  });
+
   const timeout = setTimeout(() => {
+    delete taskCompletions[id];
     const state = getState();
 
     // Clear relative prioritization depending on this task
@@ -389,19 +468,22 @@ export const completeTask = (id) => (dispatch, getState, { mixpanel }) => {
       fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
     });
 
+    // the calendar event should be removed by a Firebase function shortly, flag it as synching
+    const providerEventId = selectTaskCalendarBlockProviderEventId(state, id);
+    if (providerEventId) {
+      dispatch(setCalendarEventSynching(providerEventId, true));
+    }
+
     fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
+
+    // the visually completed status is cleared when the task is loaded again
   }, 750);
 
-  // Return function to cancel the completion
-  return () => {
-    clearTimeout(timeout);
+  taskCompletions[id] = {
+    timeout,
+    closeNotification,
   };
-};
-
-export const markTaskIncomplete = (id) => (dispatch, _, { mixpanel }) => {
-  fetchUpdateTask(id, { completed: null });
-  mixpanel.track(TASK_UNDO_COMPLETE);
 };
 
 export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {

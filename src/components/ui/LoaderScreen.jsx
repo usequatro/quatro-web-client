@@ -6,7 +6,7 @@ import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 
-import useDebouncedState from '../hooks/useDebouncedState';
+import useDelayedState from '../hooks/useDelayedState';
 
 const useStyles = makeStyles((theme) => ({
   box: ({ background }) => ({
@@ -31,7 +31,7 @@ const LoaderScreen = ({ className, background, color, delay, size }) => {
 
   const classes = useStyles({ background: backgroundWithVariation, color: colorWithVariation });
 
-  const showLoader = useDebouncedState(true, delay);
+  const showLoader = useDelayedState(true, delay);
 
   return (
     <Box

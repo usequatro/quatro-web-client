@@ -221,7 +221,7 @@ TaskView.propTypes = {
   calendarBlockDuration: PropTypes.number,
   due: PropTypes.number,
   prioritizedAheadOf: PropTypes.string,
-  completed: PropTypes.number,
+  completed: PropTypes.bool,
   onClick: PropTypes.func,
   highlighted: PropTypes.bool,
   editable: PropTypes.bool,

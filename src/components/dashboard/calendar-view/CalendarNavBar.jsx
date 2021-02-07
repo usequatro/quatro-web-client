@@ -18,7 +18,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import { CLOSED_DRAWER_WIDTH } from '../navigation-sidebar/NavigationSidebar';
-import useDebouncedState from '../../hooks/useDebouncedState';
+import useDelayedState from '../../hooks/useDelayedState';
 
 const useStyles = makeStyles((theme) => ({
   sectionTitleAppBar: {
@@ -50,7 +50,7 @@ const CalendarNavBar = ({ timestamp, fetching, onChange }) => {
   const classes = useStyles();
 
   // Introduce a delay before the spinner shows
-  const showSpinner = useDebouncedState(fetching, 500) && fetching;
+  const showSpinner = useDelayedState(fetching, 500) && fetching;
 
   const longFormat = useMediaQuery((theme) => theme.breakpoints.up('md'));
 

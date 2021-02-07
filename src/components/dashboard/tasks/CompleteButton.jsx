@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import Tooltip from '@material-ui/core/Tooltip';
@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 
-import { useNotification } from '../../Notification';
+import useDebouncedState from '../../hooks/useDebouncedState';
 
 const useStyles = makeStyles((theme) => ({
   completeButtonIddle: {},
@@ -46,65 +46,30 @@ const CompleteButton = ({
   size,
 }) => {
   const classes = useStyles();
-  const { notifyInfo } = useNotification();
-
-  const [visuallyCompleted, setVisuallyCompleted] = useState(completed);
-  const cancelCompletion = useRef();
-  const closeNotificationRef = useRef();
-
-  useEffect(() => {
-    setVisuallyCompleted(completed);
-  }, [completed]);
 
   const handleComplete = (event) => {
     event.stopPropagation();
-    if (!visuallyCompleted) {
-      setVisuallyCompleted(Date.now());
-      closeNotificationRef.current = notifyInfo({
-        icon: '🎉',
-        message: 'Task Completed!',
-        buttons: [
-          {
-            children: 'Undo',
-            onClick: () => {
-              onMarkTaskIncomplete(taskId);
-            },
-          },
-        ],
-      });
-
-      cancelCompletion.current = onCompleteTask(taskId);
-    } else if (cancelCompletion.current) {
-      if (closeNotificationRef.current) {
-        closeNotificationRef.current();
-      }
-      cancelCompletion.current();
-      setVisuallyCompleted(null);
-    }
+    onCompleteTask(taskId);
   };
-
-  const cancelMarkIncomplete = useRef();
 
   const handleMarkIncomplete = (event) => {
     event.stopPropagation();
-    if (visuallyCompleted) {
-      setVisuallyCompleted(null);
-      cancelMarkIncomplete.current = onMarkTaskIncomplete(taskId);
-    } else if (cancelMarkIncomplete.current) {
-      cancelMarkIncomplete.current();
-      setVisuallyCompleted(completed);
-    }
+    onMarkTaskIncomplete(taskId);
   };
 
+  // This debounce helps the tip title stay the same when clicking the button
+  const debouncedComplete = useDebouncedState(completed, 2000);
+
   return (
-    <Tooltip title={completed ? 'Mark incomplete' : 'Complete'} arrow enterDelay={250}>
+    <Tooltip title={debouncedComplete ? 'Mark incomplete' : 'Complete'} arrow enterDelay={250}>
       <IconButton
         edge="end"
         aria-label={completed ? 'Mark incomplete' : 'Complete'}
         size={size}
+        onMouseDown={(event) => event.stopPropagation()} // stop ripple effect on parent
         onClick={completed ? handleMarkIncomplete : handleComplete}
         classes={{
-          root: visuallyCompleted ? classes.completeButtonSuccess : classes.completeButtonIddle,
+          root: completed ? classes.completeButtonSuccess : classes.completeButtonIddle,
           label: classes.label,
         }}
       >
@@ -113,7 +78,7 @@ const CompleteButton = ({
           <CheckCircleOutlineRoundedIcon fontSize={fontSize} className={classes.placeholderIcon} />
         </span>
 
-        {visuallyCompleted ? (
+        {completed ? (
           <CheckCircleOutlineRoundedIcon className={classes.icon} fontSize={fontSize} />
         ) : (
           <RadioButtonUncheckedRoundedIcon className={classes.icon} fontSize={fontSize} />
@@ -125,7 +90,7 @@ const CompleteButton = ({
 
 CompleteButton.propTypes = {
   taskId: PropTypes.string.isRequired,
-  completed: PropTypes.oneOfType([PropTypes.number, PropTypes.exact(null)]),
+  completed: PropTypes.oneOfType([PropTypes.bool, PropTypes.exact(null)]),
   onCompleteTask: PropTypes.func.isRequired,
   onMarkTaskIncomplete: PropTypes.func.isRequired,
   fontSize: PropTypes.oneOf(['default', 'large', 'small', 'inherit']),

@@ -326,6 +326,16 @@ const slice = createSlice({
       },
     },
 
+    setCalendarEventSynching: {
+      /** @param {string} id */
+      prepare: (id, value) => ({ payload: { id, value } }),
+      reducer: (state, { payload: { id, value } }) => {
+        if (state.byId[id]) {
+          state.byId[id].synching = Boolean(value);
+        }
+      },
+    },
+
     // @todo: improve this so we're only flagging the calendar that had changes
     //        or even better, pull those changes only
     staleAllEvents: (state) => ({
@@ -346,7 +356,12 @@ const slice = createSlice({
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const { clearAllEvents, staleAllEvents, addSynchingCalendarEvent } = slice.actions;
+export const {
+  clearAllEvents,
+  staleAllEvents,
+  addSynchingCalendarEvent,
+  setCalendarEventSynching,
+} = slice.actions;
 
 // Helpers
 
