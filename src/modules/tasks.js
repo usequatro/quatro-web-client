@@ -5,6 +5,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import cond from 'lodash/cond';
 import omit from 'lodash/omit';
 import get from 'lodash/get';
+import pull from 'lodash/pull';
 import keyBy from 'lodash/keyBy';
 import difference from 'lodash/difference';
 
@@ -35,7 +36,7 @@ import {
   TASK_DRAGGED_TO_CALENDAR,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
-import { addSynchingCalendarEvent, setCalendarEventSynching } from './calendarEvents';
+import { addPlaceholderEventUntilCreated } from './calendarEvents';
 import isRequired from '../utils/isRequired';
 
 const name = 'tasks';
@@ -75,6 +76,12 @@ const selectTaskCalendarBlockProviderEventId = (state, id) =>
 /** @returns {boolean} */
 export const selectTaskShowsAsCompleted = (state, id) =>
   Boolean(state[name].completedStatusById[id] || selectTaskCompleted(state, id));
+
+/** @returns {boolean} */
+export const selectTaskWasLoadedButNotAnymore = createSelector(
+  [(state) => state[name].removedTaskIds, (_, id) => id],
+  (removedTaskIds, id) => removedTaskIds.includes(id),
+);
 
 /** @returns {number|undefined} */
 export const selectTaskCalendarBlockDuration = (state, id) => {
@@ -289,6 +296,7 @@ const initialState = {
   allIds: [],
   byId: {},
   completedStatusById: {},
+  removedTaskIds: [],
 };
 
 /* eslint-disable no-param-reassign */
@@ -300,11 +308,16 @@ const slice = createSlice({
     addChangesToLocalState: (state, { payload: { added, modified, removed } }) => {
       const newState = applyGroupedEntityChanges(state, { added, modified, removed });
       const newStateWithScores = applyScores(newState);
+
+      const addedIds = Object.keys(added);
+      const removedIds = Object.keys(removed);
+
       return {
         ...newStateWithScores,
         // Clear vistually completed state for added or removed tasks from the collection,
         // so completed tasks are cleared and new tasks don't show up completed
-        completedStatusById: omit(state.completedStatusById, Object.keys({ ...added, ...removed })),
+        completedStatusById: omit(state.completedStatusById, [...addedIds, ...removedIds]),
+        removedTaskIds: pull([...state.removedTaskIds, ...removedIds], ...addedIds),
       };
     },
     setVisuallyCompletedStatus: {
@@ -468,12 +481,6 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
       fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
     });
 
-    // the calendar event should be removed by a Firebase function shortly, flag it as synching
-    const providerEventId = selectTaskCalendarBlockProviderEventId(state, id);
-    if (providerEventId) {
-      dispatch(setCalendarEventSynching(providerEventId, true));
-    }
-
     fetchUpdateTask(id, { completed: Date.now() });
     mixpanel.track(TASK_COMPLETED);
 
@@ -535,7 +542,7 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mi
   const calendarEventId = selectTaskCalendarBlockProviderEventId(state, id);
 
   dispatch(
-    addSynchingCalendarEvent({
+    addPlaceholderEventUntilCreated({
       id: calendarEventId || `_${uuidv4()}`,
       calendarId: calendarBlockCalendarId,
       summary: title,

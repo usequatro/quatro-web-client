@@ -94,7 +94,8 @@ export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
-export const selectCalendarEventSynching = (state, id) => get(state[name].byId[id], 'synching');
+export const selectCalendarEventPlaceholderUntilCreated = (state, id) =>
+  get(state[name].byId[id], 'placeholderUntilCreated');
 
 export const selectSortedCalendarEventIds = (state, dateKey) => {
   const dateKeyString = typeof dateKey === 'string' ? dateKey : format(dateKey, DATE_KEY_FORMAT);
@@ -273,11 +274,11 @@ const slice = createSlice({
 
         // Remove calendarEvents that were temporary, synching, when the persisted cal event exists
         const eventTaskIds = events
-          .filter((event) => !event.synching && event.taskId)
+          .filter((event) => !event.placeholderUntilCreated && event.taskId)
           .map((event) => event.taskId);
         const idsToRemove = organizedState.byDate[dateKey].allIds.filter((id) => {
           const event = organizedState.byId[id];
-          return event.synching && eventTaskIds.includes(event.taskId);
+          return event.placeholderUntilCreated && eventTaskIds.includes(event.taskId);
         });
         const dateKeyAllIds = organizedState.byDate[dateKey].allIds.filter(
           (id) => !idsToRemove.includes(id),
@@ -294,7 +295,7 @@ const slice = createSlice({
       },
     },
 
-    addSynchingCalendarEvent: {
+    addPlaceholderEventUntilCreated: {
       prepare: (payload) => {
         const { error, value } = calendarEventSchema.validate(payload);
         if (error) {
@@ -309,7 +310,7 @@ const slice = createSlice({
         const stateWithNewEvents = {
           byId: {
             ...state.byId,
-            [event.id]: { ...event, synching: true },
+            [event.id]: { ...event, placeholderUntilCreated: true },
           },
           byDate: {
             ...state.byDate,
@@ -323,16 +324,6 @@ const slice = createSlice({
         const organizedState = organizeState(stateWithNewEvents, dateKey);
 
         return organizedState;
-      },
-    },
-
-    setCalendarEventSynching: {
-      /** @param {string} id */
-      prepare: (id, value) => ({ payload: { id, value } }),
-      reducer: (state, { payload: { id, value } }) => {
-        if (state.byId[id]) {
-          state.byId[id].synching = Boolean(value);
-        }
       },
     },
 
@@ -356,12 +347,7 @@ const slice = createSlice({
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const {
-  clearAllEvents,
-  staleAllEvents,
-  addSynchingCalendarEvent,
-  setCalendarEventSynching,
-} = slice.actions;
+export const { clearAllEvents, staleAllEvents, addPlaceholderEventUntilCreated } = slice.actions;
 
 // Helpers
 

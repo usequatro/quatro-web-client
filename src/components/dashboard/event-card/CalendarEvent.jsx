@@ -14,10 +14,13 @@ import {
   selectCalendarEventCollisionCount,
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
+  selectCalendarEventPlaceholderUntilCreated,
   selectCalendarEventTaskId,
-  selectCalendarEventSynching,
 } from '../../../modules/calendarEvents';
-import { selectTaskShowsAsCompleted } from '../../../modules/tasks';
+import {
+  selectTaskShowsAsCompleted,
+  selectTaskWasLoadedButNotAnymore,
+} from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
 import EventCardView from './EventCardView';
 import CalendarEventPopover from './CalendarEventPopover';
@@ -35,11 +38,19 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
-  const synching = useSelector((state) => selectCalendarEventSynching(state, id));
+  const placeholderUntilCreated = useSelector((state) =>
+    selectCalendarEventPlaceholderUntilCreated(state, id),
+  );
   const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
   const completed = useSelector((state) =>
     taskId ? selectTaskShowsAsCompleted(state, taskId) : false,
+  );
+
+  // As long as the only reasons why a task is gone is being deleted or completed,
+  // and that the calendar events are removed in both cases, we can show the synching spinner.
+  const associatedTaskIsGone = useSelector((state) =>
+    taskId ? selectTaskWasLoadedButNotAnymore(state, taskId) : false,
   );
 
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
@@ -75,7 +86,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
         key={id}
         scrollAnchorRef={scrollAnchorRef}
         elevated={calendarDetailsOpen}
-        synching={Boolean(synching)}
+        synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
         summary={summary}
         startTimestamp={startTimestamp}
         endTimestamp={endTimestamp}
@@ -83,7 +94,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
         declined={Boolean(declined)}
         taskId={taskId}
         showCompleteButton={interactive && Boolean(taskId)}
-        selectable={Boolean(interactive && !synching)}
+        selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
         isBeingRedragged={draggableTaskId === taskId}
         color={color}
         height={allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick))}
