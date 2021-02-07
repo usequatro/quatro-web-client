@@ -41,22 +41,35 @@ const name = 'tasks';
 
 export const selectTask = (state, id) => state[name].byId[id];
 export const selectTaskExists = (state, id) => Boolean(state[name].byId[id]);
+/** @returns {string} */
 export const selectTaskTitle = (state, id) => get(selectTask(state, id), 'title');
+/** @returns {string} */
 export const selectTaskDescription = (state, id) => get(selectTask(state, id), 'description');
+/** @returns {number} */
 export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');
+/** @returns {number} */
 export const selectTaskEffort = (state, id) => get(selectTask(state, id), 'effort');
+/** @returns {number} */
 export const selectTaskScore = (state, id) => get(selectTask(state, id), 'score');
+/** @returns {boolean} */
 export const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed');
+/** @returns {number} */
 export const selectTaskScheduledStart = (state, id) => get(selectTask(state, id), 'scheduledStart');
+/** @returns {number} */
 export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
-export const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
+/** @returns {Array<Object>} */
+const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
+/** @returns {string|null|undefined} */
 export const selectTaskPrioritizedAheadOf = (state, id) =>
   get(selectTask(state, id), 'prioritizedAheadOf');
+/** @returns {string|null|undefined} */
 export const selectTaskCalendarBlockCalendarId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockCalendarId');
+/** @returns {string|null|undefined} */
 const selectTaskCalendarBlockProviderEventId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockProviderEventId');
 
+/** @returns {number|undefined} */
 export const selectTaskCalendarBlockDuration = (state, id) => {
   const task = selectTask(state, id);
   const start = get(task, 'calendarBlockStart');
@@ -64,13 +77,19 @@ export const selectTaskCalendarBlockDuration = (state, id) => {
   return isValid(start) && isValid(end) ? differenceInMinutes(end, start) : undefined;
 };
 
+/** @returns {Array<string>} */
 const selectAllTaskIds = (state) => state[name].allIds;
-const selectAllTaskIdsAsMap = createSelector(selectAllTaskIds, (ids) =>
-  ids.reduce((memo, id) => ({ ...memo, [id]: true }), {}),
+
+const selectAllTaskIdsAsMap = createSelector(
+  selectAllTaskIds,
+  /** @returns {Object.<string, boolean>} */
+  (ids) => ids.reduce((memo, id) => ({ ...memo, [id]: true }), {}),
 );
 
+/** @returns {Array<[string, Object]>} */
 const selectAllTasks = (state) => selectAllTaskIds(state).map((id) => [id, state[name].byId[id]]);
 
+/** @returns {Array<[string, Object]>} */
 const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
   const upcomingTasks = allTasks.filter(
@@ -79,6 +98,7 @@ const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
   return upcomingTasks;
 });
 
+/** @returns {Array<[string, Object]>} */
 export const selectAllTasksOrderedAlphabetically = createSelector(selectAllTasks, (allTasks) => {
   return sortBy(allTasks, ([, task]) => `${task.title}`.toLowerCase());
 });
@@ -137,6 +157,7 @@ const sortByCustomPrioritization = (tasks) => {
   return prioritizedTaskIds.map((id) => tasksById[id]);
 };
 
+/** @returns {Array<[string, Object]>} */
 const selectUpcomingSortedTasks = createSelector(selectAllUpcomingTasks, (upcomingTasks) => {
   const tasksByScore = cloneDeep(upcomingTasks);
   tasksByScore.sort(([, task1], [, task2]) => {
@@ -171,6 +192,7 @@ export const selectTaskActiveBlockerDescriptors = (state, id) => {
   return filterActiveBlockerDescriptors(blockedBy || [], allTaskIdsMap);
 };
 
+/** @returns {Array<[string, Object]>} */
 export const selectNowTasks = createSelector(
   [selectUpcomingSortedTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) =>
@@ -183,6 +205,7 @@ export const selectNowTasks = createSelector(
       .slice(0, NOW_TASKS_LIMIT),
 );
 
+/** @returns {Array<[string, Object]>} */
 export const selectBacklogTasks = createSelector(
   [selectUpcomingSortedTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) =>
@@ -200,6 +223,7 @@ export const selectHasMoveToBacklog = createSelector(
   (tasks) => tasks.length > 1,
 );
 
+/** @returns {Array<[string, Object]>} */
 export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
   const scheduledTasks = allTasks.filter(
@@ -208,6 +232,7 @@ export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) =>
   return sortBy(scheduledTasks, '1.scheduledStart');
 });
 
+/** @returns {Array<[string, Object]>} */
 export const selectBlockedTasks = createSelector(
   [selectAllUpcomingTasks, selectAllTaskIdsAsMap],
   (tasks, taskIdsMap) => {
@@ -218,9 +243,11 @@ export const selectBlockedTasks = createSelector(
   },
 );
 
+/** @returns {Array<[string, Object]>} */
 const selectTasksPrioritizedAheadOfGivenTask = (state, id) =>
   selectAllTasks(state).filter(([, task]) => task.prioritizedAheadOf === id);
 
+/** @returns {string|undefined} */
 export const selectTaskDashboardTab = (state, taskId) =>
   cond([
     [() => selectNowTasks(state).find(([id]) => id === taskId), () => dashboardTabs.NOW],
