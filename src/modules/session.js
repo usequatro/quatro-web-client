@@ -54,6 +54,7 @@ const initialState = {
   gapiUser: null,
 };
 
+/* eslint-disable no-param-reassign */
 const slice = createSlice({
   name,
   initialState,
@@ -103,6 +104,7 @@ const slice = createSlice({
     },
   },
 });
+/* eslint-enable no-param-reassign */
 
 export const { setUserFromFirebaseUser, setGapiUser } = slice.actions;
 export default slice;

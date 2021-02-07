@@ -17,6 +17,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
 import CompleteButton from '../tasks/CompleteButton';
+import { useNotification } from '../../Notification';
 
 const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, declined }) => ({
@@ -61,8 +62,9 @@ const EventCardView = forwardRef(function EventCardViewComponent(
     allDay,
     declined,
     taskId,
-    showComplete,
-    showLoader,
+    completed,
+    showCompleteButton,
+    synching,
     selectable,
     onSelect,
     isBeingRedragged,
@@ -74,6 +76,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
   ref,
 ) {
   const dispatch = useDispatch();
+  const { notifyInfo } = useNotification();
 
   const classes = useStyles({ color, declined });
 
@@ -91,7 +94,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           transform: `translateY(${translateYValue})`,
           opacity: cond([
             [() => isBeingRedragged, () => 0.1],
-            [() => showLoader, () => 0.7],
+            [() => synching, () => 0.7],
             [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
             [() => declined, () => 0.7],
             [() => true, () => 1],
@@ -131,7 +134,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
             className={classes.scrollAnchor}
           />
         )}
-        {showLoader && (
+        {synching && (
           <Box mr={1}>
             <CircularProgress thickness={4} size="1.25rem" color="inherit" />
           </Box>
@@ -149,11 +152,11 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           )}
         </Typography>
 
-        {taskId && showComplete && (
+        {taskId && showCompleteButton && !synching && (
           <CompleteButton
             taskId={taskId}
-            completed={null}
-            onCompleteTask={() => dispatch(completeTask(taskId))}
+            completed={completed}
+            onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
             fontSize="default"
             size="small"
@@ -175,8 +178,9 @@ EventCardView.propTypes = {
   allDay: PropTypes.bool.isRequired,
   declined: PropTypes.bool.isRequired,
   taskId: PropTypes.string,
-  showComplete: PropTypes.bool.isRequired,
-  showLoader: PropTypes.bool.isRequired,
+  completed: PropTypes.bool.isRequired,
+  showCompleteButton: PropTypes.bool.isRequired,
+  synching: PropTypes.bool.isRequired,
   selectable: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,
   isBeingRedragged: PropTypes.bool.isRequired,

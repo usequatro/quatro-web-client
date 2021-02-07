@@ -19,7 +19,10 @@ export default () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         thunk: {
-          extraArgument: { apiClient, mixpanel: mixpanelInstance },
+          extraArgument: {
+            apiClient,
+            mixpanel: mixpanelInstance,
+          },
         },
       }),
     reducer: {

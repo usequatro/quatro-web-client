@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
@@ -48,6 +48,9 @@ const round = (value, step) => {
   const times = floor + (Math.abs(factor - floor) < 0.5 ? 0 : 1);
   return times * step;
 };
+
+const WIDTH_PERCENTAGE = 85;
+const NOOP = () => {};
 
 const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) => {
   const classes = useStyles();
@@ -115,6 +118,14 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
 
   const minutesForOneTick = 60 / ticksPerHour;
 
+  const coordinates = useMemo(
+    () => ({
+      x: `${100 - WIDTH_PERCENTAGE}%`,
+      y: Math.floor(tickHeight * (minutes / minutesForOneTick)),
+    }),
+    [tickHeight, minutesForOneTick, minutes],
+  );
+
   return (
     <EventCardView
       id="calendar-event-placeholder"
@@ -127,18 +138,16 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
       allDay={false}
       declined={false}
       taskId={draggableTaskId}
-      showComplete={false}
-      showLoader={false}
+      showCompleteButton={false}
+      completed={false}
+      synching={false}
       selectable={false}
       isBeingRedragged={false}
       color={color}
       height={Math.floor(tickHeight * (duration / minutesForOneTick))}
-      width="88%"
-      coordinates={{
-        x: '12%',
-        y: Math.floor(tickHeight * (minutes / minutesForOneTick)),
-      }}
-      onSelect={() => {}}
+      width={`${WIDTH_PERCENTAGE}%`}
+      coordinates={coordinates}
+      onSelect={NOOP}
       ref={undefined}
     />
   );

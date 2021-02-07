@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import get from 'lodash/get';
 import cond from 'lodash/cond';
@@ -37,6 +37,35 @@ const getSection = cond([
 
 const millisToMinutes = (millis) => millis / (1000 * 60);
 
+/**
+ * Component to visually update the completed checkbox at user's interaction, while actually
+ * triggering the change to Firestore a bit later so user can undo it
+ */
+const CompletedPropBuffer = ({ children, id, onCompleteTask }) => {
+  const [visualCompleted, setVisualCompleted] = useState(true);
+  const cancelCompletion = useRef();
+
+  const handleMarkIncomplete = useCallback(() => {
+    setVisualCompleted(false);
+
+    const timeout = setTimeout(() => {
+      onCompleteTask(id);
+    }, 1000);
+
+    cancelCompletion.current = () => {
+      clearTimeout(timeout);
+      setVisualCompleted(true);
+    };
+  }, [id, onCompleteTask]);
+  const handleMarkComplete = useCallback(() => {
+    if (cancelCompletion.current) {
+      cancelCompletion.current();
+    }
+  }, []);
+
+  return children(visualCompleted, handleMarkIncomplete, handleMarkComplete);
+};
+
 const CompletedTaskList = () => {
   const { notifyError } = useNotification();
   const userId = useSelector(selectUserId);
@@ -44,8 +73,8 @@ const CompletedTaskList = () => {
   const classes = useTaskListStyles();
 
   const [status, setStatus] = useState(INITIAL);
-  const [completedTasks, setCompletedTasks] = useState([]);
   const [endReached, setEndReached] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState([]);
 
   const taskListContainer = useRef();
 
@@ -128,41 +157,42 @@ const CompletedTaskList = () => {
     };
   }, [completedTasks, status, endReached, notifyError, userId]);
 
-  const handleMarkIncompleteTask = (id) => {
-    const timeout = setTimeout(() => {
+  const handleMarkIncompleteTask = useCallback(
+    (id) => {
       // add the task, and dispatch the update that will be tracked
       dispatch(markTaskIncomplete(id));
       // Remove task from list
-      setCompletedTasks(completedTasks.filter(([ctid]) => ctid !== id));
-    }, 750);
-    return () => clearTimeout(timeout);
-  };
+      setCompletedTasks((tasks) => tasks.filter(([ctid]) => ctid !== id));
+    },
+    [setCompletedTasks, dispatch],
+  );
 
   useCreateTaskShortcut();
 
   const renderTask = (id, task) => (
-    <TaskView
-      id={id}
-      key={id}
-      title={task.title}
-      description={task.description}
-      scheduledStart={task.scheduledStart}
-      due={task.due}
-      effort={task.effort}
-      calendarBlockDuration={
-        task.calendarBlockEnd && task.calendarBlockStart
-          ? millisToMinutes(task.calendarBlockEnd - task.calendarBlockStart)
-          : undefined
-      }
-      prioritizedAheadOf={undefined}
-      showBlockers={false}
-      hasRecurringConfig={false}
-      completed={task.overrideCompletedCheckbox ? undefined : task.completed}
-      onCompleteTask={() => {
-        console.warn('Unexpected onCompleteTask'); /* eslint-disable-line no-console */
-      }}
-      onMarkTaskIncomplete={() => handleMarkIncompleteTask(id)}
-    />
+    <CompletedPropBuffer key={id} id={id} onCompleteTask={handleMarkIncompleteTask}>
+      {(bufferedCompletedValue, onMarkTaskIncomplete, onCompleteTask) => (
+        <TaskView
+          id={id}
+          title={task.title}
+          description={task.description}
+          scheduledStart={task.scheduledStart}
+          due={task.due}
+          effort={task.effort}
+          calendarBlockDuration={
+            task.calendarBlockEnd && task.calendarBlockStart
+              ? millisToMinutes(task.calendarBlockEnd - task.calendarBlockStart)
+              : undefined
+          }
+          prioritizedAheadOf={undefined}
+          showBlockers={false}
+          hasRecurringConfig={false}
+          completed={bufferedCompletedValue}
+          onMarkTaskIncomplete={onMarkTaskIncomplete}
+          onCompleteTask={onCompleteTask}
+        />
+      )}
+    </CompletedPropBuffer>
   );
 
   return (
