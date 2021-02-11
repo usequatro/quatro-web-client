@@ -100,7 +100,7 @@ export const gapiListCalendars = async () => {
   return request({
     method: 'GET',
     path: '/calendar/v3/users/me/calendarList',
-    params: { maxResults: 25, minAccessRole: 'writer' },
+    params: { maxResults: 250, minAccessRole: 'writer' },
   });
 };
 

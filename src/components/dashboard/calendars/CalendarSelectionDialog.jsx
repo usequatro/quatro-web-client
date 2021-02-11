@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
+import sortBy from 'lodash/sortBy';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -29,6 +30,18 @@ import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
 import { GOOGLE_CALENDAR_CONNECTED } from '../../../constants/mixpanelEvents';
 
 const keepAlphanumericChars = (string) => string.replace(/[^a-z0-9]/gi, '');
+
+const ACCESS_OWNER = 'owner';
+const ACCESS_READER = 'reader';
+const ACCESS_WRITER = 'writer';
+const ACCESS_FREE_BUSY_READER = 'freeBusyReader';
+
+const ACCESS_COPY = {
+  [ACCESS_OWNER]: 'Owner',
+  [ACCESS_READER]: 'Read access',
+  [ACCESS_WRITER]: 'Write access',
+  [ACCESS_FREE_BUSY_READER]: 'See free/busy access',
+};
 
 export default function CalendarSelectionDialog({ open, onClose }) {
   const { notifyError } = useNotification();
@@ -59,7 +72,21 @@ export default function CalendarSelectionDialog({ open, onClose }) {
         if (unsubscribed) {
           return;
         }
-        setCalendarsAvailable(response.result.items);
+
+        const sort = (items) => sortBy(items, 'summary');
+
+        const primaryItems = response.result.items.filter((item) => item.primary);
+        const restItems = response.result.items.filter((item) => !item.primary);
+
+        const sortedItems = [
+          ...sort(primaryItems),
+          ...sort(restItems.filter((i) => i.accessRole === ACCESS_OWNER)),
+          ...sort(restItems.filter((i) => i.accessRole === ACCESS_WRITER)),
+          ...sort(restItems.filter((i) => i.accessRole === ACCESS_READER)),
+          ...sort(restItems.filter((i) => i.accessRole === ACCESS_FREE_BUSY_READER)),
+        ];
+
+        setCalendarsAvailable(sortedItems);
         setFetching(false);
       })
       .catch((error) => {
@@ -148,15 +175,28 @@ export default function CalendarSelectionDialog({ open, onClose }) {
                     alreadyAdded || calendarProviderIdsSelected.includes(calendar.id);
                   return (
                     <ListItem key={calendar.id} disabled={alreadyAdded}>
-                      <ListItemText style={{ wordBreak: 'break-word' }}>
-                        <label htmlFor={`button-select-${keepAlphanumericChars(calendar.id)}`}>
-                          {calendar.id}
-                        </label>
-                      </ListItemText>
+                      <ListItemText
+                        style={{ wordBreak: 'break-word' }}
+                        primary={calendar.summary}
+                        secondary={[calendar.description, ACCESS_COPY[calendar.accessRole]]
+                          .filter(Boolean)
+                          .join(' - ')}
+                        primaryTypographyProps={{
+                          title: calendar.id,
+                          component: 'label',
+                          htmlFor: `button-select-${keepAlphanumericChars(calendar.id)}`,
+                        }}
+                        secondaryTypographyProps={{
+                          component: 'label',
+                          htmlFor: `button-select-${keepAlphanumericChars(calendar.id)}`,
+                        }}
+                      />
+
                       <ListItemSecondaryAction>
                         <IconButton
                           id={`button-select-${keepAlphanumericChars(calendar.id)}`}
                           aria-label="select"
+                          title={calendar.id}
                           edge="end"
                           color={selected ? 'primary' : 'default'}
                           disabled={alreadyAdded}
