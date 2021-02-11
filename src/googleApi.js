@@ -11,7 +11,14 @@ import {
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
-  window.gapi.load('client', resolve);
+  if (process.env.NODE_ENV === 'test') {
+    window.gapi = {
+      client: {},
+      auth2: {},
+    };
+  } else {
+    window.gapi.load('client', resolve);
+  }
 })
   .then(() =>
     window.gapi.client.init({
