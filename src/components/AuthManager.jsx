@@ -8,72 +8,85 @@ import debugConsole from '../utils/debugConsole';
 import {
   setUserFromFirebaseUser,
   setGapiUser,
+  setAuthErrorState,
   considerGivingUpFirebaseAuthStatusWait,
 } from '../modules/session';
 import {
   SIGNED_IN_WITH_PASSWORD,
   SIGNED_IN_WITH_GOOGLE,
 } from '../constants/mixpanelUserProperties';
+import { useNotification } from './Notification';
+
+// const AUTH_IFRAME_LOAD_ERROR = 'idpiframe_initialization_failed';
 
 const AuthManager = () => {
   const mixpanel = useMixpanel();
   const dispatch = useDispatch();
+  const { notifyError } = useNotification();
 
   // Load and initial sign in state or listen for changes
   useEffect(() => {
     let unsubscribe;
 
-    gapiGetAuthInstance().then((gapiAuthInstance) => {
-      // Initially, we could be logged in
-      const firebaseSignedIn = Boolean(firebase.auth().currentUser);
-      const googleSignedIn = gapiAuthInstance.isSignedIn.get();
-      debugConsole.log('Google API', 'initially signed in', googleSignedIn);
-      debugConsole.log('firebase', 'initially signed in', firebaseSignedIn);
+    gapiGetAuthInstance()
+      .then((gapiAuthInstance) => {
+        // Initially, we could be logged in
+        const firebaseSignedIn = Boolean(firebase.auth().currentUser);
+        const googleSignedIn = gapiAuthInstance.isSignedIn.get();
+        debugConsole.log('Google API', 'initially signed in', googleSignedIn);
+        debugConsole.log('firebase', 'initially signed in', firebaseSignedIn);
 
-      if (firebaseSignedIn) {
-        dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
-      }
-      dispatch(setGapiUser(googleSignedIn ? gapiAuthInstance.currentUser.get() : null));
+        if (firebaseSignedIn) {
+          dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
+        }
+        dispatch(setGapiUser(googleSignedIn ? gapiAuthInstance.currentUser.get() : null));
 
-      // Listen for Google API Auth sign-in state changes.
-      gapiAuthInstance.isSignedIn.listen((signInState) => {
-        debugConsole.log('Google API', 'listen: change in google sign in state to', signInState);
+        // Listen for Google API Auth sign-in state changes.
+        gapiAuthInstance.isSignedIn.listen((signInState) => {
+          debugConsole.log('Google API', 'listen: change in google sign in state to', signInState);
 
-        dispatch(setGapiUser(signInState ? gapiAuthInstance.currentUser.get() : null));
+          dispatch(setGapiUser(signInState ? gapiAuthInstance.currentUser.get() : null));
 
-        // Log in with Firebase after logging in with Google API
-        if (signInState) {
-          if (!firebase.auth().currentUser) {
-            const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
-            firebaseSignInWithCredential(authResponse.id_token, authResponse.access_token).then(
-              () => {
-                dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
-              },
-            );
+          // Log in with Firebase after logging in with Google API
+          if (signInState) {
+            if (!firebase.auth().currentUser) {
+              const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
+              firebaseSignInWithCredential(authResponse.id_token, authResponse.access_token).then(
+                () => {
+                  dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
+                },
+              );
+            }
           }
-        }
+        });
+
+        // Subscribe to Firebase logging out on its own, we log out Google too
+        unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+          debugConsole.log('firebase', 'onAuthStateChanged', Boolean(user));
+          dispatch(setUserFromFirebaseUser(user));
+
+          // If Firebase logs out, we log out Google too
+          if (!user && gapiAuthInstance.isSignedIn.get()) {
+            gapiAuthInstance.signOut().then(() => {
+              debugConsole.log('Google API', 'google logged out because Firebase logged out');
+            });
+          }
+        });
+
+        const timeout = setTimeout(() => dispatch(considerGivingUpFirebaseAuthStatusWait()), 5000);
+        return () => {
+          clearTimeout(timeout);
+        };
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(error);
+
+        notifyError(`Google Authentication setup error. ${error.details || ''}`);
+        dispatch(setAuthErrorState());
       });
-
-      // Subscribe to Firebase logging out on its own, we log out Google too
-      unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-        debugConsole.log('firebase', 'onAuthStateChanged', Boolean(user));
-        dispatch(setUserFromFirebaseUser(user));
-
-        // If Firebase logs out, we log out Google too
-        if (!user && gapiAuthInstance.isSignedIn.get()) {
-          gapiAuthInstance.signOut().then(() => {
-            debugConsole.log('Google API', 'google logged out because Firebase logged out');
-          });
-        }
-      });
-
-      const timeout = setTimeout(() => dispatch(considerGivingUpFirebaseAuthStatusWait()), 5000);
-      return () => {
-        clearTimeout(timeout);
-      };
-    });
     return unsubscribe;
-  }, [dispatch]);
+  }, [dispatch, notifyError]);
 
   // Mixpanel tracking
   useEffect(() => {
