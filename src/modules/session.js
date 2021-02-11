@@ -7,6 +7,7 @@ import debugConsole from '../utils/debugConsole';
 const name = 'session';
 
 const NOT_DEFINED = 'notDefined';
+const ERROR = 'error';
 const LOGGED_IN = 'loggedIn';
 const LOGGED_OUT = 'loggedOut';
 
@@ -17,6 +18,7 @@ export const selectUserEmail = (state) => get(state[name], 'firebaseUser.email')
 export const selectUserEmailVerified = (state) => get(state[name], 'firebaseUser.emailVerified');
 export const selectUserDisplayName = (state) => get(state[name], 'firebaseUser.displayName');
 export const selectUserPhotoURL = (state) => get(state[name], 'firebaseUser.photoURL');
+export const selectFirebaseInErrorStatus = (state) => state[name].fireaseStatus === ERROR;
 export const selectFirebaseUserIsLoggedIn = (state) => state[name].fireaseStatus === LOGGED_IN;
 export const selectFirebaseUserLoading = (state) => state[name].fireaseStatus === NOT_DEFINED;
 export const selectGoogleFirebaseAuthProvider = (state) =>
@@ -59,6 +61,10 @@ const slice = createSlice({
   name,
   initialState,
   reducers: {
+    setAuthErrorState: (state) => {
+      state.fireaseStatus = ERROR;
+      state.gapiStatus = ERROR;
+    },
     setUserFromFirebaseUser: {
       reducer: (state, { payload }) => ({
         ...state,
@@ -106,7 +112,7 @@ const slice = createSlice({
 });
 /* eslint-enable no-param-reassign */
 
-export const { setUserFromFirebaseUser, setGapiUser } = slice.actions;
+export const { setUserFromFirebaseUser, setGapiUser, setAuthErrorState } = slice.actions;
 export default slice;
 
 // Thunks

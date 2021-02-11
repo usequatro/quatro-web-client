@@ -25,13 +25,16 @@ const circularProgressPropsBySize = {
   medium: { thickness: 4, size: 60 },
 };
 
+const MAX_TIMOEUT_MS = 2147483647;
+
 const LoaderScreen = ({ className, background, color, delay, size }) => {
   const backgroundWithVariation = addVariation(background);
   const colorWithVariation = addVariation(color);
 
   const classes = useStyles({ background: backgroundWithVariation, color: colorWithVariation });
 
-  const showLoader = useDelayedState(true, delay);
+  const validDelay = Math.min(delay, MAX_TIMOEUT_MS);
+  const showLoader = useDelayedState(true, validDelay);
 
   return (
     <Box

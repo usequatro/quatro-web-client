@@ -34,7 +34,7 @@ Libraries used:
 1. Clone the repo.
 1. Clone the file `.env.development` into `.env.local` and adapt it as needed, e.g., remove the Mixpanel ID to disable tracking.
 1. Run `npm install`
-1. Run `npm run start`
+1. Run `npm run start`. For HTTPS run `HTTPS=true npm run start`
 
 Libraries for development:
 

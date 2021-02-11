@@ -26,7 +26,6 @@ const [Router, routerProps] = isAppFullScreenMode()
 const App = () => (
   <ReactReduxProvider store={store}>
     <MixpanelProvider>
-      <AuthManager />
       <MaterialThemeProvider theme={muiTheme}>
         <ErrorBoundary>
           <CssBaseline />
@@ -34,6 +33,7 @@ const App = () => (
             <RouterChangeTracker />
             <Div100vh style={{ width: '100%', height: '100rvh' }}>
               <NotificationContextProvider>
+                <AuthManager />
                 <AppRouting />
                 <NotificationSnackbar />
               </NotificationContextProvider>
