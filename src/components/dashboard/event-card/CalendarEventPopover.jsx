@@ -22,6 +22,8 @@ import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
 import RoomRoundedIcon from '@material-ui/icons/RoomRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
+import LockOpenRoundedIcon from '@material-ui/icons/LockOpenRounded';
+import LockRoundedIcon from '@material-ui/icons/LockRounded';
 
 import {
   selectCalendarEventSummary,
@@ -35,6 +37,7 @@ import {
   selectCalendarEventCalendarId,
   selectCalendarEventTaskId,
   selectCalendarEventProviderCalendarId,
+  selectCalendarEventVisibility,
 } from '../../../modules/calendarEvents';
 import { completeTask, selectTaskShowsAsCompleted, selectTaskExists } from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
@@ -43,6 +46,7 @@ import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
 import usePrevious from '../../hooks/usePrevious';
 import { getTaskPath } from '../../../constants/paths';
+import { PUBLIC, getEventVisibilityLabel } from '../../../constants/eventVisibilities';
 import { useNotification } from '../../Notification';
 
 const useStyles = makeStyles((theme) => ({
@@ -89,6 +93,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const startTimestamp = useSelector((state) => selectCalendarEventStartTimestamp(state, id));
   const endTimestamp = useSelector((state) => selectCalendarEventEndTimestamp(state, id));
   const allDay = useSelector((state) => selectCalendarEventAllDay(state, id));
+  const visibility = useSelector((state) => selectCalendarEventVisibility(state, id));
   const declined = useSelector((state) => selectCalendarEventDeclined(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
@@ -160,6 +165,19 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
           </Box>
         )}
 
+        {/* visibility is missing on GCal quite often */}
+        {visibility && (
+          <Box display="flex" mb={2}>
+            <InformativeIcon
+              title="Visibility"
+              Icon={visibility === PUBLIC ? LockOpenRoundedIcon : LockRoundedIcon}
+            />
+            <Typography variant="body2">
+              <TextWithLinks text={getEventVisibilityLabel(visibility)} />
+            </Typography>
+          </Box>
+        )}
+
         <Box display="flex" alignItems="center">
           <Box mr={2} ml={-1.5} display="flex">
             <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
@@ -178,6 +196,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
           <Typography variant="body2">{`${providerCalendarId} `}</Typography>
         </Box>
+
         {taskId && (
           <DialogActions>
             <Button
