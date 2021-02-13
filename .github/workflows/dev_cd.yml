@@ -4,7 +4,7 @@ on:
   push:
     branches:
       # main branch CD
-      - master
+      - main
       # meant for large development branches
       - release/*
 
