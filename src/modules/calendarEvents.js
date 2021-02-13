@@ -24,6 +24,8 @@ import { timestampSchema } from '../utils/validators';
 // eslint-disable-next-line import/no-cycle
 import { selectCalendarProviderCalendarId } from './calendars';
 
+import { DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL } from '../constants/eventVisibilities';
+
 const name = 'calendarEvents';
 
 // Interval that spans between Quatro reloading calendar events currently in the view
@@ -51,6 +53,7 @@ const calendarEventSchema = Joi.object({
   }).default({}),
   allDay: Joi.bool(),
   declined: Joi.bool(),
+  visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
   taskId: Joi.string().allow(null),
 });
 
@@ -85,6 +88,8 @@ export const selectCalendarEventEndDateTime = (state, id) =>
 export const selectCalendarEventEndTimestamp = (state, id) =>
   get(state[name].byId[id], 'end.timestamp');
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
+/** @returns {string|undefined} */
+export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
 export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
 export const selectCalendarEventCollisionCount = (state, id) =>
   get(state[name].byId[id], 'collisionCount');
@@ -442,6 +447,7 @@ export const loadEvents = (calendarIds, date = new Date(), callback = () => {}) 
       allDay: isEventAllDay(item.start, item.end, startOfDayDate, endOfDayDate),
       declined: isItemDeclined(item),
       taskId: get(item, 'extendedProperties.private.taskId', null),
+      visibility: item.visibility,
     }));
 
     dispatch(slice.actions.setDayEvents(dateKey, events));
