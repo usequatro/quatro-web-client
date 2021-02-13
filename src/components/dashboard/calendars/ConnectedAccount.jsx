@@ -255,6 +255,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
             renderContent={(onClick) => (
               <Button
                 onClick={onClick}
+                variant="outlined"
                 size="small"
                 endIcon={
                   disconnectingProvider && (
