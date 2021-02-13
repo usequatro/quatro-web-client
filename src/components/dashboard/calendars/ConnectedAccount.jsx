@@ -51,7 +51,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PermissionInfoDialog = ({ title, contentText, children }) => {
+const PermissionInfoDialog = ({ title, content, children }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -61,7 +61,7 @@ const PermissionInfoDialog = ({ title, contentText, children }) => {
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitleWithClose onClose={() => setOpen(false)} title={title} />
         <DialogContent>
-          <DialogContentText>{contentText}</DialogContentText>
+          {typeof content === 'string' ? <DialogContentText>{content}</DialogContentText> : content}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Done</Button>
@@ -72,7 +72,7 @@ const PermissionInfoDialog = ({ title, contentText, children }) => {
 };
 PermissionInfoDialog.propTypes = {
   title: PropTypes.string.isRequired,
-  contentText: PropTypes.string.isRequired,
+  content: PropTypes.node.isRequired,
   children: PropTypes.func.isRequired,
 };
 
@@ -281,9 +281,22 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
                 : 'No access to view and edit events'}
               <PermissionInfoDialog
                 title="Access to view and edit events"
-                contentText="Quatro uses access to view your events to display them for you on the
-                  Top 4 screen. Quatro uses access to edit your events to sync Quatro tasks to your
-                  calendar."
+                content={
+                  <>
+                    <DialogContentText>
+                      Quatro needs read access to your events to display them for you on the
+                      interface.
+                    </DialogContentText>
+                    <DialogContentText>
+                      Quatro needs edit access to your events to create blocks for your Quatro tasks
+                      and keep them up to date.
+                    </DialogContentText>
+                    <DialogContentText>
+                      {`Quatro doesn't store any data from your events. Quatro only keeps track of their
+                      internal identifier so they can be associated to tasks.`}
+                    </DialogContentText>
+                  </>
+                }
               >
                 {(setOpen) => (
                   <IconButton
@@ -307,8 +320,17 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
                 : 'No access to list calendars'}
               <PermissionInfoDialog
                 title="Access to list calendars"
-                contentText="Quatro uses access to list calendars to enable you to connect the calendars of
-                  your Google account."
+                content={
+                  <>
+                    <DialogContentText>
+                      Quatro needs read access to your calendars to enable you to connect calendars.
+                    </DialogContentText>
+                    <DialogContentText>
+                      Quatro stores only the calendar identifiers and email address associated with
+                      it.
+                    </DialogContentText>
+                  </>
+                }
               >
                 {(setOpen) => (
                   <IconButton
@@ -333,8 +355,34 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
 
               <PermissionInfoDialog
                 title="Offline access (in the background)"
-                contentText="Quatro uses offline access to your calendar to refresh the list of events when
-                  changes happen to events in your calendar."
+                content={
+                  <>
+                    <DialogContentText>Quatro uses offline access to:</DialogContentText>
+                    <ul>
+                      <DialogContentText component="li">
+                        Listen to changes to your calendars and the Google Calendar events in your
+                        calendars
+                      </DialogContentText>
+                      <DialogContentText component="li">
+                        Keep the Google Calendar events loaded on the interface up to date
+                      </DialogContentText>
+                      <DialogContentText component="li">
+                        Update task calendar blocks when their associated Google Calendar events are
+                        updated or removed
+                      </DialogContentText>
+                      <DialogContentText component="li">
+                        Create, update and delete Google Calendar events associated to tasks in the
+                        Service
+                      </DialogContentText>
+                    </ul>
+                    <DialogContentText>
+                      It applies only to calendars explicitly connected to Quatro. Disconnecting a
+                      calendar will result on these offline communications immediately stopping.
+                      Disconnecting your Google Account or deleting your Quatro account will also
+                      result in the offline access tokens being revoked and deleted.
+                    </DialogContentText>
+                  </>
+                }
               >
                 {(setOpen) => (
                   <IconButton
