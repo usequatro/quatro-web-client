@@ -240,7 +240,10 @@ export const fetchCreateCalendar = async (calendar) => {
  * @return {Promise<void>}
  */
 export const fetchUpdateCalendar = async (id, updates) => {
-  const validatedUpdates = await validateCalendarSchema(updates, { isUpdate: true });
+  const { value: validatedUpdates } = validateCalendarSchema(updates, {
+    isUpdate: true,
+    sync: true,
+  });
   return db.collection(CALENDARS).doc(id).set(validatedUpdates, { merge: true });
 };
 

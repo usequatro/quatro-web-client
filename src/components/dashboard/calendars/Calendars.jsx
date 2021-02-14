@@ -8,12 +8,17 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Alert from '@material-ui/lab/Alert';
 
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
-import { selectCalendarIds, selectCalendarsAreFetching } from '../../../modules/calendars';
+import {
+  selectCalendarIds,
+  selectCalendarsAreFetching,
+  selectSystemNoficationsEnabled,
+} from '../../../modules/calendars';
 import {
   selectGapiUserSignedIn,
   selectGapiHasAllCalendarScopes,
@@ -53,6 +58,10 @@ const Calendars = () => {
 
   const calendarsAreFetching = useSelector(selectCalendarsAreFetching);
   const calendarIds = useSelector(selectCalendarIds);
+  const anyCalendarHasDesktopNotifications = useSelector(
+    (state) =>
+      calendarIds.length > 0 && calendarIds.find((id) => selectSystemNoficationsEnabled(state, id)),
+  );
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
@@ -122,11 +131,25 @@ const Calendars = () => {
             [
               () => true,
               () => (
-                <List className={classes.list}>
-                  {calendarIds.map((calendarId) => (
-                    <CalendarEditView key={calendarId} id={calendarId} />
-                  ))}
-                </List>
+                <Box width="100%">
+                  {anyCalendarHasDesktopNotifications && !('Notification' in window) && (
+                    <Alert variant="outlined" severity="warning">
+                      {`This browser doesn't support desktop notifications `}
+                    </Alert>
+                  )}
+                  {anyCalendarHasDesktopNotifications &&
+                    'Notification' in window &&
+                    Notification.permission !== 'granted' && (
+                      <Alert variant="outlined" severity="warning">
+                        This browser currently blocks desktop notifications
+                      </Alert>
+                    )}
+                  <List className={classes.list}>
+                    {calendarIds.map((calendarId, _, { length }) => (
+                      <CalendarEditView key={calendarId} id={calendarId} count={length} />
+                    ))}
+                  </List>
+                </Box>
               ),
             ],
           ])()}

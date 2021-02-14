@@ -18,6 +18,7 @@ const LOADED = 'loaded';
 // Selectors
 
 export const selectCalendarsAreFetching = (state) => state[name].status === INITIAL;
+export const selectCalendarsAreLoaded = (state) => state[name].status === LOADED;
 export const selectCalendarIds = (state) => state[name].allIds;
 export const selectCalendarCount = (state) => state[name].allIds.length;
 export const selectCalendarName = (state, id) => get(state[name].byId[id], 'name');
@@ -31,6 +32,10 @@ export const selectCalendarProviderUserId = (state, id) =>
   get(state[name].byId[id], 'providerUserId');
 export const selectCalendarProviderUserEmail = (state, id) =>
   get(state[name].byId[id], 'providerUserEmail');
+export const selectSystemNoficationsEnabled = (state, id) =>
+  get(state[name].byId[id], 'systemNotifications.enabled');
+export const selectSystemNoficationsMinutesInAdvance = (state, id) =>
+  get(state[name].byId[id], 'systemNotifications.minutesInAdvance', 5);
 
 export const selectAllConnectedProviderCalendarIds = (state) =>
   selectCalendarIds(state).map((id) => selectCalendarProviderCalendarId(state, id));
@@ -41,6 +46,13 @@ export const selectFallbackCalendarId = (state) => {
     return undefined;
   }
   return state[name].allIds[0];
+};
+
+/** @returns {Array<string>} */
+export const selectCalendarIdsWithSystemNotificationsEnabled = (state) => {
+  const allIds = selectCalendarIds(state);
+  const enabledIds = allIds.filter((id) => selectSystemNoficationsEnabled(state, id));
+  return enabledIds;
 };
 
 // Slice

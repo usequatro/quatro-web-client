@@ -8,6 +8,10 @@ export const calendarSchema = Joi.object({
   provider: Joi.valid('google'),
   color: Joi.string(),
   name: Joi.string(),
+  systemNotifications: Joi.object({
+    enabled: Joi.bool(),
+    minutesInAdvance: Joi.number(),
+  }).default({}),
   watcherChannelId: Joi.string().allow(null),
   // The resourceId property is a stable, version-independent ID for the resource
   watcherResourceId: Joi.string().allow(null),
@@ -22,11 +26,15 @@ export const calendarSchema = Joi.object({
  * @param {bool} [options.sync]
  * @return {Promise|Object}
  */
-export const validateCalendarSchema = (entity, { isUpdate = false, sync = false } = {}) =>
-  calendarSchema[sync ? 'validate' : 'validateAsync'](entity, {
+export const validateCalendarSchema = (entity, { isUpdate = false, sync = false } = {}) => {
+  const options = {
     // when updating some values of the entity, we don't want to fill with defaults
     noDefaults: isUpdate,
     // We don't allow unknown when updating, but when fetching yes, they'll be stripped out
     allowUnknown: !isUpdate,
     stripUnknown: true,
-  });
+  };
+  return sync
+    ? calendarSchema.validate(entity, options)
+    : calendarSchema.validateAsync(entity, options);
+};

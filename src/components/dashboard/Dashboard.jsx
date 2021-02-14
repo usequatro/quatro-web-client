@@ -38,6 +38,7 @@ import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
 import DashboardDragDropContext from './DashboardDragDropContext';
+import DesktopNotificationsListener from './notifications/DesktopNotificationsListener';
 
 const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
@@ -173,6 +174,7 @@ const Dashboard = () => {
 
   return (
     <div className={classes.root}>
+      <DesktopNotificationsListener />
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
       <NavigationSidebar open={navigationOpen} />
 
