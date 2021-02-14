@@ -114,6 +114,28 @@ export const selectAllDayCalendarEventIds = (state, dateKey) => {
   return (calendarEventIds || []).filter((id) => selectCalendarEventAllDay(state, id));
 };
 
+/** @returns {Array<string>} */
+export const selectCalendarEventIdsByStart = (state, calendarId, { earliest, latest }) => {
+  const dateKey = format(latest, DATE_KEY_FORMAT);
+  const allCalendarEventIds = selectCalendarEventIds(state, dateKey);
+
+  const filteredIds = allCalendarEventIds.filter((id) => {
+    if (calendarId !== selectCalendarEventCalendarId(state, id)) {
+      return false;
+    }
+    if (
+      selectCalendarEventAllDay(state, id) ||
+      selectCalendarEventDeclined(state, id) ||
+      selectCalendarEventPlaceholderUntilCreated(state, id)
+    ) {
+      return false;
+    }
+    const startTimestamp = selectCalendarEventStartTimestamp(state, id);
+    return earliest < startTimestamp && startTimestamp < latest;
+  });
+  return filteredIds;
+};
+
 // Helpers
 
 export const getCollisions = (event, events) => {
@@ -231,7 +253,6 @@ const organizeState = flow(
 // Slice
 
 const initialState = {
-  allIds: [],
   byId: {},
   byDate: {},
 };

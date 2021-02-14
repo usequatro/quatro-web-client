@@ -7,16 +7,21 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import { selectCalendarIds, selectCalendarProviderCalendarId } from '../../../modules/calendars';
+import {
+  selectCalendarIds,
+  selectCalendarProviderCalendarId,
+  selectCalendarName,
+} from '../../../modules/calendars';
 
-const ProviderCalendarId = ({ calendarId }) => {
-  const providerCalendarId = useSelector((state) =>
-    selectCalendarProviderCalendarId(state, calendarId),
+const CalendarName = ({ calendarId }) => {
+  const providerCalendarId = useSelector(
+    (state) =>
+      selectCalendarName(state, calendarId) || selectCalendarProviderCalendarId(state, calendarId),
   );
 
   return providerCalendarId;
 };
-ProviderCalendarId.propTypes = {
+CalendarName.propTypes = {
   calendarId: PropTypes.string.isRequired,
 };
 
@@ -40,7 +45,7 @@ const ConnectedCalendarSelect = ({ value, onChange, error }) => {
       >
         {calendarIds.map((id) => (
           <MenuItem value={id} key={id}>
-            <ProviderCalendarId calendarId={id} />
+            <CalendarName calendarId={id} />
           </MenuItem>
         ))}
       </Select>
