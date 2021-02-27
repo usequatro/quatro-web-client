@@ -30,3 +30,7 @@ dist
 .idea
 .vscode
 *.code-workspace
+
+# Firebase
+firestore-debug.log
+ui-debug.log
