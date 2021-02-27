@@ -44,7 +44,7 @@ const ACCESS_COPY = {
 };
 
 export default function CalendarSelectionDialog({ open, onClose }) {
-  const { notifyError } = useNotification();
+  const { notifyError, notifyInfo } = useNotification();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
   const connectedProviderCalendarIds = useSelector(selectAllConnectedProviderCalendarIds);
@@ -114,15 +114,15 @@ export default function CalendarSelectionDialog({ open, onClose }) {
     const newDefaultCalendarProviderId =
       connectedProviderCalendarIds.length === 0 ? calendarProviderIdsSelected[0] : undefined;
 
-    calendarProviderIdsSelected.forEach((calendarProviderId) => {
+    const promises = calendarProviderIdsSelected.map((calendarProviderId) => {
       const calendar = calendarsAvailable.find(({ id }) => id === calendarProviderId);
       if (!calendar) {
         console.error('No calendar'); // eslint-disable-line no-console
         notifyError(`An error ocurred adding ${calendarProviderId}`);
-        return;
+        return undefined;
       }
 
-      fetchCreateCalendar({
+      return fetchCreateCalendar({
         providerCalendarId: calendar.id,
         userId,
         provider: 'google',
@@ -139,9 +139,15 @@ export default function CalendarSelectionDialog({ open, onClose }) {
       });
     });
 
-    mixpanel.track(GOOGLE_CALENDAR_CONNECTED, {
-      newCalendarsConncted: calendarProviderIdsSelected.length,
+    const validPromises = promises.filter(Boolean);
+    Promise.all(validPromises).then(() => {
+      notifyInfo(validPromises.length > 1 ? 'Calendars connected' : 'Calendar connected');
+
+      mixpanel.track(GOOGLE_CALENDAR_CONNECTED, {
+        newCalendarsConnected: calendarProviderIdsSelected.length,
+      });
     });
+
     onClose();
   };
 
