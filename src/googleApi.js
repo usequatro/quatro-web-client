@@ -1,4 +1,14 @@
 import formatISO from 'date-fns/formatISO';
+import parseISO from 'date-fns/parseISO';
+import parse from 'date-fns/parse';
+import isEqual from 'date-fns/isEqual';
+import isBefore from 'date-fns/isBefore';
+import isAfter from 'date-fns/isAfter';
+import startOfDay from 'date-fns/startOfDay';
+import endOfDay from 'date-fns/endOfDay';
+import isValid from 'date-fns/isValid';
+import get from 'lodash/get';
+
 import firebase from './firebase';
 import REGION from './constants/region';
 import debugConsole from './utils/debugConsole';
@@ -69,6 +79,65 @@ export const gapiGrantCalendarManagementScope = async () => {
     });
 };
 
+const parseTimestamp = (dateObject) => {
+  if (dateObject.dateTime) {
+    return parseISO(dateObject.dateTime).getTime();
+  }
+  if (dateObject.date) {
+    return parse(dateObject.date, 'yyyy-MM-dd', startOfDay(new Date())).getTime();
+  }
+  return undefined;
+};
+
+const ALL_DAY_DATE_REGEXP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/; // all day date yyyy-MM-dd
+
+const isItemDeclined = (item) => {
+  const seltAttendee = (item.attendees || []).find((attendee) => attendee.self);
+  return seltAttendee && seltAttendee.responseStatus === 'declined';
+};
+
+const formatCalendarAPIFormat = (item) => {
+  const startTimestamp = parseTimestamp(item.start);
+  const endTimestamp = parseTimestamp(item.end);
+
+  const startOfDayDate = startOfDay(startTimestamp);
+  const endOfDayDate = endOfDay(endTimestamp);
+
+  const allDay =
+    (ALL_DAY_DATE_REGEXP.test(item.start.date) && ALL_DAY_DATE_REGEXP.test(item.end.date)) ||
+    Boolean(
+      isValid(startTimestamp) &&
+        isValid(endTimestamp) &&
+        (isEqual(startTimestamp, startOfDayDate) || isBefore(startTimestamp, startOfDayDate)) &&
+        (isEqual(endTimestamp, endOfDayDate) || isAfter(endTimestamp, endOfDayDate)),
+    );
+
+  const event = {
+    id: item.id,
+    calendarId: item.calendarId,
+    htmlLink: item.htmlLink,
+    summary: item.summary,
+    status: item.status,
+    description: item.description,
+    location: item.location,
+    start: {
+      dateTime: item.start.dateTime,
+      timestamp: startTimestamp,
+      timeZone: item.start.timeZone,
+    },
+    end: {
+      dateTime: item.end.dateTime,
+      timestamp: endTimestamp,
+      timeZone: item.end.timeZone,
+    },
+    allDay,
+    declined: isItemDeclined(item),
+    taskId: get(item, 'extendedProperties.private.taskId', null),
+    visibility: item.visibility,
+  };
+  return event;
+};
+
 /**
  * @link https://developers.google.com/calendar/v3/reference/events/list
  * @param {string} providerCalendarId
@@ -85,11 +154,12 @@ export const gapiListCalendarEvents = async (providerCalendarId, startDate, endD
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       maxResults: 25,
+      showDeleted: true,
       singleEvents: true,
     },
   }).then((response) => {
     // console.log(response.result.items);
-    return response;
+    return response.result.items.map((item) => formatCalendarAPIFormat(item));
   });
 };
 

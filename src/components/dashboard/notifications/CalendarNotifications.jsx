@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import startOfDay from 'date-fns/startOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
-import { selectCalendarEventIdsByStart } from '../../../modules/calendarEvents';
+import { selectCalendarEventIdsForNotifications } from '../../../modules/calendarEvents';
 import { selectSystemNoficationsMinutesInAdvance } from '../../../modules/calendars';
 import EventNotification from './EventNotification';
 
@@ -24,7 +24,7 @@ const CalendarNotifications = ({ calendarId }) => {
     selectSystemNoficationsMinutesInAdvance(state, calendarId),
   );
   const calendarEventIds = useSelector((state) =>
-    selectCalendarEventIdsByStart(state, calendarId, {
+    selectCalendarEventIdsForNotifications(state, calendarId, {
       earliest: Date.now(),
       latest: Date.now() + minutesInAdvance * 60000,
     }),
