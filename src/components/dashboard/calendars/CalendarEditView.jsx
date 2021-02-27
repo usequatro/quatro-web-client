@@ -15,6 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 
+import { useNotification } from '../../Notification';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import {
   selectCalendarName,
@@ -127,6 +128,7 @@ const DisconnectButton = ({
   calendarDisplayName,
   isCalendarUserSignedUpWithGoogle,
 }) => {
+  const { notifyInfo } = useNotification();
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
 
@@ -136,6 +138,7 @@ const DisconnectButton = ({
         dispatch(clearAllEvents());
         fetchDeleteCalendar(calendarId);
         mixpanel.track(GOOGLE_CALENDAR_DISCONNECTED);
+        notifyInfo('Calendar disconnected');
       }}
       renderDialog={(open, onConfirm, onConfirmationClose) => (
         <ConfirmationDialog
