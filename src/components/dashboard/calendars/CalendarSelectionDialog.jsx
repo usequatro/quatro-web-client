@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
@@ -27,6 +28,7 @@ import { selectUserId, selectGapiUserSignedIn } from '../../../modules/session';
 import { fetchCreateCalendar, fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
 import calendarColors from '../../../constants/calendarColors';
 import { gapiListCalendars, gapiGetAuthInstance } from '../../../googleApi';
+import * as paths from '../../../constants/paths';
 import { GOOGLE_CALENDAR_CONNECTED } from '../../../constants/mixpanelEvents';
 
 const keepAlphanumericChars = (string) => string.replace(/[^a-z0-9]/gi, '');
@@ -45,6 +47,7 @@ const ACCESS_COPY = {
 
 export default function CalendarSelectionDialog({ open, onClose }) {
   const { notifyError, notifyInfo } = useNotification();
+  const history = useHistory();
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
 
   const connectedProviderCalendarIds = useSelector(selectAllConnectedProviderCalendarIds);
@@ -141,7 +144,17 @@ export default function CalendarSelectionDialog({ open, onClose }) {
 
     const validPromises = promises.filter(Boolean);
     Promise.all(validPromises).then(() => {
-      notifyInfo(validPromises.length > 1 ? 'Calendars connected' : 'Calendar connected');
+      notifyInfo({
+        message: validPromises.length > 1 ? 'Calendars connected' : 'Calendar connected',
+        buttons: [
+          {
+            children: 'Go to Top 4',
+            onClick: () => {
+              history.push(paths.NOW);
+            },
+          },
+        ],
+      });
 
       mixpanel.track(GOOGLE_CALENDAR_CONNECTED, {
         newCalendarsConnected: calendarProviderIdsSelected.length,
