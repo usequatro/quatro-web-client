@@ -147,10 +147,10 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                 className={classes.appBarButtons}
                 variant="text"
                 color="inherit"
-                href="https://usequatro.com/blog"
+                href="https://usequatro.com/faq"
                 target="_blank"
               >
-                Blog
+                FAQ
               </Button>
             </Box>
           </Hidden>
@@ -203,8 +203,8 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
               <MenuItem component={MuiLink} target="_blank" href="mailto:contact@usequatro.com">
                 Contact us
               </MenuItem>
-              <MenuItem component={MuiLink} target="_blank" href="https://usequatro.com/blog">
-                Blog
+              <MenuItem component={MuiLink} target="_blank" href="https://usequatro.com/faq">
+                FAQ
               </MenuItem>
             </Hidden>
             <MenuItem onClick={handleSignOut}>Log out</MenuItem>
