@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import CalendarEvent from '../event-card/CalendarEvent';
 import PlaceholderCard from './PlaceholderCard';
-import { selectSortedCalendarEventIds } from '../../../modules/calendarEvents';
+import { selectCalendarEventIdsForDate } from '../../../modules/calendarEvents';
 
 const useStyles = makeStyles(() => ({
   listContainer: {
@@ -28,7 +28,7 @@ const CalendarDayEventsList = ({
 }) => {
   const classes = useStyles();
   const sortedCalendarEventIds = useSelector((state) =>
-    selectSortedCalendarEventIds(state, timestamp),
+    selectCalendarEventIdsForDate(state, timestamp),
   );
 
   return (

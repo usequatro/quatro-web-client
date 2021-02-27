@@ -1,17 +1,20 @@
 import React, { useRef } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import addMinutes from 'date-fns/addMinutes';
 import startOfDay from 'date-fns/startOfDay';
+import endOfDay from 'date-fns/endOfDay';
 import roundToNearestMinutes from 'date-fns/roundToNearestMinutes';
 
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 
-import useLoadEvents from '../calendar-view/useLoadEvents';
 import Ticks from '../calendar-view/Ticks';
 import CalendarDayEventsList from '../calendar-view/CalendarDayEventsList';
 import LoaderScreen from '../../ui/LoaderScreen';
+import CalendarEventsFetcher from '../CalendarEventsFetcher';
+import { selectCalendarEventsTimeIsFetching } from '../../../modules/calendarEvents';
 
 const useStyles = makeStyles((theme) => ({
   visualContainer: {
@@ -54,7 +57,9 @@ const CalendarSchedulingThumbnail = ({
   const classes = useStyles();
 
   const ticksContainerRef = useRef();
-  const { fetching } = useLoadEvents(startDateTimestamp, { autoRefresh: false });
+  const fetching = useSelector((state) =>
+    selectCalendarEventsTimeIsFetching(state, startDateTimestamp),
+  );
 
   const handleClick = (event) => {
     const scrollContainerRect = ticksContainerRef.current.getBoundingClientRect();
@@ -69,6 +74,10 @@ const CalendarSchedulingThumbnail = ({
 
   return (
     <Paper className={classes.visualContainer} elevation={0} variant="outlined">
+      <CalendarEventsFetcher
+        start={startOfDay(startDateTimestamp).getTime()}
+        end={endOfDay(startDateTimestamp).getTime()}
+      />
       {fetching && <LoaderScreen className={classes.loader} background="transparent" />}
       <div
         className={classes.scrollContainer}

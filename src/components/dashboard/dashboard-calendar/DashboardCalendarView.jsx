@@ -5,11 +5,12 @@ import { useHistory } from 'react-router-dom';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import isToday from 'date-fns/isToday';
+import startOfDay from 'date-fns/startOfDay';
+import endOfDay from 'date-fns/endOfDay';
 import isValid from 'date-fns/isValid';
 import getYear from 'date-fns/getYear';
 import { makeStyles } from '@material-ui/core/styles';
 
-import useLoadEvents from '../calendar-view/useLoadEvents';
 import CalendarNavBar from '../calendar-view/CalendarNavBar';
 import Ticks from '../calendar-view/Ticks';
 import CalendarDayEventsList from '../calendar-view/CalendarDayEventsList';
@@ -21,6 +22,8 @@ import {
   selectCalendarDisplayTimestamp,
   setCalendarDisplayTimestamp,
 } from '../../../modules/dashboard';
+import CalendarEventsFetcher from '../CalendarEventsFetcher';
+import { selectCalendarEventsTimeIsFetching } from '../../../modules/calendarEvents';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -81,7 +84,7 @@ const DashboardCalendarView = () => {
     }
   }, [history, timestamp]);
 
-  const { fetching } = useLoadEvents(timestamp);
+  const fetching = useSelector((state) => selectCalendarEventsTimeIsFetching(state, timestamp));
 
   // If we've already scrolled, we prevent scrolling when events reload in the background
   const scrollAlreadyApplied = useRef(false);
@@ -90,22 +93,26 @@ const DashboardCalendarView = () => {
   }, [timestamp]);
 
   // Management of current time bar and scrolling
-  const today = isToday(timestamp);
   const currentTimeRef = useRef();
   const firstEventCardScrollAnchorRef = useRef();
   useEffect(() => {
     if (fetching || scrollAlreadyApplied.current) {
       return;
     }
-    const validRef = today ? currentTimeRef : firstEventCardScrollAnchorRef;
+    const validRef = isToday(timestamp) ? currentTimeRef : firstEventCardScrollAnchorRef;
     if (validRef && validRef.current) {
       validRef.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
       scrollAlreadyApplied.current = true;
     }
-  }, [today, fetching]);
+  }, [timestamp, fetching]);
 
   return (
     <>
+      <CalendarEventsFetcher
+        start={startOfDay(timestamp).getTime()}
+        end={endOfDay(timestamp).getTime()}
+      />
+
       <CalendarNavBar
         timestamp={timestamp}
         onChange={(newDate) => dispatch(setCalendarDisplayTimestamp(newDate))}
@@ -125,7 +132,7 @@ const DashboardCalendarView = () => {
           interactive
         />
         <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
-        {today && <CurrentTimeLine ref={currentTimeRef} />}
+        {isToday(timestamp) && <CurrentTimeLine ref={currentTimeRef} />}
       </CalendarDroppable>
     </>
   );

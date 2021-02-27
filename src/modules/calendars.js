@@ -119,7 +119,7 @@ export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = (
 
       // If the calendar received updates via webhook, we flag its events as stale
       if (hasWatcherUpdates(previousState, getState())) {
-        debugConsole.log('Firestore', 'listenToCalendarsList', 'calendar watcher update datected');
+        debugConsole.log('Firestore', 'listenToCalendarsList', 'calendar watcher update detected');
         dispatch(staleAllEvents());
       }
       initial = false;
