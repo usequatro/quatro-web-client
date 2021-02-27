@@ -26,6 +26,7 @@ import { revokeAllScopes, gapiGetAuthInstance } from '../../../googleApi';
 import { useNotification } from '../../Notification';
 import GoogleButton from '../../ui/GoogleButton';
 import {
+  selectGapiUserLoading,
   selectGapiUserId,
   selectGapiHasAllCalendarScopes,
   selectGapiHasCalendarListScope,
@@ -35,7 +36,10 @@ import {
   setUserFromFirebaseUser,
   setGapiUser,
 } from '../../../modules/session';
-import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
+import {
+  selectUserExternalConfigIsFetching,
+  selectUserHasGrantedGoogleCalendarOfflineAccess,
+} from '../../../modules/userExternalConfig';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import Confirm from '../../ui/Confirm';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
@@ -112,6 +116,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
   const classes = useStyles();
+  const gapiUserLoading = useSelector(selectGapiUserLoading);
   const gapiUserId = useSelector(selectGapiUserId);
   const isCurrentlyConnected = uid === gapiUserId;
 
@@ -119,6 +124,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
   const gapiHasCalendarListAccess = useSelector(selectGapiHasCalendarListScope);
   const gapiHasEventsManageAccess = useSelector(selectGapiHasEventsManageScope);
 
+  const userExternalConfigIsFetching = useSelector(selectUserExternalConfigIsFetching);
   const userHasGrantedGoogleCalendarOfflineAccess = useSelector(
     selectUserHasGrantedGoogleCalendarOfflineAccess,
   );
@@ -270,7 +276,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
           />
         )}
       </Box>
-      {isCurrentlyConnected && (
+      {!userExternalConfigIsFetching && isCurrentlyConnected && (
         <Box>
           <ul>
             <Typography
@@ -403,6 +409,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
 
       <Box>
         {cond([
+          [() => gapiUserLoading || userExternalConfigIsFetching, () => null],
           [
             () => !isCurrentlyConnected,
             () => (

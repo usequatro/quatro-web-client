@@ -67,7 +67,8 @@ const Calendars = () => {
 
   const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
 
-  const showLoader = useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching;
+  const showLoader =
+    useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching && googleSignedIn;
 
   const handleSignInWithGoogle = () => {
     setSigningInToGoogle(true);
