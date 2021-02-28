@@ -10,7 +10,7 @@ import NavigationSidebarFooter from './NavigationSidebarFooter';
 import { getTopBarHeight } from '../navigation-app-bar/DashboardAppBar';
 
 export const CLOSED_DRAWER_WIDTH = 54;
-const OPEN_DRAWER_WIDTH = 240;
+const OPEN_DRAWER_WIDTH = 200;
 
 const useStyles = makeStyles((theme) => ({
   placeholderToolbar: {

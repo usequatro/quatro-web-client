@@ -122,7 +122,10 @@ const Dashboard = () => {
 
   const isDataInSync = useSelector(selectIsDataInSync);
 
-  const [navigationOpen, setNavigationOpen] = useLocalStorage('navigationOpen', false);
+  const [navigationOpen, setNavigationOpen] = useLocalStorage(
+    'navigationOpen',
+    !mobileViewportSize,
+  );
 
   // Close drawer when route changes
   const previousPathname = usePrevious(location.pathname);
