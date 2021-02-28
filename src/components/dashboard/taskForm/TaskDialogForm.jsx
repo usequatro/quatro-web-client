@@ -6,8 +6,6 @@ import cond from 'lodash/cond';
 import addHours from 'date-fns/addHours';
 import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
-import startOfTomorrow from 'date-fns/startOfTomorrow';
-import addMinutes from 'date-fns/addMinutes';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import DialogActions from '@material-ui/core/DialogActions';
@@ -52,10 +50,6 @@ import {
   setDescription,
   setImpact,
   setEffort,
-  setScheduledStart,
-  setCalendarBlockCalendarId,
-  setCalendarBlockStart,
-  setCalendarBlockEnd,
   setDue,
   addTaskBlocker,
   addFreeTextBlocker,
@@ -69,9 +63,7 @@ import {
   deleteRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
 } from '../../../modules/recurringConfigs';
-import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
-import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
-import { selectCalendarCount, selectCalendarProviderCalendarId } from '../../../modules/calendars';
+import { selectCalendarProviderCalendarId } from '../../../modules/calendars';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import DateTimeDialog from '../../ui/DateTimeDialog';
@@ -137,7 +129,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
+// const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
 
 const getBlockerTitle = cond([
@@ -195,12 +187,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
-
-  const calendarCount = useSelector(selectCalendarCount);
-  const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
-  const userHasGrantedCalendarOfflineAccess = useSelector(
-    selectUserHasGrantedGoogleCalendarOfflineAccess,
-  );
 
   const calendarProviderCalendarId = useSelector((state) =>
     calendarBlockCalendarId
@@ -614,37 +600,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       </DialogActions>
 
       <ScheduledStartDialog
-        blockCalendarDisabledReason={cond([
-          [() => !gapiHasAllCalendarScopes || !userHasGrantedCalendarOfflineAccess, () => 'access'],
-          [() => calendarCount === 0, () => 'noCalendars'],
-          [() => true, () => ''],
-        ])()}
         open={showScheduledStartDialog}
         onClose={() => setShowScheduledStartDialog(false)}
-        timestamp={scheduledStartTimestamp}
-        blocksCalendar={Boolean(calendarBlockStart)}
-        calendarBlockCalendarId={calendarBlockCalendarId}
-        calendarBlockDuration={
-          calendarBlockEnd && calendarBlockStart
-            ? differenceInMinutes(calendarBlockEnd, calendarBlockStart)
-            : null
-        }
-        initialDateTimestamp={initialScheduledDateTimestamp}
-        onDone={({ timestamp, blocksCalendar, duration, calendarId }) => {
-          dispatch(setScheduledStart(timestamp));
-          dispatch(setCalendarBlockCalendarId(timestamp && blocksCalendar ? calendarId : null));
-          dispatch(setCalendarBlockStart(timestamp && blocksCalendar ? timestamp : null));
-          dispatch(
-            setCalendarBlockEnd(
-              timestamp && blocksCalendar ? addMinutes(timestamp, duration).getTime() : null,
-            ),
-          );
-
-          // If we remove the scheduled start and there was repeat, also clear it
-          if (!timestamp && recurringConfig) {
-            dispatch(setRecurringConfig(null));
-          }
-        }}
       />
 
       <DateTimeDialog
