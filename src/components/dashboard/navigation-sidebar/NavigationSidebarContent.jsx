@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -21,108 +22,108 @@ import BlockedIcon from '../../icons/BlockedIcon';
 import CompletedIcon from '../../icons/CompletedIcon';
 import ConnectedIcon from '../../icons/ConnectedIcon';
 
-const useStyles = makeStyles((theme) => ({
-  divider: {
-    backgroundColor: theme.palette.common.white,
+const useStyles = makeStyles(() => ({
+  listContainer: {
+    flexGrow: 1,
   },
 }));
 
-const NavigationSidebarContent = () => {
+const PassThrough = ({ children }) => children;
+
+const NavigationSidebarContent = ({ open }) => {
   const classes = useStyles();
   const activeTab = useSelector(selectDashboardActiveTab);
+
+  const TooltipWhenClosed = open ? PassThrough : Tooltip;
+
   return (
-    <>
-      <List disablePadding>
-        <Tooltip title="Top 4" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.NOW}
-            selected={activeTab === dashboardTabs.NOW}
-          >
-            <ListItemIcon>
-              <HomeIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Top 4" />
-          </ListItem>
-        </Tooltip>
+    <List disablePadding className={classes.listContainer}>
+      <TooltipWhenClosed title="Top 4" placement="right" arrow>
+        <ListItem button component={Link} to={paths.NOW} selected={activeTab === dashboardTabs.NOW}>
+          <ListItemIcon>
+            <HomeIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Top 4" />
+        </ListItem>
+      </TooltipWhenClosed>
 
-        <Tooltip title="Backlog" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.BACKLOG}
-            selected={activeTab === dashboardTabs.BACKLOG}
-          >
-            <ListItemIcon>
-              <BacklogIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Backlog" />
-          </ListItem>
-        </Tooltip>
+      <TooltipWhenClosed title="Backlog" placement="right" arrow>
+        <ListItem
+          button
+          component={Link}
+          to={paths.BACKLOG}
+          selected={activeTab === dashboardTabs.BACKLOG}
+        >
+          <ListItemIcon>
+            <BacklogIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Backlog" />
+        </ListItem>
+      </TooltipWhenClosed>
 
-        <Tooltip title="Scheduled" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.SCHEDULED}
-            selected={activeTab === dashboardTabs.SCHEDULED}
-          >
-            <ListItemIcon>
-              <ScheduledIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Scheduled" />
-          </ListItem>
-        </Tooltip>
+      <TooltipWhenClosed title="Scheduled" placement="right" arrow>
+        <ListItem
+          button
+          component={Link}
+          to={paths.SCHEDULED}
+          selected={activeTab === dashboardTabs.SCHEDULED}
+        >
+          <ListItemIcon>
+            <ScheduledIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Scheduled" />
+        </ListItem>
+      </TooltipWhenClosed>
 
-        <Tooltip title="Blocked" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.BLOCKED}
-            selected={activeTab === dashboardTabs.BLOCKED}
-          >
-            <ListItemIcon>
-              <BlockedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Blocked" />
-          </ListItem>
-        </Tooltip>
+      <TooltipWhenClosed title="Blocked" placement="right" arrow>
+        <ListItem
+          button
+          component={Link}
+          to={paths.BLOCKED}
+          selected={activeTab === dashboardTabs.BLOCKED}
+        >
+          <ListItemIcon>
+            <BlockedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Blocked" />
+        </ListItem>
+      </TooltipWhenClosed>
 
-        <Divider />
+      <Divider />
 
-        <Tooltip title="Completed" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.COMPLETED}
-            selected={activeTab === dashboardTabs.COMPLETED}
-          >
-            <ListItemIcon>
-              <CompletedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Completed" />
-          </ListItem>
-        </Tooltip>
+      <TooltipWhenClosed title="Completed" placement="right" arrow>
+        <ListItem
+          button
+          component={Link}
+          to={paths.COMPLETED}
+          selected={activeTab === dashboardTabs.COMPLETED}
+        >
+          <ListItemIcon>
+            <CompletedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Completed" />
+        </ListItem>
+      </TooltipWhenClosed>
 
-        <Tooltip title="Calendars" placement="right" arrow>
-          <ListItem
-            button
-            component={Link}
-            to={paths.CALENDARS}
-            selected={activeTab === dashboardTabs.CALENDARS}
-          >
-            <ListItemIcon>
-              <ConnectedIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Calendars" />
-          </ListItem>
-        </Tooltip>
-      </List>
-
-      <Divider className={classes.divider} />
-    </>
+      <TooltipWhenClosed title="Calendars" placement="right" arrow>
+        <ListItem
+          button
+          component={Link}
+          to={paths.CALENDARS}
+          selected={activeTab === dashboardTabs.CALENDARS}
+        >
+          <ListItemIcon>
+            <ConnectedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Calendars" />
+        </ListItem>
+      </TooltipWhenClosed>
+    </List>
   );
+};
+
+NavigationSidebarContent.propTypes = {
+  open: PropTypes.bool.isRequired,
 };
 
 export default NavigationSidebarContent;

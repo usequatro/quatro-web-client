@@ -6,10 +6,11 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 
 import NavigationSidebarContent from './NavigationSidebarContent';
+import NavigationSidebarFooter from './NavigationSidebarFooter';
 import { getTopBarHeight } from '../navigation-app-bar/DashboardAppBar';
 
 export const CLOSED_DRAWER_WIDTH = 54;
-export const OPEN_DRAWER_WIDTH = 240;
+const OPEN_DRAWER_WIDTH = 240;
 
 const useStyles = makeStyles((theme) => ({
   placeholderToolbar: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     height: 0,
     flexShrink: 0,
     [theme.breakpoints.up('sm')]: {
-      width: CLOSED_DRAWER_WIDTH,
+      width: ({ open }) => (open ? OPEN_DRAWER_WIDTH : CLOSED_DRAWER_WIDTH),
       height: '100vh',
     },
   },
@@ -29,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     height: '100vh',
     whiteSpace: 'nowrap',
+    overflowX: 'hidden',
     width: ({ open }) => (open ? OPEN_DRAWER_WIDTH : 0),
     [theme.breakpoints.up('sm')]: {
       width: ({ open }) => (open ? OPEN_DRAWER_WIDTH : CLOSED_DRAWER_WIDTH),
@@ -43,14 +45,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function NavigationSidebar({ open }) {
+export default function NavigationSidebar({ open, setNavigationOpen }) {
   const classes = useStyles({ open });
 
   return (
     <nav className={classes.drawer} aria-label="navigation">
       <Drawer classes={{ paper: classes.drawerPaper }} variant="permanent" open>
         <Toolbar className={classes.placeholderToolbar} />
-        <NavigationSidebarContent />
+        <NavigationSidebarContent open={open} />
+        <NavigationSidebarFooter open={open} setNavigationOpen={setNavigationOpen} />
       </Drawer>
     </nav>
   );
@@ -58,4 +61,5 @@ export default function NavigationSidebar({ open }) {
 
 NavigationSidebar.propTypes = {
   open: PropTypes.bool.isRequired,
+  setNavigationOpen: PropTypes.func.isRequired,
 };

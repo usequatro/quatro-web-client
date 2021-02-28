@@ -52,7 +52,7 @@ const CalendarNavBar = ({ timestamp, fetching, onChange }) => {
   // Introduce a delay before the spinner shows
   const showSpinner = useDelayedState(fetching, 500) && fetching;
 
-  const longFormat = useMediaQuery((theme) => theme.breakpoints.up('md'));
+  const longFormat = useMediaQuery((theme) => theme.breakpoints.up('md'), { noSsr: true });
 
   const formattedDate = useMemo(() => {
     if (!isValid(timestamp)) {

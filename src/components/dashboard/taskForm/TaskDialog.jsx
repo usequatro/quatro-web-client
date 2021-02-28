@@ -19,7 +19,7 @@ const Transition = forwardRef(function Transition(props, ref) {
 const TaskDialog = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('xs'));
+  const fullScreen = useMediaQuery(theme.breakpoints.down('xs'), { noSsr: true });
 
   const dashboardLoaded = useSelector(selectDashboadIsLoaded);
 
