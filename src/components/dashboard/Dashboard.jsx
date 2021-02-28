@@ -13,7 +13,6 @@ import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { makeStyles } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import NavigationSidebar from './navigation-sidebar/NavigationSidebar';
 import TaskList from './tasks/TaskList';
@@ -39,6 +38,8 @@ import { listenToUserExternalConfig } from '../../modules/userExternalConfig';
 import { PATHS_TO_DASHBOARD_TABS } from '../../constants/paths';
 import * as dashboardTabs from '../../constants/dashboardTabs';
 import usePrevious from '../hooks/usePrevious';
+import useLocalStorage from '../hooks/useLocalStorage';
+import useMobileViewportSize from '../hooks/useMobileViewportSize';
 import DashboardDragDropContext from './DashboardDragDropContext';
 import DesktopNotificationsListener from './notifications/DesktopNotificationsListener';
 import CalendarEventsFetcher from './CalendarEventsFetcher';
@@ -114,21 +115,30 @@ const confirmBeforeLeaving = (event) => {
 const Dashboard = () => {
   const classes = useStyles();
   const location = useLocation();
-  const mdUp = useMediaQuery((theme) => theme.breakpoints.up('md'));
+  const mobileViewportSize = useMobileViewportSize();
 
   const dispatch = useDispatch();
   const activeTab = useSelector(selectDashboardActiveTab);
 
   const isDataInSync = useSelector(selectIsDataInSync);
 
-  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [navigationOpen, setNavigationOpen] = useLocalStorage(
+    'navigationOpen',
+    !mobileViewportSize,
+  );
+
   // Close drawer when route changes
   const previousPathname = usePrevious(location.pathname);
   useEffect(() => {
-    if (navigationOpen && location.pathname !== previousPathname) {
+    if (
+      mobileViewportSize &&
+      navigationOpen &&
+      previousPathname &&
+      location.pathname !== previousPathname
+    ) {
       setNavigationOpen(false);
     }
-  }, [location.pathname, navigationOpen, previousPathname]);
+  }, [location.pathname, navigationOpen, previousPathname, mobileViewportSize, setNavigationOpen]);
 
   // Prevent user from closing if there are unsaved changes
   useEffect(() => {
@@ -185,11 +195,12 @@ const Dashboard = () => {
       />
 
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
-      <NavigationSidebar open={navigationOpen} />
+
+      <NavigationSidebar open={navigationOpen} setNavigationOpen={setNavigationOpen} />
 
       <div className={classes.appContentContainer}>
         <Backdrop
-          open={navigationOpen}
+          open={mobileViewportSize && navigationOpen}
           className={classes.navigationBackdrop}
           onClick={() => setNavigationOpen(false)}
         />
@@ -200,7 +211,7 @@ const Dashboard = () => {
             {activeTab !== dashboardTabs.NOW && <DashboardViewBar />}
             {cond([
               [
-                (tab) => tab === dashboardTabs.NOW && mdUp,
+                (tab) => tab === dashboardTabs.NOW && !mobileViewportSize,
                 () => (
                   <Box className={classes.calendarAndListContainer}>
                     <Box
@@ -221,7 +232,7 @@ const Dashboard = () => {
                 ),
               ],
               [
-                (tab) => tab === dashboardTabs.NOW && !mdUp,
+                (tab) => tab === dashboardTabs.NOW && mobileViewportSize,
                 () => (
                   <Box
                     className={classes.calendarAndListContainer}
