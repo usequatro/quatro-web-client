@@ -47,6 +47,8 @@ import CalendarBlockEditor, {
   ERROR_NO_CALENDAR_ID,
   ERROR_UNKNOWN_CALENDAR_ID,
 } from './CalendarBlockEditor';
+import RecurringConfigEditing from './RecurringConfigEditing';
+import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 
 const initialDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
@@ -153,6 +155,19 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     return null;
   }
 
+  const tooltipTitle = isValid(currentTimestamp)
+    ? `This task will appear in your Top 4 on ${format(currentTimestamp, 'PPPP')} at ${format(
+        currentTimestamp,
+        'h:mm a',
+      )}. ${
+        recurringConfig
+          ? `It will repeat ${getUserFacingRecurringText(recurringConfig, currentTimestamp, {
+              capitalize: false,
+            })}.`
+          : ''
+      }`
+    : 'Set the date and time for this task to appear in your Top 4';
+
   return (
     <Dialog
       open={open}
@@ -167,18 +182,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           <>
             Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
-            <Tooltip
-              aria-hidden
-              arrow
-              title={
-                isValid(currentTimestamp)
-                  ? `This task will appear in your Top 4 on ${format(
-                      currentTimestamp,
-                      'PPPP',
-                    )} at ${format(currentTimestamp, 'h:mm a')}`
-                  : 'Set the date and time for this task to appear in your Top 4'
-              }
-            >
+            <Tooltip aria-hidden arrow title={tooltipTitle}>
               <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />
             </Tooltip>
           </>
@@ -200,6 +204,10 @@ const ScheduledStartDialog = ({ open, onClose }) => {
             format="h:mm a"
             onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
           />
+        </Box>
+
+        <Box display="flex" flexDirection="column" mt={1} mb={3}>
+          <RecurringConfigEditing />
         </Box>
 
         <Divider />

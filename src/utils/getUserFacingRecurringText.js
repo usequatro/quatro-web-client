@@ -38,9 +38,15 @@ function capitalizeFirstLetter(str) {
  * @example 'Every Monday at 9am'
  * @param {Object} recurringConfig
  * @param {number} [referenceDate]
+ * @param {Object} [options]
+ * @param {boolean} [options.capitalize]
  * @return {string}
  */
-export default function getUserFacingRecurringText(recurringConfig, referenceDate) {
+export default function getUserFacingRecurringText(
+  recurringConfig,
+  referenceDate,
+  { capitalize = true } = {},
+) {
   if (!recurringConfig) {
     return '';
   }
@@ -106,5 +112,5 @@ export default function getUserFacingRecurringText(recurringConfig, referenceDat
     ],
   ])(unit);
 
-  return capitalizeFirstLetter(text);
+  return capitalize ? capitalizeFirstLetter(text) : text;
 }
