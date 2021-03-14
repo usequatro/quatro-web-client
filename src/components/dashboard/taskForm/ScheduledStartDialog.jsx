@@ -22,6 +22,7 @@ import Switch from '@material-ui/core/Switch';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { makeStyles } from '@material-ui/core/styles';
 
 import DatePicker from '../../ui/DatePicker';
 import TimePicker from '../../ui/TimePicker';
@@ -50,10 +51,18 @@ import CalendarBlockEditor, {
 import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 
+const useStyles = makeStyles((theme) => ({
+  switchHelperText: {
+    marginTop: 0,
+    marginLeft: theme.spacing(6),
+  },
+}));
+
 const initialDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
 const ScheduledStartDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const classes = useStyles();
 
   // Current taskForm state
   const timestamp = useSelector(selectScheduledStart);
@@ -225,8 +234,13 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           }
           label="Block time in connected calendar"
         />
+        {recurringConfig && !blockCalendarDisabledReason && (
+          <FormHelperText className={classes.switchHelperText}>
+            Applied to first task only
+          </FormHelperText>
+        )}
         {blockCalendarDisabledReason && (
-          <FormHelperText>
+          <FormHelperText className={classes.switchHelperText}>
             {{
               access: (
                 <>You need to grant permissions for Google Calendar to block time for this task.</>
