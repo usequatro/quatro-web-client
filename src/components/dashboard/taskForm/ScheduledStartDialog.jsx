@@ -22,6 +22,7 @@ import Switch from '@material-ui/core/Switch';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { makeStyles } from '@material-ui/core/styles';
 
 import DatePicker from '../../ui/DatePicker';
 import TimePicker from '../../ui/TimePicker';
@@ -47,11 +48,21 @@ import CalendarBlockEditor, {
   ERROR_NO_CALENDAR_ID,
   ERROR_UNKNOWN_CALENDAR_ID,
 } from './CalendarBlockEditor';
+import RecurringConfigEditing from './RecurringConfigEditing';
+import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
+
+const useStyles = makeStyles((theme) => ({
+  switchHelperText: {
+    marginTop: 0,
+    marginLeft: theme.spacing(6),
+  },
+}));
 
 const initialDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
 const ScheduledStartDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const classes = useStyles();
 
   // Current taskForm state
   const timestamp = useSelector(selectScheduledStart);
@@ -153,6 +164,19 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     return null;
   }
 
+  const tooltipTitle = isValid(currentTimestamp)
+    ? `This task will appear in your Top 4 on ${format(currentTimestamp, 'PPPP')} at ${format(
+        currentTimestamp,
+        'h:mm a',
+      )}. ${
+        recurringConfig
+          ? `It will repeat ${getUserFacingRecurringText(recurringConfig, currentTimestamp, {
+              capitalize: false,
+            })}.`
+          : ''
+      }`
+    : 'Set the date and time for this task to appear in your Top 4';
+
   return (
     <Dialog
       open={open}
@@ -167,18 +191,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           <>
             Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
-            <Tooltip
-              aria-hidden
-              arrow
-              title={
-                isValid(currentTimestamp)
-                  ? `This task will appear in your Top 4 on ${format(
-                      currentTimestamp,
-                      'PPPP',
-                    )} at ${format(currentTimestamp, 'h:mm a')}`
-                  : 'Set the date and time for this task to appear in your Top 4'
-              }
-            >
+            <Tooltip aria-hidden arrow title={tooltipTitle}>
               <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />
             </Tooltip>
           </>
@@ -202,6 +215,10 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           />
         </Box>
 
+        <Box display="flex" flexDirection="column" mt={1} mb={3}>
+          <RecurringConfigEditing />
+        </Box>
+
         <Divider />
         <Box mb={2} />
 
@@ -217,8 +234,13 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           }
           label="Block time in connected calendar"
         />
+        {recurringConfig && !blockCalendarDisabledReason && (
+          <FormHelperText className={classes.switchHelperText}>
+            Applied to first task only
+          </FormHelperText>
+        )}
         {blockCalendarDisabledReason && (
-          <FormHelperText>
+          <FormHelperText className={classes.switchHelperText}>
             {{
               access: (
                 <>You need to grant permissions for Google Calendar to block time for this task.</>

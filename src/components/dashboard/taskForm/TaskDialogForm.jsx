@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -28,7 +28,6 @@ import NotesIcon from '@material-ui/icons/Notes';
 import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
-import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 
 import { createTask } from '../../../modules/dashboard';
@@ -54,7 +53,6 @@ import {
   addTaskBlocker,
   addFreeTextBlocker,
   removeBlockerByIndex,
-  setRecurringConfig,
   setTaskInForm,
 } from '../../../modules/taskForm';
 import {
@@ -70,8 +68,6 @@ import DateTimeDialog from '../../ui/DateTimeDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
-import RecurringConfigMenu from '../tasks/RecurringConfigMenu';
-import RecurringCustomDialog from '../tasks/RecurringCustomDialog';
 import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
@@ -200,11 +196,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [recurringCustomDialogOpen, setRecurringCustomDialogOpen] = useState(false);
-
-  const repeatActionButtonRef = useRef();
-  const repeatSettingRef = useRef();
-  const [recurringMenuAnchorEl, setRecurringMenuAnchorEl] = useState(undefined);
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -453,6 +444,19 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 {'Scheduled Date: '}
                 {formatDateTime(scheduledStartTimestamp)}
 
+                {recurringConfig && (
+                  <>
+                    <br />
+                    {`Repeats ${getUserFacingRecurringText(
+                      recurringConfig,
+                      scheduledStartTimestamp,
+                      {
+                        capitalize: false,
+                      },
+                    )}`}
+                  </>
+                )}
+
                 {calendarBlockStart && calendarBlockEnd && (
                   <>
                     <br />
@@ -472,17 +476,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               >
                 {'Due Date: '}
                 {formatDateTime(dueTimestamp)}
-              </Button>
-            )}
-            {recurringConfig && (
-              <Button
-                ref={repeatSettingRef}
-                onClick={() => setRecurringMenuAnchorEl(repeatSettingRef.current)}
-                startIcon={<ReplayRoundedIcon />}
-                className={classes.settingButton}
-              >
-                {'Repeat: '}
-                {getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp)}
               </Button>
             )}
           </Box>
@@ -536,16 +529,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             icon={<EventRoundedIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
           />
-          <RepeatButtonDisabledTooltip mounted={!scheduledStartTimestamp}>
-            <LabeledIconButton
-              label="Repeat"
-              color="inherit"
-              disabled={!scheduledStartTimestamp}
-              icon={<ReplayRoundedIcon />}
-              ref={repeatActionButtonRef}
-              onClick={() => setRecurringMenuAnchorEl(repeatActionButtonRef.current)}
-            />
-          </RepeatButtonDisabledTooltip>
           <LabeledIconButton
             label="Due Date"
             color="inherit"
@@ -628,27 +611,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         disabledTasks={blockedByTaskIds}
         hiddenTasks={editTaskDialogId ? [editTaskDialogId] : []}
       />
-
-      {scheduledStartTimestamp && (
-        <RecurringConfigMenu
-          anchorEl={recurringMenuAnchorEl}
-          onClose={() => setRecurringMenuAnchorEl(undefined)}
-          onRepeatConfigChange={(config) => dispatch(setRecurringConfig(config))}
-          onCustomConfigSelected={() => setRecurringCustomDialogOpen(true)}
-          referenceDate={scheduledStartTimestamp}
-          currentRecurringConfig={recurringConfig}
-        />
-      )}
-
-      {scheduledStartTimestamp && (
-        <RecurringCustomDialog
-          open={recurringCustomDialogOpen}
-          initialRecurringConfig={recurringConfig}
-          onClose={() => setRecurringCustomDialogOpen(false)}
-          onDone={(config) => dispatch(setRecurringConfig(config))}
-          referenceDate={scheduledStartTimestamp}
-        />
-      )}
     </Box>
   );
 };
