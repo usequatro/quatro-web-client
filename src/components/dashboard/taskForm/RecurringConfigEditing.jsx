@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import isFriday from 'date-fns/isFriday';
 import isMonday from 'date-fns/isMonday';
@@ -18,11 +19,7 @@ import Input from '@material-ui/core/Input';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import { makeStyles } from '@material-ui/core/styles';
 
-import {
-  selectScheduledStart,
-  selectRecurringConfig,
-  setRecurringConfig,
-} from '../../../modules/taskForm';
+import { selectRecurringConfig, setRecurringConfig } from '../../../modules/taskForm';
 
 import { DAY, MONTH, WEEK } from '../../../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../../../constants/weekdays';
@@ -53,19 +50,19 @@ const getPresetOptions = (referenceDate) =>
         },
       },
     },
-    referenceDate && {
+    {
       key: 'onceWeekly',
       config: {
         unit: WEEK,
         amount: 1,
         activeWeekdays: {
-          [WEEKDAYS.MONDAY]: isMonday(referenceDate),
-          [WEEKDAYS.TUESDAY]: isTuesday(referenceDate),
-          [WEEKDAYS.WEDNESDAY]: isWednesday(referenceDate),
-          [WEEKDAYS.THURSDAY]: isThursday(referenceDate),
-          [WEEKDAYS.FRIDAY]: isFriday(referenceDate),
-          [WEEKDAYS.SATURDAY]: isSaturday(referenceDate),
-          [WEEKDAYS.SUNDAY]: isSunday(referenceDate),
+          [WEEKDAYS.MONDAY]: !referenceDate || isMonday(referenceDate),
+          [WEEKDAYS.TUESDAY]: referenceDate && isTuesday(referenceDate),
+          [WEEKDAYS.WEDNESDAY]: referenceDate && isWednesday(referenceDate),
+          [WEEKDAYS.THURSDAY]: referenceDate && isThursday(referenceDate),
+          [WEEKDAYS.FRIDAY]: referenceDate && isFriday(referenceDate),
+          [WEEKDAYS.SATURDAY]: referenceDate && isSaturday(referenceDate),
+          [WEEKDAYS.SUNDAY]: referenceDate && isSunday(referenceDate),
         },
       },
     },
@@ -105,16 +102,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RecurringConfigEditing = () => {
+const RecurringConfigEditing = ({ timestamp }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const scheduledStartTimestamp = useSelector(selectScheduledStart);
   const currentRecurringConfig = useSelector(selectRecurringConfig);
 
-  const presetOptions = useMemo(() => getPresetOptions(scheduledStartTimestamp), [
-    scheduledStartTimestamp,
-  ]);
+  const presetOptions = useMemo(() => getPresetOptions(timestamp), [timestamp]);
 
   const [selectValue, setSelectValue] = useState(() => {
     if (!currentRecurringConfig) {
@@ -199,16 +193,13 @@ const RecurringConfigEditing = () => {
 
           {presetOptions.map((preset) => (
             <MenuItem key={preset.key} value={preset.key}>
-              {preset.label || getUserFacingRecurringText(preset.config, scheduledStartTimestamp)}
+              {preset.label || getUserFacingRecurringText(preset.config, timestamp)}
             </MenuItem>
           ))}
           <MenuItem value="custom">
             {selectValue !== 'custom'
               ? 'Custom...'
-              : `Custom: ${getUserFacingRecurringText(
-                  currentRecurringConfig,
-                  scheduledStartTimestamp,
-                )}`}
+              : `Custom: ${getUserFacingRecurringText(currentRecurringConfig, timestamp)}`}
           </MenuItem>
         </Select>
 
@@ -258,18 +249,9 @@ const RecurringConfigEditing = () => {
 };
 
 RecurringConfigEditing.propTypes = {
-  // anchorEl: PropTypes.instanceOf(Element),
-  // referenceDate: PropTypes.number,
-  // onClose: PropTypes.func.isRequired,
-  // onRepeatConfigChange: PropTypes.func.isRequired,
-  // onCustomConfigSelected: PropTypes.func.isRequired,
-  // currentRecurringConfig: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  timestamp: PropTypes.number.isRequired,
 };
 
-RecurringConfigEditing.defaultProps = {
-  // anchorEl: undefined,
-  // currentRecurringConfig: undefined,
-  // referenceDate: undefined,
-};
+RecurringConfigEditing.defaultProps = {};
 
 export default RecurringConfigEditing;

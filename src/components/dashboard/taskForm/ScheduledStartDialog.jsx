@@ -216,7 +216,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
         </Box>
 
         <Box display="flex" flexDirection="column" mt={1} mb={3}>
-          <RecurringConfigEditing />
+          <RecurringConfigEditing timestamp={currentTimestamp} />
         </Box>
 
         <Divider />
