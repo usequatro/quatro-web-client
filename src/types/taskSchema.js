@@ -10,9 +10,9 @@ export const taskSchema = Joi.object({
   created: Joi.number(),
 
   // these can be empty
-  due: Joi.number().allow(null),
-  scheduledStart: Joi.number().allow(null),
-  description: Joi.string().allow(''),
+  due: Joi.number().allow(null).default(null),
+  scheduledStart: Joi.number().allow(null).default(null),
+  description: Joi.string().allow('').default(''),
 
   // these can be empty and we add defaults
   completed: Joi.number().allow(null).default(null),
@@ -58,7 +58,7 @@ export const taskSchema = Joi.object({
  */
 export const validateTaskSchema = (entity, { isUpdate = false, sync = false } = {}) =>
   taskSchema[sync ? 'validate' : 'validateAsync'](entity, {
-    noDefaults: false,
+    noDefaults: isUpdate,
     // We don't allow unknown when updating, but when fetching yes, they'll be stripped out
     allowUnknown: !isUpdate,
     stripUnknown: true,

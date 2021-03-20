@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Switch, Redirect, Route } from 'react-router-dom';
 import cond from 'lodash/cond';
+import { useTheme } from '@material-ui/core/styles';
 
 import {
   selectFirebaseUserIsLoggedIn,
@@ -17,6 +18,12 @@ const AppRouting = () => {
   const firebaseInErrorStatus = useSelector(selectFirebaseInErrorStatus);
   const firebaseUserLoading = useSelector(selectFirebaseUserLoading);
   const firebaseUserIsLoggedIn = useSelector(selectFirebaseUserIsLoggedIn);
+
+  // Expose theme when developing on window for convenience
+  const theme = useTheme();
+  if (process.env.NODE_ENV === 'development') {
+    window.theme = theme;
+  }
 
   return cond([
     [
