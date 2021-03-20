@@ -42,6 +42,8 @@ const ONBOARDING_TASKS = [
 export default function createOnboardingTasks(userId) {
   debugConsole.log('Firestore', 'Creating onboarding tasks');
   ONBOARDING_TASKS.forEach((onboardingTask) => {
-    fetchCreateTask(userId, onboardingTask);
+    fetchCreateTask(userId, onboardingTask).catch((error) => {
+      console.error(error); // eslint-disable-line no-console
+    });
   });
 }
