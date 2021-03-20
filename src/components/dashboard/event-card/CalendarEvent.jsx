@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import { Draggable } from 'react-beautiful-dnd';
 
 import startOfDay from 'date-fns/startOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
@@ -81,29 +82,48 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
 
   return (
     <>
-      <EventCardView
-        id={id}
-        key={id}
-        scrollAnchorRef={scrollAnchorRef}
-        elevated={calendarDetailsOpen}
-        synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
-        summary={summary}
-        startTimestamp={startTimestamp}
-        endTimestamp={endTimestamp}
-        allDay={allDay}
-        declined={Boolean(declined)}
-        taskId={taskId}
-        showCompleteButton={interactive && Boolean(taskId)}
-        selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
-        isBeingRedragged={draggableTaskId === taskId}
-        color={color}
-        height={allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick))}
-        width={`${cardWidth}%`}
-        coordinates={coordinates}
-        onSelect={onSelect}
-        completed={completed}
-        ref={cardRef}
-      />
+      <Draggable
+        draggableId={`draggable-calendar-${taskId}`}
+        index={0}
+        isDragDisabled={!taskId || !interactive}
+      >
+        {(draggableProvided, draggableSnapshot) => (
+          <EventCardView
+            id={id}
+            key={id}
+            scrollAnchorRef={scrollAnchorRef}
+            elevated={calendarDetailsOpen}
+            synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
+            summary={summary}
+            startTimestamp={startTimestamp}
+            endTimestamp={endTimestamp}
+            allDay={allDay}
+            declined={Boolean(declined)}
+            taskId={taskId}
+            showCompleteButton={interactive && Boolean(taskId)}
+            selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
+            isBeingRedragged={draggableTaskId === taskId}
+            color={color}
+            height={allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick))}
+            width={`${cardWidth}%`}
+            coordinates={coordinates}
+            onSelect={onSelect}
+            completed={completed}
+            ref={(ref) => {
+              cardRef.current = ref;
+              draggableProvided.innerRef(ref);
+            }}
+            extraProps={{
+              ...draggableProvided.draggableProps,
+              ...draggableProvided.dragHandleProps,
+            }}
+            noTransition={
+              draggableSnapshot.draggingOver === 'droppable-calendar' &&
+              draggableSnapshot.isDropAnimating
+            }
+          />
+        )}
+      </Draggable>
 
       {interactive && (
         <CalendarEventPopover

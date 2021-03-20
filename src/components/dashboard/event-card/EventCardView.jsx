@@ -72,6 +72,8 @@ const EventCardView = forwardRef(function EventCardViewComponent(
     height,
     width,
     coordinates,
+    extraProps,
+    noTransition,
   },
   ref,
 ) {
@@ -89,9 +91,11 @@ const EventCardView = forwardRef(function EventCardViewComponent(
       <Card
         key={id}
         data-id={id}
+        {...extraProps}
         style={{
+          ...extraProps.style,
           height,
-          transform: `translateY(${translateYValue})`,
+          transform: extraProps.style.transform || `translateY(${translateYValue})`,
           opacity: cond([
             [() => isBeingRedragged, () => 0.1],
             [() => synching, () => 0.7],
@@ -104,6 +108,10 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           width,
           left: coordinates.x,
           position: allDay ? 'static' : 'absolute',
+          // Removing the drop animation on the calendar bc its delay allows users to
+          // move the placeholder away from where it was
+          // @link https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/drop-animation.md#skipping-the-drop-animation
+          ...(noTransition ? { transitionDuration: `0.001s` } : {}),
         }}
         className={[classes.eventCard, className].filter(Boolean).join(' ')}
         elevation={elevated || focused ? 8 : 0}
@@ -172,10 +180,12 @@ EventCardView.propTypes = {
   className: PropTypes.string,
   elevated: PropTypes.bool.isRequired,
   scrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  extraProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   summary: PropTypes.string.isRequired,
   startTimestamp: PropTypes.number.isRequired,
   endTimestamp: PropTypes.number.isRequired,
   allDay: PropTypes.bool.isRequired,
+  noTransition: PropTypes.bool,
   declined: PropTypes.bool.isRequired,
   taskId: PropTypes.string,
   completed: PropTypes.bool.isRequired,
@@ -195,6 +205,8 @@ EventCardView.propTypes = {
 
 EventCardView.defaultProps = {
   scrollAnchorRef: undefined,
+  extraProps: { style: {} },
+  noTransition: false,
   className: undefined,
   taskId: null,
 };
