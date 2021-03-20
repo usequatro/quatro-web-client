@@ -2,7 +2,7 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /user/{userId}/{allPaths=**} {
-      allow read;
+      allow read: if request.auth.uid == userId;
       allow create: if request.auth.uid == userId
         // 3 MB
         && request.resource.size < 3 * 1024 * 1024
