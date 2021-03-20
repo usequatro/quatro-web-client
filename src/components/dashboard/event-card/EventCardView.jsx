@@ -20,9 +20,9 @@ import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
 
 const useStyles = makeStyles((theme) => ({
-  eventCard: ({ color, declined }) => ({
+  eventCard: ({ color, declined, small }) => ({
     width: '100%',
-    padding: `${theme.spacing(1) / 2}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(1) / (small ? 4 : 2)}px ${theme.spacing(1)}px`,
     borderRadius: 5,
     color: declined ? color : theme.palette.getContrastText(color),
     backgroundColor: declined ? theme.palette.background.paper : color,
@@ -35,13 +35,15 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'flex-start',
   }),
   eventName: {
-    fontSize: theme.typography.body2.fontSize,
+    fontSize: ({ small }) =>
+      small ? theme.typography.caption.fontSize : theme.typography.body2.fontSize,
     lineHeight: 'inherit',
     flexGrow: 1,
   },
   eventDate: {
     fontSize: `${parseFloat(theme.typography.body2.fontSize) * 0.8}rem`,
   },
+  completeButton: ({ small }) => (small ? { paddingTop: 0 } : {}),
   scrollAnchor: {
     width: 0,
     height: 0,
@@ -78,7 +80,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
   const dispatch = useDispatch();
   const { notifyInfo } = useNotification();
 
-  const classes = useStyles({ color, declined });
+  const classes = useStyles({ color, declined, small: height < 30 });
 
   const [focused, setFocused] = useState(false);
 
@@ -160,6 +162,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
             fontSize="default"
             size="small"
+            className={classes.completeButton}
           />
         )}
       </Card>

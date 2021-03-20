@@ -44,6 +44,7 @@ const CompleteButton = ({
   onMarkTaskIncomplete,
   fontSize,
   size,
+  className,
 }) => {
   const classes = useStyles();
 
@@ -69,7 +70,10 @@ const CompleteButton = ({
         onMouseDown={(event) => event.stopPropagation()} // stop ripple effect on parent
         onClick={completed ? handleMarkIncomplete : handleComplete}
         classes={{
-          root: completed ? classes.completeButtonSuccess : classes.completeButtonIddle,
+          root: [
+            className,
+            completed ? classes.completeButtonSuccess : classes.completeButtonIddle,
+          ].join(' '),
           label: classes.label,
         }}
       >
@@ -91,6 +95,7 @@ const CompleteButton = ({
 CompleteButton.propTypes = {
   taskId: PropTypes.string.isRequired,
   completed: PropTypes.oneOfType([PropTypes.bool, PropTypes.exact(null)]),
+  className: PropTypes.string,
   onCompleteTask: PropTypes.func.isRequired,
   onMarkTaskIncomplete: PropTypes.func.isRequired,
   fontSize: PropTypes.oneOf(['default', 'large', 'small', 'inherit']),
@@ -99,6 +104,7 @@ CompleteButton.propTypes = {
 
 CompleteButton.defaultProps = {
   completed: null,
+  className: '',
   fontSize: 'large',
   size: 'medium',
 };
