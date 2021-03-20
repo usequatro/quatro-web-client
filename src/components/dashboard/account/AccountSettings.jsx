@@ -46,9 +46,10 @@ const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
   'auth/requires-recent-login',
   'CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
 ];
+const MAX_AVATAR_SIZE_MB = 1.5;
 const ERROR_WRONG_PASSWORD = 'auth/wrong-password';
 const userFacingErrors = {
-  [ERROR_IMAGE_SIZE]: 'Image is larger than 1MB. Please use a smaller image',
+  [ERROR_IMAGE_SIZE]: `Image is larger than ${MAX_AVATAR_SIZE_MB} MB. Please use a smaller image`,
   [ERROR_TOO_MANY_REQUESTS]: 'Too many attempts. Please try again later',
   [ERROR_WRONG_PASSWORD]: 'Wrong password',
 };
@@ -287,7 +288,7 @@ const AccountSettings = () => {
           <AsyncFileUploadInput
             id="profile-pic-upload-input"
             accept="image/*"
-            maxSizeMB={1}
+            maxSizeMB={MAX_AVATAR_SIZE_MB}
             userId={userId}
             onStartUpload={() => setUploadingPhotoURL(true)}
             onChangeComplete={({ url }) => {
