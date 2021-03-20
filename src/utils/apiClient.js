@@ -8,6 +8,8 @@ import { validateRecurringConfigSchema } from '../types/recurringConfigSchema';
 import { validateCalendarSchema } from '../types/calendarSchema';
 import { validateExternalConfigSchema } from '../types/userExternalConfigSchema';
 import debugConsole from './debugConsole';
+import isRequired from './isRequired';
+import * as SOURCES from '../constants/taskSources';
 
 const TASKS = 'tasks';
 const CALENDARS = 'calendars';
@@ -41,11 +43,17 @@ const validateEntitiesFilteringOutInvalidOnes = (entities, validator) =>
   );
 
 /**
+ * @param {string} userId
  * @param {Object} task
  * @return {Promise<firebase.firestore.DocumentReference>}
  */
-export const fetchCreateTask = async (task) => {
-  const validatedTask = await validateTaskSchema(task);
+export const fetchCreateTask = async (userId = isRequired('userId'), task) => {
+  const validatedTask = await validateTaskSchema({
+    ...task,
+    userId,
+    created: Date.now(),
+    source: SOURCES.USER,
+  });
   return db.collection(TASKS).add(validatedTask);
 };
 

@@ -28,17 +28,6 @@ if (process.env.REACT_APP_FIREBASE_EMULATOR && window.location.hostname === 'loc
 
 export default firebase;
 
-export const firebaseSignInWithCredential = (idToken, accessToken) => {
-  const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
-  return firebase
-    .auth()
-    .signInWithCredential(credential)
-    .then((result) => {
-      debugConsole.log('firebase', 'signInWithCredential', result);
-      return result;
-    });
-};
-
 export const firebaseSendEmailVerification = async () => {
   const user = firebase.auth().currentUser;
   if (!user) {
