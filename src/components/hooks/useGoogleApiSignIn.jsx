@@ -25,14 +25,6 @@ export default function useGoogleApiSignIn() {
   const history = useHistory();
   const mixpanel = useMixpanel();
 
-  const signInFromRegistration = useCallback(async () => {
-    if (firebase.auth().currentUser) {
-      throw new Error("signIn isn't expected when Firebase user is already logged in");
-    }
-    const authInstance = await gapiGetAuthInstance();
-    return authInstance.signIn();
-  }, []);
-
   const grantAccessToGoogleCalendar = useCallback(() => {
     return gapiGrantCalendarManagementScope()
       .then(() => {
@@ -193,7 +185,6 @@ export default function useGoogleApiSignIn() {
   }, [notifyError]);
 
   return {
-    signInFromRegistration,
     signInToConnectGoogleAccount,
     signInAlreadyConnectedGoogleAccount,
     signOut,

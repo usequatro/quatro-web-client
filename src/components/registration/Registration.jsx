@@ -19,10 +19,11 @@ import EmailRoundedIcon from '@material-ui/icons/EmailRounded';
 import GoogleButton from '../ui/GoogleButton';
 import { useNotification } from '../Notification';
 import firebase from '../../firebase';
-import useGoogleApiSignIn from '../hooks/useGoogleApiSignIn';
+import { gapiGetAuthInstance } from '../../googleApi';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
+import createOnboardingTasks from '../../utils/createOnboardingTasks';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -143,6 +144,7 @@ const Registration = ({ mode }) => {
     firebase
       .auth()
       .createUserWithEmailAndPassword(emailAddress, password)
+      .then((userCredential) => createOnboardingTasks(userCredential.user.uid))
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
         setSubmitting(false);
@@ -173,9 +175,14 @@ const Registration = ({ mode }) => {
   };
 
   const [waitingForGoogle, setWaitingForGoogle] = useState(false);
-  const { signInFromRegistration } = useGoogleApiSignIn();
-  const handleSignInWithGoogle = () => {
-    signInFromRegistration()
+  const handleSignInWithGoogle = async () => {
+    if (firebase.auth().currentUser) {
+      console.error("signIn isn't expected when Firebase user is already logged in"); // eslint-disable-line no-console
+      notifyError(ERROR_MESSAGE_FALLBACK);
+      return;
+    }
+    gapiGetAuthInstance()
+      .then((authInstance) => authInstance.signIn())
       .then(() => {
         setWaitingForGoogle(true);
       })

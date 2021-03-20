@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useMixpanel } from './tracking/MixpanelContext';
-import firebase, { firebaseSignInWithCredential } from '../firebase';
+import firebase from '../firebase';
 import { gapiGetAuthInstance } from '../googleApi';
 import debugConsole from '../utils/debugConsole';
 import {
@@ -16,6 +16,7 @@ import {
   SIGNED_IN_WITH_GOOGLE,
 } from '../constants/mixpanelUserProperties';
 import { useNotification } from './Notification';
+import createOnboardingTasks from '../utils/createOnboardingTasks';
 
 // const AUTH_IFRAME_LOAD_ERROR = 'idpiframe_initialization_failed';
 
@@ -51,11 +52,24 @@ const AuthManager = () => {
           if (signInState) {
             if (!firebase.auth().currentUser) {
               const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
-              firebaseSignInWithCredential(authResponse.id_token, authResponse.access_token).then(
-                () => {
-                  dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
-                },
+
+              const credential = firebase.auth.GoogleAuthProvider.credential(
+                authResponse.id_token,
+                authResponse.access_token,
               );
+              firebase
+                .auth()
+                .signInWithCredential(credential)
+                .then((userCredential) => {
+                  debugConsole.log('firebase', 'signInWithCredential', userCredential);
+                  if (userCredential.additionalUserInfo.isNewUser) {
+                    createOnboardingTasks(userCredential.user.uid);
+                  }
+                  dispatch(setUserFromFirebaseUser(userCredential.user));
+                })
+                .catch((error) => {
+                  console.error(error); // eslint-disable-line no-console
+                });
             }
           }
         });
