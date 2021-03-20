@@ -396,15 +396,13 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
   }
 
   if (targetTaskId === sourceTaskId) {
-    // eslint-disable-next-line no-console
-    console.log('Nothing to do, target and source are the same');
+    debugConsole.log('DND', 'Nothing to do, target and source are the same');
     return; // nothing to do on this case, the task is already where it needs to be.
   }
 
   const sourceTask = get(allTasks, [sourceIndex, '1']);
   if (sourceTask.prioritizedAheadOf === targetTaskId) {
-    // eslint-disable-next-line no-console
-    console.log('Nothing to do, task is already prioritized ahead of that one');
+    debugConsole.log('DND', 'Nothing to do, task is already prioritized ahead of that one');
     return;
   }
 

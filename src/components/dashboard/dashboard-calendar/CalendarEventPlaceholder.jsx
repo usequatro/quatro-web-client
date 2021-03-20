@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { useAppDragDropContext } from '../DashboardDragDropContext';
 import EventCardView from '../event-card/EventCardView';
+import CardPositionedBoundaries from '../event-card/CardPositionedBoundaries';
 
 import {
   selectTaskTitle,
@@ -126,30 +127,36 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
     [tickHeight, minutesForOneTick, minutes],
   );
 
+  const cardHeight = Math.floor(tickHeight * (duration / minutesForOneTick));
+
   return (
-    <EventCardView
-      id="calendar-event-placeholder"
-      className={classes.placeholder}
-      scrollAnchorRef={null}
-      elevated={false}
-      summary={taskTitle}
-      startTimestamp={startTimestamp}
-      endTimestamp={endTimestamp}
+    <CardPositionedBoundaries
       allDay={false}
-      declined={false}
-      taskId={draggableTaskId}
-      showCompleteButton={false}
-      completed={false}
-      synching={false}
-      selectable={false}
-      isBeingRedragged={false}
-      color={color}
-      height={Math.floor(tickHeight * (duration / minutesForOneTick))}
+      height={cardHeight}
       width={`${WIDTH_PERCENTAGE}%`}
       coordinates={coordinates}
-      onSelect={NOOP}
-      ref={undefined}
-    />
+    >
+      <EventCardView
+        id="calendar-event-placeholder"
+        className={classes.placeholder}
+        scrollAnchorRef={null}
+        elevated={false}
+        summary={taskTitle}
+        startTimestamp={startTimestamp}
+        endTimestamp={endTimestamp}
+        allDay={false}
+        declined={false}
+        taskId={draggableTaskId}
+        showCompleteButton={false}
+        completed={false}
+        synching={false}
+        selectable={false}
+        isBeingRedragged={false}
+        color={color}
+        smallCard={cardHeight < 30}
+        onSelect={NOOP}
+      />
+    </CardPositionedBoundaries>
   );
 };
 
