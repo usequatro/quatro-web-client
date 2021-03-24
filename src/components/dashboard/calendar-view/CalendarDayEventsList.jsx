@@ -38,6 +38,7 @@ const CalendarDayEventsList = ({
           key={calendarEventId}
           scrollAnchorRef={index === 0 ? firstEventCardScrollAnchorRef : undefined}
           id={calendarEventId}
+          index={index}
           tickHeight={tickHeight}
           ticksPerHour={ticksPerHour}
           interactive={interactive}

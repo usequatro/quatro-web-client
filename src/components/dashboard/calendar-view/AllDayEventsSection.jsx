@@ -45,10 +45,11 @@ const AllDayEventsSection = ({ timestamp }) => {
     <Box className={classes.allDayContainer}>
       <TickLabel className={classes.label}>All day</TickLabel>
       <Box className={classes.allDayListContainer} style={{ opacity: past ? 0.7 : 1 }}>
-        {allDayCalendarEventIds.map((calendarEventId) => (
+        {allDayCalendarEventIds.map((calendarEventId, index) => (
           <CalendarEvent
             scrollAnchorRef={undefined}
             key={calendarEventId}
+            index={index}
             id={calendarEventId}
             tickHeight={100} // irrelevant for allDay events
             ticksPerHour={1}

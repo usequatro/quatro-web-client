@@ -27,6 +27,7 @@ const CalendarDroppable = ({ children, className, tickHeight, ticksPerHour }) =>
         >
           {children}
 
+          {/* instead of showing the default draggable snapshot, we show this custom placeholder */}
           {droppableSnapshot.isDraggingOver && (
             <CalendarEventPlaceholder
               containerRef={containerRef}

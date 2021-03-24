@@ -69,6 +69,7 @@ const EventCardView = forwardRef(function EventCardViewComponent(
     showCompleteButton,
     synching,
     selectable,
+    draggable,
     onSelect,
     isBeingRedragged,
     color,
@@ -95,7 +96,8 @@ const EventCardView = forwardRef(function EventCardViewComponent(
           [() => declined, () => 0.7],
           [() => true, () => 1],
         ])(),
-        cursor: selectable ? 'pointer' : 'auto',
+        // eslint-disable-next-line no-nested-ternary
+        cursor: draggable ? 'grab' : selectable ? 'pointer' : 'auto',
       }}
       className={[classes.eventCard, className].filter(Boolean).join(' ')}
       elevation={elevated || focused ? 8 : 0}
@@ -174,6 +176,7 @@ EventCardView.propTypes = {
   showCompleteButton: PropTypes.bool.isRequired,
   synching: PropTypes.bool.isRequired,
   selectable: PropTypes.bool.isRequired,
+  draggable: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,
   isBeingRedragged: PropTypes.bool.isRequired,
   smallCard: PropTypes.bool.isRequired,
