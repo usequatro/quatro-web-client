@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
@@ -24,6 +24,7 @@ import {
 import { selectCalendarColor } from '../../../modules/calendars';
 import EventCardView from './EventCardView';
 import CalendarEventPopover from './CalendarEventPopover';
+import CardPositionedBoundaries from './CardPositionedBoundaries';
 import { useAppDragDropContext } from '../DashboardDragDropContext';
 
 const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerHour }) => {
@@ -54,7 +55,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   );
 
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
-  const cardRef = useRef();
+  const popoverAnchorRef = useRef();
 
   const minutesForOneTick = 60 / ticksPerHour;
   const durationInMinutes = differenceInMinutes(endTimestamp, startTimestamp);
@@ -67,49 +68,53 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
     setCalendarDetailsOpen(true);
   }, [setCalendarDetailsOpen]);
 
-  const coordinates = useMemo(
-    () => ({
-      x: `${cardLeft}%`,
-      y: Math.floor(tickHeight * (startTimeInMinutes / minutesForOneTick)),
-    }),
-    [cardLeft, tickHeight, startTimeInMinutes, minutesForOneTick],
-  );
+  const coordinates = {
+    x: `${cardLeft}%`,
+    y: Math.floor(tickHeight * (startTimeInMinutes / minutesForOneTick)),
+  };
 
   const onClose = useCallback(() => {
     setCalendarDetailsOpen(false);
   }, []);
 
+  const cardHeight = allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick));
+
   return (
     <>
-      <EventCardView
-        id={id}
-        key={id}
-        scrollAnchorRef={scrollAnchorRef}
-        elevated={calendarDetailsOpen}
-        synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
-        summary={summary}
-        startTimestamp={startTimestamp}
-        endTimestamp={endTimestamp}
+      <CardPositionedBoundaries
         allDay={allDay}
-        declined={Boolean(declined)}
-        taskId={taskId}
-        showCompleteButton={interactive && Boolean(taskId)}
-        selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
-        isBeingRedragged={draggableTaskId === taskId}
-        color={color}
-        height={allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick))}
+        height={cardHeight}
         width={`${cardWidth}%`}
         coordinates={coordinates}
-        onSelect={onSelect}
-        completed={completed}
-        ref={cardRef}
-      />
+        ref={popoverAnchorRef}
+      >
+        <EventCardView
+          id={id}
+          key={id}
+          scrollAnchorRef={scrollAnchorRef}
+          elevated={calendarDetailsOpen}
+          synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
+          summary={summary}
+          startTimestamp={startTimestamp}
+          endTimestamp={endTimestamp}
+          allDay={allDay}
+          declined={Boolean(declined)}
+          taskId={taskId}
+          showCompleteButton={interactive && Boolean(taskId)}
+          selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
+          isBeingRedragged={draggableTaskId === taskId}
+          color={color}
+          smallCard={cardHeight < 30}
+          onSelect={onSelect}
+          completed={completed}
+        />
+      </CardPositionedBoundaries>
 
       {interactive && (
         <CalendarEventPopover
           id={id}
           open={calendarDetailsOpen}
-          anchorEl={cardRef.current}
+          anchorEl={popoverAnchorRef.current}
           onClose={onClose}
         />
       )}

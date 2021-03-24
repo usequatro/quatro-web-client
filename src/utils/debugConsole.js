@@ -2,6 +2,7 @@ const colorByPrefix = {
   firebase: 'background: #FFC427; color: #000',
   firestore: 'background: #FF2764; color: #000',
   'google api': 'background: #fff; color: #000',
+  dnd: 'background: #18a669; color: #fff',
   fallback: 'background: #2196f3; color: #000',
 };
 

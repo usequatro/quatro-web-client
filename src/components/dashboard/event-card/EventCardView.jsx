@@ -20,9 +20,10 @@ import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
 
 const useStyles = makeStyles((theme) => ({
-  eventCard: ({ color, declined, small }) => ({
+  eventCard: ({ color, declined, smallCard }) => ({
     width: '100%',
-    padding: `${theme.spacing(1) / (small ? 4 : 2)}px ${theme.spacing(1)}px`,
+    height: '100%',
+    padding: `${theme.spacing(1) / (smallCard ? 4 : 2)}px ${theme.spacing(1)}px`,
     borderRadius: 5,
     color: declined ? color : theme.palette.getContrastText(color),
     backgroundColor: declined ? theme.palette.background.paper : color,
@@ -35,15 +36,15 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'flex-start',
   }),
   eventName: {
-    fontSize: ({ small }) =>
-      small ? theme.typography.caption.fontSize : theme.typography.body2.fontSize,
+    fontSize: ({ smallCard }) =>
+      smallCard ? theme.typography.caption.fontSize : theme.typography.body2.fontSize,
     lineHeight: 'inherit',
     flexGrow: 1,
   },
   eventDate: {
     fontSize: `${parseFloat(theme.typography.body2.fontSize) * 0.8}rem`,
   },
-  completeButton: ({ small }) => (small ? { paddingTop: 0 } : {}),
+  completeButton: ({ smallCard }) => (smallCard ? { paddingTop: 0 } : {}),
   scrollAnchor: {
     width: 0,
     height: 0,
@@ -71,102 +72,90 @@ const EventCardView = forwardRef(function EventCardViewComponent(
     onSelect,
     isBeingRedragged,
     color,
-    height,
-    width,
-    coordinates,
+    smallCard,
   },
   ref,
 ) {
   const dispatch = useDispatch();
   const { notifyInfo } = useNotification();
 
-  const classes = useStyles({ color, declined, small: height < 30 });
+  const classes = useStyles({ color, declined, smallCard });
 
   const [focused, setFocused] = useState(false);
 
-  const translateYValue = typeof coordinates.y === 'number' ? `${coordinates.y}px` : coordinates.y;
-
   return (
-    <>
-      <Card
-        key={id}
-        data-id={id}
-        style={{
-          height,
-          transform: `translateY(${translateYValue})`,
-          opacity: cond([
-            [() => isBeingRedragged, () => 0.1],
-            [() => synching, () => 0.7],
-            [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
-            [() => declined, () => 0.7],
-            [() => true, () => 1],
-          ])(),
-          zIndex: 1,
-          cursor: selectable ? 'pointer' : 'auto',
-          width,
-          left: coordinates.x,
-          position: allDay ? 'static' : 'absolute',
-        }}
-        className={[classes.eventCard, className].filter(Boolean).join(' ')}
-        elevation={elevated || focused ? 8 : 0}
-        ref={ref}
-        {...(selectable
-          ? {
-              role: 'button',
-              tabIndex: 0,
-              onFocus: () => setFocused(true),
-              onBlur: () => setFocused(false),
-              onClick: onSelect,
-              onKeyPress: () => (event) => {
-                // @todo: figure out why this doesn't work
-                if (event.key === ' ' || event.key === 'Enter') {
-                  event.stopPropagation();
-                  onSelect(event);
-                }
-              },
-            }
-          : {
-              title: summary,
-            })}
-      >
-        {scrollAnchorRef && (
-          <span
-            id="event-card-scroll-anchor"
-            ref={scrollAnchorRef}
-            className={classes.scrollAnchor}
-          />
-        )}
-        {synching && (
-          <Box mr={1}>
-            <CircularProgress thickness={4} size="1.25rem" color="inherit" />
-          </Box>
-        )}
+    <Card
+      key={id}
+      data-id={id}
+      style={{
+        opacity: cond([
+          [() => isBeingRedragged, () => 0.1],
+          [() => synching, () => 0.7],
+          [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
+          [() => declined, () => 0.7],
+          [() => true, () => 1],
+        ])(),
+        cursor: selectable ? 'pointer' : 'auto',
+      }}
+      className={[classes.eventCard, className].filter(Boolean).join(' ')}
+      elevation={elevated || focused ? 8 : 0}
+      ref={ref}
+      {...(selectable
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            onFocus: () => setFocused(true),
+            onBlur: () => setFocused(false),
+            onClick: onSelect,
+            onKeyPress: () => (event) => {
+              // @todo: figure out why this doesn't work
+              if (event.key === ' ' || event.key === 'Enter') {
+                event.stopPropagation();
+                onSelect(event);
+              }
+            },
+          }
+        : {
+            title: summary,
+          })}
+    >
+      {scrollAnchorRef && (
+        <span
+          id="event-card-scroll-anchor"
+          ref={scrollAnchorRef}
+          className={classes.scrollAnchor}
+        />
+      )}
+      {synching && (
+        <Box mr={1}>
+          <CircularProgress thickness={4} size="1.25rem" color="inherit" />
+        </Box>
+      )}
 
-        <Typography component="p" className={classes.eventName}>
-          {summary || '(No title)'}
-          {!allDay && (
-            <span className={classes.eventDate}>
-              {', '}
-              {isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''}
-              {' - '}
-              {isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''}
-            </span>
-          )}
-        </Typography>
-
-        {taskId && showCompleteButton && !synching && (
-          <CompleteButton
-            taskId={taskId}
-            completed={completed}
-            onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
-            onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
-            fontSize="default"
-            size="small"
-            className={classes.completeButton}
-          />
+      <Typography component="p" className={classes.eventName}>
+        {summary || '(No title)'}
+        {!allDay && (
+          <span className={classes.eventDate}>
+            {', '}
+            {isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''}
+            {' - '}
+            {isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''}
+          </span>
         )}
-      </Card>
-    </>
+      </Typography>
+
+      {taskId && showCompleteButton && !synching && (
+        <CompleteButton
+          taskId={taskId}
+          completed={completed}
+          onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
+          onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
+          fontSize="default"
+          size="small"
+          className={classes.completeButton}
+        />
+      )}
+    </Card>
   );
 });
 
@@ -187,13 +176,8 @@ EventCardView.propTypes = {
   selectable: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,
   isBeingRedragged: PropTypes.bool.isRequired,
+  smallCard: PropTypes.bool.isRequired,
   color: PropTypes.string.isRequired,
-  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  coordinates: PropTypes.shape({
-    x: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    y: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  }).isRequired,
 };
 
 EventCardView.defaultProps = {
