@@ -1,5 +1,4 @@
 import get from 'lodash/get';
-import invert from 'lodash/invert';
 import fpSet from 'lodash/fp/set';
 import { createSlice } from '@reduxjs/toolkit';
 import Joi from '@hapi/joi';
@@ -343,11 +342,19 @@ const slice = createSlice({
         .map((event) => event.id);
 
       // Remove placeholders that already got a real event
-      const newEventTaskIdsAsKeys = invert(events.map(({ taskId }) => taskId).filter(Boolean));
+      const newEventByTaskIds = events
+        .filter((event) => event.taskId)
+        .reduce(
+          (memo, event) => ({
+            ...memo,
+            [event.taskId]: event,
+          }),
+          {},
+        );
       const placeholderEventIdsWithRealEventCreated = state.allIds.filter(
         (id) =>
           get(state.byId[id], 'placeholderUntilCreated') &&
-          newEventTaskIdsAsKeys[get(state.byId[id], 'taskId')],
+          newEventByTaskIds[get(state.byId[id], 'taskId')],
       );
 
       const eventIds = eventsUpdated.map((event) => event.id);
