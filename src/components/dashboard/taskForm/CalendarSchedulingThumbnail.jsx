@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import addMinutes from 'date-fns/addMinutes';
 import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
 import roundToNearestMinutes from 'date-fns/roundToNearestMinutes';
 
 import Paper from '@material-ui/core/Paper';
@@ -74,10 +73,7 @@ const CalendarSchedulingThumbnail = ({
 
   return (
     <Paper className={classes.visualContainer} elevation={0} variant="outlined">
-      <CalendarEventsFetcher
-        start={startOfDay(startDateTimestamp).getTime()}
-        end={endOfDay(startDateTimestamp).getTime()}
-      />
+      <CalendarEventsFetcher date={Date.now()} />
       {fetching && <LoaderScreen className={classes.loader} background="transparent" />}
       <div
         className={classes.scrollContainer}

@@ -8,7 +8,7 @@ import { selectUserId } from './session';
 
 // Allow dependency cycle because it's just for selectors
 // eslint-disable-next-line import/no-cycle
-import { staleAllEvents } from './calendarEvents';
+import { staleAllEventsForCalendar } from './calendarEvents';
 
 const name = 'calendars';
 
@@ -83,19 +83,16 @@ export default slice;
  * Check if the calendar received updates via webhook
  * @param {Object} previousState
  * @param {Object} newState
- * @returns {boolean}
+ * @returns {Array<string>}
  */
-const hasWatcherUpdates = (previousState, newState) => {
+const getCalendarWatcherUpdates = (previousState, newState) => {
   const calendarIds = selectCalendarIds(previousState);
-  // eslint-disable-next-line no-restricted-syntax
-  for (const calendarId of calendarIds) {
+  const calendarIdsWithChanges = calendarIds.filter((calendarId) => {
     const previousWatcherLastUpdated = selectCalendarWatcherLastUpdated(previousState, calendarId);
     const newWatcherLastUpdated = selectCalendarWatcherLastUpdated(newState, calendarId);
-    if (newWatcherLastUpdated && newWatcherLastUpdated > previousWatcherLastUpdated) {
-      return true;
-    }
-  }
-  return false;
+    return newWatcherLastUpdated && newWatcherLastUpdated > previousWatcherLastUpdated;
+  });
+  return calendarIdsWithChanges;
 };
 
 export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = () => {}) => (
@@ -118,9 +115,15 @@ export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = (
       dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
 
       // If the calendar received updates via webhook, we flag its events as stale
-      if (hasWatcherUpdates(previousState, getState())) {
-        debugConsole.log('Firestore', 'listenToCalendarsList', 'calendar watcher update detected');
-        dispatch(staleAllEvents());
+      const calendarIdsChanged = getCalendarWatcherUpdates(previousState, getState());
+      if (calendarIdsChanged.length > 0) {
+        debugConsole.log(
+          'Firestore',
+          'listenToCalendarsList',
+          'calendar watcher update detected',
+          calendarIdsChanged,
+        );
+        dispatch(staleAllEventsForCalendar(calendarIdsChanged));
       }
       initial = false;
     }
