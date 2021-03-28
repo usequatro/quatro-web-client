@@ -13,6 +13,7 @@ import Alert from '@material-ui/lab/Alert';
 import CalendarEditView from './CalendarEditView';
 import CalendarSelectionDialog from './CalendarSelectionDialog';
 import ConnectedAccount from './ConnectedAccount';
+import CalendarsOnboarding from './CalendarsOnboarding';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import {
   selectCalendarIds,
@@ -80,6 +81,8 @@ const Calendars = () => {
 
   return (
     <Box className={classes.mainContainer}>
+      <CalendarsOnboarding />
+
       <Box mb={6}>
         <Typography variant="h6" component="h3" paragraph>
           Connected Account
