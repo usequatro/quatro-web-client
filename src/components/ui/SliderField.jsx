@@ -22,7 +22,6 @@ const QuatroSlider = withStyles((theme) => ({
   },
 }))(Slider);
 
-// eslint-disable-next-line react/prop-types
 const SliderField = ({
   id,
   label,
@@ -51,8 +50,8 @@ const SliderField = ({
       <QuatroSlider
         aria-label={ariaLabel}
         marks={marks || true}
-        min={0}
-        max={4}
+        min={marks[0].value}
+        max={marks[marks.length - 1].value}
         step={1}
         {...(label ? { 'aria-labelledby': id } : {})}
         getAriaValueText={(v) => getValueText(v)}

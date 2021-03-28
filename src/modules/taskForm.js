@@ -35,7 +35,7 @@ export const selectBlockedByTaskIds = createSelector(selectBlockedBy, (blockedBy
 const initialState = {
   title: '',
   description: '',
-  impact: 4,
+  impact: 3,
   effort: 0,
   scheduledStart: null,
   due: null,

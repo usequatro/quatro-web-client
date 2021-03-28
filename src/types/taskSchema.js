@@ -1,12 +1,17 @@
 import Joi from '@hapi/joi';
 import * as blockerTypes from '../constants/blockerTypes';
 
+const clampNumber = (min, max) => (value) => {
+  return Math.min(Math.max(value, min), max);
+};
+
 export const taskSchema = Joi.object({
   // these can't be empty
   userId: Joi.string(),
   title: Joi.string(),
-  effort: Joi.number(),
-  impact: Joi.number(),
+  // We clamp the number because the Firestore data could contain bigger numbers
+  effort: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
+  impact: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
   created: Joi.number(),
 
   // these can be empty
