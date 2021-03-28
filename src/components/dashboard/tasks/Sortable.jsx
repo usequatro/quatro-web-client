@@ -27,7 +27,8 @@ DropArea.propTypes = {
 
 const Sortable = ({
   dashboardTab,
-  enabled,
+  draggingEnabled,
+  droppingEnabled,
   itemIds,
   renderItem,
   renderDropAreaStart,
@@ -60,7 +61,10 @@ const Sortable = ({
         <DropArea droppableId={`droppable-top-${indexOffset}-${id}`} render={renderDropAreaStart} />
       )}
 
-      <Droppable droppableId={`droppable-list-${indexOffset}-${id}`}>
+      <Droppable
+        droppableId={`droppable-list-${indexOffset}-${id}`}
+        isDropDisabled={!droppingEnabled}
+      >
         {(droppableProvided) => (
           <div {...droppableProvided.droppableProps} ref={droppableProvided.innerRef}>
             {itemIds.map((itemId, index) => (
@@ -68,7 +72,7 @@ const Sortable = ({
                 key={itemId}
                 draggableId={`draggable-${id}-${itemId}`}
                 index={index}
-                isDragDisabled={!enabled}
+                isDragDisabled={!draggingEnabled}
               >
                 {(draggableProvided, draggableSnapshot) => (
                   <Paper
@@ -113,7 +117,8 @@ const Sortable = ({
 
 Sortable.propTypes = {
   dashboardTab: PropTypes.string.isRequired,
-  enabled: PropTypes.bool.isRequired,
+  draggingEnabled: PropTypes.bool.isRequired,
+  droppingEnabled: PropTypes.bool.isRequired,
   dropAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   itemIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   renderItem: PropTypes.func.isRequired,

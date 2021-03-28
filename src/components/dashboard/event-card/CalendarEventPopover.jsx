@@ -1,7 +1,7 @@
 import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import format from 'date-fns/format';
 import isValid from 'date-fns/isValid';
@@ -86,7 +86,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
-  const location = useSelector((state) => selectCalendarEventLocation(state, id));
+  const eventLocation = useSelector((state) => selectCalendarEventLocation(state, id));
   const providerCalendarId = useSelector((state) =>
     selectCalendarEventProviderCalendarId(state, id),
   );
@@ -104,6 +104,8 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   );
 
   const classes = useStyles({ color, declined });
+
+  const location = useLocation();
 
   // Close popover when task goes away (likely because task was removed or completed)
   const taskExists = useSelector((state) => (taskId ? selectTaskExists(state, taskId) : false));
@@ -142,11 +144,11 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
           </Typography>
         </Box>
 
-        {location && (
+        {eventLocation && (
           <Box display="flex" mb={2}>
             <InformativeIcon title="Location" Icon={RoomRoundedIcon} />
             <Typography variant="body2">
-              <TextWithLinks text={location} />
+              <TextWithLinks text={eventLocation} />
             </Typography>
           </Box>
         )}
@@ -203,7 +205,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
               variant="outlined"
               color="default"
               component={Link}
-              to={getTaskPath(taskId)}
+              to={{ pathname: getTaskPath(taskId), search: location.search }}
               onClick={onClose}
             >
               Edit Task
