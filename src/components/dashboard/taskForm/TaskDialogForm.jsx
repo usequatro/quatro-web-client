@@ -243,6 +243,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               hasDueDate: Boolean(dueTimestamp),
               isRecurring: Boolean(recurringConfig),
               hasCalendarBlock,
+              hasDescription: Boolean(showDescription && description),
+              impact,
+              effort,
             });
           });
           return editTaskDialogId;
@@ -284,6 +287,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             hasDueDate: Boolean(dueTimestamp),
             isRecurring: Boolean(recurringConfig),
             hasCalendarBlock,
+            hasDescription: Boolean(showDescription && description),
+            impact,
+            effort,
           });
           return tId;
         });
