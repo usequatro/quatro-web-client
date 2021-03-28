@@ -131,6 +131,7 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
 
   return (
     <CardPositionedBoundaries
+      id="placeholder"
       allDay={false}
       height={cardHeight}
       width={`${WIDTH_PERCENTAGE}%`}
@@ -151,6 +152,7 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
         completed={false}
         synching={false}
         selectable={false}
+        draggable={false}
         isBeingRedragged={false}
         color={color}
         smallCard={cardHeight < 30}

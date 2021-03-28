@@ -79,6 +79,8 @@ const Sortable = ({
                     elevation={draggableSnapshot.isDragging ? 4 : 0}
                     style={{
                       ...draggableProvided.draggableProps.style,
+                      // Hide the default draggable snapshot, because
+                      // we use custom placeholder CalendarEventPlaceholder
                       opacity: draggableSnapshot.draggingOver === 'droppable-calendar' ? 0 : 1,
                       // Removing the drop animation on the calendar bc its delay allows users to
                       // move the placeholder away from where it was

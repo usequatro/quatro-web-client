@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import startOfDay from 'date-fns/startOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
+import { Draggable } from 'react-beautiful-dnd';
 
 import {
   selectCalendarEventSummary,
@@ -27,7 +28,7 @@ import CalendarEventPopover from './CalendarEventPopover';
 import CardPositionedBoundaries from './CardPositionedBoundaries';
 import { useAppDragDropContext } from '../DashboardDragDropContext';
 
-const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerHour }) => {
+const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerHour, index }) => {
   const { draggableTaskId } = useAppDragDropContext();
 
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
@@ -79,51 +80,90 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
 
   const cardHeight = allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick));
 
-  return (
+  const isDraggable = Boolean(interactive && taskId);
+
+  const renderCardView = () => (
+    <EventCardView
+      id={id}
+      key={id}
+      scrollAnchorRef={scrollAnchorRef}
+      elevated={calendarDetailsOpen}
+      synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
+      summary={summary}
+      startTimestamp={startTimestamp}
+      endTimestamp={endTimestamp}
+      allDay={allDay}
+      declined={Boolean(declined)}
+      taskId={taskId}
+      showCompleteButton={interactive && Boolean(taskId)}
+      selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
+      draggable={isDraggable}
+      isBeingRedragged={draggableTaskId === taskId}
+      color={color}
+      smallCard={cardHeight < 30}
+      onSelect={onSelect}
+      completed={completed}
+    />
+  );
+
+  const renderPopover = () => (
+    <CalendarEventPopover
+      id={id}
+      open={calendarDetailsOpen}
+      anchorEl={popoverAnchorRef.current}
+      onClose={onClose}
+    />
+  );
+
+  return isDraggable ? (
+    <>
+      <Draggable draggableId={`draggable-calendar-${taskId}`} index={index}>
+        {(draggableProvided, draggableSnapshot) => (
+          <CardPositionedBoundaries
+            id={id}
+            allDay={allDay}
+            height={cardHeight}
+            width={`${cardWidth}%`}
+            coordinates={coordinates}
+            ref={(ref) => {
+              popoverAnchorRef.current = ref;
+              draggableProvided.innerRef(ref);
+            }}
+            draggableProps={{
+              ...draggableProvided.draggableProps,
+              ...draggableProvided.dragHandleProps,
+            }}
+            isDragging={Boolean(draggableSnapshot.isDragging)}
+            isDropAnimating={Boolean(draggableSnapshot.isDropAnimating)}
+          >
+            {renderCardView()}
+          </CardPositionedBoundaries>
+        )}
+      </Draggable>
+
+      {interactive && renderPopover()}
+    </>
+  ) : (
     <>
       <CardPositionedBoundaries
+        id={id}
         allDay={allDay}
         height={cardHeight}
         width={`${cardWidth}%`}
         coordinates={coordinates}
         ref={popoverAnchorRef}
       >
-        <EventCardView
-          id={id}
-          key={id}
-          scrollAnchorRef={scrollAnchorRef}
-          elevated={calendarDetailsOpen}
-          synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
-          summary={summary}
-          startTimestamp={startTimestamp}
-          endTimestamp={endTimestamp}
-          allDay={allDay}
-          declined={Boolean(declined)}
-          taskId={taskId}
-          showCompleteButton={interactive && Boolean(taskId)}
-          selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
-          isBeingRedragged={draggableTaskId === taskId}
-          color={color}
-          smallCard={cardHeight < 30}
-          onSelect={onSelect}
-          completed={completed}
-        />
+        {renderCardView()}
       </CardPositionedBoundaries>
 
-      {interactive && (
-        <CalendarEventPopover
-          id={id}
-          open={calendarDetailsOpen}
-          anchorEl={popoverAnchorRef.current}
-          onClose={onClose}
-        />
-      )}
+      {interactive && renderPopover()}
     </>
   );
 };
 
 CalendarEvent.propTypes = {
   id: PropTypes.string.isRequired,
+  index: PropTypes.number.isRequired,
   interactive: PropTypes.bool.isRequired,
   scrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   tickHeight: PropTypes.number.isRequired,
