@@ -7,7 +7,6 @@ import Typography from '@material-ui/core/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Alert from '@material-ui/lab/Alert';
-import AlertTitle from '@material-ui/lab/AlertTitle';
 import CloseIcon from '@material-ui/icons/Close';
 import Grow from '@material-ui/core/Grow';
 
@@ -82,8 +81,6 @@ const CalendarsOnboarding = () => {
             </Box>
           }
         >
-          <AlertTitle>Onboarding</AlertTitle>
-
           <Box display="flex" alignItems="center" mb={2}>
             <Box>
               <Typography>{`${progress} % (${stepNumber}/3)`}</Typography>
