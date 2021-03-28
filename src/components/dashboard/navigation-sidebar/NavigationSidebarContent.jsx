@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -33,13 +33,19 @@ const PassThrough = ({ children }) => children;
 const NavigationSidebarContent = ({ open }) => {
   const classes = useStyles();
   const activeTab = useSelector(selectDashboardActiveTab);
+  const location = useLocation();
 
   const TooltipWhenClosed = open ? PassThrough : Tooltip;
 
   return (
     <List disablePadding className={classes.listContainer}>
       <TooltipWhenClosed title="Top 4" placement="right" arrow>
-        <ListItem button component={Link} to={paths.NOW} selected={activeTab === dashboardTabs.NOW}>
+        <ListItem
+          button
+          component={Link}
+          to={{ pathname: paths.NOW, search: location.search }}
+          selected={activeTab === dashboardTabs.NOW}
+        >
           <ListItemIcon>
             <HomeIcon fontSize="small" />
           </ListItemIcon>
@@ -51,7 +57,7 @@ const NavigationSidebarContent = ({ open }) => {
         <ListItem
           button
           component={Link}
-          to={paths.BACKLOG}
+          to={{ pathname: paths.BACKLOG, search: location.search }}
           selected={activeTab === dashboardTabs.BACKLOG}
         >
           <ListItemIcon>
@@ -65,7 +71,7 @@ const NavigationSidebarContent = ({ open }) => {
         <ListItem
           button
           component={Link}
-          to={paths.SCHEDULED}
+          to={{ pathname: paths.SCHEDULED, search: location.search }}
           selected={activeTab === dashboardTabs.SCHEDULED}
         >
           <ListItemIcon>
@@ -79,7 +85,7 @@ const NavigationSidebarContent = ({ open }) => {
         <ListItem
           button
           component={Link}
-          to={paths.BLOCKED}
+          to={{ pathname: paths.BLOCKED, search: location.search }}
           selected={activeTab === dashboardTabs.BLOCKED}
         >
           <ListItemIcon>

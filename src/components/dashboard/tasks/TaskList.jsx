@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 import memoize from 'lodash/memoize';
@@ -20,11 +21,7 @@ import {
   selectBlockedTasks,
   selectHasMoveToBacklog,
 } from '../../../modules/tasks';
-import {
-  selectDashboardActiveTab,
-  selectHighlightedTaskId,
-  selectDashboadIsLoading,
-} from '../../../modules/dashboard';
+import { selectHighlightedTaskId, selectDashboadIsLoading } from '../../../modules/dashboard';
 import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
 import Task from './Task';
 import Sortable from './Sortable';
@@ -93,10 +90,9 @@ export const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TaskList = () => {
+const TaskList = ({ tab }) => {
   const classes = useStyles();
 
-  const tab = useSelector(selectDashboardActiveTab);
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
   const loading = useSelector(selectDashboadIsLoading);
   const tasks = useSelector(selectorFunctionByPathname[tab] || selectorFunctionByPathname.fallback);
@@ -130,52 +126,46 @@ const TaskList = () => {
         [
           () => true,
           () => (
-            <>
-              <List disablePadding>
-                <Sortable
-                  dashboardTab={tab}
-                  enabled={showPosition}
-                  dropAreaHeight={DROP_AREA_HEIGHT}
-                  itemIds={taskIds}
-                  indexOffset={positionOffset}
-                  scrollContainerRef={scrollContainerRef}
-                  renderItem={(id, index) => (
-                    <Task
-                      key={id}
-                      id={id}
-                      highlighted={id === highlighedTaskId}
-                      position={showPosition ? index + 1 + positionOffset : undefined}
-                      // For performance, we indicate if the task should load blockers from the top
-                      showBlockers={
-                        tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED
-                      }
-                      editable
-                      parentContainerWidth={listWidth}
-                    />
-                  )}
-                  renderDropAreaStart={
-                    tab === dashboardTabs.BACKLOG
-                      ? (isDraggingOver) => (
-                          <TaskSiblingListDropArea
-                            isDraggingOver={isDraggingOver}
-                            title="Move to top 4"
-                          />
-                        )
-                      : null
-                  }
-                  renderDropAreaEnd={
-                    tab === dashboardTabs.NOW && hasMoveToBacklog
-                      ? (isDraggingOver) => (
-                          <TaskSiblingListDropArea
-                            isDraggingOver={isDraggingOver}
-                            title="Backlog"
-                          />
-                        )
-                      : null
-                  }
-                />
-              </List>
-            </>
+            <List disablePadding>
+              <Sortable
+                dashboardTab={tab}
+                draggingEnabled
+                droppingEnabled={showPosition}
+                dropAreaHeight={DROP_AREA_HEIGHT}
+                itemIds={taskIds}
+                indexOffset={positionOffset}
+                scrollContainerRef={scrollContainerRef}
+                renderItem={(id, index) => (
+                  <Task
+                    key={id}
+                    id={id}
+                    highlighted={id === highlighedTaskId}
+                    position={showPosition ? index + 1 + positionOffset : undefined}
+                    // For performance, we indicate if the task should load blockers from the top
+                    showBlockers={tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED}
+                    editable
+                    parentContainerWidth={listWidth}
+                  />
+                )}
+                renderDropAreaStart={
+                  tab === dashboardTabs.BACKLOG
+                    ? (isDraggingOver) => (
+                        <TaskSiblingListDropArea
+                          isDraggingOver={isDraggingOver}
+                          title="Move to top 4"
+                        />
+                      )
+                    : null
+                }
+                renderDropAreaEnd={
+                  tab === dashboardTabs.NOW && hasMoveToBacklog
+                    ? (isDraggingOver) => (
+                        <TaskSiblingListDropArea isDraggingOver={isDraggingOver} title="Backlog" />
+                      )
+                    : null
+                }
+              />
+            </List>
           ),
         ],
       ])()}
@@ -192,6 +182,10 @@ const TaskList = () => {
       </Tooltip>
     </Box>
   );
+};
+
+TaskList.propTypes = {
+  tab: PropTypes.oneOf(Object.values(dashboardTabs)).isRequired,
 };
 
 export default TaskList;

@@ -223,7 +223,7 @@ const Dashboard = () => {
                     <Box width="50%" display="flex" flexDirection="column">
                       <Toolbar className={classes.placeholderToolbar} />
                       <DashboardViewBar />
-                      <TaskList />
+                      <TaskList tab={activeTab} />
                     </Box>
                     <Box
                       width="50%"
@@ -271,7 +271,7 @@ const Dashboard = () => {
                       hidden={selectedMobileTab !== 0}
                       className={selectedMobileTab !== 0 ? '' : classes.mobileTabPanel}
                     >
-                      <TaskList />
+                      <TaskList tab={activeTab} />
                     </div>
                     <div
                       role="tabpanel"
@@ -285,9 +285,9 @@ const Dashboard = () => {
                   </Box>
                 ),
               ],
-              [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
-              [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
-              [(tab) => tab === dashboardTabs.CALENDARS, () => <Calendars />],
+              [() => activeTab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
+              [() => activeTab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
+              [() => activeTab === dashboardTabs.CALENDARS, () => <Calendars />],
             ])(activeTab)}
           </Paper>
         </DashboardDragDropContext>
