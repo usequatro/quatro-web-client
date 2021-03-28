@@ -30,6 +30,7 @@ import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectCalendarIds, selectCalendarCount } from '../../../modules/calendars';
 import {
+  selectEffort,
   selectCalendarBlockStart,
   selectCalendarBlockEnd,
   selectScheduledStart,
@@ -50,6 +51,7 @@ import CalendarBlockEditor, {
 } from './CalendarBlockEditor';
 import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
+import { EFFORT_TO_DURATION } from '../../../constants/effort';
 
 const useStyles = makeStyles((theme) => ({
   switchHelperText: {
@@ -86,11 +88,13 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     [() => calendarCount === 0, () => 'noCalendars'],
     [() => true, () => ''],
   ])();
+  const effort = useSelector(selectEffort);
+  const defaultDuration = EFFORT_TO_DURATION[effort] || 15;
 
   // Non-persisted changes
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || initialDateTimestamp);
   const [currentBlocksCalendar, setCurrentBlocksCalendar] = useState(blocksCalendar);
-  const [currentDuration, setCurrentDuration] = useState(calendarBlockDuration || 15);
+  const [currentDuration, setCurrentDuration] = useState(calendarBlockDuration || defaultDuration);
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
 
   const [errors, setErrors] = useState([]);
@@ -102,11 +106,18 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       setErrors([]);
       setCurrentBlocksCalendar(blocksCalendar);
       setCurrentTimestamp(timestamp || initialDateTimestamp);
-      setCurrentDuration(calendarBlockDuration || 15);
+      setCurrentDuration(calendarBlockDuration || defaultDuration);
       setCurrentCalendarId(calendarBlockCalendarId);
     }
     previousOpen.current = open;
-  }, [open, timestamp, blocksCalendar, calendarBlockDuration, calendarBlockCalendarId]);
+  }, [
+    open,
+    timestamp,
+    blocksCalendar,
+    calendarBlockDuration,
+    calendarBlockCalendarId,
+    defaultDuration,
+  ]);
 
   const handleDone = () => {
     // validation
