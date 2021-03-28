@@ -160,7 +160,7 @@ export const gapiListCalendarEvents = async (
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
-      maxResults: 25,
+      maxResults: 45,
       showDeleted: true,
       singleEvents: true,
     },
