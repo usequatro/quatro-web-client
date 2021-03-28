@@ -21,6 +21,8 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     position: 'relative',
     maxHeight: theme.spacing(15),
+    display: 'flex',
+    flexDirection: 'column',
     [theme.breakpoints.up('sm')]: {
       maxHeight: theme.spacing(20),
     },
@@ -73,7 +75,7 @@ const CalendarSchedulingThumbnail = ({
 
   return (
     <Paper className={classes.visualContainer} elevation={0} variant="outlined">
-      <CalendarEventsFetcher date={Date.now()} />
+      <CalendarEventsFetcher date={startDateTimestamp} />
       {fetching && <LoaderScreen className={classes.loader} background="transparent" />}
       <div
         className={classes.scrollContainer}
