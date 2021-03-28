@@ -191,8 +191,9 @@ const AccountSettings = () => {
   };
 
   const handleDeleteAccount = () => {
-    revokeAllScopes()
+    Promise.resolve()
       .then(() => firebaseDeleteUser())
+      .then(() => revokeAllScopes())
       .then(() => {
         // Redirect to initial screen to reset the Redux
         window.location = window.location.origin;
