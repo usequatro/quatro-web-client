@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   calendarDesktopViewContainer: {
-    borderRight: `solid 1px ${theme.palette.divider}`,
+    borderLeft: `solid 1px ${theme.palette.divider}`,
   },
   mobileTabPanel: {
     flexGrow: 1,
@@ -181,7 +181,14 @@ const Dashboard = () => {
   useEffect(() => dispatch(listenToCalendarsList()), [dispatch]);
   useEffect(() => dispatch(listenToUserExternalConfig()), [dispatch]);
 
-  const [selectedMobileTab, setSelectedMobileTab] = useState(1);
+  const [selectedMobileTab, setSelectedMobileTab] = useState(0);
+
+  const tabIsTaskListView = [
+    dashboardTabs.NOW,
+    dashboardTabs.BACKLOG,
+    dashboardTabs.SCHEDULED,
+    dashboardTabs.BLOCKED,
+  ].includes(activeTab);
 
   return (
     <div className={classes.root}>
@@ -202,13 +209,22 @@ const Dashboard = () => {
 
         <DashboardDragDropContext>
           <Paper className={classes.appContent} square>
-            {activeTab !== dashboardTabs.NOW && <Toolbar className={classes.placeholderToolbar} />}
-            {activeTab !== dashboardTabs.NOW && <DashboardViewBar />}
+            {!tabIsTaskListView && (
+              <>
+                <Toolbar className={classes.placeholderToolbar} />
+                <DashboardViewBar />
+              </>
+            )}
             {cond([
               [
-                (tab) => tab === dashboardTabs.NOW && !mobileViewportSize,
+                () => tabIsTaskListView && !mobileViewportSize,
                 () => (
                   <Box className={classes.calendarAndListContainer}>
+                    <Box width="50%" display="flex" flexDirection="column">
+                      <Toolbar className={classes.placeholderToolbar} />
+                      <DashboardViewBar />
+                      <TaskList />
+                    </Box>
                     <Box
                       width="50%"
                       display="flex"
@@ -218,16 +234,11 @@ const Dashboard = () => {
                       <Toolbar className={classes.placeholderToolbar} />
                       <CalendarDashboardRouting />
                     </Box>
-                    <Box width="50%" display="flex" flexDirection="column">
-                      <Toolbar className={classes.placeholderToolbar} />
-                      <DashboardViewBar />
-                      <TaskList />
-                    </Box>
                   </Box>
                 ),
               ],
               [
-                (tab) => tab === dashboardTabs.NOW && mobileViewportSize,
+                () => tabIsTaskListView && mobileViewportSize,
                 () => (
                   <Box
                     className={classes.calendarAndListContainer}
@@ -243,22 +254,22 @@ const Dashboard = () => {
                       className={classes.mobileTabList}
                     >
                       <Tab
+                        label={SECTION_TITLES_BY_TAB[activeTab] || ''}
+                        id="tab-task-list"
+                        aria-controls="scrollable-auto-tabpanel-task-list"
+                      />
+                      <Tab
                         label="Calendar"
                         id="tab-calendar"
                         aria-controls="scrollable-auto-tabpanel-calendar"
-                      />
-                      <Tab
-                        label={SECTION_TITLES_BY_TAB[dashboardTabs.NOW]}
-                        id="tab-task-list"
-                        aria-controls="scrollable-auto-tabpanel-task-list"
                       />
                     </Tabs>
                     <div
                       role="tabpanel"
                       id="scrollable-auto-tabpanel-task-list"
                       aria-labelledby="tab-task-list"
-                      hidden={selectedMobileTab === 0}
-                      className={selectedMobileTab === 0 ? '' : classes.mobileTabPanel}
+                      hidden={selectedMobileTab !== 0}
+                      className={selectedMobileTab !== 0 ? '' : classes.mobileTabPanel}
                     >
                       <TaskList />
                     </div>
@@ -266,17 +277,14 @@ const Dashboard = () => {
                       role="tabpanel"
                       id="scrollable-auto-tabpanel-calendar"
                       aria-labelledby="tab-calendar"
-                      hidden={selectedMobileTab === 1}
-                      className={selectedMobileTab === 1 ? '' : classes.mobileTabPanel}
+                      hidden={selectedMobileTab !== 1}
+                      className={selectedMobileTab !== 1 ? '' : classes.mobileTabPanel}
                     >
                       <CalendarDashboardRouting />
                     </div>
                   </Box>
                 ),
               ],
-              [(tab) => tab === dashboardTabs.BACKLOG, () => <TaskList />],
-              [(tab) => tab === dashboardTabs.SCHEDULED, () => <TaskList />],
-              [(tab) => tab === dashboardTabs.BLOCKED, () => <TaskList />],
               [(tab) => tab === dashboardTabs.COMPLETED, () => <CompletedTaskList />],
               [(tab) => tab === dashboardTabs.ACCOUNT_SETTINGS, () => <AccountSettings />],
               [(tab) => tab === dashboardTabs.CALENDARS, () => <Calendars />],
