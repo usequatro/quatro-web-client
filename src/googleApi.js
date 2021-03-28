@@ -141,11 +141,17 @@ const formatCalendarAPIFormat = (item) => {
 /**
  * @link https://developers.google.com/calendar/v3/reference/events/list
  * @param {string} providerCalendarId
- * @param {Date} startDate
- * @param {Date} endDate
+ * @param {number} startDate - timestamp
+ * @param {number} endDate - timestamp
+ * @param {number} [updatedMin] - timestamp
  * @return {Promise}
  */
-export const gapiListCalendarEvents = async (providerCalendarId, startDate, endDate) => {
+export const gapiListCalendarEvents = async (
+  providerCalendarId,
+  startDate,
+  endDate,
+  updatedMin = undefined,
+) => {
   return request({
     method: 'GET',
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
@@ -153,12 +159,13 @@ export const gapiListCalendarEvents = async (providerCalendarId, startDate, endD
       maxAttendees: 1, // only return the current user, not the others (not needed)
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
+      updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
       maxResults: 25,
       showDeleted: true,
       singleEvents: true,
     },
   }).then((response) => {
-    // console.log(response.result.items);
+    debugConsole.log('Google API', providerCalendarId, response.result.items);
     return response.result.items.map((item) => formatCalendarAPIFormat(item));
   });
 };

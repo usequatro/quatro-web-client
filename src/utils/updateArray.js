@@ -10,5 +10,5 @@ import pull from 'lodash/pull';
  * @return {Array<any>}
  */
 export default function updateArray(array = [], { add = [], remove = [] }) {
-  return pull(uniq([...array, ...add]), ...remove);
+  return uniq([...pull([...array], ...remove), ...add]);
 }

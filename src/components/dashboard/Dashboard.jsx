@@ -3,8 +3,6 @@ import { useLocation, useParams, useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
 import invert from 'lodash/invert';
-import endOfDay from 'date-fns/endOfDay';
-import startOfDay from 'date-fns/startOfDay';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -189,10 +187,7 @@ const Dashboard = () => {
     <div className={classes.root}>
       <DesktopNotificationsListener />
 
-      <CalendarEventsFetcher
-        start={startOfDay(new Date()).getTime()}
-        end={endOfDay(new Date()).getTime()}
-      />
+      <CalendarEventsFetcher date={Date.now()} />
 
       <DashboardAppBar setNavigationOpen={setNavigationOpen} navigationOpen={navigationOpen} />
 

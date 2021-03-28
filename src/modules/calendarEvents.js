@@ -1,9 +1,9 @@
 import get from 'lodash/get';
-import invert from 'lodash/invert';
-import fpSet from 'lodash/fp/set';
+import set from 'lodash/set';
 import { createSlice } from '@reduxjs/toolkit';
 import Joi from '@hapi/joi';
 
+import format from 'date-fns/format';
 import startOfDay from 'date-fns/startOfDay';
 import endOfDay from 'date-fns/endOfDay';
 
@@ -45,17 +45,7 @@ const calendarEventSchema = Joi.object({
   taskId: Joi.string().allow(null),
 });
 
-const overlapsTimeRange = (intervals, from, to) =>
-  Boolean(intervals.find((interval) => interval[0] <= from && to <= interval[1]));
-const overlapsTime = (intervals, value) =>
-  Boolean(intervals.find((interval) => interval[0] <= value && value <= interval[1]));
-
-// Selectors
-
-const selectIntervalsRequested = (state, calendarId) =>
-  get(state[name].byCalendar, [calendarId, 'intervalsRequested']);
-const selectIntervalsFetched = (state, calendarId) =>
-  get(state[name].byCalendar, [calendarId, 'intervalsFetched']);
+const formatDate = (timestamp) => format(timestamp, 'yyyy-MM-dd');
 
 export const selectCalendarEventSummary = (state, id) => get(state[name].byId[id], 'summary');
 export const selectCalendarEventDescription = (state, id) =>
@@ -85,15 +75,24 @@ export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id]
 export const selectCalendarEventPlaceholderUntilCreated = (state, id) =>
   get(state[name].byId[id], 'placeholderUntilCreated');
 
-export const selectCalendarEventsIntervalIsFetched = (state, calendarId, start, end) => {
-  const intervalsFetched = selectIntervalsFetched(state, calendarId);
-  return Boolean(intervalsFetched && overlapsTimeRange(intervalsFetched, start, end));
+const selectCalendarEventsDateRequested = (state, calendarId, date) => {
+  const dateKey = formatDate(date);
+  return Boolean(get(state[name].byCalendar, [calendarId, 'statusByDate', dateKey, 'requested']));
 };
 
-const selectCalendarEventsIntervalIsRequested = (state, calendarId, start, end) => {
-  const intervalsRequested = selectIntervalsRequested(state, calendarId);
-  return Boolean(intervalsRequested && overlapsTimeRange(intervalsRequested, start, end));
+const selectCalendarEventsDateLoaded = (state, calendarId, date) => {
+  const dateKey = formatDate(date);
+  return Boolean(get(state[name].byCalendar, [calendarId, 'statusByDate', dateKey, 'loaded']));
 };
+
+/** @returns {number|undefined} */
+const selectCalendarEventsDateLastFetched = (state, calendarId, date) => {
+  const dateKey = formatDate(date);
+  return get(state[name].byCalendar, [calendarId, 'statusByDate', dateKey, 'lastFetchTimestamp']);
+};
+
+export const selectCalendarEventsTimeNeedsFetching = (state, calendarId, timestamp) =>
+  !selectCalendarEventsDateRequested(state, calendarId, timestamp);
 
 export const selectCalendarEventsTimeIsFetching = (state, timestamp) => {
   const calendarIds = selectCalendarIds(state);
@@ -102,11 +101,9 @@ export const selectCalendarEventsTimeIsFetching = (state, timestamp) => {
     if (memo) {
       return memo;
     }
-    const intervalsRequested = selectIntervalsRequested(state, calendarId) || [];
-    const intervalsFetched = selectIntervalsFetched(state, calendarId) || [];
-    return (
-      overlapsTime(intervalsRequested, timestamp) && !overlapsTime(intervalsFetched, timestamp)
-    );
+    const requested = selectCalendarEventsDateRequested(state, calendarId, timestamp);
+    const loaded = selectCalendarEventsDateLoaded(state, calendarId, timestamp);
+    return requested && !loaded;
   }, false);
 
   return Boolean(fetching);
@@ -228,41 +225,24 @@ function addCollisionsToCalendarEvents(state) {
   };
 }
 
-const mergeOverlappingIntervals = (originalIntervals) => {
-  const intervals = originalIntervals.map((interval) => [...interval]);
-
-  intervals.sort((a, b) => {
-    return a[0] - b[0];
-  });
-
-  const stack = [];
-
-  if (intervals.length > 0) {
-    stack.push(intervals.shift());
-  }
-
-  intervals.forEach((interval) => {
-    const stackTop = stack[stack.length - 1];
-
-    const overlaps = stackTop[0] <= interval[0] && interval[0] <= stackTop[1];
-
-    if (!overlaps) {
-      stack.push(interval);
-    } else if (interval[1] > stackTop[1]) {
-      const newTo = interval[1];
-      stackTop[1] = newTo;
-    }
-  });
-
-  return stack;
-};
-
 // Slice
 
 const initialState = {
   allIds: [],
   byId: {},
-  byCalendar: {},
+  byCalendar: {
+    // shape:
+    // [id]: {
+    //   allIds: array
+    //   statusByDate: {
+    //     '2021-03-26': {
+    //       lastFetchTimestamp: number,
+    //       requested: boolean,
+    //       loaded: boolean,
+    //     }
+    //   }
+    // }
+  },
 };
 
 /* eslint-disable no-param-reassign */
@@ -271,6 +251,15 @@ const slice = createSlice({
   initialState,
   reducers: {
     clearAllEvents: () => initialState,
+
+    setLastFetchTimestamp: (state, { payload: { calendarId, lastFetchTimestamp, date } }) => {
+      const dateKey = formatDate(date);
+      set(
+        state.byCalendar,
+        [calendarId, 'statusByDate', dateKey, 'lastFetchTimestamp'],
+        lastFetchTimestamp,
+      );
+    },
 
     addPlaceholderEventUntilCreated: {
       prepare: (payload) => {
@@ -291,9 +280,7 @@ const slice = createSlice({
         const byCalendar = {
           ...(state.byCalendar || {}),
           [calendarId]: {
-            ...(state.byCalendar && state.byCalendar[calendarId]
-              ? state.byCalendar[calendarId]
-              : {}),
+            ...get(state, ['byCalendar', calendarId], {}),
             allIds: updateArray(state.byCalendar[calendarId].allIds, {
               add: [id],
             }),
@@ -312,42 +299,43 @@ const slice = createSlice({
       },
     },
 
-    // @todo: improve this so we're only flagging the calendar that had changes
-    //        or even better, pull those changes only
-    staleAllEvents: (state) => {
-      Object.keys(state.byCalendar).forEach((calendarId) => {
-        state.byCalendar[calendarId].intervalsRequested = [];
-        state.byCalendar[calendarId].intervalsFetched = [];
+    staleAllEventsForCalendar: (state, { payload: calendarIdsChanged }) => {
+      calendarIdsChanged.forEach((calendarId) => {
+        if (state.byCalendar[calendarId] && state.byCalendar[calendarId].statusByDate) {
+          Object.keys(state.byCalendar[calendarId].statusByDate).forEach((dateKey) => {
+            set(state.byCalendar, [calendarId, 'statusByDate', dateKey, 'requested'], false);
+            set(state.byCalendar, [calendarId, 'statusByDate', dateKey, 'loaded'], false);
+          });
+        }
       });
     },
 
-    addIntervalRequested: (state, { payload: { interval, calendarId } }) => {
-      const intervalsRequested = get(state, [calendarId, 'intervalsRequested'], []);
-      const updated = [...intervalsRequested, interval];
-      const newState = fpSet(['byCalendar', calendarId, 'intervalsRequested'], updated, state);
-      return newState;
+    setDateRequested: (state, { payload: { date, calendarId, value } }) => {
+      const dateKey = formatDate(date);
+      set(state.byCalendar, [calendarId, 'statusByDate', dateKey, 'requested'], Boolean(value));
     },
 
-    removeIntervalRequested: (state, { payload: { interval, calendarId } }) => {
-      if (state.byCalendar[calendarId] && state.byCalendar[calendarId].intervalsRequested) {
-        state.byCalendar[calendarId].intervalsRequested = state.byCalendar[
-          calendarId
-        ].intervalsRequested.filter((i) => i[0] !== interval[0] && i[1] !== interval[1]);
-      }
-    },
-
-    updateEvents: (state, { payload: { calendarId, events, interval } }) => {
+    updateEvents: (state, { payload: { calendarId, events, date } }) => {
+      const dateKey = formatDate(date);
       const eventsUpdated = events.filter((event) => event.status !== 'cancelled');
       const eventIdsRemoved = events
         .filter((event) => event.status === 'cancelled')
         .map((event) => event.id);
 
       // Remove placeholders that already got a real event
-      const newEventTaskIdsAsKeys = invert(events.map(({ taskId }) => taskId).filter(Boolean));
+      const newEventByTaskIds = events
+        .filter((event) => event.taskId)
+        .reduce(
+          (memo, event) => ({
+            ...memo,
+            [event.taskId]: event,
+          }),
+          {},
+        );
       const placeholderEventIdsWithRealEventCreated = state.allIds.filter(
         (id) =>
           get(state.byId[id], 'placeholderUntilCreated') &&
-          newEventTaskIdsAsKeys[get(state.byId[id], 'taskId')],
+          newEventByTaskIds[get(state.byId[id], 'taskId')],
       );
 
       const eventIds = eventsUpdated.map((event) => event.id);
@@ -363,15 +351,18 @@ const slice = createSlice({
       const byCalendar = {
         ...(state.byCalendar || {}),
         [calendarId]: {
-          ...(state.byCalendar && state.byCalendar[calendarId] ? state.byCalendar[calendarId] : {}),
+          ...get(state, ['byCalendar', calendarId], {}),
           allIds: updateArray(state.byCalendar[calendarId].allIds, {
             add: eventIds,
             remove: [...placeholderEventIdsWithRealEventCreated, ...eventIdsRemoved],
           }),
-          intervalsFetched: mergeOverlappingIntervals([
-            ...(state.byCalendar[calendarId].intervalsFetched || []),
-            interval,
-          ]),
+          statusByDate: {
+            ...get(state, ['byCalendar', calendarId, 'statusByDate'], {}),
+            [dateKey]: {
+              ...get(state, ['byCalendar', calendarId, 'statusByDate', dateKey], {}),
+              loaded: true,
+            },
+          },
         },
       };
 
@@ -392,39 +383,55 @@ const slice = createSlice({
 export default slice;
 export const {
   clearAllEvents,
-  staleAllEvents,
+  staleAllEventsForCalendar,
   addPlaceholderEventUntilCreated,
   setCalendarEventsGlobalFetching,
 } = slice.actions;
 
 // Thunks
 
-export const loadCalendarEvents = (calendarId, start, end, { errorCallback = () => {} }) => (
+export const loadCalendarEvents = (calendarId, date, { errorCallback = () => {} }) => (
   dispatch,
   getState,
 ) => {
   const state = getState();
 
-  if (selectCalendarEventsIntervalIsRequested(state, calendarId, start, end)) {
-    return;
-  }
-  if (selectCalendarEventsIntervalIsFetched(state, calendarId, start, end)) {
+  if (selectCalendarEventsDateRequested(state, calendarId, date)) {
     return;
   }
 
-  dispatch(slice.actions.addIntervalRequested({ calendarId, interval: [start, end] }));
+  dispatch(slice.actions.setDateRequested({ calendarId, date, value: true }));
 
   const providerCalendarId = selectCalendarProviderCalendarId(state, calendarId);
 
-  gapiListCalendarEvents(providerCalendarId, start, end)
+  // We want to use the last fetch timestamp when we're refreshing an already loaded interval
+  const lastFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
+  const newFetchTimestamp = Date.now();
+  dispatch(
+    slice.actions.setLastFetchTimestamp({
+      calendarId,
+      lastFetchTimestamp: newFetchTimestamp,
+      date,
+    }),
+  );
+
+  const start = startOfDay(date).getTime();
+  const end = endOfDay(date).getTime();
+
+  gapiListCalendarEvents(providerCalendarId, start, end, lastFetchTimestamp)
     .then((events) => events.map((event) => ({ ...event, calendarId, providerCalendarId })))
     .then((events) => {
-      dispatch(slice.actions.updateEvents({ calendarId, events, interval: [start, end] }));
+      dispatch(slice.actions.updateEvents({ calendarId, events, date }));
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      dispatch(slice.actions.removeIntervalRequested({ calendarId, interval: [start, end] }));
+      console.error(error); // eslint-disable-line no-console
+
+      // Restore last fetched timestamp if it didn't change in the meantime
+      const currentFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
+      if (currentFetchTimestamp === newFetchTimestamp) {
+        dispatch(slice.actions.setLastFetchTimestamp({ calendarId, lastFetchTimestamp, date }));
+      }
+
       errorCallback(error);
     });
 };

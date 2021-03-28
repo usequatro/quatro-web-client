@@ -5,8 +5,6 @@ import { useHistory } from 'react-router-dom';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import isToday from 'date-fns/isToday';
-import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
 import isValid from 'date-fns/isValid';
 import getYear from 'date-fns/getYear';
 import { makeStyles } from '@material-ui/core/styles';
@@ -108,10 +106,7 @@ const DashboardCalendarView = () => {
 
   return (
     <>
-      <CalendarEventsFetcher
-        start={startOfDay(timestamp).getTime()}
-        end={endOfDay(timestamp).getTime()}
-      />
+      <CalendarEventsFetcher date={timestamp} />
 
       <CalendarNavBar
         timestamp={timestamp}

@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import addMinutes from 'date-fns/addMinutes';
 import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
 import roundToNearestMinutes from 'date-fns/roundToNearestMinutes';
 
 import Paper from '@material-ui/core/Paper';
@@ -22,6 +21,8 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     position: 'relative',
     maxHeight: theme.spacing(15),
+    display: 'flex',
+    flexDirection: 'column',
     [theme.breakpoints.up('sm')]: {
       maxHeight: theme.spacing(20),
     },
@@ -74,10 +75,7 @@ const CalendarSchedulingThumbnail = ({
 
   return (
     <Paper className={classes.visualContainer} elevation={0} variant="outlined">
-      <CalendarEventsFetcher
-        start={startOfDay(startDateTimestamp).getTime()}
-        end={endOfDay(startDateTimestamp).getTime()}
-      />
+      <CalendarEventsFetcher date={startDateTimestamp} />
       {fetching && <LoaderScreen className={classes.loader} background="transparent" />}
       <div
         className={classes.scrollContainer}
