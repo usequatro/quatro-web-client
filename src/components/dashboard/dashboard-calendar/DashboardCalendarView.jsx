@@ -126,7 +126,7 @@ const DashboardCalendarView = () => {
           ticksPerHour={TICKS_PER_HOUR}
           interactive
         />
-        <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} />
+        <Ticks tickHeight={TICK_HEIGHT} ticksPerHour={TICKS_PER_HOUR} date={timestamp} />
         {isToday(timestamp) && <CurrentTimeLine ref={currentTimeRef} />}
       </CalendarDroppable>
     </>

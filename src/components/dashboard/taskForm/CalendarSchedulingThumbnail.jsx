@@ -100,6 +100,7 @@ const CalendarSchedulingThumbnail = ({
           fontSize="0.625rem"
           format="h a"
           ref={ticksContainerRef}
+          date={startDateTimestamp}
         />
       </div>
     </Paper>

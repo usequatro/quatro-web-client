@@ -64,7 +64,7 @@ const slice = createSlice({
       state.recurringConfigsSyncStatus = payload;
     },
     setCalendarDisplayTimestamp: (state, { payload }) => {
-      state.calendarDisplayTimestamp = payload;
+      state.calendarDisplayTimestamp = startOfDay(payload).getTime();
     },
   },
 });
