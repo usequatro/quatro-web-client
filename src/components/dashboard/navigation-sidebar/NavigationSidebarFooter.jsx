@@ -9,7 +9,9 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import DoubleArrowRoundedIcon from '@material-ui/icons/DoubleArrowRounded';
 
+import { useMixpanel } from '../../tracking/MixpanelContext';
 import useDelayedState from '../../hooks/useDelayedState';
+import { SIDEBAR_COLLAPSED, SIDEBAR_EXPANDED } from '../../../constants/mixpanelEvents';
 
 const useStyles = makeStyles((theme) => ({
   toggleListItem: {
@@ -26,16 +28,23 @@ const PassThrough = ({ children }) => children;
 
 const NavigationSidebarFooter = ({ open, setNavigationOpen }) => {
   const classes = useStyles({ open });
+  const mixpanel = useMixpanel();
 
   const delayedOpen = useDelayedState(open, 1000); // trick to prevent tooltip showing when closing
   const TooltipWhenClosed = open || delayedOpen ? PassThrough : Tooltip;
+
+  const handleClick = () => {
+    const newOpen = !open;
+    setNavigationOpen(newOpen);
+    mixpanel.track(newOpen ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED);
+  };
 
   return (
     <List>
       <TooltipWhenClosed title="Expand" placement="right" arrow>
         <ListItem
           button
-          onClick={() => setNavigationOpen(!open)}
+          onClick={handleClick}
           className={classes.toggleListItem}
           aria-label={open ? 'Collapse' : 'Expand'}
         >
