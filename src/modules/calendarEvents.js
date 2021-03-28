@@ -424,9 +424,7 @@ export const loadCalendarEvents = (calendarId, date, { errorCallback = () => {} 
       dispatch(slice.actions.updateEvents({ calendarId, events, date }));
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      dispatch(slice.actions.setDateRequested({ calendarId, date, value: false }));
+      console.error(error); // eslint-disable-line no-console
 
       // Restore last fetched timestamp if it didn't change in the meantime
       const currentFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
