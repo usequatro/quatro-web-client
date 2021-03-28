@@ -20,6 +20,7 @@ import {
   selectTaskCalendarBlockDuration,
 } from '../../../modules/tasks';
 import { selectCalendarColor, selectFallbackCalendarId } from '../../../modules/calendars';
+import { selectCalendarDisplayTimestamp } from '../../../modules/dashboard';
 import { selectUserDefaultCalendarId } from '../../../modules/userExternalConfig';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
 
@@ -97,8 +98,9 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
     };
   }, [containerRef, tickHeight, ticksPerHour]);
 
+  const calendarDisplayTimestamp = useSelector(selectCalendarDisplayTimestamp);
   const taskTitle = useSelector((state) => selectTaskTitle(state, draggableTaskId));
-  const startTimestamp = addMinutes(startOfDay(new Date()), minutes).getTime();
+  const startTimestamp = addMinutes(startOfDay(calendarDisplayTimestamp), minutes).getTime();
 
   const duration = useSelector(
     (state) =>

@@ -1,7 +1,7 @@
 import React, { useState, createContext, useMemo, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
-import set from 'date-fns/set';
+import addMinutes from 'date-fns/addMinutes';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
@@ -81,9 +81,10 @@ const DashboardDragDropContext = ({ children }) => {
       const taskId = getTaskIdFromDraggableId(draggableId);
 
       const placeholderPosition = getCalendarDragPlaceholderPositionRef.current();
-      const calendarBlockStart = set(calendarDisplayTimestamp, {
-        minutes: placeholderPosition.minutes,
-      }).getTime();
+      const calendarBlockStart = addMinutes(
+        calendarDisplayTimestamp, // this date is expected to be startOfDay
+        placeholderPosition.minutes,
+      ).getTime();
       dispatch(timeboxTask(taskId, calendarBlockStart));
     } else {
       console.warn(`Unknown droppableId format: ${droppableId}`); // eslint-disable-line no-console

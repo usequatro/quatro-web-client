@@ -28,12 +28,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const today = startOfDay(new Date());
-
-const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour }, ref) => {
+const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour, date }, ref) => {
   const classes = useStyles({ tickHeight });
 
   const ticks = useMemo(() => {
+    const startOfDayDate = startOfDay(date);
+
     const minutesInOneTick = 60 / ticksPerHour;
     return new Array(24)
       .fill()
@@ -42,14 +42,16 @@ const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour }, ref) =
           ...acc,
           ...Array(ticksPerHour)
             .fill(1)
-            .map((__, tick) => add(today, { hours: index, minutes: minutesInOneTick * tick })),
+            .map((__, tick) =>
+              add(startOfDayDate, { hours: index, minutes: minutesInOneTick * tick }),
+            ),
         ],
         [],
       )
-      .concat([add(today, { hours: 24 })])
-      .map((date) => (getMinutes(date) === 0 ? date : ''))
-      .map((date) => (date ? formatDate(date, format) : ''));
-  }, [ticksPerHour, format]);
+      .concat([add(startOfDayDate, { hours: 24 })])
+      .map((d) => (getMinutes(d) === 0 ? d : ''))
+      .map((d) => (d ? formatDate(d, format) : ''));
+  }, [ticksPerHour, format, date]);
 
   return (
     <Box width="100%" px={1} ref={ref}>
@@ -81,6 +83,8 @@ Ticks.propTypes = {
   format: PropTypes.string,
   tickHeight: PropTypes.number,
   ticksPerHour: PropTypes.number,
+  // date needed bc if the day has a Dailight Savings change, it won't have the same 24 hours
+  date: PropTypes.number.isRequired,
 };
 
 Ticks.defaultProps = {
