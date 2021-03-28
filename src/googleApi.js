@@ -165,7 +165,7 @@ export const gapiListCalendarEvents = async (
       singleEvents: true,
     },
   }).then((response) => {
-    console.log('gapiListCalendarEvents result', providerCalendarId, response.result.items);
+    debugConsole.log('Google API', providerCalendarId, response.result.items);
     return response.result.items.map((item) => formatCalendarAPIFormat(item));
   });
 };
