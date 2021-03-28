@@ -1,9 +1,14 @@
+// Tasks
 export const TASK_CREATED = 'Task Created';
 export const TASK_UPDATED = 'Task Updated';
 export const TASK_DELETED = 'Task Deleted';
 export const TASK_COMPLETED = 'Task Completed';
 export const TASK_UNDO_COMPLETE = 'Task Undo Complete';
 export const TASK_MANUALLY_ARRANGED = 'Task Manually Arranged';
+
+// UI
+export const SIDEBAR_COLLAPSED = 'Sidebar Collapsed';
+export const SIDEBAR_EXPANDED = 'Sidebar Expanded';
 
 // Calendar integration
 export const TASK_DRAGGED_TO_CALENDAR = 'Task Dragged to Calendar';
