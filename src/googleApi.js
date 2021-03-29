@@ -151,8 +151,8 @@ export const gapiListCalendarEvents = async (
   startDate,
   endDate,
   updatedMin = undefined,
-) => {
-  return request({
+) =>
+  request({
     method: 'GET',
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
@@ -168,19 +168,16 @@ export const gapiListCalendarEvents = async (
     debugConsole.log('Google API', providerCalendarId, response.result.items);
     return response.result.items.map((item) => formatCalendarAPIFormat(item));
   });
-};
 
 /**
  * @link https://developers.google.com/calendar/v3/reference/calendarList/list
  */
-export const gapiListCalendars = async () => {
-  return request({
+export const gapiListCalendars = async () =>
+  request({
     method: 'GET',
     path: '/calendar/v3/users/me/calendarList',
     params: { maxResults: 250, minAccessRole: 'writer' },
   });
-};
-
 /**
  * @todo scopes should be revoked as well from a backend function if the tokens are persisted
  * @link https://developers.google.com/identity/sign-in/web/reference#googleauthdisconnect

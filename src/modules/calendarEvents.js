@@ -134,8 +134,8 @@ export const selectAllDayCalendarEventIds = (state, timestamp) => {
 };
 
 /** @returns {Array<string>} */
-export const selectCalendarEventIdsForNotifications = (state, calendarId, { earliest, latest }) => {
-  return state[name].allIds.filter(
+export const selectCalendarEventIdsForNotifications = (state, calendarId, { earliest, latest }) =>
+  state[name].allIds.filter(
     (eventId) =>
       selectCalendarEventCalendarId(state, eventId) === calendarId &&
       !selectCalendarEventAllDay(state, eventId) &&
@@ -144,7 +144,6 @@ export const selectCalendarEventIdsForNotifications = (state, calendarId, { earl
       selectCalendarEventStartTimestamp(state, eventId) >= earliest &&
       selectCalendarEventStartTimestamp(state, eventId) <= latest,
   );
-};
 
 // Helpers
 

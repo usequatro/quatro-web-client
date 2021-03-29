@@ -25,27 +25,29 @@ export default function useGoogleApiSignIn() {
   const history = useHistory();
   const mixpanel = useMixpanel();
 
-  const grantAccessToGoogleCalendar = useCallback(() => {
-    return gapiGrantCalendarManagementScope()
-      .then(() => {
-        mixpanel.track(GOOGLE_ACCOUNT_CALENDAR_SCOPE_GRANTED);
-      })
-      .then(async () => {
-        // Refresh scopes in Redux
-        const authInstance = await gapiGetAuthInstance();
-        dispatch(
-          setGapiUser(authInstance.isSignedIn.get() ? authInstance.currentUser.get() : null),
-        );
-      })
-      .catch((error) => {
-        if (error.code === 'auth/popup-closed-by-user') {
-          console.info(error); // eslint-disable-line no-console
-          return;
-        }
-        console.error(error); // eslint-disable-line no-console
-        notifyError('An error happened');
-      });
-  }, [notifyError, dispatch, mixpanel]);
+  const grantAccessToGoogleCalendar = useCallback(
+    () =>
+      gapiGrantCalendarManagementScope()
+        .then(() => {
+          mixpanel.track(GOOGLE_ACCOUNT_CALENDAR_SCOPE_GRANTED);
+        })
+        .then(async () => {
+          // Refresh scopes in Redux
+          const authInstance = await gapiGetAuthInstance();
+          dispatch(
+            setGapiUser(authInstance.isSignedIn.get() ? authInstance.currentUser.get() : null),
+          );
+        })
+        .catch((error) => {
+          if (error.code === 'auth/popup-closed-by-user') {
+            console.info(error); // eslint-disable-line no-console
+            return;
+          }
+          console.error(error); // eslint-disable-line no-console
+          notifyError('An error happened');
+        }),
+    [notifyError, dispatch, mixpanel],
+  );
 
   const signInToConnectGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase

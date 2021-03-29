@@ -54,9 +54,7 @@ export const createRecurringConfig = (recurringConfig) => async (dispatch, getSt
   const state = getState();
   const userId = selectUserId(state);
   const recurringConfigWithUserId = { ...recurringConfig, userId };
-  const newId = await fetchCreateRecurringConfig(recurringConfigWithUserId).then(({ id }) => {
-    return id;
-  });
+  const newId = await fetchCreateRecurringConfig(recurringConfigWithUserId).then(({ id }) => id);
   return newId;
 };
 

@@ -83,9 +83,7 @@ export const firebaseConnectGoogleAccountFromGapiCredential = (idToken, accessTo
   return firebase
     .auth()
     .currentUser.linkWithCredential(credential)
-    .then((result) => {
-      return firebase.auth().signInWithCredential(result.credential);
-    });
+    .then((result) => firebase.auth().signInWithCredential(result.credential));
 };
 
 /**

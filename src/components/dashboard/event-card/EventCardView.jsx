@@ -53,113 +53,115 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EventCardView = forwardRef(function EventCardViewComponent(
-  {
-    id,
-    className,
-    scrollAnchorRef,
-    elevated,
-    summary,
-    startTimestamp,
-    endTimestamp,
-    allDay,
-    declined,
-    taskId,
-    completed,
-    showCompleteButton,
-    synching,
-    selectable,
-    draggable,
-    onSelect,
-    isBeingRedragged,
-    color,
-    smallCard,
-  },
-  ref,
-) {
-  const dispatch = useDispatch();
-  const { notifyInfo } = useNotification();
+const EventCardView = forwardRef(
+  (
+    {
+      id,
+      className,
+      scrollAnchorRef,
+      elevated,
+      summary,
+      startTimestamp,
+      endTimestamp,
+      allDay,
+      declined,
+      taskId,
+      completed,
+      showCompleteButton,
+      synching,
+      selectable,
+      draggable,
+      onSelect,
+      isBeingRedragged,
+      color,
+      smallCard,
+    },
+    ref,
+  ) => {
+    const dispatch = useDispatch();
+    const { notifyInfo } = useNotification();
 
-  const classes = useStyles({ color, declined, smallCard });
+    const classes = useStyles({ color, declined, smallCard });
 
-  const [focused, setFocused] = useState(false);
+    const [focused, setFocused] = useState(false);
 
-  return (
-    <Card
-      key={id}
-      data-id={id}
-      style={{
-        opacity: cond([
-          [() => isBeingRedragged, () => 0.1],
-          [() => synching, () => 0.7],
-          [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
-          [() => declined, () => 0.7],
-          [() => true, () => 1],
-        ])(),
-        // eslint-disable-next-line no-nested-ternary
-        cursor: draggable ? 'grab' : selectable ? 'pointer' : 'auto',
-      }}
-      className={[classes.eventCard, className].filter(Boolean).join(' ')}
-      elevation={elevated || focused ? 8 : 0}
-      ref={ref}
-      {...(selectable
-        ? {
-            role: 'button',
-            tabIndex: 0,
-            onFocus: () => setFocused(true),
-            onBlur: () => setFocused(false),
-            onClick: onSelect,
-            onKeyPress: () => (event) => {
-              // @todo: figure out why this doesn't work
-              if (event.key === ' ' || event.key === 'Enter') {
-                event.stopPropagation();
-                onSelect(event);
-              }
-            },
-          }
-        : {
-            title: summary,
-          })}
-    >
-      {scrollAnchorRef && (
-        <span
-          id="event-card-scroll-anchor"
-          ref={scrollAnchorRef}
-          className={classes.scrollAnchor}
-        />
-      )}
-      {synching && (
-        <Box mr={1}>
-          <CircularProgress thickness={4} size="1.25rem" color="inherit" />
-        </Box>
-      )}
-
-      <Typography component="p" className={classes.eventName}>
-        {summary || '(No title)'}
-        {!allDay && (
-          <span className={classes.eventDate}>
-            {', '}
-            {isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''}
-            {' - '}
-            {isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''}
-          </span>
+    return (
+      <Card
+        key={id}
+        data-id={id}
+        style={{
+          opacity: cond([
+            [() => isBeingRedragged, () => 0.1],
+            [() => synching, () => 0.7],
+            [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
+            [() => declined, () => 0.7],
+            [() => true, () => 1],
+          ])(),
+          // eslint-disable-next-line no-nested-ternary
+          cursor: draggable ? 'grab' : selectable ? 'pointer' : 'auto',
+        }}
+        className={[classes.eventCard, className].filter(Boolean).join(' ')}
+        elevation={elevated || focused ? 8 : 0}
+        ref={ref}
+        {...(selectable
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              onFocus: () => setFocused(true),
+              onBlur: () => setFocused(false),
+              onClick: onSelect,
+              onKeyPress: () => (event) => {
+                // @todo: figure out why this doesn't work
+                if (event.key === ' ' || event.key === 'Enter') {
+                  event.stopPropagation();
+                  onSelect(event);
+                }
+              },
+            }
+          : {
+              title: summary,
+            })}
+      >
+        {scrollAnchorRef && (
+          <span
+            id="event-card-scroll-anchor"
+            ref={scrollAnchorRef}
+            className={classes.scrollAnchor}
+          />
         )}
-      </Typography>
+        {synching && (
+          <Box mr={1}>
+            <CircularProgress thickness={4} size="1.25rem" color="inherit" />
+          </Box>
+        )}
 
-      {taskId && showCompleteButton && !synching && (
-        <CompleteButton
-          taskId={taskId}
-          completed={completed}
-          onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
-          onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
-          fontSize="default"
-          size="small"
-          className={classes.completeButton}
-        />
-      )}
-    </Card>
-  );
-});
+        <Typography component="p" className={classes.eventName}>
+          {summary || '(No title)'}
+          {!allDay && (
+            <span className={classes.eventDate}>
+              {', '}
+              {isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''}
+              {' - '}
+              {isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''}
+            </span>
+          )}
+        </Typography>
+
+        {taskId && showCompleteButton && !synching && (
+          <CompleteButton
+            taskId={taskId}
+            completed={completed}
+            onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
+            onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
+            fontSize="default"
+            size="small"
+            className={classes.completeButton}
+          />
+        )}
+      </Card>
+    );
+  },
+);
 
 EventCardView.propTypes = {
   id: PropTypes.string.isRequired,

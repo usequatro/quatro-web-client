@@ -169,9 +169,7 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
  */
 export const fetchDeleteRecurringConfig = (id) => db.collection(RECURRING_CONFIGS).doc(id).delete();
 
-export const connectCalendar = (calendarObject) => {
-  return db.collection(CALENDARS).add(calendarObject);
-};
+export const connectCalendar = (calendarObject) => db.collection(CALENDARS).add(calendarObject);
 
 export const disconnectCalendar = async (calendarId, userId) => {
   const documentId = await db
@@ -191,10 +189,7 @@ export const fetchConnectedCalendars = async (userId) => {
     .collection(CALENDARS)
     .where('userId', '==', userId)
     .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]))
-    .then((res) => {
-      return res;
-    });
+    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
   return results;
 };
 export const saveCalendar = async (calendarObject) => {

@@ -12,9 +12,7 @@ import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterCon
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 import { selectDashboadIsLoaded } from '../../../modules/dashboard';
 
-const Transition = forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 const TaskDialog = () => {
   const dispatch = useDispatch();
