@@ -88,30 +88,28 @@ const ColorPicker = ({ calendarId, color, isCalendarUserSignedUpWithGoogle }) =>
           mixpanel.track(GOOGLE_CALENDAR_COLOR_CHANGED, { color: newColor });
         }}
       >
-        {colors.map(({ key, value }, index, { length }) => {
-          return (
-            <FormControlLabel
-              key={key}
-              value={value}
-              checked={color === value}
-              disabled={!isCalendarUserSignedUpWithGoogle}
-              control={
-                <Radio
-                  edge={index === length - 1 ? 'end' : false}
-                  size="small"
-                  classes={{
-                    root: colorSelectorClasses[key],
-                    checked: colorSelectorClasses[`checked-${key}`],
-                  }}
-                  inputProps={{
-                    'aria-label': `color ${key}`,
-                    disabled: !isCalendarUserSignedUpWithGoogle,
-                  }}
-                />
-              }
-            />
-          );
-        })}
+        {colors.map(({ key, value }, index, { length }) => (
+          <FormControlLabel
+            key={key}
+            value={value}
+            checked={color === value}
+            disabled={!isCalendarUserSignedUpWithGoogle}
+            control={
+              <Radio
+                edge={index === length - 1 ? 'end' : false}
+                size="small"
+                classes={{
+                  root: colorSelectorClasses[key],
+                  checked: colorSelectorClasses[`checked-${key}`],
+                }}
+                inputProps={{
+                  'aria-label': `color ${key}`,
+                  disabled: !isCalendarUserSignedUpWithGoogle,
+                }}
+              />
+            }
+          />
+        ))}
       </RadioGroup>
     </FormControl>
   );

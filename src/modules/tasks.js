@@ -117,9 +117,9 @@ const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
 });
 
 /** @returns {Array<[string, Object]>} */
-export const selectAllTasksOrderedAlphabetically = createSelector(selectAllTasks, (allTasks) => {
-  return sortBy(allTasks, ([, task]) => `${task.title}`.toLowerCase());
-});
+export const selectAllTasksOrderedAlphabetically = createSelector(selectAllTasks, (allTasks) =>
+  sortBy(allTasks, ([, task]) => `${task.title}`.toLowerCase()),
+);
 
 /**
  * @param {[string, Object]} tasks

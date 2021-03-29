@@ -219,13 +219,13 @@ export default function CalendarSelectionDialog({ open, onClose }) {
                           edge="end"
                           color={selected ? 'primary' : 'default'}
                           disabled={alreadyAdded}
-                          onClick={() => {
-                            return selected
+                          onClick={() =>
+                            selected
                               ? setCalendarProviderIdsSelected((ids) =>
                                   ids.filter((i) => i !== calendar.id),
                                 )
-                              : setCalendarProviderIdsSelected((ids) => ids.concat(calendar.id));
-                          }}
+                              : setCalendarProviderIdsSelected((ids) => ids.concat(calendar.id))
+                          }
                         >
                           {selected ? (
                             <CheckCircleOutlineRoundedIcon fontSize="large" />

@@ -19,35 +19,31 @@ const CalendarBlockEditor = ({
   calendarId,
   onCalendarIdChange,
   errors,
-}) => {
-  return (
-    <Box display="flex" mb={1} flexDirection="column">
-      <Box ml={1} mb={2} display="flex" alignItems="center">
-        <DurationField
-          duration={duration}
-          onChange={onDurationChange}
-          error={errors.includes(ERROR_BAD_DURATION)}
-        />
-
-        <Box ml={2} />
-
-        <ConnectedCalendarSelect
-          value={calendarId}
-          onChange={onCalendarIdChange}
-          error={
-            errors.includes(ERROR_NO_CALENDAR_ID) || errors.includes(ERROR_UNKNOWN_CALENDAR_ID)
-          }
-        />
-      </Box>
-
-      <CalendarSchedulingThumbnail
-        startDateTimestamp={startDateTimestamp}
+}) => (
+  <Box display="flex" mb={1} flexDirection="column">
+    <Box ml={1} mb={2} display="flex" alignItems="center">
+      <DurationField
         duration={duration}
-        onChangeStartDateTimestamp={onChangeStartDateTimestamp}
+        onChange={onDurationChange}
+        error={errors.includes(ERROR_BAD_DURATION)}
+      />
+
+      <Box ml={2} />
+
+      <ConnectedCalendarSelect
+        value={calendarId}
+        onChange={onCalendarIdChange}
+        error={errors.includes(ERROR_NO_CALENDAR_ID) || errors.includes(ERROR_UNKNOWN_CALENDAR_ID)}
       />
     </Box>
-  );
-};
+
+    <CalendarSchedulingThumbnail
+      startDateTimestamp={startDateTimestamp}
+      duration={duration}
+      onChangeStartDateTimestamp={onChangeStartDateTimestamp}
+    />
+  </Box>
+);
 
 CalendarBlockEditor.propTypes = {
   startDateTimestamp: PropTypes.number.isRequired,
