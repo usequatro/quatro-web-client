@@ -15,6 +15,7 @@ import CalendarViewDayRoundedIcon from '@material-ui/icons/CalendarViewDayRounde
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
+import SnoozeIcon from '@material-ui/icons/Snooze';
 
 import TaskTitle from './TaskTitle';
 import TaskRecurringLabel from './TaskRecurringLabel';
@@ -145,6 +146,7 @@ const TaskView = ({
   editable,
   title,
   scheduledStart,
+  snoozedUntil,
   effort,
   calendarBlockDuration,
   due,
@@ -214,6 +216,14 @@ const TaskView = ({
           {scheduledStart && (
             <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
               {formatDateTime(scheduledStart)}
+            </TaskViewSubtitle>
+          )}
+
+          {snoozedUntil && (
+            <TaskViewSubtitle tooltip="Snoozed until" Icon={SnoozeIcon} onClick={() => {}}>
+              {snoozedUntil < Date.now()
+                ? `Was snoozed until ${formatDateTime(snoozedUntil)}`
+                : formatDateTime(snoozedUntil)}
             </TaskViewSubtitle>
           )}
 
@@ -296,6 +306,7 @@ TaskView.propTypes = {
   hasRecurringConfig: PropTypes.bool.isRequired,
   score: PropTypes.number,
   scheduledStart: PropTypes.number,
+  snoozedUntil: PropTypes.number,
   calendarBlockDuration: PropTypes.number,
   due: PropTypes.number,
   prioritizedAheadOf: PropTypes.string,
@@ -311,6 +322,7 @@ TaskView.defaultProps = {
   position: undefined,
   score: undefined,
   scheduledStart: undefined,
+  snoozedUntil: undefined,
   calendarBlockDuration: undefined,
   due: undefined,
   prioritizedAheadOf: undefined,

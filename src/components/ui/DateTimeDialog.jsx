@@ -23,6 +23,7 @@ const DateTimeDialog = ({
   timestamp,
   onChangeCommitted,
   initialTimestamp,
+  datePickerProps,
 }) => {
   const [currentValue, setCurrentValue] = useState(timestamp || initialTimestamp);
 
@@ -45,6 +46,7 @@ const DateTimeDialog = ({
           <DatePicker
             timestamp={currentValue}
             onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
+            {...datePickerProps}
           />
         </Box>
 
@@ -92,10 +94,14 @@ DateTimeDialog.propTypes = {
   timestamp: PropTypes.number,
   onChangeCommitted: PropTypes.func.isRequired,
   initialTimestamp: PropTypes.number.isRequired,
+  datePickerProps: PropTypes.shape({
+    disablePast: PropTypes.bool,
+  }),
 };
 
 DateTimeDialog.defaultProps = {
   timestamp: null,
+  datePickerProps: {},
 };
 
 export default DateTimeDialog;

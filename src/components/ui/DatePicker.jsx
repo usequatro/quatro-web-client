@@ -36,7 +36,7 @@ const enUsLocaleCustomized = {
   },
 };
 
-const DatePicker = ({ timestamp, onChange }) => {
+const DatePicker = ({ timestamp, disablePast, onChange }) => {
   const handleSetToday = () => {
     const today = set(timestamp, {
       year: getYear(Date.now()),
@@ -63,6 +63,7 @@ const DatePicker = ({ timestamp, onChange }) => {
           value={timestamp ? new Date(timestamp) : new Date()}
           onChange={(newDate) => onChange(newDate.getTime())}
           animateYearScrolling
+          disablePast={disablePast}
           TextFieldComponent={DatePickerTextFieldComponent}
         />
       </MuiPickersUtilsProvider>
@@ -78,7 +79,12 @@ const DatePicker = ({ timestamp, onChange }) => {
 
 DatePicker.propTypes = {
   timestamp: PropTypes.number.isRequired,
+  disablePast: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
+};
+
+DatePicker.defaultProps = {
+  disablePast: false,
 };
 
 export default DatePicker;

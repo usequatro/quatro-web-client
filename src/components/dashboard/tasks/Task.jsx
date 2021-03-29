@@ -15,6 +15,7 @@ import {
   completeTask,
   markTaskIncomplete,
   selectTaskEffort,
+  selectTaskSnoozedUntil,
 } from '../../../modules/tasks';
 import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recurringConfigs';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
@@ -38,6 +39,7 @@ const Task = ({
   const effort = useSelector((state) => selectTaskEffort(state, id));
   const completed = useSelector((state) => selectTaskShowsAsCompleted(state, id));
   const scheduledStart = useSelector((state) => selectTaskScheduledStart(state, id));
+  const snoozedUntil = useSelector((state) => selectTaskSnoozedUntil(state, id));
   const calendarBlockDuration = useSelector((state) => selectTaskCalendarBlockDuration(state, id));
   const due = useSelector((state) => selectTaskDue(state, id));
   const prioritizedAheadOf = useSelector((state) => selectTaskPrioritizedAheadOf(state, id));
@@ -73,6 +75,7 @@ const Task = ({
       showCompletedAnimation={completed}
       effort={effort}
       scheduledStart={scheduledStart}
+      snoozedUntil={snoozedUntil}
       calendarBlockDuration={calendarBlockDuration}
       due={due}
       prioritizedAheadOf={prioritizedAheadOf}

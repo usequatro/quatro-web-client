@@ -41,6 +41,8 @@ import {
   setCalendarBlockEnd,
   setRecurringConfig,
   selectRecurringConfig,
+  selectSnoozedUntil,
+  setSnoozedUntil,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
@@ -68,6 +70,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
   // Current taskForm state
   const timestamp = useSelector(selectScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
   const blocksCalendar = Boolean(calendarBlockStart);
@@ -153,6 +156,10 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     // If we remove the scheduled start and there was repeat, also clear it
     if (!currentTimestamp && recurringConfig) {
       dispatch(setRecurringConfig(null));
+    }
+    // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
+    if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
+      dispatch(setSnoozedUntil(null));
     }
 
     onClose();
