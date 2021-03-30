@@ -9,7 +9,6 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import ListItem from '@material-ui/core/ListItem';
 
-import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
 import CalendarViewDayRoundedIcon from '@material-ui/icons/CalendarViewDayRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
@@ -17,6 +16,7 @@ import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
 import SnoozeIcon from '@material-ui/icons/Snooze';
 
+import ScheduledIcon from '../../icons/ScheduledIcon';
 import TaskTitle from './TaskTitle';
 import TaskRecurringLabel from './TaskRecurringLabel';
 import TaskViewSubtitle from './TaskViewSubtitle';
@@ -214,7 +214,7 @@ const TaskView = ({
           )}
 
           {scheduledStart && (
-            <TaskViewSubtitle tooltip="Scheduled date" Icon={EventRoundedIcon} onClick={() => {}}>
+            <TaskViewSubtitle tooltip="Scheduled date" Icon={ScheduledIcon} onClick={() => {}}>
               {formatDateTime(scheduledStart)}
             </TaskViewSubtitle>
           )}

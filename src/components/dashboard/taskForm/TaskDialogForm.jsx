@@ -24,9 +24,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
-import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
@@ -84,6 +82,8 @@ import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
+import ScheduledIcon from '../../icons/ScheduledIcon';
+import BlockedIcon from '../../icons/BlockedIcon';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -457,7 +457,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             {scheduledStartTimestamp && (
               <Button
                 onClick={() => setShowScheduledStartDialog(true)}
-                startIcon={<EventRoundedIcon />}
+                startIcon={<ScheduledIcon />}
                 className={classes.settingButton}
               >
                 {'Scheduled date: '}
@@ -518,7 +518,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 onClick={() => setShowBlockersDialog(!showBlockersDialog)}
                 className={classes.blockersIconButton}
               >
-                <BlockRoundedIcon fontSize="small" />
+                <BlockedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
@@ -565,7 +565,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           <LabeledIconButton
             label="Schedule"
             color={scheduledStartTimestamp ? 'primary' : 'inherit'}
-            icon={<EventRoundedIcon />}
+            icon={<ScheduledIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
           />
           <LabeledIconButton
@@ -577,7 +577,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           <LabeledIconButton
             label="Blockers"
             color={blockedBy.length > 0 ? 'primary' : 'inherit'}
-            icon={<BlockRoundedIcon />}
+            icon={<BlockedIcon />}
             onClick={() => setShowBlockersDialog(!showBlockersDialog)}
           />
         </Box>
@@ -627,7 +627,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       />
 
       <DateTimeDialog
-        label="Due date"
+        label={
+          <>
+            <AccessAlarmRoundedIcon titleAccess="Due date icon" />
+            &nbsp;Due date
+          </>
+        }
         id="due-dialog"
         open={showDueDialog}
         onClose={() => setShowDueDialog(false)}
@@ -637,7 +642,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       />
 
       <DateTimeDialog
-        label="Snooze"
+        label={
+          <>
+            <SnoozeIcon titleAccess="Snooze icon" />
+            &nbsp;Snooze
+          </>
+        }
         id="snooze-dialog"
         open={showSnoozedUntilDialog}
         onClose={() => setShowSnoozedUntilDialog(false)}

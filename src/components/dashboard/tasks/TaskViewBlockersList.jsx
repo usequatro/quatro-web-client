@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
-
+import BlockedIcon from '../../icons/BlockedIcon';
 import TaskViewSubtitle from './TaskViewSubtitle';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import { selectTaskActiveBlockerDescriptors, selectTaskTitle } from '../../../modules/tasks';
@@ -39,7 +38,7 @@ const TaskViewBlockersList = ({ id }) => {
   return blockerDescriptors.map((blockerDescriptor, index) => (
     <TaskViewSubtitle
       tooltip="Blocker"
-      Icon={BlockRoundedIcon}
+      Icon={BlockedIcon}
       onClick={() => {}}
       key={index /* eslint-disable-line react/no-array-index-key */}
     >

@@ -54,6 +54,7 @@ import CalendarBlockEditor, {
 import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
+import ScheduledIcon from '../../icons/ScheduledIcon';
 
 const useStyles = makeStyles((theme) => ({
   switchHelperText: {
@@ -207,7 +208,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
         TypographyProps={{ id: 'scheduled-start-dialog', variant: 'h6' }}
         title={
           <>
-            Scheduled Date
+            <ScheduledIcon />
+            &nbsp;Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
             <Tooltip aria-hidden arrow title={tooltipTitle}>
               <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />
