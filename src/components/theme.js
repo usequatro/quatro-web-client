@@ -40,7 +40,10 @@ const muiTheme = createMuiTheme({
   },
   typography: {
     fontFamily: ['GTEestiProText', 'serif'],
-    fontWeight: bookFontWeight,
+    fontWeightLight: bookFontWeight,
+    fontWeightRegular: bookFontWeight,
+    fontWeightMedium: mediumFontWeight,
+    fontWeightBold: mediumFontWeight,
     button: {
       textTransform: 'inherit',
       fontWeight: mediumFontWeight,
