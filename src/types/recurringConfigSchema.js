@@ -8,7 +8,7 @@ export const recurringConfigSchema = Joi.object({
   userId: Joi.string(),
   unit: Joi.valid(...Object.values(DURATION_UNITS)),
   amount: Joi.number(),
-  lastRunDate: Joi.number().allow(null),
+  lastRunDate: Joi.number().allow(null).default(null),
   activeWeekdays: Joi.object({
     [WEEKDAYS.MONDAY]: Joi.bool(),
     [WEEKDAYS.TUESDAY]: Joi.bool(),
