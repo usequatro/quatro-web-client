@@ -54,6 +54,7 @@ const calendarEventSchema = Joi.object({
       }),
     )
     .default([]),
+  attendeesOmitted: Joi.bool(),
   allDay: Joi.bool(),
   declined: Joi.bool(),
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
@@ -81,6 +82,8 @@ export const selectCalendarEventVisibility = (state, id) => get(state[name].byId
 export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
 export const selectCalendarEventAttendees = (state, id) =>
   get(state[name].byId[id], 'attendees', []);
+export const selectCalendarEventAttendeesOmitted = (state, id) =>
+  get(state[name].byId[id], 'attendeesOmitted');
 export const selectCalendarEventCollisionCount = (state, id) =>
   get(state[name].byId[id], 'collisionCount');
 export const selectCalendarEventCollisionOrder = (state, id) =>

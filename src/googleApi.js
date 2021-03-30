@@ -154,6 +154,7 @@ const formatCalendarAPIFormat = (item) => {
       }
       return 0;
     }),
+    attendeesOmitted: item.attendeesOmitted,
     allDay,
     declined: isItemDeclined(item),
     taskId: get(item, 'extendedProperties.private.taskId', null),

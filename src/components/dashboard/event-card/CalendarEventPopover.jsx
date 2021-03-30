@@ -35,6 +35,7 @@ import {
   selectCalendarEventHtmlLink,
   selectCalendarEventLocation,
   selectCalendarEventAttendees,
+  selectCalendarEventAttendeesOmitted,
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
@@ -120,6 +121,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
   const eventLocation = useSelector((state) => selectCalendarEventLocation(state, id));
   const attendees = useSelector((state) => selectCalendarEventAttendees(state, id));
+  const attendeesOmitted = useSelector((state) => selectCalendarEventAttendeesOmitted(state, id));
   const providerCalendarId = useSelector((state) =>
     selectCalendarEventProviderCalendarId(state, id),
   );
@@ -224,6 +226,8 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
                   </Typography>
                 </Box>
               ))}
+
+              {attendeesOmitted && <Box component="li">...</Box>}
             </Box>
           </Box>
         )}
