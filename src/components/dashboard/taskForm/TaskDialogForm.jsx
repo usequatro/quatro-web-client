@@ -552,12 +552,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
       <DialogActions className={classes.dialogActionBar} disableSpacing>
         <Box flexGrow={1}>
-          <LabeledIconButton
-            label="Schedule"
-            color={scheduledStartTimestamp ? 'primary' : 'inherit'}
-            icon={<EventRoundedIcon />}
-            onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
-          />
           {(!scheduledStartTimestamp || scheduledStartTimestamp < Date.now()) && (
             <LabeledIconButton
               label="Snooze"
@@ -568,6 +562,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               onClick={() => setShowSnoozedUntilDialog(!showSnoozedUntilDialog)}
             />
           )}
+          <LabeledIconButton
+            label="Schedule"
+            color={scheduledStartTimestamp ? 'primary' : 'inherit'}
+            icon={<EventRoundedIcon />}
+            onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
+          />
           <LabeledIconButton
             label="Due Date"
             color={dueTimestamp ? 'primary' : 'inherit'}
