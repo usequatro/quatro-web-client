@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Slider from '@material-ui/core/Slider';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { withStyles } from '@material-ui/core/styles';
 
 const QuatroSlider = withStyles((theme) => ({
@@ -25,6 +27,7 @@ const QuatroSlider = withStyles((theme) => ({
 const SliderField = ({
   id,
   label,
+  tooltipTitle,
   'aria-label': ariaLabel,
   onChange,
   value,
@@ -32,21 +35,32 @@ const SliderField = ({
   marks,
 }) => (
   <>
-    {label && (
-      <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
-        {label}
+    <Box display="flex" justifyContent="space-between">
+      {label && (
+        <Typography id={id} color="textSecondary" gutterBottom>
+          {label}
+          {tooltipTitle && (
+            <Tooltip aria-hidden arrow title={tooltipTitle} placement="top">
+              <InfoOutlinedIcon
+                fontSize="small"
+                style={{ marginLeft: '0.3em', marginBottom: '-0.2em', fontSize: '1em' }}
+              />
+            </Tooltip>
+          )}
+        </Typography>
+      )}
+      <Typography
+        gutterBottom
+        color="primary"
+        variant="body1"
+        style={{ marginBottom: '1rem' }}
+        component="p"
+      >
+        {getValueText(value)}
       </Typography>
-    )}
-    <Typography
-      gutterBottom
-      color="primary"
-      variant="body1"
-      style={{ marginBottom: '1rem' }}
-      component="p"
-    >
-      {getValueText(value)}
-    </Typography>
-    <Box px={3}>
+    </Box>
+
+    <Box>
       <QuatroSlider
         aria-label={ariaLabel}
         marks={marks || true}
@@ -70,6 +84,7 @@ const SliderField = ({
 SliderField.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string,
+  tooltipTitle: PropTypes.string,
   'aria-label': PropTypes.string,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -79,6 +94,7 @@ SliderField.propTypes = {
 
 SliderField.defaultProps = {
   label: undefined,
+  tooltipTitle: undefined,
   'aria-label': undefined,
 };
 

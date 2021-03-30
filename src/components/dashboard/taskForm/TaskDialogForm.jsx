@@ -417,26 +417,29 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </Box>
         )}
 
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="impact-slider"
-            label="What impact will this task have?"
-            value={impact}
-            getValueText={(i) => IMPACT_LABELS[i] || '-'}
-            onChange={(value) => dispatch(setImpact(value))}
-            marks={IMPACT_SLIDER_MARKS}
-          />
-        </Box>
-
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="effort-slider"
-            label="How much time will this task require?"
-            value={effort}
-            getValueText={(e) => EFFORT_LABELS[e] || '-'}
-            onChange={(value) => dispatch(setEffort(value))}
-            marks={EFFORT_SLIDER_MARKS}
-          />
+        <Box px={3} pt={2} pb={4} display="flex">
+          <Box width="50%" mr={4}>
+            <SliderField
+              id="impact-slider"
+              label="Impact"
+              tooltipTitle="How much impact will this task have on your goals?"
+              value={impact}
+              getValueText={(i) => IMPACT_LABELS[i] || '-'}
+              onChange={(value) => dispatch(setImpact(value))}
+              marks={IMPACT_SLIDER_MARKS}
+            />
+          </Box>
+          <Box width="50%" ml={4}>
+            <SliderField
+              id="effort-slider"
+              label="Time"
+              tooltipTitle="How much time will this task require?"
+              value={effort}
+              getValueText={(e) => EFFORT_LABELS[e] || '-'}
+              onChange={(value) => dispatch(setEffort(value))}
+              marks={EFFORT_SLIDER_MARKS}
+            />
+          </Box>
         </Box>
 
         {(dueTimestamp || scheduledStartTimestamp || recurringConfig) && (
