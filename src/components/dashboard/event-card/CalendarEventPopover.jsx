@@ -16,6 +16,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import { makeStyles } from '@material-ui/core/styles';
 
+import GroupRoundedIcon from '@material-ui/icons/GroupRounded';
 import LaunchRoundedIcon from '@material-ui/icons/LaunchRounded';
 import NotesIcon from '@material-ui/icons/Notes';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
@@ -24,12 +25,16 @@ import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUnche
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import LockOpenRoundedIcon from '@material-ui/icons/LockOpenRounded';
 import LockRoundedIcon from '@material-ui/icons/LockRounded';
+import HelpOutlineRoundedIcon from '@material-ui/icons/HelpOutlineRounded';
+import CheckRoundedIcon from '@material-ui/icons/CheckRounded';
+import NotInterestedRoundedIcon from '@material-ui/icons/NotInterestedRounded';
 
 import {
   selectCalendarEventSummary,
   selectCalendarEventDescription,
   selectCalendarEventHtmlLink,
   selectCalendarEventLocation,
+  selectCalendarEventAttendees,
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
@@ -63,8 +68,35 @@ const useStyles = makeStyles((theme) => ({
   },
   eventPopoverDescription: {
     whiteSpace: 'pre-wrap',
+    // removing top padding on paragraphs in the description, when it comes as HTML
+    '& > p': {
+      marginTop: 0,
+    },
   },
 }));
+
+const AttendeeStatusIcon = ({ responseStatus }) => {
+  const commonProps = {
+    fontSize: 'small',
+    color: 'action',
+    style: { fontSize: '1em', marginLeft: '0.5em' },
+  };
+  switch (responseStatus) {
+    case 'accepted':
+      return <CheckRoundedIcon titleAccess="Accepted" {...commonProps} />;
+    case 'declined':
+      return <NotInterestedRoundedIcon titleAccess="Declined" {...commonProps} />;
+    case 'tentative':
+      return <HelpOutlineRoundedIcon titleAccess="Maybe" {...commonProps} />;
+    case 'needsAction':
+    default:
+      return null;
+  }
+};
+
+AttendeeStatusIcon.propTypes = {
+  responseStatus: PropTypes.oneOf(['accepted', 'declined', 'tentative', 'needsAction']).isRequired,
+};
 
 const InformativeIcon = ({ Icon, title }) => (
   <Box mr={2} display="flex">
@@ -87,6 +119,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
   const eventLocation = useSelector((state) => selectCalendarEventLocation(state, id));
+  const attendees = useSelector((state) => selectCalendarEventAttendees(state, id));
   const providerCalendarId = useSelector((state) =>
     selectCalendarEventProviderCalendarId(state, id),
   );
@@ -159,11 +192,39 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
             <Typography
               variant="body2"
+              component="div"
               className={classes.eventPopoverDescription}
               dangerouslySetInnerHTML={{
                 __html: parseHtml(description),
               }}
             />
+          </Box>
+        )}
+
+        {attendees && attendees.length > 0 && (
+          <Box mb={3} display="flex">
+            <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
+
+            <Box component="ul" m={0} pl={2}>
+              {attendees.map((attendee, index) => (
+                <Box component="li" key={attendee.id || attendee.email || index}>
+                  <Typography
+                    variant="body2"
+                    style={{ display: 'flex', alignItems: 'center' }}
+                    color={attendee.responseStatus === 'declined' ? 'textSecondary' : 'textPrimary'}
+                  >
+                    {attendee.displayName || attendee.email}{' '}
+                    {attendee.organizer && (
+                      <Typography component="span" variant="caption">
+                        {' '}
+                        &nbsp;(Organizer){' '}
+                      </Typography>
+                    )}
+                    <AttendeeStatusIcon responseStatus={attendee.responseStatus} />
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
           </Box>
         )}
 

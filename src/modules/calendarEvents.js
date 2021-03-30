@@ -39,6 +39,21 @@ const calendarEventSchema = Joi.object({
     timestamp: timestampSchema,
     timeZone: Joi.string(),
   }).default({}),
+  attendees: Joi.array()
+    .items(
+      Joi.object({
+        id: Joi.string(),
+        displayName: Joi.string(),
+        email: Joi.string(),
+        comment: Joi.string(),
+        responseStatus: Joi.valid('needsAction', 'declined', 'tentative', 'accepted'),
+        optional: Joi.bool(),
+        organizer: Joi.bool(),
+        resource: Joi.bool(),
+        self: Joi.bool(),
+      }),
+    )
+    .default([]),
   allDay: Joi.bool(),
   declined: Joi.bool(),
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
@@ -64,6 +79,8 @@ export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id]
 /** @returns {string|undefined} */
 export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
 export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
+export const selectCalendarEventAttendees = (state, id) =>
+  get(state[name].byId[id], 'attendees', []);
 export const selectCalendarEventCollisionCount = (state, id) =>
   get(state[name].byId[id], 'collisionCount');
 export const selectCalendarEventCollisionOrder = (state, id) =>
