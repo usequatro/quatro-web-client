@@ -6,6 +6,7 @@ import cond from 'lodash/cond';
 import addHours from 'date-fns/addHours';
 import addWeeks from 'date-fns/addWeeks';
 import startOfWeek from 'date-fns/startOfWeek';
+import startOfTomorrow from 'date-fns/startOfTomorrow';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import DialogActions from '@material-ui/core/DialogActions';
@@ -23,12 +24,11 @@ import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
-import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
+import SnoozeIcon from '@material-ui/icons/Snooze';
 
 import { createTask } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
@@ -38,6 +38,7 @@ import {
   selectImpact,
   selectEffort,
   selectScheduledStart,
+  selectSnoozedUntil,
   selectDue,
   selectBlockedBy,
   selectBlockedByTaskIds,
@@ -54,6 +55,7 @@ import {
   addFreeTextBlocker,
   removeBlockerByIndex,
   setTaskInForm,
+  setSnoozedUntil,
 } from '../../../modules/taskForm';
 import {
   createRecurringConfig,
@@ -80,6 +82,8 @@ import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
+import ScheduledIcon from '../../icons/ScheduledIcon';
+import BlockedIcon from '../../icons/BlockedIcon';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -125,8 +129,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
 const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
+const initialSnoozedUntilTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
 const getBlockerTitle = cond([
   [
@@ -176,6 +180,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const impact = useSelector(selectImpact);
   const effort = useSelector(selectEffort);
   const scheduledStartTimestamp = useSelector(selectScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
   const dueTimestamp = useSelector(selectDue);
   const blockedBy = useSelector(selectBlockedBy);
   const blockedByTaskIds = useSelector(selectBlockedByTaskIds);
@@ -192,6 +197,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
   const [showDescription, setShowDescription] = useState(Boolean(description));
   const [showDueDialog, setShowDueDialog] = useState(false);
+  const [showSnoozedUntilDialog, setShowSnoozedUntilDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -228,6 +234,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               description,
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
+              snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
               calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
@@ -240,6 +247,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             mixpanel.track(TASK_UPDATED, {
               hasBlockers: blockedBy.length > 0,
               hasScheduledStart: Boolean(scheduledStartTimestamp),
+              hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
               hasDueDate: Boolean(dueTimestamp),
               isRecurring: Boolean(recurringConfig),
               hasCalendarBlock,
@@ -259,6 +267,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               description: showDescription ? description : '',
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
+              snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
@@ -284,6 +293,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           mixpanel.track(TASK_CREATED, {
             hasBlockers: blockedBy.length > 0,
             hasScheduledStart: Boolean(scheduledStartTimestamp),
+            hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
             hasDueDate: Boolean(dueTimestamp),
             isRecurring: Boolean(recurringConfig),
             hasCalendarBlock,
@@ -442,15 +452,18 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </Box>
         </Box>
 
-        {(dueTimestamp || scheduledStartTimestamp || recurringConfig) && (
+        {(dueTimestamp ||
+          scheduledStartTimestamp ||
+          (snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()) ||
+          recurringConfig) && (
           <Box px={3} pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
             {scheduledStartTimestamp && (
               <Button
                 onClick={() => setShowScheduledStartDialog(true)}
-                startIcon={<EventRoundedIcon />}
+                startIcon={<ScheduledIcon />}
                 className={classes.settingButton}
               >
-                {'Scheduled Date: '}
+                {'Scheduled date: '}
                 {formatDateTime(scheduledStartTimestamp)}
 
                 {recurringConfig && (
@@ -477,13 +490,23 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 )}
               </Button>
             )}
+            {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() && (
+              <Button
+                onClick={() => setShowSnoozedUntilDialog(true)}
+                startIcon={<SnoozeIcon />}
+                className={classes.settingButton}
+              >
+                {'Snoozed until: '}
+                {formatDateTime(snoozedUntilTimestamp)}
+              </Button>
+            )}
             {dueTimestamp && (
               <Button
                 onClick={() => setShowDueDialog(true)}
                 startIcon={<AccessAlarmRoundedIcon />}
                 className={classes.settingButton}
               >
-                {'Due Date: '}
+                {'Due date: '}
                 {formatDateTime(dueTimestamp)}
               </Button>
             )}
@@ -498,7 +521,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 onClick={() => setShowBlockersDialog(!showBlockersDialog)}
                 className={classes.blockersIconButton}
               >
-                <BlockRoundedIcon fontSize="small" />
+                <BlockedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
@@ -532,22 +555,32 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
       <DialogActions className={classes.dialogActionBar} disableSpacing>
         <Box flexGrow={1}>
+          {(!scheduledStartTimestamp || scheduledStartTimestamp < Date.now()) && (
+            <LabeledIconButton
+              label="Snooze"
+              color={
+                snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() ? 'primary' : 'inherit'
+              }
+              icon={<SnoozeIcon />}
+              onClick={() => setShowSnoozedUntilDialog(!showSnoozedUntilDialog)}
+            />
+          )}
           <LabeledIconButton
             label="Schedule"
-            color="inherit"
-            icon={<EventRoundedIcon />}
+            color={scheduledStartTimestamp ? 'primary' : 'inherit'}
+            icon={<ScheduledIcon />}
             onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
           />
           <LabeledIconButton
             label="Due Date"
-            color="inherit"
+            color={dueTimestamp ? 'primary' : 'inherit'}
             icon={<AccessAlarmRoundedIcon />}
             onClick={() => setShowDueDialog(!showDueDialog)}
           />
           <LabeledIconButton
             label="Blockers"
-            color="inherit"
-            icon={<BlockRoundedIcon />}
+            color={blockedBy.length > 0 ? 'primary' : 'inherit'}
+            icon={<BlockedIcon />}
             onClick={() => setShowBlockersDialog(!showBlockersDialog)}
           />
         </Box>
@@ -597,13 +630,34 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       />
 
       <DateTimeDialog
-        label="Due date"
+        label={
+          <>
+            <AccessAlarmRoundedIcon titleAccess="Due date icon" />
+            &nbsp;Due date
+          </>
+        }
         id="due-dialog"
         open={showDueDialog}
         onClose={() => setShowDueDialog(false)}
         onChangeCommitted={(value) => dispatch(setDue(value))}
         timestamp={dueTimestamp}
         initialTimestamp={initialDueDateTimestamp}
+      />
+
+      <DateTimeDialog
+        label={
+          <>
+            <SnoozeIcon titleAccess="Snooze icon" />
+            &nbsp;Snooze
+          </>
+        }
+        id="snooze-dialog"
+        open={showSnoozedUntilDialog}
+        onClose={() => setShowSnoozedUntilDialog(false)}
+        onChangeCommitted={(value) => dispatch(setSnoozedUntil(value > Date.now() ? value : null))}
+        timestamp={snoozedUntilTimestamp > Date.now() ? snoozedUntilTimestamp : null}
+        initialTimestamp={initialSnoozedUntilTimestamp}
+        datePickerProps={{ disablePast: true }}
       />
 
       <BlockerSelectionDialog

@@ -41,6 +41,8 @@ import {
   setCalendarBlockEnd,
   setRecurringConfig,
   selectRecurringConfig,
+  selectSnoozedUntil,
+  setSnoozedUntil,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
@@ -52,6 +54,7 @@ import CalendarBlockEditor, {
 import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
+import ScheduledIcon from '../../icons/ScheduledIcon';
 
 const useStyles = makeStyles((theme) => ({
   switchHelperText: {
@@ -68,6 +71,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
   // Current taskForm state
   const timestamp = useSelector(selectScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
   const blocksCalendar = Boolean(calendarBlockStart);
@@ -154,6 +158,10 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     if (!currentTimestamp && recurringConfig) {
       dispatch(setRecurringConfig(null));
     }
+    // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
+    if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
+      dispatch(setSnoozedUntil(null));
+    }
 
     onClose();
   };
@@ -200,7 +208,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
         TypographyProps={{ id: 'scheduled-start-dialog', variant: 'h6' }}
         title={
           <>
-            Scheduled Date
+            <ScheduledIcon />
+            &nbsp;Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
             <Tooltip aria-hidden arrow title={tooltipTitle}>
               <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />

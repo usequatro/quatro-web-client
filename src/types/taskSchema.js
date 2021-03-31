@@ -15,6 +15,7 @@ export const taskSchema = Joi.object({
   // these can be empty
   due: Joi.number().allow(null).default(null),
   scheduledStart: Joi.number().allow(null).default(null),
+  snoozedUntil: Joi.number().allow(null).default(null),
   description: Joi.string().allow('').default(''),
 
   // these can be empty and we add defaults

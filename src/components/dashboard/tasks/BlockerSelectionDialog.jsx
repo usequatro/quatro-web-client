@@ -15,6 +15,7 @@ import TextField from '@material-ui/core/TextField';
 import SearchRoundedIcon from '@material-ui/icons/SearchRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
+import BlockedIcon from '../../icons/BlockedIcon';
 import { selectAllTasksOrderedAlphabetically } from '../../../modules/tasks';
 import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
@@ -88,7 +89,12 @@ const BlockerSelectionDialog = ({
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'task-selection-dialog', variant: 'h6' }}
-        title="Blockers"
+        title={
+          <>
+            <BlockedIcon />
+            &nbsp;Blockers
+          </>
+        }
         onClose={onClose}
       />
 

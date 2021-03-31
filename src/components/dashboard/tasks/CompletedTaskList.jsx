@@ -183,6 +183,7 @@ const CompletedTaskList = () => {
           title={task.title}
           description={task.description}
           scheduledStart={task.scheduledStart}
+          snoozedUntil={null}
           due={task.due}
           effort={task.effort}
           calendarBlockDuration={
