@@ -130,6 +130,31 @@ const formatCalendarAPIFormat = (item) => {
       timestamp: endTimestamp,
       timeZone: item.end.timeZone,
     },
+    attendees: [...(item.attendees || [])].sort((a, b) => {
+      if (a.organizer) {
+        return -1;
+      }
+      if (b.organizer) {
+        return 1;
+      }
+      if (a.self) {
+        return -1;
+      }
+      if (b.self) {
+        return 1;
+      }
+      const aValue = (a.displayName || a.email || '').toLowerCase();
+      const bValue = (b.displayName || b.email || '').toLowerCase();
+
+      if (aValue > bValue) {
+        return 1;
+      }
+      if (aValue < bValue) {
+        return -1;
+      }
+      return 0;
+    }),
+    attendeesOmitted: item.attendeesOmitted,
     allDay,
     declined: isItemDeclined(item),
     taskId: get(item, 'extendedProperties.private.taskId', null),
@@ -156,7 +181,7 @@ export const gapiListCalendarEvents = async (
     method: 'GET',
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
-      maxAttendees: 1, // only return the current user, not the others (not needed)
+      maxAttendees: 10,
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
