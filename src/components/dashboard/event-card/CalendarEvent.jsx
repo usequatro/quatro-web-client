@@ -11,6 +11,7 @@ import {
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
+  selectCalendarEventEventType,
   selectCalendarEventResponseStatus,
   selectCalendarEventCollisionCount,
   selectCalendarEventCollisionOrder,
@@ -35,6 +36,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const startTimestamp = useSelector((state) => selectCalendarEventStartTimestamp(state, id));
   const endTimestamp = useSelector((state) => selectCalendarEventEndTimestamp(state, id));
   const allDay = useSelector((state) => selectCalendarEventAllDay(state, id));
+  const eventType = useSelector((state) => selectCalendarEventEventType(state, id));
   const responseStatus = useSelector((state) => selectCalendarEventResponseStatus(state, id));
   const collisionCount = useSelector((state) => selectCalendarEventCollisionCount(state, id));
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
@@ -96,6 +98,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
       startTimestamp={startTimestamp}
       endTimestamp={endTimestamp}
       allDay={allDay}
+      eventType={eventType}
       responseStatus={responseStatus}
       taskId={taskId}
       showCompleteButton={interactive && Boolean(taskId)}

@@ -6,7 +6,6 @@ import cond from 'lodash/cond';
 
 import format from 'date-fns/format';
 import isPast from 'date-fns/isPast';
-import isToday from 'date-fns/isToday';
 import isValid from 'date-fns/isValid';
 
 import Typography from '@material-ui/core/Typography';
@@ -19,6 +18,7 @@ import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
 import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
 import * as RESPONSE_STATUS from '../../../constants/responseStatus';
+import * as EVENT_TYPES from '../../../constants/eventTypes';
 
 const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, needsAction, smallCard }) => ({
@@ -40,6 +40,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundImage:
       'linear-gradient(45deg,transparent,transparent 40%,rgba(0,0,0,0.2) 40%,rgba(0,0,0,0.2) 50%,transparent 50%,transparent 90%,rgba(0,0,0,0.2) 90%,rgba(0,0,0,0.2))',
     backgroundSize: '12px 12px',
+  },
+  pastEvent: {
+    backgroundImage: 'linear-gradient(rgba(255,255,255,0.35), rgba(255,255,255,0.35))',
+  },
+  outOfOfficeEvent: {
+    backgroundImage: 'linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0.75))',
   },
   eventTitleRow: {
     lineHeight: 'inherit',
@@ -73,6 +79,7 @@ const EventCardView = forwardRef(
       startTimestamp,
       endTimestamp,
       allDay,
+      eventType,
       responseStatus,
       taskId,
       completed,
@@ -93,6 +100,7 @@ const EventCardView = forwardRef(
     const classes = useStyles({
       color,
       needsAction: responseStatus === RESPONSE_STATUS.NEEDS_ACTION,
+      eventType,
       smallCard,
     });
 
@@ -106,7 +114,6 @@ const EventCardView = forwardRef(
           opacity: cond([
             [() => isBeingRedragged, () => 0.1],
             [() => synching, () => 0.7],
-            [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
             [() => true, () => 1],
           ])(),
           // eslint-disable-next-line no-nested-ternary
@@ -115,6 +122,8 @@ const EventCardView = forwardRef(
         className={[
           classes.eventCard,
           responseStatus === RESPONSE_STATUS.TENTATIVE ? classes.tentativeEvent : '',
+          eventType === EVENT_TYPES.OUT_OF_OFFICE ? classes.outOfOfficeEvent : '',
+          isPast(endTimestamp) ? classes.pastEvent : '',
           className,
         ]
           .filter(Boolean)
@@ -191,6 +200,7 @@ EventCardView.propTypes = {
   startTimestamp: PropTypes.number.isRequired,
   endTimestamp: PropTypes.number.isRequired,
   allDay: PropTypes.bool.isRequired,
+  eventType: PropTypes.oneOf([EVENT_TYPES.OUT_OF_OFFICE, EVENT_TYPES.DEFAULT]),
   responseStatus: PropTypes.oneOf([
     RESPONSE_STATUS.ACCEPTED,
     RESPONSE_STATUS.DECLINED,
@@ -213,6 +223,7 @@ EventCardView.defaultProps = {
   scrollAnchorRef: undefined,
   className: undefined,
   responseStatus: RESPONSE_STATUS.ACCEPTED,
+  eventType: EVENT_TYPES.DEFAULT,
   taskId: null,
 };
 

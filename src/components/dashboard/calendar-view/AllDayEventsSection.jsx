@@ -1,7 +1,5 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import endOfDay from 'date-fns/endOfDay';
-import isPast from 'date-fns/isPast';
 import { useSelector } from 'react-redux';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
@@ -35,8 +33,6 @@ const AllDayEventsSection = ({ timestamp }) => {
     selectAllDayCalendarEventIds(state, timestamp),
   );
 
-  const past = useMemo(() => isPast(endOfDay(timestamp)), [timestamp]);
-
   if (allDayCalendarEventIds.length === 0) {
     return null;
   }
@@ -44,7 +40,7 @@ const AllDayEventsSection = ({ timestamp }) => {
   return (
     <Box className={classes.allDayContainer}>
       <TickLabel className={classes.label}>All day</TickLabel>
-      <Box className={classes.allDayListContainer} style={{ opacity: past ? 0.7 : 1 }}>
+      <Box className={classes.allDayListContainer}>
         {allDayCalendarEventIds.map((calendarEventId, index) => (
           <CalendarEvent
             scrollAnchorRef={undefined}

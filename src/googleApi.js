@@ -152,6 +152,7 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
     allDay,
     responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),
+    eventType: item.eventType,
     visibility: item.visibility,
   };
   return event;

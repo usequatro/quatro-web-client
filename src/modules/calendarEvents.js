@@ -18,6 +18,7 @@ import * as RESPONSE_STATUS from '../constants/responseStatus';
 import { selectCalendarProviderCalendarId, selectCalendarIds } from './calendars';
 
 import { DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL } from '../constants/eventVisibilities';
+import * as EVENT_TYPES from '../constants/eventTypes';
 
 const name = 'calendarEvents';
 
@@ -64,6 +65,7 @@ const calendarEventSchema = Joi.object({
   allDay: Joi.bool(),
   declined: Joi.bool(),
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
+  eventType: Joi.valid(EVENT_TYPES.DEFAULT, EVENT_TYPES.OUT_OF_OFFICE),
   taskId: Joi.string().allow(null),
 });
 
@@ -85,6 +87,8 @@ export const selectCalendarEventEndTimestamp = (state, id) =>
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
 /** @returns {string|undefined} */
 export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
+/** @returns {string|undefined} */
+export const selectCalendarEventEventType = (state, id) => get(state[name].byId[id], 'eventType');
 export const selectCalendarEventResponseStatus = (state, id) =>
   get(state[name].byId[id], 'responseStatus');
 export const selectCalendarEventAttendees = (state, id) =>
