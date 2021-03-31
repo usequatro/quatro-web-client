@@ -140,12 +140,23 @@ export const selectCalendarEventsTimeIsFetching = (state, timestamp) => {
 export const selectCalendarEventIdsForDate = (state, timestamp) => {
   const start = startOfDay(timestamp).getTime();
   const end = endOfDay(timestamp).getTime();
-  return state[name].allIds.filter(
-    (eventId) =>
-      !selectCalendarEventAllDay(state, eventId) &&
-      selectCalendarEventStartTimestamp(state, eventId) >= start &&
-      selectCalendarEventEndTimestamp(state, eventId) <= end,
-  );
+  return state[name].allIds.filter((eventId) => {
+    const allDay = selectCalendarEventAllDay(state, eventId);
+    if (allDay) {
+      return false;
+    }
+    const eventStart = selectCalendarEventStartTimestamp(state, eventId);
+    const eventEnd = selectCalendarEventEndTimestamp(state, eventId);
+
+    return (
+      // events starting today
+      (eventStart >= start && eventStart < end) ||
+      // events ending today
+      (eventEnd <= end && eventEnd > start) ||
+      // events starting before today and ending after today
+      (eventStart <= start && eventEnd >= end)
+    );
+  });
 };
 
 /** @return {Array<string>} */

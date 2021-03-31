@@ -1,12 +1,7 @@
 import formatISO from 'date-fns/formatISO';
 import parseISO from 'date-fns/parseISO';
 import parse from 'date-fns/parse';
-import isEqual from 'date-fns/isEqual';
-import isBefore from 'date-fns/isBefore';
-import isAfter from 'date-fns/isAfter';
 import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
-import isValid from 'date-fns/isValid';
 import get from 'lodash/get';
 
 import firebase from './firebase';
@@ -108,17 +103,8 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
 
-  const startOfDayDate = startOfDay(startTimestamp);
-  const endOfDayDate = endOfDay(endTimestamp);
-
   const allDay =
-    (ALL_DAY_DATE_REGEXP.test(item.start.date) && ALL_DAY_DATE_REGEXP.test(item.end.date)) ||
-    Boolean(
-      isValid(startTimestamp) &&
-        isValid(endTimestamp) &&
-        (isEqual(startTimestamp, startOfDayDate) || isBefore(startTimestamp, startOfDayDate)) &&
-        (isEqual(endTimestamp, endOfDayDate) || isAfter(endTimestamp, endOfDayDate)),
-    );
+    ALL_DAY_DATE_REGEXP.test(item.start.date) && ALL_DAY_DATE_REGEXP.test(item.end.date);
 
   const event = {
     id: `${providerCalendarId.replace(/[^a-z0-9]/gi, '')}-${item.id}`,

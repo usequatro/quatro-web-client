@@ -78,7 +78,10 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
     setCalendarDetailsOpen(false);
   }, []);
 
-  const cardHeight = allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick));
+  const maxCardHeight = tickHeight * ((24 * 60) / minutesForOneTick); // 24h event
+  const cardHeight = allDay
+    ? 40
+    : Math.min(Math.floor(tickHeight * (durationInMinutes / minutesForOneTick)), maxCardHeight);
 
   const isDraggable = Boolean(interactive && taskId);
 
