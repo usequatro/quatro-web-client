@@ -141,6 +141,7 @@ const CalendarEvent = ({
 
   return isDraggable ? (
     <>
+      {/* @todo: the index here should increase only for the isDraggable cards */}
       <Draggable draggableId={`draggable-calendar-${taskId}`} index={index}>
         {(draggableProvided, draggableSnapshot) => (
           <CardPositionedBoundaries
