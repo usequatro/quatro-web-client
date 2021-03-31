@@ -1,4 +1,4 @@
-# Quatro Web Client App
+# Quatro Web Client App.
 
 ![CI](https://github.com/usequatro/quatro-web-client/workflows/CI/badge.svg)
 
