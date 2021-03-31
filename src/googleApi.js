@@ -87,9 +87,10 @@ const parseTimestamp = (dateObject) => {
 
 const ALL_DAY_DATE_REGEXP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/; // all day date yyyy-MM-dd
 
+/** @returns {string|undefined} */
 const getSelfResponseStatus = (item) => {
   const selfAttendee = (item.attendees || []).find((attendee) => attendee.self);
-  return selfAttendee && selfAttendee.responseStatus;
+  return selfAttendee && selfAttendee.responseStatus ? selfAttendee.responseStatus : undefined;
 };
 
 const formatCalendarAPIFormat = (item, providerCalendarId) => {
