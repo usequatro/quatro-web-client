@@ -35,11 +35,14 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
     alignItems: 'flex-start',
   }),
-  eventName: {
-    fontSize: ({ smallCard }) =>
-      smallCard ? theme.typography.caption.fontSize : theme.typography.body2.fontSize,
+  eventTitleRow: {
     lineHeight: 'inherit',
     flexGrow: 1,
+  },
+  eventTitle: {
+    fontSize: ({ smallCard }) =>
+      smallCard ? theme.typography.caption.fontSize : theme.typography.body2.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
   },
   eventDate: {
     fontSize: `${parseFloat(theme.typography.body2.fontSize) * 0.8}rem`,
@@ -129,14 +132,9 @@ const EventCardView = forwardRef(
             className={classes.scrollAnchor}
           />
         )}
-        {synching && (
-          <Box mr={1}>
-            <CircularProgress thickness={4} size="1.25rem" color="inherit" />
-          </Box>
-        )}
 
-        <Typography component="p" className={classes.eventName}>
-          {summary || '(No title)'}
+        <Typography component="p" className={classes.eventTitleRow}>
+          <span className={classes.eventTitle}>{summary || '(No title)'}</span>
           {!allDay && (
             <span className={classes.eventDate}>
               {', '}
@@ -147,13 +145,19 @@ const EventCardView = forwardRef(
           )}
         </Typography>
 
+        {synching && (
+          <Box ml={1}>
+            <CircularProgress thickness={6} size={smallCard ? '1em' : '1.5em'} color="inherit" />
+          </Box>
+        )}
+
         {taskId && showCompleteButton && !synching && (
           <CompleteButton
             taskId={taskId}
             completed={completed}
             onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
-            fontSize="default"
+            fontSize={smallCard ? 'small' : 'default'}
             size="small"
             className={classes.completeButton}
           />
