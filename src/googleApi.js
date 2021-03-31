@@ -18,6 +18,7 @@ import {
   CALENDAR_LIST_READ,
   CALENDAR_EVENTS_MANAGE,
 } from './constants/googleApiScopes';
+import { DECLINED } from './constants/responseStatus';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -91,12 +92,19 @@ const parseTimestamp = (dateObject) => {
 
 const ALL_DAY_DATE_REGEXP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/; // all day date yyyy-MM-dd
 
-const isItemDeclined = (item) => {
-  const seltAttendee = (item.attendees || []).find((attendee) => attendee.self);
-  return seltAttendee && seltAttendee.responseStatus === 'declined';
+const getSelfResponseStatus = (item) => {
+  const selfAttendee = (item.attendees || []).find((attendee) => attendee.self);
+  return selfAttendee && selfAttendee.responseStatus;
 };
 
 const formatCalendarAPIFormat = (item, providerCalendarId) => {
+  const responseStatus = getSelfResponseStatus(item);
+
+  // We intentionally skip declined invites
+  if (responseStatus === DECLINED) {
+    return null;
+  }
+
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
 
@@ -156,7 +164,7 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
     }),
     attendeesOmitted: item.attendeesOmitted,
     allDay,
-    declined: isItemDeclined(item),
+    responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),
     visibility: item.visibility,
   };
@@ -191,7 +199,9 @@ export const gapiListCalendarEvents = async (
     },
   }).then((response) => {
     debugConsole.log('Google API', providerCalendarId, response.result.items);
-    return response.result.items.map((item) => formatCalendarAPIFormat(item, providerCalendarId));
+    return response.result.items
+      .map((item) => formatCalendarAPIFormat(item, providerCalendarId))
+      .filter(Boolean);
   });
 
 /**

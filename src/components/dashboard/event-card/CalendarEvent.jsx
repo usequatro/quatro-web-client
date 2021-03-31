@@ -11,7 +11,7 @@ import {
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
-  selectCalendarEventDeclined,
+  selectCalendarEventResponseStatus,
   selectCalendarEventCollisionCount,
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
@@ -35,7 +35,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const startTimestamp = useSelector((state) => selectCalendarEventStartTimestamp(state, id));
   const endTimestamp = useSelector((state) => selectCalendarEventEndTimestamp(state, id));
   const allDay = useSelector((state) => selectCalendarEventAllDay(state, id));
-  const declined = useSelector((state) => selectCalendarEventDeclined(state, id));
+  const responseStatus = useSelector((state) => selectCalendarEventResponseStatus(state, id));
   const collisionCount = useSelector((state) => selectCalendarEventCollisionCount(state, id));
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
@@ -93,7 +93,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
       startTimestamp={startTimestamp}
       endTimestamp={endTimestamp}
       allDay={allDay}
-      declined={Boolean(declined)}
+      responseStatus={responseStatus}
       taskId={taskId}
       showCompleteButton={interactive && Boolean(taskId)}
       selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}

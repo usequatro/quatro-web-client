@@ -11,6 +11,7 @@ import endOfDay from 'date-fns/endOfDay';
 import { gapiListCalendarEvents } from '../googleApi';
 import { timestampSchema } from '../utils/validators';
 import updateArray from '../utils/updateArray';
+import * as RESPONSE_STATUS from '../constants/responseStatus';
 
 // Allow dependency cycle because it's just for selectors
 // eslint-disable-next-line import/no-cycle
@@ -46,7 +47,12 @@ const calendarEventSchema = Joi.object({
         displayName: Joi.string(),
         email: Joi.string(),
         comment: Joi.string(),
-        responseStatus: Joi.valid('needsAction', 'declined', 'tentative', 'accepted'),
+        responseStatus: Joi.valid(
+          RESPONSE_STATUS.ACCEPTED,
+          RESPONSE_STATUS.DECLINED,
+          RESPONSE_STATUS.TENTATIVE,
+          RESPONSE_STATUS.NEEDS_ACTION,
+        ),
         optional: Joi.bool(),
         organizer: Joi.bool(),
         resource: Joi.bool(),
@@ -79,7 +85,8 @@ export const selectCalendarEventEndTimestamp = (state, id) =>
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
 /** @returns {string|undefined} */
 export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
-export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
+export const selectCalendarEventResponseStatus = (state, id) =>
+  get(state[name].byId[id], 'responseStatus');
 export const selectCalendarEventAttendees = (state, id) =>
   get(state[name].byId[id], 'attendees', []);
 export const selectCalendarEventAttendeesOmitted = (state, id) =>
@@ -159,7 +166,6 @@ export const selectCalendarEventIdsForNotifications = (state, calendarId, { earl
     (eventId) =>
       selectCalendarEventCalendarId(state, eventId) === calendarId &&
       !selectCalendarEventAllDay(state, eventId) &&
-      !selectCalendarEventDeclined(state, eventId) &&
       !selectCalendarEventPlaceholderUntilCreated(state, eventId) &&
       selectCalendarEventStartTimestamp(state, eventId) >= earliest &&
       selectCalendarEventStartTimestamp(state, eventId) <= latest,

@@ -555,7 +555,6 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mi
         timestamp: calendarBlockEnd,
       },
       allDay: false,
-      declined: false,
       taskId: id,
     }),
   );
