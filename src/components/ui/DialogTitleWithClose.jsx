@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) => ({
   },
   extraButtonsContainer: {
     display: 'flex',
+    alignItems: 'center',
     [theme.breakpoints.up('md')]: {
       marginRight: theme.spacing(2),
     },
@@ -36,7 +37,7 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
       color="transparent"
       elevation={0}
     >
-      {title && (
+      {title ? (
         <Typography
           variant="h5"
           component="h2"
@@ -45,6 +46,8 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
         >
           {title}
         </Typography>
+      ) : (
+        <Box flexGrow={1} />
       )}
       {extraButtons && <Box className={classes.extraButtonsContainer}>{extraButtons}</Box>}
       <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
