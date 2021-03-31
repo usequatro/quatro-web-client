@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 
 import format from 'date-fns/format';
-import isValid from 'date-fns/isValid';
+import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
 
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
@@ -151,6 +151,9 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
     }
   }, [previouslyTaskExists, taskExists, onClose]);
 
+  const timeFormat =
+    differenceInCalendarDays(endTimestamp, startTimestamp) < 1 ? 'h:mm a' : 'PP - h:mm a';
+
   return (
     <Popover
       open={open}
@@ -173,9 +176,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
           <Typography variant="body2">
             {allDay
               ? 'All Day'
-              : `${isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''} - ${
-                  isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''
-                }`}
+              : `${format(startTimestamp, timeFormat)} - ${format(endTimestamp, timeFormat)}`}
           </Typography>
         </Box>
 
