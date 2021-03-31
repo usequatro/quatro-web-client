@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cond from 'lodash/cond';
-import addHours from 'date-fns/addHours';
-import addWeeks from 'date-fns/addWeeks';
-import startOfWeek from 'date-fns/startOfWeek';
-import startOfTomorrow from 'date-fns/startOfTomorrow';
+
+import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import DialogActions from '@material-ui/core/DialogActions';
@@ -53,12 +51,10 @@ import {
   setDescription,
   setImpact,
   setEffort,
-  setDue,
   addTaskBlocker,
   addFreeTextBlocker,
   removeBlockerByIndex,
   setTaskInForm,
-  setSnoozedUntil,
 } from '../../../modules/taskForm';
 import {
   createRecurringConfig,
@@ -67,11 +63,12 @@ import {
   selectRecurringConfigIdByMostRecentTaskId,
 } from '../../../modules/recurringConfigs';
 import { selectCalendarProviderCalendarId } from '../../../modules/calendars';
-// import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
-import DateTimeDialog from '../../ui/DateTimeDialog';
+import DueDateDialog from './DueDateDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
+import SnoozeCustomDialog from './SnoozeCustomDialog';
+import SnoozeMenu from './SnoozeMenu';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
 import { useNotification } from '../../Notification';
@@ -87,6 +84,7 @@ import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
 import ScheduledIcon from '../../icons/ScheduledIcon';
 import BlockedIcon from '../../icons/BlockedIcon';
+import useMobileViewportSize from '../../hooks/useMobileViewportSize';
 
 const useStyles = makeStyles((theme) => ({
   dialogTitle: {
@@ -101,14 +99,11 @@ const useStyles = makeStyles((theme) => ({
   dialogActionBar: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-    paddingTop: theme.spacing(6),
-    paddingBottom: theme.spacing(2),
+    alignItems: 'center',
   },
   dialogContent: {
     padding: 0,
+    paddingBottom: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       maxWidth: '100%',
@@ -150,9 +145,6 @@ const useStyles = makeStyles((theme) => ({
     right: theme.spacing(2),
   },
 }));
-
-const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
-const initialSnoozedUntilTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
 const getBlockerTitle = cond([
   [
@@ -217,12 +209,17 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       : undefined,
   );
 
+  const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showSnoozedUntilDialog, setShowSnoozedUntilDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const snoozeButtonRef = useRef();
+
+  const mobile = useMobileViewportSize();
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -421,6 +418,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               fullWidth
               multiline
               rows={1}
+              rowsMax={10}
               value={description}
               InputProps={{
                 startAdornment: (
@@ -472,7 +470,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             onClick={() => setShowScheduledStartDialog(true)}
             startIcon={<ScheduledIcon />}
             className={classes.settingButton}
-            color={scheduledStartTimestamp ? 'primary' : 'default'}
+            color={
+              scheduledStartTimestamp && scheduledStartTimestamp > Date.now()
+                ? 'primary'
+                : 'default'
+            }
           >
             {scheduledStartTimestamp
               ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
@@ -500,7 +502,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
           <Button
             onClick={() => setShowDueDialog(true)}
-            startIcon={<AccessAlarmRoundedIcon />}
+            startIcon={
+              <AccessAlarmRoundedIcon
+                color={dueTimestamp && isPast(dueTimestamp) ? 'error' : 'inherit'}
+              />
+            }
             className={classes.settingButton}
             color={dueTimestamp ? 'primary' : 'default'}
           >
@@ -572,41 +578,75 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   buttonText="Delete"
                 />
               )}
-              renderContent={(onClick) => (
-                <Button
-                  variant="outlined"
-                  color="default"
-                  startIcon={<DeleteOutlineRoundedIcon />}
-                  onClick={onClick}
-                >
-                  Delete
-                </Button>
-              )}
+              renderContent={(onClick) =>
+                mobile ? (
+                  <IconButton
+                    edge="start"
+                    size="small"
+                    color="inherit"
+                    onClick={onClick}
+                    aria-label="delete"
+                  >
+                    <DeleteOutlineRoundedIcon />
+                  </IconButton>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    color="default"
+                    startIcon={<DeleteOutlineRoundedIcon />}
+                    onClick={onClick}
+                  >
+                    Delete
+                  </Button>
+                )
+              }
             />
           )}
         </Box>
 
-        <Box ml={2} display="flex" alignItems="flex-start">
-          <Button
-            variant="outlined"
-            color={
-              snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() ? 'primary' : 'default'
-            }
-            style={{ marginRight: '1em' }}
-            startIcon={<SnoozeIcon />}
-            onClick={() => setShowSnoozedUntilDialog(true)}
-          >
-            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span>
-                {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() ? 'Snoozed' : 'Snooze'}
-              </span>
-              {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() && (
-                <Typography component="span" variant="caption">
-                  {formatDateTime(snoozedUntilTimestamp)}
-                </Typography>
+        <Box ml={2} display="flex" alignItems="center">
+          {!(scheduledStartTimestamp && scheduledStartTimestamp > Date.now()) && (
+            <Box>
+              {mobile ? (
+                <IconButton
+                  edge="start"
+                  size="small"
+                  color={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  onClick={() => setSnoozeMenuOpen(true)}
+                  aria-label={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'Snoozed'
+                      : 'Snooze'
+                  }
+                  ref={snoozeButtonRef}
+                  style={{ marginRight: '1em' }}
+                >
+                  <SnoozeIcon />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'primary'
+                      : 'default'
+                  }
+                  style={{ marginRight: '1em' }}
+                  startIcon={<SnoozeIcon />}
+                  ref={snoozeButtonRef}
+                  onClick={() => setSnoozeMenuOpen(true)}
+                >
+                  {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                    ? 'Snoozed'
+                    : 'Snooze'}
+                </Button>
               )}
-            </span>
-          </Button>
+            </Box>
+          )}
 
           <Button
             variant="outlined"
@@ -624,76 +664,15 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             {ctaText}
           </Button>
         </Box>
-
-        {/* <Box flexGrow={1}>
-          {(!scheduledStartTimestamp || scheduledStartTimestamp < Date.now()) && (
-            <LabeledIconButton
-              label="Snooze"
-              color={
-                snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() ? 'primary' : 'inherit'
-              }
-              icon={<SnoozeIcon />}
-              onClick={() => setShowSnoozedUntilDialog(!showSnoozedUntilDialog)}
-            />
-          )}
-          <LabeledIconButton
-            label="Schedule"
-            color={scheduledStartTimestamp ? 'primary' : 'inherit'}
-            icon={<ScheduledIcon />}
-            onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
-          />
-          <LabeledIconButton
-            label="Due Date"
-            color={dueTimestamp ? 'primary' : 'inherit'}
-            icon={<AccessAlarmRoundedIcon />}
-            onClick={() => setShowDueDialog(!showDueDialog)}
-          />
-          <LabeledIconButton
-            label="Blockers"
-            color={blockedBy.length > 0 ? 'primary' : 'inherit'}
-            icon={<BlockedIcon />}
-            onClick={() => setShowBlockersDialog(!showBlockersDialog)}
-          />
-        </Box>
-
-        {editTaskDialogId && (
-          <Confirm
-            onConfirm={() => {
-              onClose();
-              dispatch(deleteTask(editTaskDialogId));
-              notifyInfo('Task Deleted');
-            }}
-            renderDialog={(open, onConfirm, onConfirmationClose) => (
-              <ConfirmationDialog
-                open={open}
-                onClose={onConfirmationClose}
-                onConfirm={onConfirm}
-                id="confirm-delete-task"
-                title="Delete task"
-                body={[
-                  'Are you sure you want to delete this task?',
-                  recurringConfig && 'The task will stop repeating when deleted',
-                ].filter(Boolean)}
-                buttonText="Delete"
-              />
-            )}
-            renderContent={(onClick) => (
-              <LabeledIconButton
-                label="Delete"
-                color="inherit"
-                icon={<DeleteOutlineRoundedIcon />}
-                onClick={onClick}
-              />
-            )}
-          />
-        )}
-
-        {submitting ? (
-          <CircularProgress thickness={4} size="2rem" className={classes.submitLoader} />
-        ) : (
-          <LabeledIconButton type="submit" label={ctaText} icon={<SendRoundedIcon />} />
-        )} */}
       </DialogActions>
+
+      {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() && (
+        <DialogActions style={{ paddingTop: 0 }}>
+          <Typography variant="caption">
+            Snoozed until: {formatDateTime(snoozedUntilTimestamp)}
+          </Typography>
+        </DialogActions>
+      )}
 
       <Box className={classes.closeButtonContainer}>
         <IconButton edge="end" size="small" color="inherit" onClick={onClose} aria-label="close">
@@ -706,35 +685,18 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         onClose={() => setShowScheduledStartDialog(false)}
       />
 
-      <DateTimeDialog
-        label={
-          <>
-            <AccessAlarmRoundedIcon titleAccess="Due date icon" />
-            &nbsp;Due date
-          </>
-        }
-        id="due-dialog"
-        open={showDueDialog}
-        onClose={() => setShowDueDialog(false)}
-        onChangeCommitted={(value) => dispatch(setDue(value))}
-        timestamp={dueTimestamp}
-        initialTimestamp={initialDueDateTimestamp}
+      <SnoozeMenu
+        open={snoozeMenuOpen}
+        onClose={() => setSnoozeMenuOpen(false)}
+        onCustomSelected={() => setShowSnoozedUntilDialog(true)}
+        anchorEl={snoozeButtonRef.current}
       />
 
-      <DateTimeDialog
-        label={
-          <>
-            <SnoozeIcon titleAccess="Snooze icon" />
-            &nbsp;Snooze
-          </>
-        }
-        id="snooze-dialog"
+      <DueDateDialog open={showDueDialog} onClose={() => setShowDueDialog(false)} />
+
+      <SnoozeCustomDialog
         open={showSnoozedUntilDialog}
         onClose={() => setShowSnoozedUntilDialog(false)}
-        onChangeCommitted={(value) => dispatch(setSnoozedUntil(value > Date.now() ? value : null))}
-        timestamp={snoozedUntilTimestamp > Date.now() ? snoozedUntilTimestamp : null}
-        initialTimestamp={initialSnoozedUntilTimestamp}
-        datePickerProps={{ disablePast: true }}
       />
 
       <BlockerSelectionDialog

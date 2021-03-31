@@ -12,6 +12,7 @@ const useStyles = makeStyles((theme) => ({
   dialogTitle: {
     position: 'relative',
     display: 'flex',
+    alignItems: 'center',
   },
   dialogTitleTypography: {
     flexGrow: 1,
@@ -50,7 +51,7 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
         <Box flexGrow={1} />
       )}
       {extraButtons && <Box className={classes.extraButtonsContainer}>{extraButtons}</Box>}
-      <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
+      <IconButton edge="end" size="small" color="inherit" onClick={onClose} aria-label="close">
         <CloseIcon fontSize="small" />
       </IconButton>
     </DialogTitle>

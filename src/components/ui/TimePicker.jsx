@@ -83,7 +83,7 @@ const renderNumberInput = (autocompleteParams) =>
     pattern: '[0-9]*',
   });
 
-const TimePicker = ({ timestamp, onChangeCommitted }) => {
+const TimePicker = ({ timestamp, onChangeCommitted, showIcon }) => {
   const classes = useStyles();
 
   // Value is the selected value by Autocomplete
@@ -128,9 +128,11 @@ const TimePicker = ({ timestamp, onChangeCommitted }) => {
 
   return (
     <Box display="flex" alignItems="center">
-      <Box mr={1}>
-        <QueryBuilderRoundedIcon />
-      </Box>
+      {showIcon && (
+        <Box mr={1}>
+          <QueryBuilderRoundedIcon />
+        </Box>
+      )}
 
       <Autocomplete
         // common
@@ -210,6 +212,7 @@ const TimePicker = ({ timestamp, onChangeCommitted }) => {
 };
 
 TimePicker.propTypes = {
+  showIcon: PropTypes.bool.isRequired,
   timestamp: PropTypes.number.isRequired,
   onChangeCommitted: PropTypes.func.isRequired,
 };

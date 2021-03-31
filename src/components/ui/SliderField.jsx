@@ -24,6 +24,17 @@ const QuatroSlider = withStyles((theme) => ({
   },
 }))(Slider);
 
+const getValueLabelColor = (value, length) => {
+  const percentage = value / length;
+  if (percentage < 0.25) {
+    return 'textSecondary';
+  }
+  if (percentage > 0.75) {
+    return 'secondary';
+  }
+  return 'primary';
+};
+
 const SliderField = ({
   id,
   label,
@@ -39,6 +50,7 @@ const SliderField = ({
       {label && (
         <Typography id={id} color="textSecondary" gutterBottom>
           {label}
+
           {tooltipTitle && (
             <Tooltip aria-hidden arrow title={tooltipTitle} placement="top">
               <InfoOutlinedIcon
@@ -49,9 +61,10 @@ const SliderField = ({
           )}
         </Typography>
       )}
+
       <Typography
         gutterBottom
-        color="primary"
+        color={getValueLabelColor(value, marks.length - 1)}
         variant="body1"
         style={{ marginBottom: '1rem' }}
         component="p"
