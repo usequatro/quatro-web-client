@@ -9,6 +9,7 @@ import addMinutes from 'date-fns/addMinutes';
 import format from 'date-fns/format';
 import cond from 'lodash/cond';
 
+import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
@@ -20,13 +21,11 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import Switch from '@material-ui/core/Switch';
 
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
-import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { makeStyles } from '@material-ui/core/styles';
 
-import DatePicker from '../../ui/DatePicker';
+import DatePickerCombo from '../../ui/DatePickerCombo';
 import TimePicker from '../../ui/TimePicker';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectCalendarIds, selectCalendarCount } from '../../../modules/calendars';
 import {
@@ -221,7 +220,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
       <DialogContent>
         <Box display="flex" mb={3}>
-          <DatePicker
+          <DatePickerCombo
             timestamp={currentTimestamp || initialDateTimestamp}
             onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
           />
@@ -229,6 +228,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
         <Box display="flex" flexDirection="column" mt={1} mb={3}>
           <TimePicker
+            showIcon
             timestamp={currentTimestamp}
             format="h:mm a"
             onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
@@ -289,20 +289,19 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
       <DialogActions>
         <Box flexGrow={1}>
-          <LabeledIconButton
-            color="inherit"
-            label="Clear"
-            icon={<ClearRoundedIcon />}
+          <Button
+            variant="text"
+            color="default"
+            startIcon={<ClearRoundedIcon />}
             onClick={handleClear}
-          />
+          >
+            Clear Scheduled Date
+          </Button>
         </Box>
 
-        <LabeledIconButton
-          label="Done"
-          icon={<SendRoundedIcon />}
-          color="primary"
-          onClick={handleDone}
-        />
+        <Button variant="text" color="primary" onClick={handleDone}>
+          Done
+        </Button>
       </DialogActions>
     </Dialog>
   );
