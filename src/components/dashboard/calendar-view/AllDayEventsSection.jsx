@@ -50,6 +50,7 @@ const AllDayEventsSection = ({ timestamp }) => {
             tickHeight={100} // irrelevant for allDay events
             ticksPerHour={1}
             interactive
+            displayDateTimestamp={timestamp}
           />
         ))}
       </Box>

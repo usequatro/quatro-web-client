@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
+import endOfDay from 'date-fns/endOfDay';
 import startOfDay from 'date-fns/startOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { Draggable } from 'react-beautiful-dnd';
@@ -29,7 +30,15 @@ import CalendarEventPopover from './CalendarEventPopover';
 import CardPositionedBoundaries from './CardPositionedBoundaries';
 import { useAppDragDropContext } from '../DashboardDragDropContext';
 
-const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerHour, index }) => {
+const CalendarEvent = ({
+  id,
+  scrollAnchorRef,
+  interactive,
+  tickHeight,
+  ticksPerHour,
+  displayDateTimestamp,
+  index,
+}) => {
   const { draggableTaskId } = useAppDragDropContext();
 
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
@@ -60,9 +69,18 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
   const popoverAnchorRef = useRef();
 
+  const displayDateStart = startOfDay(displayDateTimestamp).getTime();
+  const displayDateEnd = endOfDay(displayDateTimestamp).getTime();
+
   const minutesForOneTick = 60 / ticksPerHour;
-  const durationInMinutes = differenceInMinutes(endTimestamp, startTimestamp);
-  const startTimeInMinutes = differenceInMinutes(startTimestamp, startOfDay(startTimestamp));
+  const durationInMinutes = differenceInMinutes(
+    Math.min(endTimestamp, displayDateEnd),
+    Math.max(startTimestamp, displayDateStart),
+  );
+  const startTimeInMinutes = differenceInMinutes(
+    Math.max(startTimestamp, displayDateStart),
+    displayDateStart,
+  );
 
   const cardWidth = Math.floor(100 / (1 + (collisionCount || 0)));
   const cardLeft = (collisionOrder || 0) * cardWidth;
@@ -170,6 +188,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
 CalendarEvent.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  displayDateTimestamp: PropTypes.number.isRequired,
   interactive: PropTypes.bool.isRequired,
   scrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   tickHeight: PropTypes.number.isRequired,

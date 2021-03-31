@@ -42,6 +42,7 @@ const CalendarDayEventsList = ({
           tickHeight={tickHeight}
           ticksPerHour={ticksPerHour}
           interactive={interactive}
+          displayDateTimestamp={timestamp}
         />
       ))}
 
