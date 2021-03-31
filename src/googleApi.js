@@ -96,7 +96,7 @@ const isItemDeclined = (item) => {
   return seltAttendee && seltAttendee.responseStatus === 'declined';
 };
 
-const formatCalendarAPIFormat = (item) => {
+const formatCalendarAPIFormat = (item, providerCalendarId) => {
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
 
@@ -113,7 +113,7 @@ const formatCalendarAPIFormat = (item) => {
     );
 
   const event = {
-    id: item.id,
+    id: `${providerCalendarId.replace(/[^a-z0-9]/gi, '')}-${item.id}`,
     calendarId: item.calendarId,
     htmlLink: item.htmlLink,
     summary: item.summary,
@@ -191,7 +191,7 @@ export const gapiListCalendarEvents = async (
     },
   }).then((response) => {
     debugConsole.log('Google API', providerCalendarId, response.result.items);
-    return response.result.items.map((item) => formatCalendarAPIFormat(item));
+    return response.result.items.map((item) => formatCalendarAPIFormat(item, providerCalendarId));
   });
 
 /**
