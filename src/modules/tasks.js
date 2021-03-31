@@ -36,7 +36,7 @@ import {
   TASK_DRAGGED_TO_CALENDAR,
 } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
-import { addPlaceholderEventUntilCreated } from './calendarEvents';
+import { addPlaceholderEventUntilCreated, selectCalendarEventIdByTaskId } from './calendarEvents';
 import isRequired from '../utils/isRequired';
 
 const name = 'tasks';
@@ -73,9 +73,6 @@ export const selectTaskPrioritizedAheadOf = (state, id) =>
 /** @returns {string|null|undefined} */
 export const selectTaskCalendarBlockCalendarId = (state, id) =>
   get(selectTask(state, id), 'calendarBlockCalendarId');
-/** @returns {string|null|undefined} */
-const selectTaskCalendarBlockProviderEventId = (state, id) =>
-  get(selectTask(state, id), 'calendarBlockProviderEventId');
 
 /** @returns {boolean} */
 export const selectTaskShowsAsCompleted = (state, id) =>
@@ -541,7 +538,7 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mi
   );
 
   const title = selectTaskTitle(state, id);
-  const calendarEventId = selectTaskCalendarBlockProviderEventId(state, id);
+  const calendarEventId = selectCalendarEventIdByTaskId(state, id);
 
   dispatch(
     addPlaceholderEventUntilCreated({

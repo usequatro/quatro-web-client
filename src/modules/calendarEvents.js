@@ -106,6 +106,9 @@ export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id]
 export const selectCalendarEventPlaceholderUntilCreated = (state, id) =>
   get(state[name].byId[id], 'placeholderUntilCreated');
 
+export const selectCalendarEventIdByTaskId = (state, taskId) =>
+  state[name].allIds.find((id) => selectCalendarEventTaskId(state, id) === taskId);
+
 const selectCalendarEventsDateRequested = (state, calendarId, date) => {
   const dateKey = formatDate(date);
   return Boolean(get(state[name].byCalendar, [calendarId, 'statusByDate', dateKey, 'requested']));
