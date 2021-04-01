@@ -296,6 +296,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
             color="default"
             startIcon={<ClearRoundedIcon />}
             onClick={handleClear}
+            style={{ textAlign: 'left' }}
           >
             Clear Scheduled Date
           </Button>

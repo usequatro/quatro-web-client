@@ -74,6 +74,7 @@ const DueDateDialog = ({ open, onClose }) => {
             color="default"
             startIcon={<ClearRoundedIcon />}
             onClick={() => handleChangeCommitted(null)}
+            style={{ textAlign: 'left' }}
           >
             Clear Due Date
           </Button>

@@ -84,6 +84,7 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
             color="default"
             startIcon={<ClearRoundedIcon />}
             onClick={() => handleChangeCommitted(null)}
+            style={{ textAlign: 'left' }}
           >
             Clear Snooze
           </Button>
