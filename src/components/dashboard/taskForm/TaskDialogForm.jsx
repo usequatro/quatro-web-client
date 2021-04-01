@@ -514,6 +514,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </Button>
 
           <Button
+            component="div"
             onClick={() => setShowBlockersDialog(true)}
             className={classes.settingButton}
             startIcon={
