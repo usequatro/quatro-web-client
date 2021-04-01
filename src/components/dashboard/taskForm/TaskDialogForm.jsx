@@ -118,9 +118,6 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'left',
     fontWeight: 'normal',
   },
-  submitLoader: {
-    color: theme.palette.common.white,
-  },
   blockersList: {
     flexGrow: 1,
   },
@@ -657,11 +654,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             type="submit"
             disabled={submitting}
             startIcon={
-              submitting ? (
-                <CircularProgress thickness={4} size="2rem" className={classes.submitLoader} />
-              ) : (
-                <SendRoundedIcon />
-              )
+              submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
             }
           >
             {ctaText}
