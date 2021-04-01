@@ -57,8 +57,8 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
       />
 
       <DialogContent>
-        <Box display="flex" pb={2}>
-          <Box flexGrow={1} pr={2}>
+        <Box display="flex" flexWrap="wrap">
+          <Box flexGrow={1} flexShrink={0} pr={2} pb={2}>
             <DatePicker
               timestamp={currentValue}
               onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
@@ -66,7 +66,7 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
             />
           </Box>
 
-          <Box pl={1}>
+          <Box pb={2}>
             <TimePicker
               showIcon={false}
               timestamp={currentValue}
