@@ -14,6 +14,7 @@ export const selectDescription = (state) => state[name].description;
 export const selectImpact = (state) => state[name].impact;
 export const selectEffort = (state) => state[name].effort;
 export const selectScheduledStart = (state) => state[name].scheduledStart;
+export const selectSnoozedUntil = (state) => state[name].snoozedUntil;
 export const selectDue = (state) => state[name].due;
 export const selectBlockedBy = (state) => state[name].blockedBy;
 export const selectRecurringConfig = (state) => state[name].recurringConfig;
@@ -38,6 +39,7 @@ const initialState = {
   impact: 3,
   effort: 0,
   scheduledStart: null,
+  snoozedUntil: null,
   due: null,
   blockedBy: [],
   recurringConfig: null,
@@ -66,6 +68,9 @@ const slice = createSlice({
     },
     setScheduledStart: (state, { payload }) => {
       state.scheduledStart = payload;
+    },
+    setSnoozedUntil: (state, { payload }) => {
+      state.snoozedUntil = payload;
     },
     setDue: (state, { payload }) => {
       state.due = payload;
@@ -114,6 +119,7 @@ export const {
   setImpact,
   setEffort,
   setScheduledStart,
+  setSnoozedUntil,
   setDue,
   addTaskBlocker,
   addFreeTextBlocker,

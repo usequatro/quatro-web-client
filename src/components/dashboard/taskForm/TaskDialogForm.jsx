@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cond from 'lodash/cond';
-import addHours from 'date-fns/addHours';
-import addWeeks from 'date-fns/addWeeks';
-import startOfWeek from 'date-fns/startOfWeek';
+
+import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import DialogActions from '@material-ui/core/DialogActions';
@@ -17,18 +16,20 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
 import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
-import EventRoundedIcon from '@material-ui/icons/EventRounded';
 import NotesIcon from '@material-ui/icons/Notes';
-import BlockRoundedIcon from '@material-ui/icons/BlockRounded';
 import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
+import CloseIcon from '@material-ui/icons/Close';
+import SnoozeIcon from '@material-ui/icons/Snooze';
 
 import { createTask } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
@@ -38,6 +39,7 @@ import {
   selectImpact,
   selectEffort,
   selectScheduledStart,
+  selectSnoozedUntil,
   selectDue,
   selectBlockedBy,
   selectBlockedByTaskIds,
@@ -49,7 +51,6 @@ import {
   setDescription,
   setImpact,
   setEffort,
-  setDue,
   addTaskBlocker,
   addFreeTextBlocker,
   removeBlockerByIndex,
@@ -62,17 +63,18 @@ import {
   selectRecurringConfigIdByMostRecentTaskId,
 } from '../../../modules/recurringConfigs';
 import { selectCalendarProviderCalendarId } from '../../../modules/calendars';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import Confirm from '../../ui/Confirm';
-import DateTimeDialog from '../../ui/DateTimeDialog';
+import { TextFieldWithTypography } from '../../ui/InputWithTypography';
+import DueDateDialog from './DueDateDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
+import SnoozeCustomDialog from './SnoozeCustomDialog';
+import SnoozeMenu from './SnoozeMenu';
 import ConfirmationDialog from '../../ui/ConfirmationDialog';
 import BlockerSelectionDialog from '../tasks/BlockerSelectionDialog';
 import { useNotification } from '../../Notification';
 import * as blockerTypes from '../../../constants/blockerTypes';
 import TaskTitle from '../tasks/TaskTitle';
 import SliderField from '../../ui/SliderField';
-import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import formatDateTime from '../../../utils/formatDateTime';
 import { IMPACT_LABELS, IMPACT_SLIDER_MARKS } from '../../../constants/impact';
@@ -80,27 +82,22 @@ import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
+import ScheduledIcon from '../../icons/ScheduledIcon';
+import BlockedIcon from '../../icons/BlockedIcon';
+import useMobileViewportSize from '../../hooks/useMobileViewportSize';
 
 const useStyles = makeStyles((theme) => ({
-  dialogTitle: {
-    position: 'relative',
-    display: 'flex',
-  },
-  dialogTitleTypography: {
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-  },
   dialogActionBar: {
     display: 'flex',
-    backgroundColor: theme.palette.background.default,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dialogContent: {
     padding: 0,
+    paddingBottom: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       maxWidth: '100%',
-      height: '30rem',
       maxHeight: '70vh',
     },
   },
@@ -112,21 +109,25 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'left',
     fontWeight: 'normal',
   },
-  submitLoader: {
-    color: theme.palette.common.white,
-  },
   blockersList: {
     flexGrow: 1,
   },
-  blockersIconButton: {
-    padding: '6px', // to match the list item next to it
-    paddingRight: '8px',
-    marginTop: '3px',
+  inputStartIcon: {
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing(1),
+    color: theme.palette.text.secondary,
+  },
+  descriptionField: {
+    '&::before, &::after': {
+      opacity: 0.5,
+    },
+  },
+  closeButtonContainer: {
+    position: 'absolute',
+    top: theme.spacing(2),
+    right: theme.spacing(2),
   },
 }));
-
-// const initialScheduledDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
-const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
 
 const getBlockerTitle = cond([
   [
@@ -176,6 +177,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const impact = useSelector(selectImpact);
   const effort = useSelector(selectEffort);
   const scheduledStartTimestamp = useSelector(selectScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
   const dueTimestamp = useSelector(selectDue);
   const blockedBy = useSelector(selectBlockedBy);
   const blockedByTaskIds = useSelector(selectBlockedByTaskIds);
@@ -190,12 +192,17 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       : undefined,
   );
 
-  const [showDescription, setShowDescription] = useState(Boolean(description));
+  const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
+  const [showSnoozedUntilDialog, setShowSnoozedUntilDialog] = useState(false);
   const [showScheduledStartDialog, setShowScheduledStartDialog] = useState(false);
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const snoozeButtonRef = useRef();
+
+  const mobile = useMobileViewportSize();
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -225,9 +232,10 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               title,
               impact,
               effort,
-              description,
+              description: description.trim(),
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
+              snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
               calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
@@ -240,10 +248,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             mixpanel.track(TASK_UPDATED, {
               hasBlockers: blockedBy.length > 0,
               hasScheduledStart: Boolean(scheduledStartTimestamp),
+              hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
               hasDueDate: Boolean(dueTimestamp),
               isRecurring: Boolean(recurringConfig),
               hasCalendarBlock,
-              hasDescription: Boolean(showDescription && description),
+              hasDescription: Boolean(description.trim()),
               impact,
               effort,
             });
@@ -256,9 +265,10 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             impact,
             effort,
             {
-              description: showDescription ? description : '',
+              description: description.trim(),
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
+              snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
@@ -284,10 +294,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           mixpanel.track(TASK_CREATED, {
             hasBlockers: blockedBy.length > 0,
             hasScheduledStart: Boolean(scheduledStartTimestamp),
+            hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
             hasDueDate: Boolean(dueTimestamp),
             isRecurring: Boolean(recurringConfig),
             hasCalendarBlock,
-            hasDescription: Boolean(showDescription && description),
+            hasDescription: Boolean(description.trim()),
             impact,
             effort,
           });
@@ -325,7 +336,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       });
   };
 
-  const modalTitle = newTaskDialogOpen ? 'New Task' : 'Edit Task';
   const ctaText = newTaskDialogOpen ? 'Create' : 'Save';
 
   const scrollToBottom = useCallback(() => {
@@ -349,64 +359,60 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogTitleWithClose
-        onClose={onClose}
-        title={modalTitle}
-        TypographyProps={{ variant: 'h5', component: 'h2' }}
-      />
+      <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
+        <Box pt={2} pb={4} px={3} display="flex" flexDirection="column" alignItems="stretch">
+          <Box pb={2}>
+            <TextFieldWithTypography
+              typography="h6"
+              fullWidth
+              aria-label="What do you need to do?"
+              placeholder="What do you need to do?"
+              className={classes.titleTextField}
+              // Autofocus with real keyboard, not when screen keyboard because it's annoying
+              autoFocus={!isTouchEnabledScreen}
+              multiline
+              rowsMax={3}
+              value={title}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  handleSubmit(event);
+                }
+              }}
+              onChange={(event) => {
+                dispatch(setTitle(event.target.value));
+                if (validationErrors.includes('title')) {
+                  setValidationErrors(validationErrors.filter((e) => e !== 'title'));
+                }
+              }}
+              onBlur={() => {
+                // Prevent leaving whitespaces saved at beginning or end
+                if (title !== title.trim()) {
+                  dispatch(setTitle(title.trim()));
+                }
+              }}
+              error={validationErrors.includes('title')}
+            />
+          </Box>
 
-      <DialogContent className={classes.dialogContent} id="task-dialog-content">
-        <Box pt={1} pb={2} px={3} display="flex" alignItems="flex-end">
-          <TextField
-            label="What do you need to do?"
-            className={classes.titleTextField}
-            // Autofocus with real keyboard, not when screen keyboard because it's annoying
-            autoFocus={!isTouchEnabledScreen}
-            multiline
-            rowsMax={3}
-            value={title}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                handleSubmit(event);
-              }
-            }}
-            onChange={(event) => {
-              dispatch(setTitle(event.target.value));
-              if (validationErrors.includes('title')) {
-                setValidationErrors(validationErrors.filter((e) => e !== 'title'));
-              }
-            }}
-            onBlur={() => {
-              // Prevent leaving whitespaces saved at beginning or end
-              if (title !== title.trim()) {
-                dispatch(setTitle(title.trim()));
-              }
-            }}
-            error={validationErrors.includes('title')}
-          />
-
-          <Tooltip title={showDescription ? 'Remove notes' : 'Add notes'} arrow enterDelay={1000}>
-            <IconButton
-              size="small"
-              edge="end"
-              aria-label="Toggle notes"
-              style={{ opacity: showDescription ? 0.5 : 1 }}
-              onClick={() => setShowDescription(!showDescription)}
-            >
-              <NotesIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        {showDescription && (
-          <Box px={3} pb={4} pt={0}>
+          <Box>
             <TextField
               placeholder="Notes"
               aria-label="Notes"
               fullWidth
               multiline
-              rows={2}
+              rows={1}
+              rowsMax={10}
               value={description}
+              InputProps={{
+                startAdornment: (
+                  <Tooltip title="Notes" arrow enterDelay={500} placement="top">
+                    <InputAdornment position="start" className={classes.inputStartIcon}>
+                      <NotesIcon />
+                    </InputAdornment>
+                  </Tooltip>
+                ),
+                className: classes.descriptionField,
+              }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                   handleSubmit(event);
@@ -415,192 +421,264 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               onChange={(event) => dispatch(setDescription(event.target.value))}
             />
           </Box>
-        )}
-
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="impact-slider"
-            label="What impact will this task have?"
-            value={impact}
-            getValueText={(i) => IMPACT_LABELS[i] || '-'}
-            onChange={(value) => dispatch(setImpact(value))}
-            marks={IMPACT_SLIDER_MARKS}
-          />
         </Box>
 
-        <Box px={3} pt={2} pb={4}>
-          <SliderField
-            id="effort-slider"
-            label="How much time will this task require?"
-            value={effort}
-            getValueText={(e) => EFFORT_LABELS[e] || '-'}
-            onChange={(value) => dispatch(setEffort(value))}
-            marks={EFFORT_SLIDER_MARKS}
-          />
-        </Box>
-
-        {(dueTimestamp || scheduledStartTimestamp || recurringConfig) && (
-          <Box px={3} pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
-            {scheduledStartTimestamp && (
-              <Button
-                onClick={() => setShowScheduledStartDialog(true)}
-                startIcon={<EventRoundedIcon />}
-                className={classes.settingButton}
-              >
-                {'Scheduled Date: '}
-                {formatDateTime(scheduledStartTimestamp)}
-
-                {recurringConfig && (
-                  <>
-                    <br />
-                    {`Repeats ${getUserFacingRecurringText(
-                      recurringConfig,
-                      scheduledStartTimestamp,
-                      {
-                        capitalize: false,
-                      },
-                    )}`}
-                  </>
-                )}
-
-                {calendarBlockStart && calendarBlockEnd && (
-                  <>
-                    <br />
-                    {`${differenceInMinutes(
-                      calendarBlockEnd,
-                      calendarBlockStart,
-                    )} minutes blocked in calendar`}
-                  </>
-                )}
-              </Button>
-            )}
-            {dueTimestamp && (
-              <Button
-                onClick={() => setShowDueDialog(true)}
-                startIcon={<AccessAlarmRoundedIcon />}
-                className={classes.settingButton}
-              >
-                {'Due Date: '}
-                {formatDateTime(dueTimestamp)}
-              </Button>
-            )}
+        <Box px={3} pt={2} pb={4} display="flex">
+          <Box width="50%" mr={4}>
+            <SliderField
+              id="impact-slider"
+              label="Impact"
+              tooltipTitle="How much impact will this task have on your goals?"
+              value={impact}
+              getValueText={(i) => IMPACT_LABELS[i] || '-'}
+              onChange={(value) => dispatch(setImpact(value))}
+              marks={IMPACT_SLIDER_MARKS}
+            />
           </Box>
-        )}
+          <Box width="50%" ml={4}>
+            <SliderField
+              id="effort-slider"
+              label="Time"
+              tooltipTitle="How much time will this task require?"
+              value={effort}
+              getValueText={(e) => EFFORT_LABELS[e] || '-'}
+              onChange={(value) => dispatch(setEffort(value))}
+              marks={EFFORT_SLIDER_MARKS}
+            />
+          </Box>
+        </Box>
 
-        {blockedBy.length > 0 && (
-          <Box px={3} pt={0} pb={2} display="flex" flexDirection="row" alignItems="flex-start">
-            <Tooltip title="Add Blocker" arrow>
-              <IconButton
-                aria-label="blockers"
-                onClick={() => setShowBlockersDialog(!showBlockersDialog)}
-                className={classes.blockersIconButton}
-              >
-                <BlockRoundedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
+        <Box px={3} pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
+          <Button
+            onClick={() => setShowScheduledStartDialog(true)}
+            startIcon={<ScheduledIcon />}
+            className={classes.settingButton}
+            color={
+              scheduledStartTimestamp && scheduledStartTimestamp > Date.now()
+                ? 'primary'
+                : 'default'
+            }
+          >
+            {scheduledStartTimestamp
+              ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
+              : 'No scheduled date'}
 
+            {recurringConfig && (
+              <>
+                <br />
+                {`Repeats ${getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp, {
+                  capitalize: false,
+                })}`}
+              </>
+            )}
+
+            {calendarBlockStart && calendarBlockEnd && (
+              <>
+                <br />
+                {`${differenceInMinutes(
+                  calendarBlockEnd,
+                  calendarBlockStart,
+                )} minutes blocked in calendar`}
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={() => setShowDueDialog(true)}
+            startIcon={
+              <AccessAlarmRoundedIcon
+                color={dueTimestamp && isPast(dueTimestamp) ? 'error' : 'inherit'}
+              />
+            }
+            className={classes.settingButton}
+            color={dueTimestamp ? 'primary' : 'default'}
+          >
+            {dueTimestamp ? `Due date: ${formatDateTime(dueTimestamp)}` : 'No due date'}
+          </Button>
+
+          <Button
+            component="div"
+            onClick={() => setShowBlockersDialog(true)}
+            className={classes.settingButton}
+            startIcon={
+              <Tooltip title="Add Blocker" arrow>
+                <Box component="span" display="flex">
+                  <BlockedIcon fontSize="small" />
+                </Box>
+              </Tooltip>
+            }
+          >
             <List disablePadding className={classes.blockersList}>
-              {blockedBy.map((blockerDescriptor, index) => (
-                <ListItem
-                  key={index /* eslint-disable-line react/no-array-index-key */}
-                  disableGutters
-                  dense
-                >
-                  <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
+              {blockedBy && blockedBy.length
+                ? blockedBy.map((blockerDescriptor, index) => (
+                    <ListItem
+                      key={index /* eslint-disable-line react/no-array-index-key */}
+                      disableGutters
+                      dense
+                    >
+                      <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
 
-                  <ListItemSecondaryAction>
-                    <Tooltip title="Delete Blocker" arrow>
-                      <IconButton
-                        edge="end"
-                        aria-label="remove"
-                        size="small"
-                        onClick={() => dispatch(removeBlockerByIndex(index))}
-                      >
-                        <ClearRoundedIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
+                      <ListItemSecondaryAction>
+                        <Tooltip title="Delete Blocker" arrow>
+                          <IconButton
+                            edge="end"
+                            aria-label="remove"
+                            size="small"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              dispatch(removeBlockerByIndex(index));
+                            }}
+                          >
+                            <ClearRoundedIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))
+                : 'No blockers'}
             </List>
-          </Box>
-        )}
+          </Button>
+        </Box>
       </DialogContent>
 
       <DialogActions className={classes.dialogActionBar} disableSpacing>
         <Box flexGrow={1}>
-          <LabeledIconButton
-            label="Schedule"
-            color="inherit"
-            icon={<EventRoundedIcon />}
-            onClick={() => setShowScheduledStartDialog(!showScheduledStartDialog)}
-          />
-          <LabeledIconButton
-            label="Due Date"
-            color="inherit"
-            icon={<AccessAlarmRoundedIcon />}
-            onClick={() => setShowDueDialog(!showDueDialog)}
-          />
-          <LabeledIconButton
-            label="Blockers"
-            color="inherit"
-            icon={<BlockRoundedIcon />}
-            onClick={() => setShowBlockersDialog(!showBlockersDialog)}
-          />
+          {editTaskDialogId && (
+            <Confirm
+              onConfirm={() => {
+                onClose();
+                dispatch(deleteTask(editTaskDialogId));
+                notifyInfo('Task Deleted');
+              }}
+              renderDialog={(open, onConfirm, onConfirmationClose) => (
+                <ConfirmationDialog
+                  open={open}
+                  onClose={onConfirmationClose}
+                  onConfirm={onConfirm}
+                  id="confirm-delete-task"
+                  title="Delete task"
+                  body={[
+                    'Are you sure you want to delete this task?',
+                    recurringConfig && 'The task will stop repeating when deleted',
+                  ].filter(Boolean)}
+                  buttonText="Delete"
+                />
+              )}
+              renderContent={(onClick) =>
+                mobile ? (
+                  <IconButton
+                    edge="start"
+                    size="small"
+                    color="inherit"
+                    onClick={onClick}
+                    aria-label="delete"
+                  >
+                    <DeleteOutlineRoundedIcon />
+                  </IconButton>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    color="default"
+                    startIcon={<DeleteOutlineRoundedIcon />}
+                    onClick={onClick}
+                  >
+                    Delete
+                  </Button>
+                )
+              }
+            />
+          )}
         </Box>
 
-        {editTaskDialogId && (
-          <Confirm
-            onConfirm={() => {
-              onClose();
-              dispatch(deleteTask(editTaskDialogId));
-              notifyInfo('Task Deleted');
-            }}
-            renderDialog={(open, onConfirm, onConfirmationClose) => (
-              <ConfirmationDialog
-                open={open}
-                onClose={onConfirmationClose}
-                onConfirm={onConfirm}
-                id="confirm-delete-task"
-                title="Delete task"
-                body={[
-                  'Are you sure you want to delete this task?',
-                  recurringConfig && 'The task will stop repeating when deleted',
-                ].filter(Boolean)}
-                buttonText="Delete"
-              />
-            )}
-            renderContent={(onClick) => (
-              <LabeledIconButton
-                label="Delete"
-                color="inherit"
-                icon={<DeleteOutlineRoundedIcon />}
-                onClick={onClick}
-              />
-            )}
-          />
-        )}
+        <Box ml={2} display="flex" alignItems="center">
+          {!(scheduledStartTimestamp && scheduledStartTimestamp > Date.now()) && (
+            <Box>
+              {mobile ? (
+                <IconButton
+                  edge="start"
+                  size="small"
+                  color={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  onClick={() => setSnoozeMenuOpen(true)}
+                  aria-label={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'Snoozed'
+                      : 'Snooze'
+                  }
+                  ref={snoozeButtonRef}
+                  style={{ marginRight: '1em' }}
+                >
+                  <SnoozeIcon />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color={
+                    snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                      ? 'primary'
+                      : 'default'
+                  }
+                  style={{ marginRight: '1em' }}
+                  startIcon={<SnoozeIcon />}
+                  ref={snoozeButtonRef}
+                  onClick={() => setSnoozeMenuOpen(true)}
+                >
+                  {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now()
+                    ? 'Snoozed'
+                    : 'Snooze'}
+                </Button>
+              )}
+            </Box>
+          )}
 
-        {submitting ? (
-          <CircularProgress thickness={4} size="2rem" className={classes.submitLoader} />
-        ) : (
-          <LabeledIconButton type="submit" label={ctaText} icon={<SendRoundedIcon />} />
-        )}
+          <Button
+            variant="outlined"
+            color="primary"
+            type="submit"
+            disabled={submitting}
+            startIcon={
+              submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
+            }
+          >
+            {ctaText}
+          </Button>
+        </Box>
       </DialogActions>
+
+      {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() && (
+        <DialogActions style={{ paddingTop: 0 }}>
+          <Typography variant="caption">
+            Snoozed until: {formatDateTime(snoozedUntilTimestamp)}
+          </Typography>
+        </DialogActions>
+      )}
+
+      <Box className={classes.closeButtonContainer}>
+        <IconButton edge="end" size="small" color="inherit" onClick={onClose} aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
       <ScheduledStartDialog
         open={showScheduledStartDialog}
         onClose={() => setShowScheduledStartDialog(false)}
       />
 
-      <DateTimeDialog
-        label="Due date"
-        id="due-dialog"
-        open={showDueDialog}
-        onClose={() => setShowDueDialog(false)}
-        onChangeCommitted={(value) => dispatch(setDue(value))}
-        timestamp={dueTimestamp}
-        initialTimestamp={initialDueDateTimestamp}
+      <SnoozeMenu
+        open={snoozeMenuOpen}
+        onClose={() => setSnoozeMenuOpen(false)}
+        onCustomSelected={() => setShowSnoozedUntilDialog(true)}
+        anchorEl={snoozeButtonRef.current}
+      />
+
+      <DueDateDialog open={showDueDialog} onClose={() => setShowDueDialog(false)} />
+
+      <SnoozeCustomDialog
+        open={showSnoozedUntilDialog}
+        onClose={() => setShowSnoozedUntilDialog(false)}
       />
 
       <BlockerSelectionDialog

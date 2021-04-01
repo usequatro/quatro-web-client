@@ -98,6 +98,11 @@ const muiTheme = createMuiTheme({
         color: 'rgba(38, 53, 115, 0.9)',
       },
     },
+    MuiDialogActions: {
+      root: {
+        padding: '16px 24px', // matching with DialogContent
+      },
+    },
   },
 });
 

@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -13,10 +14,9 @@ import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
 
 import SearchRoundedIcon from '@material-ui/icons/SearchRounded';
-import SendRoundedIcon from '@material-ui/icons/SendRounded';
 
+import BlockedIcon from '../../icons/BlockedIcon';
 import { selectAllTasksOrderedAlphabetically } from '../../../modules/tasks';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 
 const useStyles = makeStyles(() => ({
@@ -88,6 +88,7 @@ const BlockerSelectionDialog = ({
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'task-selection-dialog', variant: 'h6' }}
+        iconStart={<BlockedIcon />}
         title="Blockers"
         onClose={onClose}
       />
@@ -130,7 +131,7 @@ const BlockerSelectionDialog = ({
         </Typography>
 
         <form onSubmit={handleFreeTextEntered}>
-          <Box display="flex" flexGrow={1} pb={2}>
+          <Box display="flex" alignItems="flex-end" flexGrow={1} pb={2}>
             <TextField
               className={classes.freeTextField}
               label="What's blocking you?"
@@ -144,13 +145,9 @@ const BlockerSelectionDialog = ({
               }}
             />
 
-            <LabeledIconButton
-              color="primary"
-              label="Done"
-              icon={<SendRoundedIcon />}
-              type="submit"
-              edge="end"
-            />
+            <Button variant="text" color="primary" type="submit">
+              Done
+            </Button>
           </Box>
         </form>
       </DialogContent>

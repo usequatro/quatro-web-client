@@ -9,6 +9,7 @@ import addMinutes from 'date-fns/addMinutes';
 import format from 'date-fns/format';
 import cond from 'lodash/cond';
 
+import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
@@ -20,13 +21,11 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import Switch from '@material-ui/core/Switch';
 
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
-import SendRoundedIcon from '@material-ui/icons/SendRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { makeStyles } from '@material-ui/core/styles';
 
-import DatePicker from '../../ui/DatePicker';
+import DatePickerCombo from '../../ui/DatePickerCombo';
 import TimePicker from '../../ui/TimePicker';
-import LabeledIconButton from '../../ui/LabeledIconButton';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectCalendarIds, selectCalendarCount } from '../../../modules/calendars';
 import {
@@ -41,6 +40,8 @@ import {
   setCalendarBlockEnd,
   setRecurringConfig,
   selectRecurringConfig,
+  selectSnoozedUntil,
+  setSnoozedUntil,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
@@ -52,6 +53,7 @@ import CalendarBlockEditor, {
 import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
+import ScheduledIcon from '../../icons/ScheduledIcon';
 
 const useStyles = makeStyles((theme) => ({
   switchHelperText: {
@@ -68,6 +70,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
   // Current taskForm state
   const timestamp = useSelector(selectScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
   const blocksCalendar = Boolean(calendarBlockStart);
@@ -154,6 +157,10 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     if (!currentTimestamp && recurringConfig) {
       dispatch(setRecurringConfig(null));
     }
+    // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
+    if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
+      dispatch(setSnoozedUntil(null));
+    }
 
     onClose();
   };
@@ -198,12 +205,15 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'scheduled-start-dialog', variant: 'h6' }}
+        iconStart={<ScheduledIcon />}
         title={
           <>
             Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
             <Tooltip aria-hidden arrow title={tooltipTitle}>
-              <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />
+              <Box ml={1} display="flex">
+                <InfoOutlinedIcon fontSize="small" />
+              </Box>
             </Tooltip>
           </>
         }
@@ -212,7 +222,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
       <DialogContent>
         <Box display="flex" mb={3}>
-          <DatePicker
+          <DatePickerCombo
             timestamp={currentTimestamp || initialDateTimestamp}
             onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
           />
@@ -220,6 +230,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
         <Box display="flex" flexDirection="column" mt={1} mb={3}>
           <TimePicker
+            showIcon
             timestamp={currentTimestamp}
             format="h:mm a"
             onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
@@ -280,20 +291,20 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
       <DialogActions>
         <Box flexGrow={1}>
-          <LabeledIconButton
-            color="inherit"
-            label="Clear"
-            icon={<ClearRoundedIcon />}
+          <Button
+            variant="text"
+            color="default"
+            startIcon={<ClearRoundedIcon />}
             onClick={handleClear}
-          />
+            style={{ textAlign: 'left' }}
+          >
+            Clear Scheduled Date
+          </Button>
         </Box>
 
-        <LabeledIconButton
-          label="Done"
-          icon={<SendRoundedIcon />}
-          color="primary"
-          onClick={handleDone}
-        />
+        <Button variant="text" color="primary" onClick={handleDone}>
+          Done
+        </Button>
       </DialogActions>
     </Dialog>
   );

@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Slider from '@material-ui/core/Slider';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { withStyles } from '@material-ui/core/styles';
 
 const QuatroSlider = withStyles((theme) => ({
@@ -22,33 +24,49 @@ const QuatroSlider = withStyles((theme) => ({
   },
 }))(Slider);
 
-const SliderField = ({
-  id,
-  label,
-  'aria-label': ariaLabel,
-  onChange,
-  value,
-  getValueText,
-  marks,
-}) => (
+const getValueLabelColor = (value, length) => {
+  const percentage = value / length;
+  if (percentage < 0.25) {
+    return 'textSecondary';
+  }
+  if (percentage > 0.75) {
+    return 'secondary';
+  }
+  return 'primary';
+};
+
+const SliderField = ({ id, label, tooltipTitle, onChange, value, getValueText, marks }) => (
   <>
-    {label && (
-      <Typography id={id} color="textSecondary" gutterBottom style={{ fontSize: '0.75rem' }}>
-        {label}
+    <Box display="flex" justifyContent="space-between">
+      {label && (
+        <Typography id={id} color="textSecondary" gutterBottom>
+          {label}
+
+          {tooltipTitle && (
+            <Tooltip aria-hidden arrow title={tooltipTitle} placement="top">
+              <InfoOutlinedIcon
+                fontSize="small"
+                style={{ marginLeft: '0.3em', marginBottom: '-0.2em', fontSize: '1em' }}
+              />
+            </Tooltip>
+          )}
+        </Typography>
+      )}
+
+      <Typography
+        gutterBottom
+        color={getValueLabelColor(value, marks.length - 1)}
+        variant="body1"
+        style={{ marginBottom: '1rem' }}
+        component="p"
+      >
+        {getValueText(value)}
       </Typography>
-    )}
-    <Typography
-      gutterBottom
-      color="primary"
-      variant="body1"
-      style={{ marginBottom: '1rem' }}
-      component="p"
-    >
-      {getValueText(value)}
-    </Typography>
-    <Box px={3}>
+    </Box>
+
+    <Box>
       <QuatroSlider
-        aria-label={ariaLabel}
+        aria-labelledby={id}
         marks={marks || true}
         min={marks[0].value}
         max={marks[marks.length - 1].value}
@@ -70,7 +88,7 @@ const SliderField = ({
 SliderField.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string,
-  'aria-label': PropTypes.string,
+  tooltipTitle: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   getValueText: PropTypes.func.isRequired,
@@ -79,7 +97,7 @@ SliderField.propTypes = {
 
 SliderField.defaultProps = {
   label: undefined,
-  'aria-label': undefined,
+  tooltipTitle: undefined,
 };
 
 export default SliderField;

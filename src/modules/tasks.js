@@ -64,6 +64,8 @@ const selectTaskCompleted = (state, id) => get(selectTask(state, id), 'completed
 /** @returns {number} */
 export const selectTaskScheduledStart = (state, id) => get(selectTask(state, id), 'scheduledStart');
 /** @returns {number} */
+export const selectTaskSnoozedUntil = (state, id) => get(selectTask(state, id), 'snoozedUntil');
+/** @returns {number} */
 export const selectTaskDue = (state, id) => get(selectTask(state, id), 'due');
 /** @returns {Array<Object>} */
 const selectTaskBlockedBy = (state, id) => get(selectTask(state, id), 'blockedBy');
@@ -108,7 +110,9 @@ const selectAllTasks = (state) => selectAllTaskIds(state).map((id) => [id, state
 const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
   const upcomingTasks = allTasks.filter(
-    ([, task]) => task.scheduledStart == null || task.scheduledStart <= now,
+    ([, task]) =>
+      (task.scheduledStart == null || task.scheduledStart <= now) &&
+      (task.snoozedUntil == null || task.snoozedUntil <= now),
   );
   return upcomingTasks;
 });
@@ -242,9 +246,22 @@ export const selectHasMoveToBacklog = createSelector(
 export const selectScheduledTasks = createSelector(selectAllTasks, (allTasks) => {
   const now = Date.now();
   const scheduledTasks = allTasks.filter(
-    ([, task]) => task.scheduledStart != null && task.scheduledStart > now,
+    ([, task]) =>
+      (task.scheduledStart != null && task.scheduledStart > now) ||
+      (task.snoozedUntil != null && task.snoozedUntil > now),
   );
-  return sortBy(scheduledTasks, '1.scheduledStart');
+  scheduledTasks.sort(([, taskA], [, taskB]) => {
+    const aDate = Math.min(
+      taskA.scheduledStart && taskA.scheduledStart > now ? taskA.scheduledStart : Infinity,
+      taskA.snoozedUntil && taskA.snoozedUntil > now ? taskA.snoozedUntil : Infinity,
+    );
+    const bDate = Math.min(
+      taskB.scheduledStart && taskB.scheduledStart > now ? taskB.scheduledStart : Infinity,
+      taskB.snoozedUntil && taskB.snoozedUntil > now ? taskB.snoozedUntil : Infinity,
+    );
+    return aDate - bDate;
+  });
+  return scheduledTasks;
 });
 
 /** @returns {Array<[string, Object]>} */
@@ -528,14 +545,13 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mi
 
   const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
 
-  dispatch(
-    updateTask(id, {
-      calendarBlockCalendarId,
-      scheduledStart: calendarBlockStart,
-      calendarBlockStart,
-      calendarBlockEnd,
-    }),
-  );
+  fetchUpdateTask(id, {
+    calendarBlockCalendarId,
+    scheduledStart: calendarBlockStart,
+    calendarBlockStart,
+    calendarBlockEnd,
+    snoozedUntil: null,
+  });
 
   const title = selectTaskTitle(state, id);
   const calendarEventId = selectCalendarEventIdByTaskId(state, id);
