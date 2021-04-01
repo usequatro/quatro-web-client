@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
 import format from 'date-fns/format';
+import formatISO from 'date-fns/formatISO';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
 import startOfMinute from 'date-fns/startOfMinute';
 import startOfDay from 'date-fns/startOfDay';
@@ -54,7 +55,7 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const handleSelect = (timestamp, label) => {
     onClose();
     dispatch(setSnoozedUntil(timestamp));
-    mixpanel.track(SNOOZE_PRESET_SELECTED, { value: label });
+    mixpanel.track(SNOOZE_PRESET_SELECTED, { selection: label, value: formatISO(timestamp) });
   };
   const handleClear = () => {
     onClose();
