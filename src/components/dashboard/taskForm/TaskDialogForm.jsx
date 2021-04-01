@@ -376,7 +376,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       height="100%"
       flexDirection="column"
     >
-      <DialogContent className={classes.dialogContent} id="task-dialog-content">
+      <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
         <Box pt={2} pb={4} px={3} display="flex" flexDirection="column" alignItems="stretch">
           <Box pb={2}>
             <TextFieldWithTypography
