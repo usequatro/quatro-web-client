@@ -518,7 +518,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             className={classes.settingButton}
             startIcon={
               <Tooltip title="Add Blocker" arrow>
-                <BlockedIcon fontSize="small" />
+                <Box component="span" display="flex">
+                  <BlockedIcon fontSize="small" />
+                </Box>
               </Tooltip>
             }
           >
