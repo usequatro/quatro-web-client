@@ -209,7 +209,7 @@ const TaskView = ({
               className={classes.descriptionParagraph}
               color="textSecondary"
             >
-              <TextWithLinks text={description} maxLength={200} />
+              <TextWithLinks text={description} maxLength={1200} />
             </Typography>
           )}
 
