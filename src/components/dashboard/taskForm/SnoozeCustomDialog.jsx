@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
+import formatISO from 'date-fns/formatISO';
 import addHours from 'date-fns/addHours';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
 
@@ -19,11 +20,15 @@ import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import DatePicker from '../../ui/DatePicker';
 
 import { setSnoozedUntil, selectSnoozedUntil } from '../../../modules/taskForm';
+import { useMixpanel } from '../../tracking/MixpanelContext';
+import { SNOOZE_CUSTOM_VALUE_SET, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
 const initialSnoozedUntilTimestamp = addHours(startOfTomorrow(), 9).getTime();
 
 const SnoozeCustomDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const mixpanel = useMixpanel();
+
   const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
 
   const [currentValue, setCurrentValue] = useState(
@@ -38,7 +43,14 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
 
   const handleChangeCommitted = (value) => {
     onClose();
-    dispatch(setSnoozedUntil(value > Date.now() ? value : null));
+    dispatch(setSnoozedUntil(value));
+    mixpanel.track(SNOOZE_CUSTOM_VALUE_SET, { value: formatISO(value) });
+  };
+
+  const handleClear = () => {
+    onClose();
+    dispatch(setSnoozedUntil(null));
+    mixpanel.track(SNOOZE_CLEARED);
   };
 
   return (
@@ -83,7 +95,7 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
             variant="text"
             color="default"
             startIcon={<ClearRoundedIcon />}
-            onClick={() => handleChangeCommitted(null)}
+            onClick={handleClear}
             style={{ textAlign: 'left' }}
           >
             Clear Snooze
