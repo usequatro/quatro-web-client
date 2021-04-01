@@ -134,7 +134,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     color: theme.palette.text.secondary,
   },
-  softUnderline: {
+  descriptionField: {
     '&::before, &::after': {
       opacity: 0.5,
     },
@@ -249,7 +249,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               title,
               impact,
               effort,
-              description,
+              description: description.trim(),
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
               snoozedUntil: snoozedUntilTimestamp,
@@ -282,7 +282,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             impact,
             effort,
             {
-              description: description.trim() || '',
+              description: description.trim(),
               due: dueTimestamp,
               scheduledStart: scheduledStartTimestamp,
               snoozedUntil: snoozedUntilTimestamp,
@@ -428,7 +428,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                     </InputAdornment>
                   </Tooltip>
                 ),
-                className: classes.softUnderline,
+                className: classes.descriptionField,
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
