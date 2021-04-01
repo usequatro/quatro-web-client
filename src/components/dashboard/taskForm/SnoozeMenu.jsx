@@ -4,20 +4,48 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import format from 'date-fns/format';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
+import startOfMinute from 'date-fns/startOfMinute';
 import addHours from 'date-fns/addHours';
+import nextMonday from 'date-fns/nextMonday';
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 
 import { selectSnoozedUntil, setSnoozedUntil } from '../../../modules/taskForm';
+
+const getOptions = (now) => {
+  const oneHourFromNow = addHours(startOfMinute(now), 1).getTime();
+  const threeHoursFromNow = addHours(startOfMinute(now), 3).getTime();
+  const tomorrowMorningTimestamp = addHours(startOfTomorrow(), 9).getTime();
+  const nextWeek = addHours(nextMonday(now), 9).getTime();
+
+  return [
+    {
+      value: oneHourFromNow,
+      label: '1 hour from now',
+      formattedValue: format(oneHourFromNow, 'h:mm a'),
+    },
+    {
+      value: threeHoursFromNow,
+      label: '3 hours from now',
+      formattedValue: format(threeHoursFromNow, 'h:mm a'),
+    },
+    {
+      value: tomorrowMorningTimestamp,
+      label: 'Tomorrow morning',
+      formattedValue: format(tomorrowMorningTimestamp, 'h:mm a'),
+    },
+    { value: nextWeek, label: 'Next week', formattedValue: format(nextWeek, 'PP - h:mm a') },
+  ];
+};
 
 const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const dispatch = useDispatch();
 
   const snoozedUntil = useSelector(selectSnoozedUntil);
 
-  const tomorrowMorningTimestamp = addHours(startOfTomorrow(), 9).getTime();
-  const tomorrowAfternoonTimestamp = addHours(startOfTomorrow(), 14).getTime();
+  const options = getOptions(Date.now());
 
   const handleSelect = (timestamp) => {
     onClose();
@@ -27,6 +55,9 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
     onClose();
     onCustomSelected();
   };
+
+  const showCurrentOption =
+    snoozedUntil && !options.map(({ value }) => value).includes(snoozedUntil);
 
   return (
     <Menu
@@ -48,24 +79,24 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
       <MenuItem selected={!snoozedUntil} onClick={() => handleSelect(null)}>
         Not snoozed
       </MenuItem>
-      <MenuItem
-        selected={snoozedUntil === tomorrowMorningTimestamp}
-        onClick={() => handleSelect(tomorrowMorningTimestamp)}
-      >
-        Tomorrow morning (9 AM)
-      </MenuItem>
-      <MenuItem
-        selected={snoozedUntil === tomorrowAfternoonTimestamp}
-        onClick={() => handleSelect(tomorrowAfternoonTimestamp)}
-      >
-        Tomorrow afternoon (2 PM)
-      </MenuItem>
-      {snoozedUntil &&
-        ![tomorrowMorningTimestamp, tomorrowAfternoonTimestamp].includes(snoozedUntil) && (
-          <MenuItem selected onClick={() => handleSelect(snoozedUntil)}>
-            {format(snoozedUntil, 'PPPP, h:mm a')}
-          </MenuItem>
-        )}
+
+      {options.map(({ value, label, formattedValue }) => (
+        <MenuItem selected={snoozedUntil === value} onClick={() => handleSelect(value)}>
+          {label}
+          <Typography variant="body1" color="textSecondary" component="pre">
+            {` (${formattedValue})`}
+          </Typography>
+        </MenuItem>
+      ))}
+
+      {showCurrentOption && (
+        <MenuItem selected onClick={() => handleSelect(snoozedUntil)}>
+          Custom
+          <Typography variant="body1" color="textSecondary" component="pre">
+            {` (${format(snoozedUntil, 'PPPP, h:mm a')})`}
+          </Typography>
+        </MenuItem>
+      )}
       <MenuItem onClick={handleCustomSelected}>Custom...</MenuItem>
     </Menu>
   );
