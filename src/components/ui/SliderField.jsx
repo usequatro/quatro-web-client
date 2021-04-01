@@ -35,16 +35,7 @@ const getValueLabelColor = (value, length) => {
   return 'primary';
 };
 
-const SliderField = ({
-  id,
-  label,
-  tooltipTitle,
-  'aria-label': ariaLabel,
-  onChange,
-  value,
-  getValueText,
-  marks,
-}) => (
+const SliderField = ({ id, label, tooltipTitle, onChange, value, getValueText, marks }) => (
   <>
     <Box display="flex" justifyContent="space-between">
       {label && (
@@ -75,7 +66,7 @@ const SliderField = ({
 
     <Box>
       <QuatroSlider
-        aria-label={ariaLabel}
+        aria-labelledby={id}
         marks={marks || true}
         min={marks[0].value}
         max={marks[marks.length - 1].value}
@@ -98,7 +89,6 @@ SliderField.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string,
   tooltipTitle: PropTypes.string,
-  'aria-label': PropTypes.string,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   getValueText: PropTypes.func.isRequired,
@@ -108,7 +98,6 @@ SliderField.propTypes = {
 SliderField.defaultProps = {
   label: undefined,
   tooltipTitle: undefined,
-  'aria-label': undefined,
 };
 
 export default SliderField;
