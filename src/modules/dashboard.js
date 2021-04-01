@@ -1,6 +1,7 @@
 import once from 'lodash/once';
 import { createSlice } from '@reduxjs/toolkit';
 import startOfDay from 'date-fns/startOfDay';
+import startOfMinute from 'date-fns/startOfMinute';
 
 import { listenToTaskList, selectTaskDashboardTab } from './tasks';
 import { listenToRecurringConfigList } from './recurringConfigs';
@@ -28,6 +29,7 @@ export const selectDashboadIsLoaded = (state) => state[name].status === LOADED;
 export const selectDashboardActiveTab = (state) => state[name].activeTab;
 export const selectHighlightedTaskId = (state) => state[name].highlightedTaskId;
 export const selectCalendarDisplayTimestamp = (state) => state[name].calendarDisplayTimestamp;
+export const selectCurrentTimestamp = (state) => state[name].currentTimestamp;
 
 export const selectIsDataInSync = (state) =>
   state[name].tasksSyncStatus === IN_SYNC && state[name].recurringConfigsSyncStatus === IN_SYNC;
@@ -40,7 +42,10 @@ const initialState = {
   highlightedTaskId: null,
   tasksSyncStatus: IN_SYNC,
   recurringConfigsSyncStatus: IN_SYNC,
+  // current date showing in the calendar view
   calendarDisplayTimestamp: startOfDay(new Date()).getTime(),
+  // current time, accurate to the minute. Used to refresh react-redux selectors
+  currentTimestamp: startOfMinute(new Date()).getTime(),
 };
 
 /* eslint-disable no-param-reassign */
@@ -66,12 +71,22 @@ const slice = createSlice({
     setCalendarDisplayTimestamp: (state, { payload }) => {
       state.calendarDisplayTimestamp = startOfDay(payload).getTime();
     },
+    refreshCurrentTimestamp: (state) => {
+      const currentTimestamp = startOfMinute(Date.now()).getTime();
+      if (state.currentTimestamp !== currentTimestamp) {
+        state.currentTimestamp = currentTimestamp;
+      }
+    },
   },
 });
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const { setDashboardActiveTab, setCalendarDisplayTimestamp } = slice.actions;
+export const {
+  setDashboardActiveTab,
+  setCalendarDisplayTimestamp,
+  refreshCurrentTimestamp,
+} = slice.actions;
 
 // Thunks
 

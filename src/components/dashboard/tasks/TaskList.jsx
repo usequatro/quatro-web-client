@@ -36,19 +36,22 @@ import RunawayIcon from '../../icons/RunawayIcon';
 
 const emptyArray = [];
 
+const withMapIds = (fn) => (...args) => {
+  const tasks = fn(...args);
+  return tasks.map(([id]) => id);
+};
+
 const selectorFunctionByPathname = {
-  [dashboardTabs.NOW]: selectNowTasks,
-  [dashboardTabs.BACKLOG]: selectBacklogTasks,
-  [dashboardTabs.SCHEDULED]: selectScheduledTasks,
-  [dashboardTabs.BLOCKED]: selectBlockedTasks,
+  [dashboardTabs.NOW]: withMapIds(selectNowTasks),
+  [dashboardTabs.BACKLOG]: withMapIds(selectBacklogTasks),
+  [dashboardTabs.SCHEDULED]: withMapIds(selectScheduledTasks),
+  [dashboardTabs.BLOCKED]: withMapIds(selectBlockedTasks),
   fallback: () => emptyArray,
 };
 
 const shouldShowPosition = memoize((tab) =>
   [dashboardTabs.NOW, dashboardTabs.BACKLOG].includes(tab),
 );
-
-const mapIds = memoize((tasks) => tasks.map(([id]) => id));
 
 const emptyStateElementTypes = {
   [dashboardTabs.NOW]: BalanceIcon,
@@ -95,8 +98,9 @@ const TaskList = ({ tab }) => {
 
   const highlighedTaskId = useSelector(selectHighlightedTaskId);
   const loading = useSelector(selectDashboadIsLoading);
-  const tasks = useSelector(selectorFunctionByPathname[tab] || selectorFunctionByPathname.fallback);
-  const taskIds = mapIds(tasks);
+  const taskIds = useSelector(
+    selectorFunctionByPathname[tab] || selectorFunctionByPathname.fallback,
+  );
   const showPosition = shouldShowPosition(tab);
   const positionOffset = tab === dashboardTabs.BACKLOG ? NOW_TASKS_LIMIT : 0;
 
