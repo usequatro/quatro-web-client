@@ -2,7 +2,6 @@ import React, { memo, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
-import memoizeFunction from 'lodash/memoize';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -25,13 +24,8 @@ import TextWithLinks from '../../ui/TextWithLinks';
 import { clearRelativePrioritization, COMPLETE_DELAY } from '../../../modules/tasks';
 import formatDateTime from '../../../utils/formatDateTime';
 import CompleteButton from './CompleteButton';
-import { EFFORT_SLIDER_MARKS } from '../../../constants/effort';
+import { EFFORT_LABELS } from '../../../constants/effort';
 import AppLogoPlain from '../../icons/AppLogoPlain';
-
-const getTimeEstimateForEffort = memoizeFunction((effort) => {
-  const mark = EFFORT_SLIDER_MARKS.find(({ value }) => value === effort);
-  return mark ? mark.label : undefined;
-});
 
 const formatMinutes = (totalMinutes) => {
   const totalHours = Math.floor(totalMinutes / 60);
@@ -227,7 +221,7 @@ const TaskView = ({
             </TaskViewSubtitle>
           )}
 
-          {(calendarBlockDuration || getTimeEstimateForEffort(effort)) && (
+          {(calendarBlockDuration || EFFORT_LABELS[effort]) && (
             <TaskViewSubtitle
               tooltip={calendarBlockDuration ? 'Time blocked in calendar' : 'Time estimated'}
               Icon={QueryBuilderRoundedIcon}
@@ -235,7 +229,7 @@ const TaskView = ({
             >
               {calendarBlockDuration
                 ? `${formatMinutes(calendarBlockDuration)}`
-                : `${getTimeEstimateForEffort(effort)} estimated`}
+                : `${EFFORT_LABELS[effort]} estimated`}
             </TaskViewSubtitle>
           )}
 
