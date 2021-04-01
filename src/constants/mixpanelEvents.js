@@ -10,6 +10,11 @@ export const TASK_MANUALLY_ARRANGED = 'Task Manually Arranged';
 export const SIDEBAR_COLLAPSED = 'Sidebar Collapsed';
 export const SIDEBAR_EXPANDED = 'Sidebar Expanded';
 
+// Snooze
+export const SNOOZE_PRESET_SELECTED = 'Snooze Preset Selected';
+export const SNOOZE_CLEARED = 'Snooze Cleared';
+export const SNOOZE_CUSTOM_VALUE_SET = 'Snooze Custom Value Set';
+
 // Calendar integration
 export const TASK_DRAGGED_TO_CALENDAR = 'Task Dragged to Calendar';
 

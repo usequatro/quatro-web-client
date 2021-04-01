@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import format from 'date-fns/format';
 import startOfTomorrow from 'date-fns/startOfTomorrow';
 import startOfMinute from 'date-fns/startOfMinute';
+import startOfDay from 'date-fns/startOfDay';
 import addHours from 'date-fns/addHours';
 import nextMonday from 'date-fns/nextMonday';
 
@@ -13,12 +14,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 
 import { selectSnoozedUntil, setSnoozedUntil } from '../../../modules/taskForm';
+import { useMixpanel } from '../../tracking/MixpanelContext';
+import { SNOOZE_PRESET_SELECTED, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
 const getOptions = (now) => {
   const oneHourFromNow = addHours(startOfMinute(now), 1).getTime();
   const threeHoursFromNow = addHours(startOfMinute(now), 3).getTime();
   const tomorrowMorningTimestamp = addHours(startOfTomorrow(), 9).getTime();
-  const nextWeek = addHours(nextMonday(now), 9).getTime();
+  const nextWeek = addHours(startOfDay(nextMonday(now)), 9).getTime();
 
   return [
     {
@@ -42,14 +45,21 @@ const getOptions = (now) => {
 
 const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const dispatch = useDispatch();
+  const mixpanel = useMixpanel();
 
   const snoozedUntil = useSelector(selectSnoozedUntil);
 
   const options = getOptions(Date.now());
 
-  const handleSelect = (timestamp) => {
+  const handleSelect = (timestamp, label) => {
     onClose();
     dispatch(setSnoozedUntil(timestamp));
+    mixpanel.track(SNOOZE_PRESET_SELECTED, { value: label });
+  };
+  const handleClear = () => {
+    onClose();
+    dispatch(setSnoozedUntil(null));
+    mixpanel.track(SNOOZE_CLEARED);
   };
   const handleCustomSelected = () => {
     onClose();
@@ -57,7 +67,9 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   };
 
   const showCurrentOption =
-    snoozedUntil && !options.map(({ value }) => value).includes(snoozedUntil);
+    snoozedUntil &&
+    snoozedUntil > Date.now() &&
+    !options.map(({ value }) => value).includes(snoozedUntil);
 
   return (
     <Menu
@@ -76,12 +88,16 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
         horizontal: 'center',
       }}
     >
-      <MenuItem selected={!snoozedUntil} onClick={() => handleSelect(null)}>
+      <MenuItem selected={!snoozedUntil} onClick={handleClear}>
         Not snoozed
       </MenuItem>
 
       {options.map(({ value, label, formattedValue }) => (
-        <MenuItem selected={snoozedUntil === value} onClick={() => handleSelect(value)}>
+        <MenuItem
+          selected={snoozedUntil === value}
+          onClick={() => handleSelect(value, label)}
+          key={value}
+        >
           {label}
           <Typography variant="body1" color="textSecondary" component="pre">
             {` (${formattedValue})`}
