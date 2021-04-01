@@ -424,7 +424,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         </Box>
 
         <Box px={3} pt={2} pb={4} display="flex">
-          <Box width="50%" mr={4}>
+          <Box width="50%" mr={mobile ? 4 : 8}>
             <SliderField
               id="impact-slider"
               label="Impact"
@@ -435,7 +435,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               marks={IMPACT_SLIDER_MARKS}
             />
           </Box>
-          <Box width="50%" ml={4}>
+          <Box width="50%">
             <SliderField
               id="effort-slider"
               label="Time"
