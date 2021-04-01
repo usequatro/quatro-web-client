@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import Dialog from '@material-ui/core/Dialog';
 import Slide from '@material-ui/core/Slide';
+import Grow from '@material-ui/core/Grow';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme } from '@material-ui/core/styles';
 
@@ -12,7 +13,10 @@ import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterCon
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 import { selectDashboadIsLoaded } from '../../../modules/dashboard';
 
-const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
+const FullScreenTransition = forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+const DialogTransition = forwardRef((props, ref) => <Grow ref={ref} {...props} />);
 
 const TaskDialog = () => {
   const dispatch = useDispatch();
@@ -71,7 +75,7 @@ const TaskDialog = () => {
       onClose={handleClose}
       fullScreen={fullScreen}
       aria-labelledby="new-task-dialog-title"
-      TransitionComponent={Transition}
+      TransitionComponent={fullScreen ? FullScreenTransition : DialogTransition}
     >
       <TaskDialogForm onClose={handleClose} taskId={editTaskDialogId} />
     </Dialog>
