@@ -205,13 +205,15 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'scheduled-start-dialog', variant: 'h6' }}
+        iconStart={<ScheduledIcon />}
         title={
           <>
-            <ScheduledIcon />
-            &nbsp;Scheduled Date
+            Scheduled Date
             {/* @TODO: make this tooltip show on touch screens */}
             <Tooltip aria-hidden arrow title={tooltipTitle}>
-              <InfoOutlinedIcon fontSize="small" style={{ marginLeft: '8px' }} />
+              <Box ml={1} display="flex">
+                <InfoOutlinedIcon fontSize="small" />
+              </Box>
             </Tooltip>
           </>
         }

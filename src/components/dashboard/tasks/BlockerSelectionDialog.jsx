@@ -88,12 +88,8 @@ const BlockerSelectionDialog = ({
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'task-selection-dialog', variant: 'h6' }}
-        title={
-          <>
-            <BlockedIcon />
-            &nbsp;Blockers
-          </>
-        }
+        iconStart={<BlockedIcon />}
+        title="Blockers"
         onClose={onClose}
       />
 

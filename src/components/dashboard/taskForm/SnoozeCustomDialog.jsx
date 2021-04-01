@@ -51,12 +51,8 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
     >
       <DialogTitleWithClose
         TypographyProps={{ id: 'snooze-custom-dialog', variant: 'h6' }}
-        title={
-          <>
-            <SnoozeIcon titleAccess="Snooze icon" />
-            &nbsp;Snooze
-          </>
-        }
+        iconStart={<SnoozeIcon titleAccess="Snooze icon" />}
+        title="Snooze"
         onClose={onClose}
       />
 

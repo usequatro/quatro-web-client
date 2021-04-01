@@ -44,12 +44,8 @@ const DueDateDialog = ({ open, onClose }) => {
     <Dialog open={open} onClose={onClose} aria-labelledby="due-dialog" fullWidth maxWidth="xs">
       <DialogTitleWithClose
         TypographyProps={{ id: 'due-dialog', variant: 'h6' }}
-        title={
-          <>
-            <AccessAlarmRoundedIcon titleAccess="Due date icon" />
-            &nbsp;Due date
-          </>
-        }
+        iconStart={<AccessAlarmRoundedIcon titleAccess="Due date icon" />}
+        title="Due date"
         onClose={onClose}
       />
 

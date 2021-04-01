@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons }) => {
+const DialogTitleWithClose = ({ onClose, iconStart, title, TypographyProps, extraButtons }) => {
   const classes = useStyles();
 
   return (
@@ -45,6 +45,11 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
           {...TypographyProps}
           className={classes.dialogTitleTypography}
         >
+          {iconStart && (
+            <Box mr={1} component="span" aria-hidden display="flex">
+              {iconStart}
+            </Box>
+          )}
           {title}
         </Typography>
       ) : (
@@ -60,6 +65,7 @@ const DialogTitleWithClose = ({ onClose, title, TypographyProps, extraButtons })
 
 DialogTitleWithClose.propTypes = {
   onClose: PropTypes.func.isRequired,
+  iconStart: PropTypes.node,
   title: PropTypes.node.isRequired,
   TypographyProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   extraButtons: PropTypes.node,
@@ -67,6 +73,7 @@ DialogTitleWithClose.propTypes = {
 
 DialogTitleWithClose.defaultProps = {
   TypographyProps: {},
+  iconStart: undefined,
   extraButtons: undefined,
 };
 
