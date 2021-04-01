@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import cond from 'lodash/cond';
 import invert from 'lodash/invert';
 
+import getMinutes from 'date-fns/getMinutes';
+
 import Backdrop from '@material-ui/core/Backdrop';
 import Toolbar from '@material-ui/core/Toolbar';
 import Box from '@material-ui/core/Box';
@@ -26,6 +28,8 @@ import { useNotification } from '../Notification';
 import {
   listenToDashboardTasks,
   setDashboardActiveTab,
+  selectCurrentTimestamp,
+  refreshCurrentTimestamp,
   selectDashboardActiveTab,
   selectIsDataInSync,
   selectDashboadIsLoaded,
@@ -189,6 +193,17 @@ const Dashboard = () => {
     dashboardTabs.SCHEDULED,
     dashboardTabs.BLOCKED,
   ].includes(activeTab);
+
+  // we trigger a Redux dispatch every second, updating the store, so all selectors refresh
+  const currentTimestamp = useSelector(selectCurrentTimestamp);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (getMinutes(currentTimestamp) !== getMinutes(Date.now())) {
+        dispatch(refreshCurrentTimestamp());
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dispatch, currentTimestamp]);
 
   return (
     <div className={classes.root}>
