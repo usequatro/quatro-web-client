@@ -213,17 +213,17 @@ const TaskView = ({
             </Typography>
           )}
 
-          {scheduledStart && (
-            <TaskViewSubtitle tooltip="Scheduled date" Icon={ScheduledIcon} onClick={() => {}}>
-              {formatDateTime(scheduledStart)}
-            </TaskViewSubtitle>
-          )}
-
           {snoozedUntil && (
             <TaskViewSubtitle tooltip="Snoozed until" Icon={SnoozeIcon} onClick={() => {}}>
               {snoozedUntil < Date.now()
                 ? `Was snoozed until ${formatDateTime(snoozedUntil)}`
                 : formatDateTime(snoozedUntil)}
+            </TaskViewSubtitle>
+          )}
+
+          {scheduledStart && (
+            <TaskViewSubtitle tooltip="Scheduled date" Icon={ScheduledIcon} onClick={() => {}}>
+              {formatDateTime(scheduledStart)}
             </TaskViewSubtitle>
           )}
 
