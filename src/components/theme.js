@@ -100,7 +100,7 @@ const muiTheme = createMuiTheme({
     },
     MuiDialogActions: {
       root: {
-        padding: '16px 24px',
+        padding: '16px 24px', // matching with DialogContent
       },
     },
   },
