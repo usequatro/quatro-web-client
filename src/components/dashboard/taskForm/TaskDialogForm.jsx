@@ -87,15 +87,6 @@ import BlockedIcon from '../../icons/BlockedIcon';
 import useMobileViewportSize from '../../hooks/useMobileViewportSize';
 
 const useStyles = makeStyles((theme) => ({
-  dialogTitle: {
-    position: 'relative',
-    display: 'flex',
-  },
-  dialogTitleTypography: {
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-  },
   dialogActionBar: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -120,11 +111,6 @@ const useStyles = makeStyles((theme) => ({
   },
   blockersList: {
     flexGrow: 1,
-  },
-  blockersIconButton: {
-    padding: '6px', // to match the list item next to it
-    paddingRight: '8px',
-    marginTop: '3px',
   },
   inputStartIcon: {
     alignSelf: 'flex-start',
