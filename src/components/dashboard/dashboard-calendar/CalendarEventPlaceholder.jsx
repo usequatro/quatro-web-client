@@ -148,7 +148,7 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
         startTimestamp={startTimestamp}
         endTimestamp={endTimestamp}
         allDay={false}
-        declined={false}
+        responseStatus={undefined}
         taskId={draggableTaskId}
         showCompleteButton={false}
         completed={false}

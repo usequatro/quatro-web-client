@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
+import endOfDay from 'date-fns/endOfDay';
 import startOfDay from 'date-fns/startOfDay';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { Draggable } from 'react-beautiful-dnd';
@@ -11,7 +12,8 @@ import {
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
-  selectCalendarEventDeclined,
+  selectCalendarEventEventType,
+  selectCalendarEventResponseStatus,
   selectCalendarEventCollisionCount,
   selectCalendarEventCollisionOrder,
   selectCalendarEventCalendarId,
@@ -28,14 +30,23 @@ import CalendarEventPopover from './CalendarEventPopover';
 import CardPositionedBoundaries from './CardPositionedBoundaries';
 import { useAppDragDropContext } from '../DashboardDragDropContext';
 
-const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerHour, index }) => {
+const CalendarEvent = ({
+  id,
+  scrollAnchorRef,
+  interactive,
+  tickHeight,
+  ticksPerHour,
+  displayDateTimestamp,
+  index,
+}) => {
   const { draggableTaskId } = useAppDragDropContext();
 
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const startTimestamp = useSelector((state) => selectCalendarEventStartTimestamp(state, id));
   const endTimestamp = useSelector((state) => selectCalendarEventEndTimestamp(state, id));
   const allDay = useSelector((state) => selectCalendarEventAllDay(state, id));
-  const declined = useSelector((state) => selectCalendarEventDeclined(state, id));
+  const eventType = useSelector((state) => selectCalendarEventEventType(state, id));
+  const responseStatus = useSelector((state) => selectCalendarEventResponseStatus(state, id));
   const collisionCount = useSelector((state) => selectCalendarEventCollisionCount(state, id));
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
@@ -58,9 +69,18 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
   const popoverAnchorRef = useRef();
 
+  const displayDateStart = startOfDay(displayDateTimestamp).getTime();
+  const displayDateEnd = endOfDay(displayDateTimestamp).getTime();
+
   const minutesForOneTick = 60 / ticksPerHour;
-  const durationInMinutes = differenceInMinutes(endTimestamp, startTimestamp);
-  const startTimeInMinutes = differenceInMinutes(startTimestamp, startOfDay(startTimestamp));
+  const durationInMinutes = differenceInMinutes(
+    Math.min(endTimestamp, displayDateEnd),
+    Math.max(startTimestamp, displayDateStart),
+  );
+  const startTimeInMinutes = differenceInMinutes(
+    Math.max(startTimestamp, displayDateStart),
+    displayDateStart,
+  );
 
   const cardWidth = Math.floor(100 / (1 + (collisionCount || 0)));
   const cardLeft = (collisionOrder || 0) * cardWidth;
@@ -78,7 +98,10 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
     setCalendarDetailsOpen(false);
   }, []);
 
-  const cardHeight = allDay ? 40 : Math.floor(tickHeight * (durationInMinutes / minutesForOneTick));
+  const maxCardHeight = tickHeight * ((24 * 60) / minutesForOneTick); // 24h event
+  const cardHeight = allDay
+    ? 40
+    : Math.min(Math.floor(tickHeight * (durationInMinutes / minutesForOneTick)), maxCardHeight);
 
   const isDraggable = Boolean(interactive && taskId);
 
@@ -93,7 +116,8 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
       startTimestamp={startTimestamp}
       endTimestamp={endTimestamp}
       allDay={allDay}
-      declined={Boolean(declined)}
+      eventType={eventType}
+      responseStatus={responseStatus}
       taskId={taskId}
       showCompleteButton={interactive && Boolean(taskId)}
       selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
@@ -117,6 +141,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
 
   return isDraggable ? (
     <>
+      {/* @todo: the index here should increase only for the isDraggable cards */}
       <Draggable draggableId={`draggable-calendar-${taskId}`} index={index}>
         {(draggableProvided, draggableSnapshot) => (
           <CardPositionedBoundaries
@@ -164,6 +189,7 @@ const CalendarEvent = ({ id, scrollAnchorRef, interactive, tickHeight, ticksPerH
 CalendarEvent.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  displayDateTimestamp: PropTypes.number.isRequired,
   interactive: PropTypes.bool.isRequired,
   scrollAnchorRef: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   tickHeight: PropTypes.number.isRequired,

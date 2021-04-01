@@ -6,7 +6,6 @@ import cond from 'lodash/cond';
 
 import format from 'date-fns/format';
 import isPast from 'date-fns/isPast';
-import isToday from 'date-fns/isToday';
 import isValid from 'date-fns/isValid';
 
 import Typography from '@material-ui/core/Typography';
@@ -18,23 +17,36 @@ import { makeStyles } from '@material-ui/core/styles';
 import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
 import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
+import * as RESPONSE_STATUS from '../../../constants/responseStatus';
+import * as EVENT_TYPES from '../../../constants/eventTypes';
 
 const useStyles = makeStyles((theme) => ({
-  eventCard: ({ color, declined, smallCard }) => ({
+  eventCard: ({ color, needsAction, smallCard }) => ({
     width: '100%',
     height: '100%',
     padding: `${theme.spacing(1) / (smallCard ? 4 : 2)}px ${theme.spacing(1)}px`,
     borderRadius: 5,
-    color: declined ? color : theme.palette.getContrastText(color),
-    backgroundColor: declined ? theme.palette.background.paper : color,
-    border: `solid 1px ${declined ? color : theme.palette.getContrastText(color)}`,
+    color: needsAction ? color : theme.palette.getContrastText(color),
+    backgroundColor: needsAction ? theme.palette.background.paper : color,
+
+    border: `solid 1px ${needsAction ? color : theme.palette.getContrastText(color)}`,
     outline: 'none',
-    textDecoration: declined ? 'line-through' : 'initial',
     clipPath: 'border-box', // needed by iOS Safari, otherwise it shows overflowing text (ignores overflow hidden)
     display: 'flex',
     flexShrink: 0,
     alignItems: 'flex-start',
   }),
+  tentativeEvent: {
+    backgroundImage:
+      'linear-gradient(45deg,transparent,transparent 40%,rgba(0,0,0,0.2) 40%,rgba(0,0,0,0.2) 50%,transparent 50%,transparent 90%,rgba(0,0,0,0.2) 90%,rgba(0,0,0,0.2))',
+    backgroundSize: '12px 12px',
+  },
+  pastEvent: {
+    backgroundImage: 'linear-gradient(rgba(255,255,255,0.35), rgba(255,255,255,0.35))',
+  },
+  outOfOfficeEvent: {
+    backgroundImage: 'linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0.75))',
+  },
   eventTitleRow: {
     lineHeight: 'inherit',
     flexGrow: 1,
@@ -67,7 +79,8 @@ const EventCardView = forwardRef(
       startTimestamp,
       endTimestamp,
       allDay,
-      declined,
+      eventType,
+      responseStatus,
       taskId,
       completed,
       showCompleteButton,
@@ -84,7 +97,12 @@ const EventCardView = forwardRef(
     const dispatch = useDispatch();
     const { notifyInfo } = useNotification();
 
-    const classes = useStyles({ color, declined, smallCard });
+    const classes = useStyles({
+      color,
+      needsAction: responseStatus === RESPONSE_STATUS.NEEDS_ACTION,
+      eventType,
+      smallCard,
+    });
 
     const [focused, setFocused] = useState(false);
 
@@ -96,14 +114,20 @@ const EventCardView = forwardRef(
           opacity: cond([
             [() => isBeingRedragged, () => 0.1],
             [() => synching, () => 0.7],
-            [() => !allDay && isToday(endTimestamp) && isPast(endTimestamp), () => 0.8],
-            [() => declined, () => 0.7],
             [() => true, () => 1],
           ])(),
           // eslint-disable-next-line no-nested-ternary
           cursor: draggable ? 'grab' : selectable ? 'pointer' : 'auto',
         }}
-        className={[classes.eventCard, className].filter(Boolean).join(' ')}
+        className={[
+          classes.eventCard,
+          responseStatus === RESPONSE_STATUS.TENTATIVE ? classes.tentativeEvent : '',
+          eventType === EVENT_TYPES.OUT_OF_OFFICE ? classes.outOfOfficeEvent : '',
+          isPast(endTimestamp) ? classes.pastEvent : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         elevation={elevated || focused ? 8 : 0}
         ref={ref}
         {...(selectable
@@ -176,7 +200,13 @@ EventCardView.propTypes = {
   startTimestamp: PropTypes.number.isRequired,
   endTimestamp: PropTypes.number.isRequired,
   allDay: PropTypes.bool.isRequired,
-  declined: PropTypes.bool.isRequired,
+  eventType: PropTypes.oneOf([EVENT_TYPES.OUT_OF_OFFICE, EVENT_TYPES.DEFAULT]),
+  responseStatus: PropTypes.oneOf([
+    RESPONSE_STATUS.ACCEPTED,
+    RESPONSE_STATUS.DECLINED,
+    RESPONSE_STATUS.TENTATIVE,
+    RESPONSE_STATUS.NEEDS_ACTION,
+  ]),
   taskId: PropTypes.string,
   completed: PropTypes.bool.isRequired,
   showCompleteButton: PropTypes.bool.isRequired,
@@ -192,6 +222,8 @@ EventCardView.propTypes = {
 EventCardView.defaultProps = {
   scrollAnchorRef: undefined,
   className: undefined,
+  responseStatus: RESPONSE_STATUS.ACCEPTED,
+  eventType: EVENT_TYPES.DEFAULT,
   taskId: null,
 };
 

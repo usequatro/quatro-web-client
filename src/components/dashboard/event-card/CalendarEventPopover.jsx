@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 
 import format from 'date-fns/format';
-import isValid from 'date-fns/isValid';
+import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
 
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
@@ -39,19 +39,17 @@ import {
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
-  selectCalendarEventDeclined,
-  selectCalendarEventCalendarId,
   selectCalendarEventTaskId,
   selectCalendarEventProviderCalendarId,
   selectCalendarEventVisibility,
 } from '../../../modules/calendarEvents';
 import { completeTask, selectTaskShowsAsCompleted, selectTaskExists } from '../../../modules/tasks';
-import { selectCalendarColor } from '../../../modules/calendars';
 import TextWithLinks from '../../ui/TextWithLinks';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import parseHtml from '../../../utils/parseHtml';
 import usePrevious from '../../hooks/usePrevious';
 import { getTaskPath } from '../../../constants/paths';
+import * as RESPONSE_STATUS from '../../../constants/responseStatus';
 import { PUBLIC, getEventVisibilityLabel } from '../../../constants/eventVisibilities';
 import { useNotification } from '../../Notification';
 
@@ -83,20 +81,25 @@ const AttendeeStatusIcon = ({ responseStatus }) => {
     style: { fontSize: '1em', marginLeft: '0.5em' },
   };
   switch (responseStatus) {
-    case 'accepted':
+    case RESPONSE_STATUS.ACCEPTED:
       return <CheckRoundedIcon titleAccess="Accepted" {...commonProps} />;
-    case 'declined':
+    case RESPONSE_STATUS.DECLINED:
       return <NotInterestedRoundedIcon titleAccess="Declined" {...commonProps} />;
-    case 'tentative':
+    case RESPONSE_STATUS.TENTATIVE:
       return <HelpOutlineRoundedIcon titleAccess="Maybe" {...commonProps} />;
-    case 'needsAction':
+    case RESPONSE_STATUS.NEEDS_ACTION:
     default:
       return null;
   }
 };
 
 AttendeeStatusIcon.propTypes = {
-  responseStatus: PropTypes.oneOf(['accepted', 'declined', 'tentative', 'needsAction']).isRequired,
+  responseStatus: PropTypes.oneOf([
+    RESPONSE_STATUS.ACCEPTED,
+    RESPONSE_STATUS.DECLINED,
+    RESPONSE_STATUS.TENTATIVE,
+    RESPONSE_STATUS.NEEDS_ACTION,
+  ]).isRequired,
 };
 
 const InformativeIcon = ({ Icon, title }) => (
@@ -129,16 +132,13 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const endTimestamp = useSelector((state) => selectCalendarEventEndTimestamp(state, id));
   const allDay = useSelector((state) => selectCalendarEventAllDay(state, id));
   const visibility = useSelector((state) => selectCalendarEventVisibility(state, id));
-  const declined = useSelector((state) => selectCalendarEventDeclined(state, id));
-  const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
-  const color = useSelector((state) => selectCalendarColor(state, calendarId)) || '#000000';
 
   const completed = useSelector((state) =>
     taskId ? selectTaskShowsAsCompleted(state, taskId) : false,
   );
 
-  const classes = useStyles({ color, declined });
+  const classes = useStyles();
 
   const location = useLocation();
 
@@ -150,6 +150,9 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
       onClose();
     }
   }, [previouslyTaskExists, taskExists, onClose]);
+
+  const timeFormat =
+    differenceInCalendarDays(endTimestamp, startTimestamp) < 1 ? 'h:mm a' : 'PP - h:mm a';
 
   return (
     <Popover
@@ -173,9 +176,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
           <Typography variant="body2">
             {allDay
               ? 'All Day'
-              : `${isValid(startTimestamp) ? format(startTimestamp, 'h:mm a') : ''} - ${
-                  isValid(endTimestamp) ? format(endTimestamp, 'h:mm a') : ''
-                }`}
+              : `${format(startTimestamp, timeFormat)} - ${format(endTimestamp, timeFormat)}`}
           </Typography>
         </Box>
 

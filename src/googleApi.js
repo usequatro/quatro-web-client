@@ -1,12 +1,7 @@
 import formatISO from 'date-fns/formatISO';
 import parseISO from 'date-fns/parseISO';
 import parse from 'date-fns/parse';
-import isEqual from 'date-fns/isEqual';
-import isBefore from 'date-fns/isBefore';
-import isAfter from 'date-fns/isAfter';
 import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
-import isValid from 'date-fns/isValid';
 import get from 'lodash/get';
 
 import firebase from './firebase';
@@ -18,6 +13,7 @@ import {
   CALENDAR_LIST_READ,
   CALENDAR_EVENTS_MANAGE,
 } from './constants/googleApiScopes';
+import { DECLINED } from './constants/responseStatus';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -91,29 +87,28 @@ const parseTimestamp = (dateObject) => {
 
 const ALL_DAY_DATE_REGEXP = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/; // all day date yyyy-MM-dd
 
-const isItemDeclined = (item) => {
-  const seltAttendee = (item.attendees || []).find((attendee) => attendee.self);
-  return seltAttendee && seltAttendee.responseStatus === 'declined';
+/** @returns {string|undefined} */
+const getSelfResponseStatus = (item) => {
+  const selfAttendee = (item.attendees || []).find((attendee) => attendee.self);
+  return selfAttendee && selfAttendee.responseStatus ? selfAttendee.responseStatus : undefined;
 };
 
-const formatCalendarAPIFormat = (item) => {
+const formatCalendarAPIFormat = (item, providerCalendarId) => {
+  const responseStatus = getSelfResponseStatus(item);
+
+  // We intentionally skip declined invites
+  if (responseStatus === DECLINED) {
+    return null;
+  }
+
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
 
-  const startOfDayDate = startOfDay(startTimestamp);
-  const endOfDayDate = endOfDay(endTimestamp);
-
   const allDay =
-    (ALL_DAY_DATE_REGEXP.test(item.start.date) && ALL_DAY_DATE_REGEXP.test(item.end.date)) ||
-    Boolean(
-      isValid(startTimestamp) &&
-        isValid(endTimestamp) &&
-        (isEqual(startTimestamp, startOfDayDate) || isBefore(startTimestamp, startOfDayDate)) &&
-        (isEqual(endTimestamp, endOfDayDate) || isAfter(endTimestamp, endOfDayDate)),
-    );
+    ALL_DAY_DATE_REGEXP.test(item.start.date) && ALL_DAY_DATE_REGEXP.test(item.end.date);
 
   const event = {
-    id: item.id,
+    id: `${providerCalendarId.replace(/[^a-z0-9]/gi, '')}-${item.id}`,
     calendarId: item.calendarId,
     htmlLink: item.htmlLink,
     summary: item.summary,
@@ -156,8 +151,9 @@ const formatCalendarAPIFormat = (item) => {
     }),
     attendeesOmitted: item.attendeesOmitted,
     allDay,
-    declined: isItemDeclined(item),
+    responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),
+    eventType: item.eventType,
     visibility: item.visibility,
   };
   return event;
@@ -191,7 +187,9 @@ export const gapiListCalendarEvents = async (
     },
   }).then((response) => {
     debugConsole.log('Google API', providerCalendarId, response.result.items);
-    return response.result.items.map((item) => formatCalendarAPIFormat(item));
+    return response.result.items
+      .map((item) => formatCalendarAPIFormat(item, providerCalendarId))
+      .filter(Boolean);
   });
 
 /**

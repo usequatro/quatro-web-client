@@ -11,12 +11,14 @@ import endOfDay from 'date-fns/endOfDay';
 import { gapiListCalendarEvents } from '../googleApi';
 import { timestampSchema } from '../utils/validators';
 import updateArray from '../utils/updateArray';
+import * as RESPONSE_STATUS from '../constants/responseStatus';
 
 // Allow dependency cycle because it's just for selectors
 // eslint-disable-next-line import/no-cycle
 import { selectCalendarProviderCalendarId, selectCalendarIds } from './calendars';
 
 import { DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL } from '../constants/eventVisibilities';
+import * as EVENT_TYPES from '../constants/eventTypes';
 
 const name = 'calendarEvents';
 
@@ -46,7 +48,12 @@ const calendarEventSchema = Joi.object({
         displayName: Joi.string(),
         email: Joi.string(),
         comment: Joi.string(),
-        responseStatus: Joi.valid('needsAction', 'declined', 'tentative', 'accepted'),
+        responseStatus: Joi.valid(
+          RESPONSE_STATUS.ACCEPTED,
+          RESPONSE_STATUS.DECLINED,
+          RESPONSE_STATUS.TENTATIVE,
+          RESPONSE_STATUS.NEEDS_ACTION,
+        ),
         optional: Joi.bool(),
         organizer: Joi.bool(),
         resource: Joi.bool(),
@@ -58,6 +65,7 @@ const calendarEventSchema = Joi.object({
   allDay: Joi.bool(),
   declined: Joi.bool(),
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
+  eventType: Joi.valid(EVENT_TYPES.DEFAULT, EVENT_TYPES.OUT_OF_OFFICE),
   taskId: Joi.string().allow(null),
 });
 
@@ -79,7 +87,10 @@ export const selectCalendarEventEndTimestamp = (state, id) =>
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
 /** @returns {string|undefined} */
 export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
-export const selectCalendarEventDeclined = (state, id) => get(state[name].byId[id], 'declined');
+/** @returns {string|undefined} */
+export const selectCalendarEventEventType = (state, id) => get(state[name].byId[id], 'eventType');
+export const selectCalendarEventResponseStatus = (state, id) =>
+  get(state[name].byId[id], 'responseStatus');
 export const selectCalendarEventAttendees = (state, id) =>
   get(state[name].byId[id], 'attendees', []);
 export const selectCalendarEventAttendeesOmitted = (state, id) =>
@@ -94,6 +105,9 @@ export const selectCalendarEventProviderCalendarId = (state, id) =>
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
 export const selectCalendarEventPlaceholderUntilCreated = (state, id) =>
   get(state[name].byId[id], 'placeholderUntilCreated');
+/** @returns {string|undefined} */
+export const selectCalendarEventIdByTaskId = (state, taskId) =>
+  state[name].allIds.find((id) => selectCalendarEventTaskId(state, id) === taskId);
 
 const selectCalendarEventsDateRequested = (state, calendarId, date) => {
   const dateKey = formatDate(date);
@@ -133,12 +147,23 @@ export const selectCalendarEventsTimeIsFetching = (state, timestamp) => {
 export const selectCalendarEventIdsForDate = (state, timestamp) => {
   const start = startOfDay(timestamp).getTime();
   const end = endOfDay(timestamp).getTime();
-  return state[name].allIds.filter(
-    (eventId) =>
-      !selectCalendarEventAllDay(state, eventId) &&
-      selectCalendarEventStartTimestamp(state, eventId) >= start &&
-      selectCalendarEventEndTimestamp(state, eventId) <= end,
-  );
+  return state[name].allIds.filter((eventId) => {
+    const allDay = selectCalendarEventAllDay(state, eventId);
+    if (allDay) {
+      return false;
+    }
+    const eventStart = selectCalendarEventStartTimestamp(state, eventId);
+    const eventEnd = selectCalendarEventEndTimestamp(state, eventId);
+
+    return (
+      // events starting today
+      (eventStart >= start && eventStart < end) ||
+      // events ending today
+      (eventEnd <= end && eventEnd > start) ||
+      // events starting before today and ending after today
+      (eventStart <= start && eventEnd >= end)
+    );
+  });
 };
 
 /** @return {Array<string>} */
@@ -159,7 +184,6 @@ export const selectCalendarEventIdsForNotifications = (state, calendarId, { earl
     (eventId) =>
       selectCalendarEventCalendarId(state, eventId) === calendarId &&
       !selectCalendarEventAllDay(state, eventId) &&
-      !selectCalendarEventDeclined(state, eventId) &&
       !selectCalendarEventPlaceholderUntilCreated(state, eventId) &&
       selectCalendarEventStartTimestamp(state, eventId) >= earliest &&
       selectCalendarEventStartTimestamp(state, eventId) <= latest,
