@@ -9,22 +9,24 @@ import addMinutes from 'date-fns/addMinutes';
 import format from 'date-fns/format';
 import cond from 'lodash/cond';
 
+import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
 import DialogContent from '@material-ui/core/DialogContent';
-import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import Switch from '@material-ui/core/Switch';
 
+import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import ViewDayIcon from '@material-ui/icons/ViewDay';
 import { makeStyles } from '@material-ui/core/styles';
 
-import DatePickerCombo from '../../ui/DatePickerCombo';
+import DatePicker from '../../ui/DatePicker';
 import TimePicker from '../../ui/TimePicker';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectCalendarIds, selectCalendarCount } from '../../../modules/calendars';
@@ -54,11 +56,20 @@ import RecurringConfigEditing from './RecurringConfigEditing';
 import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringText';
 import { EFFORT_TO_DURATION } from '../../../constants/effort';
 import ScheduledIcon from '../../icons/ScheduledIcon';
+import useMobileViewportSize from '../../hooks/useMobileViewportSize';
 
 const useStyles = makeStyles((theme) => ({
   switchHelperText: {
     marginTop: 0,
-    marginLeft: theme.spacing(6),
+    marginLeft: theme.spacing(4),
+  },
+  presetRadioGroup: {
+    alignItems: 'flex-start',
+  },
+  sectionTitle: {
+    flexGrow: 1,
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
@@ -107,7 +118,9 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   useEffect(() => {
     if (!previousOpen.current && open) {
       setErrors([]);
-      setCurrentBlocksCalendar(blocksCalendar);
+      // Show calendar block UI when setting new scheduled date.
+      const hasSavedScheduledDate = !timestamp;
+      setCurrentBlocksCalendar(Boolean(calendarBlockStart || hasSavedScheduledDate));
       setCurrentTimestamp(timestamp || initialDateTimestamp);
       setCurrentDuration(calendarBlockDuration || defaultDuration);
       setCurrentCalendarId(calendarBlockCalendarId);
@@ -116,11 +129,26 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   }, [
     open,
     timestamp,
-    blocksCalendar,
+    calendarBlockStart,
     calendarBlockDuration,
     calendarBlockCalendarId,
     defaultDuration,
   ]);
+
+  const mobile = useMobileViewportSize();
+
+  const handleClear = () => {
+    dispatch(setScheduledStart(null));
+    dispatch(setCalendarBlockCalendarId(null));
+    dispatch(setCalendarBlockStart(null));
+    dispatch(setCalendarBlockEnd(null));
+
+    // If we remove the scheduled start and there was repeat, also clear it
+    if (recurringConfig) {
+      dispatch(setRecurringConfig(null));
+    }
+    onClose();
+  };
 
   const handleDone = () => {
     // validation
@@ -165,23 +193,6 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     onClose();
   };
 
-  const handleClear = () => {
-    dispatch(setScheduledStart(null));
-    dispatch(setCalendarBlockCalendarId(null));
-    dispatch(setCalendarBlockStart(null));
-    dispatch(setCalendarBlockEnd(null));
-
-    // If we remove the scheduled start and there was repeat, also clear it
-    if (recurringConfig) {
-      dispatch(setRecurringConfig(null));
-    }
-    onClose();
-  };
-
-  if (!currentTimestamp) {
-    return null;
-  }
-
   const tooltipTitle = isValid(currentTimestamp)
     ? `This task will appear in your Top 4 on ${format(currentTimestamp, 'PPPP')} at ${format(
         currentTimestamp,
@@ -220,73 +231,101 @@ const ScheduledStartDialog = ({ open, onClose }) => {
         onClose={onClose}
       />
 
-      <DialogContent>
-        <Box display="flex" mb={3}>
-          <DatePickerCombo
-            timestamp={currentTimestamp || initialDateTimestamp}
-            onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
-          />
+      <DialogContent dividers={mobile}>
+        <Box display="flex" flexDirection="column" mb={4} mt={2}>
+          {currentTimestamp && (
+            <Box display="flex" flexWrap="wrap" ml={0}>
+              <Box flexGrow={1} flexShrink={0} pr={2} pb={2}>
+                <DatePicker
+                  timestamp={currentTimestamp}
+                  onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
+                  disablePast
+                  minDateMessage="Heads up! That's past already"
+                />
+              </Box>
+
+              <Box pb={2}>
+                <TimePicker
+                  showIcon={false}
+                  timestamp={currentTimestamp}
+                  format="h:mm a"
+                  onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
+                />
+              </Box>
+            </Box>
+          )}
         </Box>
 
-        <Box display="flex" flexDirection="column" mt={1} mb={3}>
-          <TimePicker
-            showIcon
-            timestamp={currentTimestamp}
-            format="h:mm a"
-            onChangeCommitted={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
-          />
-        </Box>
+        <Box display="flex" flexDirection="column" mb={6}>
+          <Typography variant="h6" className={classes.sectionTitle}>
+            <Box mr={1} component="span" aria-hidden display="flex">
+              <ReplayRoundedIcon />
+            </Box>
+            Repeat
+          </Typography>
 
-        <Box display="flex" flexDirection="column" mt={1} mb={3}>
-          <RecurringConfigEditing timestamp={currentTimestamp} />
-        </Box>
-
-        <Divider />
-        <Box mb={2} />
-
-        <FormControlLabel
-          disabled={Boolean(blockCalendarDisabledReason)}
-          control={
-            <Switch
-              checked={currentBlocksCalendar}
-              onChange={(event) => setCurrentBlocksCalendar(event.target.checked)}
-              name="blocksCalendar"
-              color="primary"
-            />
-          }
-          label="Block time in connected calendar"
-        />
-        {recurringConfig && !blockCalendarDisabledReason && (
-          <FormHelperText className={classes.switchHelperText}>
-            Applied to first task only
-          </FormHelperText>
-        )}
-        {blockCalendarDisabledReason && (
-          <FormHelperText className={classes.switchHelperText}>
-            {{
-              access: (
-                <>You need to grant permissions for Google Calendar to block time for this task.</>
-              ),
-              noCalendars: <>You need to connect a calendar to block time for this task.</>,
-            }[blockCalendarDisabledReason] || ''}
-          </FormHelperText>
-        )}
-
-        {/* recurring menu will go here */}
-
-        {currentBlocksCalendar && isValid(currentTimestamp) && (
-          <Box mt={2} mb={2}>
-            <CalendarBlockEditor
-              startDateTimestamp={currentTimestamp}
-              onChangeStartDateTimestamp={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
-              duration={currentDuration}
-              onDurationChange={(newDuration) => setCurrentDuration(newDuration)}
-              calendarId={currentCalendarId}
-              onCalendarIdChange={(newCalendarId) => setCurrentCalendarId(newCalendarId)}
-              errors={errors}
-            />
+          <Box ml={4}>
+            <RecurringConfigEditing timestamp={currentTimestamp} />
           </Box>
-        )}
+        </Box>
+
+        <Box display="flex" flexDirection="column">
+          <Typography variant="h6" className={classes.sectionTitle}>
+            <Box mr={1} component="span" aria-hidden display="flex">
+              <ViewDayIcon />
+            </Box>
+            Calendar Block
+          </Typography>
+
+          <Box ml={4}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  disabled={!currentTimestamp}
+                  color="primary"
+                  checked={Boolean(currentTimestamp && currentBlocksCalendar)}
+                  onChange={(event) => setCurrentBlocksCalendar(event.target.checked)}
+                  name="blocksCalendar"
+                />
+              }
+              label="Blocks time in connected calendar"
+            />
+
+            {recurringConfig && !blockCalendarDisabledReason && currentTimestamp && (
+              <FormHelperText className={classes.switchHelperText}>
+                Applied to first task only
+              </FormHelperText>
+            )}
+            {blockCalendarDisabledReason && currentTimestamp && (
+              <FormHelperText className={classes.switchHelperText}>
+                {{
+                  access: (
+                    <>
+                      You need to grant permissions for Google Calendar to block time for this task.
+                    </>
+                  ),
+                  noCalendars: <>You need to connect a calendar to block time for this task.</>,
+                }[blockCalendarDisabledReason] || ''}
+              </FormHelperText>
+            )}
+
+            {/* recurring menu will go here */}
+
+            {currentBlocksCalendar && isValid(currentTimestamp) && (
+              <Box mt={2}>
+                <CalendarBlockEditor
+                  startDateTimestamp={currentTimestamp}
+                  onChangeStartDateTimestamp={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
+                  duration={currentDuration}
+                  onDurationChange={(newDuration) => setCurrentDuration(newDuration)}
+                  calendarId={currentCalendarId}
+                  onCalendarIdChange={(newCalendarId) => setCurrentCalendarId(newCalendarId)}
+                  errors={errors}
+                />
+              </Box>
+            )}
+          </Box>
+        </Box>
       </DialogContent>
 
       <DialogActions>
@@ -298,12 +337,16 @@ const ScheduledStartDialog = ({ open, onClose }) => {
             onClick={handleClear}
             style={{ textAlign: 'left' }}
           >
-            Clear Scheduled Date
+            {timestamp ? 'Clear Scheduled Date' : 'Cancel'}
           </Button>
         </Box>
 
-        <Button variant="text" color="primary" onClick={handleDone}>
-          Done
+        <Button
+          variant="text"
+          color="primary"
+          onClick={currentTimestamp ? handleDone : handleClear}
+        >
+          Apply
         </Button>
       </DialogActions>
     </Dialog>

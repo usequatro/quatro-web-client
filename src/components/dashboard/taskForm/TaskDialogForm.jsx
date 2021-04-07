@@ -93,7 +93,6 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   dialogContent: {
-    padding: 0,
     paddingBottom: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
       width: '500px',
@@ -360,7 +359,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       flexDirection="column"
     >
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        <Box pt={2} pb={4} px={3} display="flex" flexDirection="column" alignItems="stretch">
+        <Box pt={2} pb={4} display="flex" flexDirection="column" alignItems="stretch">
           <Box pb={2}>
             <TextFieldWithTypography
               typography="h6"
@@ -423,7 +422,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </Box>
         </Box>
 
-        <Box px={3} pt={2} pb={4} display="flex">
+        <Box pt={2} pb={4} display="flex">
           <Box width="50%" mr={mobile ? 4 : 8}>
             <SliderField
               id="impact-slider"
@@ -448,7 +447,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
           </Box>
         </Box>
 
-        <Box px={3} pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
+        <Box pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
           <Button
             onClick={() => setShowScheduledStartDialog(true)}
             startIcon={<ScheduledIcon />}

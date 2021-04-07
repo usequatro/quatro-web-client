@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -73,15 +73,29 @@ const CalendarSchedulingThumbnail = ({
     onChangeStartDateTimestamp(newRoundedStartDate.getTime());
   };
 
+  const scrollContainerRef = useRef();
+  const handlePlaceholderChangedPosition = useCallback(({ y, height: placeholderHeight }) => {
+    if (!scrollContainerRef.current) {
+      return;
+    }
+    const { height: containerHeight } = scrollContainerRef.current.getBoundingClientRect();
+    scrollContainerRef.current.scrollTop = y - containerHeight / 2 + placeholderHeight / 2;
+  }, []);
+
   return (
     <Paper className={classes.visualContainer} elevation={0} variant="outlined">
       <CalendarEventsFetcher date={startDateTimestamp} />
       {fetching && <LoaderScreen className={classes.loader} background="transparent" />}
       <div
         className={classes.scrollContainer}
-        style={{ opacity: fetching ? 0.25 : 1 }}
+        style={{
+          opacity: fetching ? 0.25 : 1,
+          // avoiding smooth scrolling on the first render
+          scrollBehavior: scrollContainerRef.current ? 'smooth' : 'auto',
+        }}
         onClick={handleClick}
         role="presentation"
+        ref={scrollContainerRef}
       >
         <CalendarDayEventsList
           timestamp={startDateTimestamp}
@@ -91,6 +105,7 @@ const CalendarSchedulingThumbnail = ({
           placeholder={{
             start: startDateTimestamp,
             end: addMinutes(startDateTimestamp, duration).getTime(),
+            onChange: handlePlaceholderChangedPosition,
           }}
           interactive={false}
         />
