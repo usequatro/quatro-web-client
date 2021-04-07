@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -23,7 +23,7 @@ import { setSnoozedUntil, selectSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { SNOOZE_CUSTOM_VALUE_SET, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
-const initialSnoozedUntilTimestamp = addHours(startOfTomorrow(), 9).getTime();
+const getInitialSnoozedUntilTimestamp = () => addHours(startOfTomorrow(), 9).getTime();
 
 const SnoozeCustomDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
   const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
 
   const [currentValue, setCurrentValue] = useState(
-    snoozedUntilTimestamp || initialSnoozedUntilTimestamp,
+    snoozedUntilTimestamp || getInitialSnoozedUntilTimestamp(),
   );
 
   useEffect(() => {
@@ -40,6 +40,15 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
       setCurrentValue(snoozedUntilTimestamp);
     }
   }, [snoozedUntilTimestamp]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset state when opening
+  const previousOpen = useRef();
+  useEffect(() => {
+    if (!previousOpen.current && open) {
+      setCurrentValue(snoozedUntilTimestamp || getInitialSnoozedUntilTimestamp());
+    }
+    previousOpen.current = open;
+  }, [open, snoozedUntilTimestamp]);
 
   const handleChangeCommitted = (value) => {
     onClose();
