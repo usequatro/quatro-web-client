@@ -234,7 +234,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       <DialogContent dividers={mobile}>
         <Box display="flex" flexDirection="column" mb={4} mt={2}>
           {currentTimestamp && (
-            <Box display="flex" flexWrap="wrap" ml={0}>
+            <Box display="flex" flexWrap="wrap" justifyContent="center" ml={0}>
               <Box flexGrow={1} flexShrink={0} pr={2} pb={2}>
                 <DatePicker
                   timestamp={currentTimestamp}
