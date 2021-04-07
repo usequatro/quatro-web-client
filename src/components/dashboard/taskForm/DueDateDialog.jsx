@@ -21,13 +21,14 @@ import DatePicker from '../../ui/DatePicker';
 
 import { setDue, selectDue } from '../../../modules/taskForm';
 
-const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
+const getInitialDueDateTimestamp = () =>
+  addHours(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 9).getTime();
 
 const DueDateDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const dueTimestamp = useSelector(selectDue);
 
-  const [currentValue, setCurrentValue] = useState(dueTimestamp || initialDueDateTimestamp);
+  const [currentValue, setCurrentValue] = useState(dueTimestamp || getInitialDueDateTimestamp());
 
   useEffect(() => {
     if (dueTimestamp !== currentValue && dueTimestamp !== null) {
