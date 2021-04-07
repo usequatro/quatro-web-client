@@ -17,7 +17,7 @@ import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
 
 import TimePicker from '../../ui/TimePicker';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
-import DatePickerCombo from '../../ui/DatePickerCombo';
+import DatePicker from '../../ui/DatePicker';
 
 import { setDue, selectDue } from '../../../modules/taskForm';
 
@@ -50,20 +50,22 @@ const DueDateDialog = ({ open, onClose }) => {
       />
 
       <DialogContent>
-        <Box display="flex" justifyContent="center" mb={3}>
-          <DatePickerCombo
-            timestamp={currentValue}
-            onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
-          />
-        </Box>
+        <Box display="flex" flexWrap="wrap" justifyContent="center" ml={0}>
+          <Box flexGrow={1} flexShrink={0} pr={2} pb={2}>
+            <DatePicker
+              timestamp={currentValue}
+              onChange={(newTimestamp) => setCurrentValue(newTimestamp)}
+            />
+          </Box>
 
-        <Box display="flex" alignItems="center" mb={3}>
-          <TimePicker
-            showIcon
-            timestamp={currentValue}
-            format="h:mm a"
-            onChangeCommitted={(newTimestamp) => setCurrentValue(newTimestamp)}
-          />
+          <Box pb={2}>
+            <TimePicker
+              showIcon={false}
+              timestamp={currentValue}
+              format="h:mm a"
+              onChangeCommitted={(newTimestamp) => setCurrentValue(newTimestamp)}
+            />
+          </Box>
         </Box>
       </DialogContent>
 
@@ -76,7 +78,7 @@ const DueDateDialog = ({ open, onClose }) => {
             onClick={() => handleChangeCommitted(null)}
             style={{ textAlign: 'left' }}
           >
-            Clear Due Date
+            {dueTimestamp ? 'Clear Due Date' : 'Cancel'}
           </Button>
         </Box>
 
