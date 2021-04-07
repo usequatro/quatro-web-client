@@ -55,56 +55,82 @@ const muiTheme = createMuiTheme({
     h5: { fontWeight: mediumFontWeight },
     h6: { fontWeight: mediumFontWeight },
   },
-  overrides: {
-    MuiCssBaseline: {
-      '@global': {
-        '*': {
-          'scrollbar-width': 'thin',
+});
+
+muiTheme.overrides = {
+  MuiCssBaseline: {
+    '@global': {
+      '*': {
+        'scrollbar-width': 'thin',
+      },
+      '*::-webkit-scrollbar': {
+        width: '4px',
+        height: '4px',
+      },
+      '@font-face': [
+        {
+          fontFamily: 'GTEestiProText',
+          fontStyle: 'normal',
+          fontDisplay: 'swap',
+          fontWeight: bookFontWeight,
+          src: `
+            url('${GTEestiProTextBookWoff2}') format('woff2'),
+            url('${GTEestiProTextBookTtf}') format('ttf')
+          `,
         },
-        '*::-webkit-scrollbar': {
-          width: '4px',
-          height: '4px',
+        {
+          fontFamily: 'GTEestiProText',
+          fontStyle: 'normal',
+          fontDisplay: 'swap',
+          fontWeight: mediumFontWeight,
+          src: `
+            url('${GTEestiProTextMediumWoff2}') format('woff2'),
+            url('${GTEestiProTextMediumTtf}') format('ttf')
+          `,
         },
-        '@font-face': [
-          {
-            fontFamily: 'GTEestiProText',
-            fontStyle: 'normal',
-            fontDisplay: 'swap',
-            fontWeight: bookFontWeight,
-            src: `
-              url('${GTEestiProTextBookWoff2}') format('woff2'),
-              url('${GTEestiProTextBookTtf}') format('ttf')
-            `,
-          },
-          {
-            fontFamily: 'GTEestiProText',
-            fontStyle: 'normal',
-            fontDisplay: 'swap',
-            fontWeight: mediumFontWeight,
-            src: `
-              url('${GTEestiProTextMediumWoff2}') format('woff2'),
-              url('${GTEestiProTextMediumTtf}') format('ttf')
-            `,
-          },
-        ],
+      ],
+    },
+  },
+  MuiTooltip: {
+    tooltip: {
+      fontSize: '1rem',
+      backgroundColor: 'rgba(38, 53, 115, 0.9)',
+    },
+    arrow: {
+      color: 'rgba(38, 53, 115, 0.9)',
+    },
+  },
+  MuiDialog: {
+    paper: {
+      margin: muiTheme.spacing(2), // reducing margin on sides a bit on mobile
+    },
+    paperFullWidth: {
+      width: `calc(100% - ${muiTheme.spacing(4)}px)`, // reducing margin on sides a bit on mobile
+    },
+  },
+  MuiDialogContent: {
+    root: {
+      padding: `${muiTheme.spacing(2)}px`,
+      [muiTheme.breakpoints.up('md')]: {
+        padding: `${muiTheme.spacing(2)}px ${muiTheme.spacing(3)}px`,
       },
     },
-    MuiTooltip: {
-      tooltip: {
-        fontSize: '1rem',
-        backgroundColor: 'rgba(38, 53, 115, 0.9)',
-      },
-      arrow: {
-        color: 'rgba(38, 53, 115, 0.9)',
-      },
-    },
-    MuiDialogActions: {
-      root: {
-        padding: '16px 24px', // matching with DialogContent
+    dividers: {
+      padding: `${muiTheme.spacing(2)}px`,
+      [muiTheme.breakpoints.up('md')]: {
+        padding: `${muiTheme.spacing(2)}px ${muiTheme.spacing(3)}px`,
       },
     },
   },
-});
+  MuiDialogActions: {
+    root: {
+      padding: `${muiTheme.spacing(2)}px`,
+      [muiTheme.breakpoints.up('md')]: {
+        padding: `${muiTheme.spacing(2)}px ${muiTheme.spacing(3)}px`,
+      },
+    },
+  },
+};
 
 // const breakpointMd = muiTheme.breakpoints.up('md');
 // Desktop

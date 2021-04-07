@@ -27,14 +27,14 @@ const enUsLocaleCustomized = {
   },
 };
 
-const DatePicker = ({ timestamp, disablePast, onChange }) => (
+const DatePicker = ({ timestamp, onChange, ...props }) => (
   <MuiPickersUtilsProvider utils={DateFnsUtils} locale={enUsLocaleCustomized}>
     <MuiDatePicker
+      {...props}
       format="PPPP"
       value={timestamp ? new Date(timestamp) : new Date()}
       onChange={(newDate) => onChange(newDate.getTime())}
       animateYearScrolling
-      disablePast={disablePast}
       TextFieldComponent={DatePickerTextFieldComponent}
       showTodayButton
     />
@@ -43,12 +43,9 @@ const DatePicker = ({ timestamp, disablePast, onChange }) => (
 
 DatePicker.propTypes = {
   timestamp: PropTypes.number.isRequired,
-  disablePast: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
 };
 
-DatePicker.defaultProps = {
-  disablePast: false,
-};
+DatePicker.defaultProps = {};
 
 export default DatePicker;

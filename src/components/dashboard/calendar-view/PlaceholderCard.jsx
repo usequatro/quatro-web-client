@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import startOfDay from 'date-fns/startOfDay';
@@ -24,42 +24,33 @@ const useStyles = makeStyles((theme) => ({
     animationDuration: '3s',
     animationTimingFunction: 'ease-in-out',
     animationIterationCount: 'infinite',
+    position: 'absolute',
+    zIndex: 2,
   },
 }));
 
-const PlaceholderCard = ({ start, end, tickHeight, ticksPerHour }) => {
+const PlaceholderCard = ({ start, end, tickHeight, ticksPerHour, onChange }) => {
   const classes = useStyles();
 
   const minutesForOneTick = 60 / ticksPerHour;
   const durationInMinutes = differenceInMinutes(end, start);
   const startTimeInMinutes = differenceInMinutes(start, startOfDay(start));
 
-  const ref = useRef();
-  const firstTime = useRef(true);
+  const height = Math.floor(tickHeight * (durationInMinutes / minutesForOneTick));
+  const y = Math.floor(tickHeight * (startTimeInMinutes / minutesForOneTick));
+
   useEffect(() => {
-    if (ref && ref.current) {
-      ref.current.scrollIntoView({
-        block: 'center',
-        // On modal opening, scroll quick. After, do it smoothly
-        behavior: firstTime.current ? 'auto' : 'smooth',
-      });
-      firstTime.current = false;
-    }
-  }, [start]);
+    onChange({ start, end, height, y });
+  }, [start, end, height, y, onChange]);
 
   return (
     <Card
       style={{
-        height: Math.floor(tickHeight * (durationInMinutes / minutesForOneTick)),
-        transform: `translateY(${Math.floor(
-          tickHeight * (startTimeInMinutes / minutesForOneTick),
-        )}px)`,
-        zIndex: 2,
-        position: 'absolute',
+        height,
+        transform: `translateY(${y}px)`,
       }}
       className={classes.placeholder}
       elevation={0}
-      ref={ref}
     />
   );
 };
@@ -67,10 +58,13 @@ const PlaceholderCard = ({ start, end, tickHeight, ticksPerHour }) => {
 PlaceholderCard.propTypes = {
   start: PropTypes.number.isRequired,
   end: PropTypes.number.isRequired,
+  onChange: PropTypes.func,
   tickHeight: PropTypes.number.isRequired,
   ticksPerHour: PropTypes.number.isRequired,
 };
 
-PlaceholderCard.defaultProps = {};
+PlaceholderCard.defaultProps = {
+  onChange: () => {},
+};
 
 export default PlaceholderCard;

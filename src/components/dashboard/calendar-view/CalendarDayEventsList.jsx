@@ -50,6 +50,7 @@ const CalendarDayEventsList = ({
         <PlaceholderCard
           start={placeholder.start}
           end={placeholder.end}
+          onChange={placeholder.onChange}
           tickHeight={tickHeight}
           ticksPerHour={ticksPerHour}
         />
@@ -68,6 +69,7 @@ CalendarDayEventsList.propTypes = {
   placeholder: PropTypes.shape({
     start: PropTypes.number,
     end: PropTypes.number,
+    onChange: PropTypes.func,
   }),
 };
 CalendarDayEventsList.defaultProps = {

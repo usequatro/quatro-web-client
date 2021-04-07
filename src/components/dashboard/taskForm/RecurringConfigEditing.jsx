@@ -16,7 +16,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
-import ReplayRoundedIcon from '@material-ui/icons/ReplayRounded';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { selectRecurringConfig, setRecurringConfig } from '../../../modules/taskForm';
@@ -177,81 +176,79 @@ const RecurringConfigEditing = ({ timestamp }) => {
   };
 
   return (
-    <Box display="flex" width="100%" alignItems="flex-start">
-      <Box mr={1}>
-        <ReplayRoundedIcon />
-      </Box>
-      <Box flexGrow={1} overflow="hidden">
-        <Select
-          onChange={handleSelectChange}
-          value={selectValue}
-          fullWidth
-          displayEmpty
-          inputProps={{ 'aria-label': 'Repeat' }}
-        >
-          <MenuItem value="">Don&apos;t repeat</MenuItem>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" overflow="hidden">
+      <Select
+        onChange={handleSelectChange}
+        value={timestamp ? selectValue : ''}
+        fullWidth
+        displayEmpty
+        disabled={!timestamp}
+        labelId="recurring-config-select-label"
+      >
+        <MenuItem value="">Don&apos;t repeat</MenuItem>
 
-          {presetOptions.map((preset) => (
-            <MenuItem key={preset.key} value={preset.key}>
-              {preset.label || getUserFacingRecurringText(preset.config, timestamp)}
-            </MenuItem>
-          ))}
-          <MenuItem value="custom">
-            {selectValue !== 'custom'
-              ? 'Custom...'
-              : `Custom: ${getUserFacingRecurringText(currentRecurringConfig, timestamp)}`}
+        {presetOptions.map((preset) => (
+          <MenuItem key={preset.key} value={preset.key}>
+            {preset.label || getUserFacingRecurringText(preset.config, timestamp)}
           </MenuItem>
-        </Select>
+        ))}
+        <MenuItem value="custom">
+          {selectValue !== 'custom'
+            ? 'Custom...'
+            : `Custom: ${getUserFacingRecurringText(currentRecurringConfig, timestamp)}`}
+        </MenuItem>
+      </Select>
 
-        {selectValue === 'custom' && (
-          <Box display="flex" flexDirection="column" alignItems="stretch" mt={2} ml={4} mr={10}>
-            <Box mb={2} display="flex" flexDirection="row">
-              <Box display="flex" alignItems="center" flexGrow={1}>
-                <Typography variant="body1">Repeat every</Typography>
-              </Box>
-              <Input
-                type="number"
-                min="1"
-                max="1000"
-                value={amount}
-                onChange={handleChangeAmount}
-                className={classes.amountInput}
-              />
-              <Select value={unit} onChange={handleChangeUnit}>
-                <MenuItem value={DAY}>{amount === 1 ? 'day' : 'days'}</MenuItem>
-                <MenuItem value={WEEK}>{amount === 1 ? 'week' : 'weeks'}</MenuItem>
-                <MenuItem value={MONTH}>{amount === 1 ? 'month' : 'months'}</MenuItem>
-              </Select>
+      {selectValue === 'custom' && (
+        <Box display="flex" flexDirection="column" alignItems="stretch" mt={2} ml={4} mr={10}>
+          <Box mb={2} display="flex" flexDirection="row">
+            <Box display="flex" alignItems="center" flexGrow={1}>
+              <Typography variant="body1">Repeat every</Typography>
             </Box>
-
-            {unit === WEEK && (
-              <Box display="flex" justifyContent="space-between">
-                {weekdayButtons.map(({ value, label, ariaLabel }) => (
-                  <Button
-                    key={value}
-                    aria-label={ariaLabel}
-                    size="large"
-                    className={classes.weekdayButton}
-                    variant={activeWeekdays && activeWeekdays[value] ? 'contained' : 'text'}
-                    color={activeWeekdays && activeWeekdays[value] ? 'primary' : 'inherit'}
-                    onClick={() => handleActiveWeekdayToggle(value)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </Box>
-            )}
+            <Input
+              type="number"
+              min="1"
+              max="1000"
+              value={amount}
+              onChange={handleChangeAmount}
+              className={classes.amountInput}
+            />
+            <Select value={unit} onChange={handleChangeUnit}>
+              <MenuItem value={DAY}>{amount === 1 ? 'day' : 'days'}</MenuItem>
+              <MenuItem value={WEEK}>{amount === 1 ? 'week' : 'weeks'}</MenuItem>
+              <MenuItem value={MONTH}>{amount === 1 ? 'month' : 'months'}</MenuItem>
+            </Select>
           </Box>
-        )}
-      </Box>
+
+          {unit === WEEK && (
+            <Box display="flex" justifyContent="space-between">
+              {weekdayButtons.map(({ value, label, ariaLabel }) => (
+                <Button
+                  key={value}
+                  aria-label={ariaLabel}
+                  size="large"
+                  className={classes.weekdayButton}
+                  variant={activeWeekdays && activeWeekdays[value] ? 'contained' : 'text'}
+                  color={activeWeekdays && activeWeekdays[value] ? 'primary' : 'inherit'}
+                  onClick={() => handleActiveWeekdayToggle(value)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
     </Box>
   );
 };
 
 RecurringConfigEditing.propTypes = {
-  timestamp: PropTypes.number.isRequired,
+  timestamp: PropTypes.number,
 };
 
-RecurringConfigEditing.defaultProps = {};
+RecurringConfigEditing.defaultProps = {
+  timestamp: null,
+};
 
 export default RecurringConfigEditing;
