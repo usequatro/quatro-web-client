@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -35,6 +35,15 @@ const DueDateDialog = ({ open, onClose }) => {
       setCurrentValue(dueTimestamp);
     }
   }, [dueTimestamp]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset state when opening
+  const previousOpen = useRef();
+  useEffect(() => {
+    if (!previousOpen.current && open) {
+      setCurrentValue(dueTimestamp || getInitialDueDateTimestamp());
+    }
+    previousOpen.current = open;
+  }, [open, dueTimestamp]);
 
   const handleChangeCommitted = (value) => {
     onClose();
