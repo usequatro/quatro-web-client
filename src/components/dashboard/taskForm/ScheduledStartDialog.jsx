@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const initialDateTimestamp = addHours(startOfTomorrow(), 9).getTime();
+const getInitialDateTimestamp = () => addHours(startOfTomorrow(), 9).getTime();
 
 const ScheduledStartDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
@@ -106,7 +106,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   const defaultDuration = EFFORT_TO_DURATION[effort] || 15;
 
   // Non-persisted changes
-  const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || initialDateTimestamp);
+  const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || getInitialDateTimestamp());
   const [currentBlocksCalendar, setCurrentBlocksCalendar] = useState(blocksCalendar);
   const [currentDuration, setCurrentDuration] = useState(calendarBlockDuration || defaultDuration);
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
@@ -121,7 +121,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       // Show calendar block UI when setting new scheduled date.
       const hasSavedScheduledDate = !timestamp;
       setCurrentBlocksCalendar(Boolean(calendarBlockStart || hasSavedScheduledDate));
-      setCurrentTimestamp(timestamp || initialDateTimestamp);
+      setCurrentTimestamp(timestamp || getInitialDateTimestamp());
       setCurrentDuration(calendarBlockDuration || defaultDuration);
       setCurrentCalendarId(calendarBlockCalendarId);
     }

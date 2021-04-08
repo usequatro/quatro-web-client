@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -21,19 +21,29 @@ import DatePicker from '../../ui/DatePicker';
 
 import { setDue, selectDue } from '../../../modules/taskForm';
 
-const initialDueDateTimestamp = addHours(addWeeks(startOfWeek(new Date()), 1), 9).getTime();
+const getInitialDueDateTimestamp = () =>
+  addHours(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 9).getTime();
 
 const DueDateDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const dueTimestamp = useSelector(selectDue);
 
-  const [currentValue, setCurrentValue] = useState(dueTimestamp || initialDueDateTimestamp);
+  const [currentValue, setCurrentValue] = useState(dueTimestamp || getInitialDueDateTimestamp());
 
   useEffect(() => {
     if (dueTimestamp !== currentValue && dueTimestamp !== null) {
       setCurrentValue(dueTimestamp);
     }
   }, [dueTimestamp]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset state when opening
+  const previousOpen = useRef();
+  useEffect(() => {
+    if (!previousOpen.current && open) {
+      setCurrentValue(dueTimestamp || getInitialDueDateTimestamp());
+    }
+    previousOpen.current = open;
+  }, [open, dueTimestamp]);
 
   const handleChangeCommitted = (value) => {
     onClose();
