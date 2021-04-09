@@ -1,5 +1,6 @@
 import get from 'lodash/get';
 import set from 'lodash/set';
+import intersection from 'lodash/intersection';
 import { createSlice } from '@reduxjs/toolkit';
 import Joi from '@hapi/joi';
 
@@ -233,29 +234,16 @@ function addCollisionsToCalendarEvents(state) {
     collisionOrder: 0,
   }));
   const eventsWithCollisionsById = eventsResetted.reduce((memo, event) => {
+    const eventIdsScanned = Object.keys(memo);
     const collisionIds = getCollisions(event, allEvents);
-    const eventWithCollisionCount = {
-      ...event,
-      collisionCount: collisionIds.length,
-      collisionOrder: event.collisionOrder || 0,
-    };
-    const otherEventsWithCollisionOrderField = collisionIds.reduce(
-      (acc, collisionId) => ({
-        ...acc,
-        [collisionId]: {
-          ...(memo[collisionId] || {}),
-          collisionOrder:
-            memo[collisionId] && memo[collisionId].collisionOrder
-              ? memo[collisionId].collisionOrder + 1
-              : 1,
-        },
-      }),
-      {},
-    );
+    const collisionsAlreadyScannedPreviously = intersection(eventIdsScanned, collisionIds);
     return {
       ...memo,
-      [event.id]: eventWithCollisionCount,
-      ...otherEventsWithCollisionOrderField,
+      [event.id]: {
+        ...event,
+        collisionCount: collisionIds.length,
+        collisionOrder: (event.collisionOrder || 0) + collisionsAlreadyScannedPreviously.length,
+      },
     };
   }, {});
 
