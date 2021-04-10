@@ -46,7 +46,10 @@ import {
   setSnoozedUntil,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
-import { selectUserHasGrantedGoogleCalendarOfflineAccess } from '../../../modules/userExternalConfig';
+import {
+  selectUserDefaultCalendarId,
+  selectUserHasGrantedGoogleCalendarOfflineAccess,
+} from '../../../modules/userExternalConfig';
 import CalendarBlockEditor, {
   ERROR_BAD_DURATION,
   ERROR_NO_CALENDAR_ID,
@@ -105,11 +108,15 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   const effort = useSelector(selectEffort);
   const defaultDuration = EFFORT_TO_DURATION[effort] || 15;
 
+  const userDefaultCalendarId = useSelector(selectUserDefaultCalendarId);
+
   // Non-persisted changes
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || getInitialDateTimestamp());
   const [currentBlocksCalendar, setCurrentBlocksCalendar] = useState(blocksCalendar);
   const [currentDuration, setCurrentDuration] = useState(calendarBlockDuration || defaultDuration);
-  const [currentCalendarId, setCurrentCalendarId] = useState(null);
+  const [currentCalendarId, setCurrentCalendarId] = useState(
+    calendarBlockCalendarId || userDefaultCalendarId,
+  );
 
   const [errors, setErrors] = useState([]);
 
@@ -123,7 +130,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       setCurrentBlocksCalendar(Boolean(calendarBlockStart || hasSavedScheduledDate));
       setCurrentTimestamp(timestamp || getInitialDateTimestamp());
       setCurrentDuration(calendarBlockDuration || defaultDuration);
-      setCurrentCalendarId(calendarBlockCalendarId);
+      setCurrentCalendarId(calendarBlockCalendarId || userDefaultCalendarId);
     }
     previousOpen.current = open;
   }, [
@@ -132,6 +139,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     calendarBlockStart,
     calendarBlockDuration,
     calendarBlockCalendarId,
+    userDefaultCalendarId,
     defaultDuration,
   ]);
 
