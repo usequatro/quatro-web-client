@@ -189,6 +189,7 @@ export const createTask = (
     snoozedUntil,
     blockedBy,
     calendarBlockCalendarId,
+    calendarBlockProviderCalendarId,
     calendarBlockStart,
     calendarBlockEnd,
   } = {},
@@ -207,6 +208,7 @@ export const createTask = (
     snoozedUntil,
     blockedBy,
     calendarBlockCalendarId,
+    calendarBlockProviderCalendarId,
     calendarBlockStart,
     calendarBlockEnd,
   };

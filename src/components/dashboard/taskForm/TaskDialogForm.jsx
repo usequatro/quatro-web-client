@@ -270,6 +270,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
             },
