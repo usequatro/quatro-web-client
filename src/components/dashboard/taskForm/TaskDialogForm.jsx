@@ -185,7 +185,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const calendarBlockStart = useSelector(selectCalendarBlockStart);
   const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
 
-  const calendarProviderCalendarId = useSelector((state) =>
+  const calendarBlockProviderCalendarId = useSelector((state) =>
     calendarBlockCalendarId
       ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
       : undefined,
@@ -237,7 +237,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
-              calendarBlockProviderCalendarId: hasCalendarBlock ? calendarProviderCalendarId : null,
+              calendarBlockProviderCalendarId: hasCalendarBlock
+                ? calendarBlockProviderCalendarId
+                : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
               // Make sure to clear recurringConfigId if we don't have any repeat info set
@@ -270,6 +272,9 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               snoozedUntil: snoozedUntilTimestamp,
               blockedBy,
               calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+              calendarBlockProviderCalendarId: hasCalendarBlock
+                ? calendarBlockProviderCalendarId
+                : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
             },
