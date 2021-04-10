@@ -20,7 +20,7 @@ import { listenListTasks, fetchDeleteTask, fetchUpdateTask } from '../utils/apiC
 import NOW_TASKS_LIMIT from '../constants/nowTasksLimit';
 import * as dashboardTabs from '../constants/dashboardTabs';
 import * as blockerTypes from '../constants/blockerTypes';
-import { selectFallbackCalendarId } from './calendars';
+import { selectCalendarProviderCalendarId, selectFallbackCalendarId } from './calendars';
 import { selectUserDefaultCalendarId } from './userExternalConfig';
 import { validateTimestamp } from '../utils/validators';
 
@@ -545,8 +545,19 @@ export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mi
 
   const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
 
+  const calendarBlockProviderCalendarId = selectCalendarProviderCalendarId(
+    state,
+    calendarBlockCalendarId,
+  );
+  if (!calendarBlockProviderCalendarId) {
+    throw new Error(
+      `Missing calendarBlockProviderCalendarId for calendar ${calendarBlockCalendarId}`,
+    );
+  }
+
   fetchUpdateTask(id, {
     calendarBlockCalendarId,
+    calendarBlockProviderCalendarId,
     scheduledStart: calendarBlockStart,
     calendarBlockStart,
     calendarBlockEnd,
