@@ -3,7 +3,7 @@ import Joi from '@hapi/joi';
 import * as DURATION_UNITS from '../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../constants/weekdays';
 
-// import { clampNumber } from './taskSchema';
+import { clampNumber } from './taskSchema';
 
 export const recurringConfigSchema = Joi.object({
   userId: Joi.string(),
@@ -22,14 +22,14 @@ export const recurringConfigSchema = Joi.object({
     [WEEKDAYS.SUNDAY]: Joi.bool(),
   }).allow(null),
 
-  // taskDetails: Joi.object({
-  //   title: Joi.string(),
-  //   description: Joi.string().allow('').default(''),
-  //   effort: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
-  //   impact: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
-  //   dueOffsetDays: Joi.number(),
-  //   dueTime: Joi.number(),
-  // }),
+  taskDetails: Joi.object({
+    title: Joi.string(),
+    description: Joi.string().allow('').default(''),
+    effort: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
+    impact: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
+    dueOffsetDays: Joi.number(),
+    dueTime: Joi.string(),
+  }),
 });
 
 /**

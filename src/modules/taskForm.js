@@ -1,5 +1,7 @@
 import get from 'lodash/get';
 import pick from 'lodash/pick';
+import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
+import format from 'date-fns/format';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 import { selectTask, selectTaskDashboardTab, updateTask } from './tasks';
@@ -304,16 +306,29 @@ export const saveForm = () => (dispatch, getState, { mixpanel }) => {
       // Recurring config handling
       .then(async ({ taskId, ...info }) => {
         if (formHasRecurringConfig) {
+          const taskDetailsForRecurringConfig = {
+            title,
+            description,
+            effort,
+            impact,
+            dueOffsetDays: differenceInCalendarDays(due, scheduledStart),
+            dueTime: format(due, 'HH:mm'),
+          };
           if (editingRecurringConfigId) {
             dispatch(
               updateRecurringConfig(editingRecurringConfigId, {
                 ...recurringConfig,
                 mostRecentTaskId: taskId,
+                taskDetails: taskDetailsForRecurringConfig,
               }),
             );
           } else {
             const newRcId = await dispatch(
-              createRecurringConfig({ ...recurringConfig, mostRecentTaskId: taskId }),
+              createRecurringConfig({
+                ...recurringConfig,
+                mostRecentTaskId: taskId,
+                taskDetails: taskDetailsForRecurringConfig,
+              }),
             );
             dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
           }
