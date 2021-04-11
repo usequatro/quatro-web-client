@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import enUsLocale from 'date-fns/locale/en-US';
+import getHours from 'date-fns/getHours';
+import getMinutes from 'date-fns/getMinutes';
+import getSeconds from 'date-fns/getSeconds';
+import set from 'date-fns/set';
 
 import TextField from '@material-ui/core/TextField';
 
@@ -33,7 +37,15 @@ const DatePicker = ({ timestamp, onChange, ...props }) => (
       {...props}
       format="PPPP"
       value={timestamp ? new Date(timestamp) : new Date()}
-      onChange={(newDate) => onChange(newDate.getTime())}
+      onChange={(newDate) => {
+        const newDateWithSameTime = set(newDate, {
+          hours: getHours(timestamp),
+          minutes: getMinutes(timestamp),
+          seconds: getSeconds(timestamp),
+          milliseconds: 0,
+        });
+        onChange(newDateWithSameTime.getTime());
+      }}
       animateYearScrolling
       TextFieldComponent={DatePickerTextFieldComponent}
       showTodayButton
