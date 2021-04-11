@@ -532,7 +532,7 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   mixpanel.track(TASK_DELETED);
 };
 
-export const blockCalendarEventForTask = (id, calendarBlockStart) => (
+export const blockCalendarEventForTask = (id, calendarBlockStart) => async (
   dispatch,
   getState,
   { mixpanel },
@@ -550,6 +550,8 @@ export const blockCalendarEventForTask = (id, calendarBlockStart) => (
     previousCalendarBlockDuration ||
     EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
     EFFORT_TO_DURATION[2];
+
+  const alreadyHadCalendarBlock = Boolean(previousCalendarBlockDuration);
 
   const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
 
@@ -593,6 +595,13 @@ export const blockCalendarEventForTask = (id, calendarBlockStart) => (
 
   mixpanel.track(TASK_DRAGGED_TO_CALENDAR, {
     calendarEventDuration: duration,
-    alreadyHadCalendarBlock: Boolean(previousCalendarBlockDuration),
+    alreadyHadCalendarBlock,
   });
+
+  return {
+    calendarBlockStart,
+    calendarBlockEnd,
+    calendarBlockProviderCalendarId,
+    alreadyHadCalendarBlock,
+  };
 };

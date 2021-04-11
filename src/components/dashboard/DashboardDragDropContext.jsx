@@ -2,12 +2,16 @@ import React, { useState, createContext, useMemo, useContext, useRef } from 'rea
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 import addMinutes from 'date-fns/addMinutes';
+import format from 'date-fns/format';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+
+import ViewDayIcon from '@material-ui/icons/ViewDay';
 
 import { setRelativePrioritization, blockCalendarEventForTask } from '../../modules/tasks';
 import { selectCalendarDisplayTimestamp } from '../../modules/dashboard';
 import NOW_TASKS_LIMIT from '../../constants/nowTasksLimit';
+import { useNotification } from '../Notification';
 
 const DropArea = ({ droppableId, render }) => (
   <Droppable droppableId={droppableId}>
@@ -42,6 +46,7 @@ const getTaskDroppableOffset = (droppableId) =>
 
 const DashboardDragDropContext = ({ children }) => {
   const dispatch = useDispatch();
+  const { notifyInfo, notifyError } = useNotification();
 
   const [activeDraggableId, setActiveDraggableId] = useState(null);
 
@@ -85,7 +90,19 @@ const DashboardDragDropContext = ({ children }) => {
         calendarDisplayTimestamp, // this date is expected to be startOfDay
         placeholderPosition.minutes,
       ).getTime();
-      dispatch(blockCalendarEventForTask(taskId, calendarBlockStart));
+      dispatch(blockCalendarEventForTask(taskId, calendarBlockStart))
+        .then((result) => {
+          const formattedTime = format(result.calendarBlockStart, 'hh:mm a');
+          notifyInfo({
+            icon: <ViewDayIcon />,
+            message: result.alreadyHadCalendarBlock
+              ? `Updated calendar block to ${formattedTime}`
+              : `Set calendar block at ${formattedTime} in ${result.calendarBlockProviderCalendarId}`,
+          });
+        })
+        .catch(() => {
+          notifyError({ icon: <ViewDayIcon />, message: 'Error blocking time' });
+        });
     } else {
       console.warn(`Unknown droppableId format: ${droppableId}`); // eslint-disable-line no-console
     }
