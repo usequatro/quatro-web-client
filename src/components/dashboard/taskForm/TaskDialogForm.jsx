@@ -34,26 +34,26 @@ import SnoozeIcon from '@material-ui/icons/Snooze';
 import { createTask } from '../../../modules/dashboard';
 import { updateTask, deleteTask } from '../../../modules/tasks';
 import {
-  selectTitle,
-  selectDescription,
-  selectImpact,
-  selectEffort,
-  selectScheduledStart,
-  selectSnoozedUntil,
-  selectDue,
-  selectBlockedBy,
-  selectBlockedByTaskIds,
-  selectRecurringConfig,
-  selectCalendarBlockCalendarId,
-  selectCalendarBlockStart,
-  selectCalendarBlockEnd,
-  setTitle,
-  setDescription,
-  setImpact,
-  setEffort,
-  addTaskBlocker,
-  addFreeTextBlocker,
-  removeBlockerByIndex,
+  selectFormTitle,
+  selectFormDescription,
+  selectFormImpact,
+  selectFormEffort,
+  selectFormScheduledStart,
+  selectFormSnoozedUntil,
+  selectFormDue,
+  selectFormBlockedBy,
+  selectFormBlockedByTaskIds,
+  selectFormRecurringConfig,
+  selectFormCalendarBlockCalendarId,
+  selectFormCalendarBlockStart,
+  selectFormCalendarBlockEnd,
+  setFormTitle,
+  setFormDescription,
+  setFormImpact,
+  setFormEffort,
+  addFormTaskBlocker,
+  addFormFreeTextBlocker,
+  removeFormBlockerByIndex,
   setTaskInForm,
 } from '../../../modules/taskForm';
 import {
@@ -171,19 +171,19 @@ const TaskDialogForm = ({ onClose, taskId }) => {
     selectRecurringConfigIdByMostRecentTaskId(state, editTaskDialogId),
   );
 
-  const title = useSelector(selectTitle);
-  const description = useSelector(selectDescription);
-  const impact = useSelector(selectImpact);
-  const effort = useSelector(selectEffort);
-  const scheduledStartTimestamp = useSelector(selectScheduledStart);
-  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
-  const dueTimestamp = useSelector(selectDue);
-  const blockedBy = useSelector(selectBlockedBy);
-  const blockedByTaskIds = useSelector(selectBlockedByTaskIds);
-  const recurringConfig = useSelector(selectRecurringConfig);
-  const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
-  const calendarBlockStart = useSelector(selectCalendarBlockStart);
-  const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
+  const title = useSelector(selectFormTitle);
+  const description = useSelector(selectFormDescription);
+  const impact = useSelector(selectFormImpact);
+  const effort = useSelector(selectFormEffort);
+  const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectFormSnoozedUntil);
+  const dueTimestamp = useSelector(selectFormDue);
+  const blockedBy = useSelector(selectFormBlockedBy);
+  const blockedByTaskIds = useSelector(selectFormBlockedByTaskIds);
+  const recurringConfig = useSelector(selectFormRecurringConfig);
+  const calendarBlockCalendarId = useSelector(selectFormCalendarBlockCalendarId);
+  const calendarBlockStart = useSelector(selectFormCalendarBlockStart);
+  const calendarBlockEnd = useSelector(selectFormCalendarBlockEnd);
 
   const calendarBlockProviderCalendarId = useSelector((state) =>
     calendarBlockCalendarId
@@ -383,7 +383,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 }
               }}
               onChange={(event) => {
-                dispatch(setTitle(event.target.value));
+                dispatch(setFormTitle(event.target.value));
                 if (validationErrors.includes('title')) {
                   setValidationErrors(validationErrors.filter((e) => e !== 'title'));
                 }
@@ -391,7 +391,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               onBlur={() => {
                 // Prevent leaving whitespaces saved at beginning or end
                 if (title !== title.trim()) {
-                  dispatch(setTitle(title.trim()));
+                  dispatch(setFormTitle(title.trim()));
                 }
               }}
               error={validationErrors.includes('title')}
@@ -422,7 +422,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   handleSubmit(event);
                 }
               }}
-              onChange={(event) => dispatch(setDescription(event.target.value))}
+              onChange={(event) => dispatch(setFormDescription(event.target.value))}
             />
           </Box>
         </Box>
@@ -435,7 +435,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               tooltipTitle="How much impact will this task have on your goals?"
               value={impact}
               getValueText={(i) => IMPACT_LABELS[i] || '-'}
-              onChange={(value) => dispatch(setImpact(value))}
+              onChange={(value) => dispatch(setFormImpact(value))}
               marks={IMPACT_SLIDER_MARKS}
             />
           </Box>
@@ -446,7 +446,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               tooltipTitle="How much time will this task require?"
               value={effort}
               getValueText={(e) => EFFORT_LABELS[e] || '-'}
-              onChange={(value) => dispatch(setEffort(value))}
+              onChange={(value) => dispatch(setFormEffort(value))}
               marks={EFFORT_SLIDER_MARKS}
             />
           </Box>
@@ -530,7 +530,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                             size="small"
                             onClick={(event) => {
                               event.stopPropagation();
-                              dispatch(removeBlockerByIndex(index));
+                              dispatch(removeFormBlockerByIndex(index));
                             }}
                           >
                             <ClearRoundedIcon />
@@ -689,11 +689,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         open={showBlockersDialog}
         onClose={() => setShowBlockersDialog(false)}
         onSelect={(id) => {
-          dispatch(addTaskBlocker(id));
+          dispatch(addFormTaskBlocker(id));
           runDelayed(scrollToBottom, 150);
         }}
         onFreeTextEntered={(value) => {
-          dispatch(addFreeTextBlocker(value));
+          dispatch(addFormFreeTextBlocker(value));
           runDelayed(scrollToBottom, 150);
         }}
         disabledTasks={blockedByTaskIds}

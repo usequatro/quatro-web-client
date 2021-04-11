@@ -31,19 +31,19 @@ import TimePicker from '../../ui/TimePicker';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import { selectCalendarIds, selectCalendarCount } from '../../../modules/calendars';
 import {
-  selectEffort,
-  selectCalendarBlockStart,
-  selectCalendarBlockEnd,
-  selectScheduledStart,
-  selectCalendarBlockCalendarId,
-  setScheduledStart,
-  setCalendarBlockCalendarId,
-  setCalendarBlockStart,
-  setCalendarBlockEnd,
-  setRecurringConfig,
-  selectRecurringConfig,
-  selectSnoozedUntil,
-  setSnoozedUntil,
+  selectFormEffort,
+  selectFormCalendarBlockStart,
+  selectFormCalendarBlockEnd,
+  selectFormScheduledStart,
+  selectFormCalendarBlockCalendarId,
+  setFormScheduledStart,
+  setFormCalendarBlockCalendarId,
+  setFormCalendarBlockStart,
+  setFormCalendarBlockEnd,
+  setFormRecurringConfig,
+  selectFormRecurringConfig,
+  selectFormSnoozedUntil,
+  setFormSnoozedUntil,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import {
@@ -83,13 +83,13 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   const classes = useStyles();
 
   // Current taskForm state
-  const timestamp = useSelector(selectScheduledStart);
-  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
-  const calendarBlockStart = useSelector(selectCalendarBlockStart);
-  const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
+  const timestamp = useSelector(selectFormScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectFormSnoozedUntil);
+  const calendarBlockStart = useSelector(selectFormCalendarBlockStart);
+  const calendarBlockEnd = useSelector(selectFormCalendarBlockEnd);
   const blocksCalendar = Boolean(calendarBlockStart);
-  const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
-  const recurringConfig = useSelector(selectRecurringConfig);
+  const calendarBlockCalendarId = useSelector(selectFormCalendarBlockCalendarId);
+  const recurringConfig = useSelector(selectFormRecurringConfig);
   const calendarBlockDuration =
     calendarBlockEnd && calendarBlockStart
       ? differenceInMinutes(calendarBlockEnd, calendarBlockStart)
@@ -105,7 +105,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     [() => calendarCount === 0, () => 'noCalendars'],
     [() => true, () => ''],
   ])();
-  const effort = useSelector(selectEffort);
+  const effort = useSelector(selectFormEffort);
   const defaultDuration = EFFORT_TO_DURATION[effort] || 15;
 
   const userDefaultCalendarId = useSelector(selectUserDefaultCalendarId);
@@ -146,14 +146,14 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   const mobile = useMobileViewportSize();
 
   const handleClear = () => {
-    dispatch(setScheduledStart(null));
-    dispatch(setCalendarBlockCalendarId(null));
-    dispatch(setCalendarBlockStart(null));
-    dispatch(setCalendarBlockEnd(null));
+    dispatch(setFormScheduledStart(null));
+    dispatch(setFormCalendarBlockCalendarId(null));
+    dispatch(setFormCalendarBlockStart(null));
+    dispatch(setFormCalendarBlockEnd(null));
 
     // If we remove the scheduled start and there was repeat, also clear it
     if (recurringConfig) {
-      dispatch(setRecurringConfig(null));
+      dispatch(setFormRecurringConfig(null));
     }
     onClose();
   };
@@ -172,17 +172,19 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       }
     }
 
-    dispatch(setScheduledStart(currentTimestamp));
+    dispatch(setFormScheduledStart(currentTimestamp));
     dispatch(
-      setCalendarBlockCalendarId(
+      setFormCalendarBlockCalendarId(
         currentTimestamp && currentBlocksCalendar ? currentCalendarId : null,
       ),
     );
     dispatch(
-      setCalendarBlockStart(currentTimestamp && currentBlocksCalendar ? currentTimestamp : null),
+      setFormCalendarBlockStart(
+        currentTimestamp && currentBlocksCalendar ? currentTimestamp : null,
+      ),
     );
     dispatch(
-      setCalendarBlockEnd(
+      setFormCalendarBlockEnd(
         currentTimestamp && currentBlocksCalendar
           ? addMinutes(currentTimestamp, currentDuration).getTime()
           : null,
@@ -191,11 +193,11 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
     // If we remove the scheduled start and there was repeat, also clear it
     if (!currentTimestamp && recurringConfig) {
-      dispatch(setRecurringConfig(null));
+      dispatch(setFormRecurringConfig(null));
     }
     // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
     if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
-      dispatch(setSnoozedUntil(null));
+      dispatch(setFormSnoozedUntil(null));
     }
 
     onClose();

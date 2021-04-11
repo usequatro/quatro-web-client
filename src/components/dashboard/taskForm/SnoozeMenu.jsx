@@ -14,7 +14,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 
-import { selectSnoozedUntil, setSnoozedUntil } from '../../../modules/taskForm';
+import { selectFormSnoozedUntil, setFormSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { SNOOZE_PRESET_SELECTED, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
@@ -48,18 +48,18 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
 
-  const snoozedUntil = useSelector(selectSnoozedUntil);
+  const snoozedUntil = useSelector(selectFormSnoozedUntil);
 
   const options = getOptions(Date.now());
 
   const handleSelect = (timestamp, label) => {
     onClose();
-    dispatch(setSnoozedUntil(timestamp));
+    dispatch(setFormSnoozedUntil(timestamp));
     mixpanel.track(SNOOZE_PRESET_SELECTED, { selection: label, value: formatISO(timestamp) });
   };
   const handleClear = () => {
     onClose();
-    dispatch(setSnoozedUntil(null));
+    dispatch(setFormSnoozedUntil(null));
     mixpanel.track(SNOOZE_CLEARED);
   };
   const handleCustomSelected = () => {

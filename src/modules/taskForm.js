@@ -9,44 +9,52 @@ const name = 'taskForm';
 
 // Selectors
 
-export const selectTitle = (state) => state[name].title;
-export const selectDescription = (state) => state[name].description;
-export const selectImpact = (state) => state[name].impact;
-export const selectEffort = (state) => state[name].effort;
-export const selectScheduledStart = (state) => state[name].scheduledStart;
-export const selectSnoozedUntil = (state) => state[name].snoozedUntil;
-export const selectDue = (state) => state[name].due;
-export const selectBlockedBy = (state) => state[name].blockedBy;
-export const selectRecurringConfig = (state) => state[name].recurringConfig;
-export const selectCalendarBlockCalendarId = (state) => state[name].calendarBlockCalendarId;
-export const selectCalendarBlockProviderEventId = (state) =>
-  state[name].calendarBlockProviderEventId;
-export const selectCalendarBlockStart = (state) => state[name].calendarBlockStart;
-export const selectCalendarBlockEnd = (state) => state[name].calendarBlockEnd;
+// export const selectFormTaskId = (state) => state[name].taskId;
+export const selectFormTitle = (state) => state[name].task.title;
+export const selectFormDescription = (state) => state[name].task.description;
+export const selectFormImpact = (state) => state[name].task.impact;
+export const selectFormEffort = (state) => state[name].task.effort;
+export const selectFormScheduledStart = (state) => state[name].task.scheduledStart;
+export const selectFormSnoozedUntil = (state) => state[name].task.snoozedUntil;
+export const selectFormDue = (state) => state[name].task.due;
+export const selectFormBlockedBy = (state) => state[name].task.blockedBy;
+export const selectFormCalendarBlockCalendarId = (state) =>
+  state[name].task.calendarBlockCalendarId;
+export const selectFormCalendarBlockProviderEventId = (state) =>
+  state[name].task.calendarBlockProviderEventId;
+export const selectFormCalendarBlockStart = (state) => state[name].task.calendarBlockStart;
+export const selectFormCalendarBlockEnd = (state) => state[name].task.calendarBlockEnd;
 
-export const selectBlockedByTaskIds = createSelector(selectBlockedBy, (blockedBy) =>
+export const selectFormBlockedByTaskIds = createSelector(selectFormBlockedBy, (blockedBy) =>
   (blockedBy || [])
     .filter((blockerDescriptor) => blockerDescriptor.type === blockerTypes.TASK)
     .map((blockerDescriptor) => get(blockerDescriptor, 'config.taskId'))
     .filter(Boolean),
 );
 
+// export const selectFormRecurringConfigId = (state) => state[name].recurringConfigId;
+export const selectFormRecurringConfig = (state) => state[name].recurringConfig;
+
 // Slice
 
 const initialState = {
-  title: '',
-  description: '',
-  impact: 3,
-  effort: 0,
-  scheduledStart: null,
-  snoozedUntil: null,
-  due: null,
-  blockedBy: [],
+  // taskId: null,
+  task: {
+    title: '',
+    description: '',
+    impact: 3,
+    effort: 0,
+    scheduledStart: null,
+    snoozedUntil: null,
+    due: null,
+    blockedBy: [],
+    recurringConfig: null,
+    calendarBlockCalendarId: null,
+    calendarBlockStart: null,
+    calendarBlockEnd: null,
+  },
+  // recurringConfigId: null,
   recurringConfig: null,
-  calendarBlockCalendarId: null,
-  calendarBlockProviderEventId: null,
-  calendarBlockStart: null,
-  calendarBlockEnd: null,
 };
 
 /* eslint-disable no-param-reassign */
@@ -54,59 +62,58 @@ const slice = createSlice({
   name,
   initialState,
   reducers: {
-    setTitle: (state, { payload }) => {
-      state.title = payload;
+    setFormTitle: (state, { payload }) => {
+      state.task.title = payload;
     },
-    setDescription: (state, { payload }) => {
-      state.description = payload;
+    setFormDescription: (state, { payload }) => {
+      state.task.description = payload;
     },
-    setImpact: (state, { payload }) => {
-      state.impact = payload;
+    setFormImpact: (state, { payload }) => {
+      state.task.impact = payload;
     },
-    setEffort: (state, { payload }) => {
-      state.effort = payload;
+    setFormEffort: (state, { payload }) => {
+      state.task.effort = payload;
     },
-    setScheduledStart: (state, { payload }) => {
-      state.scheduledStart = payload;
+    setFormScheduledStart: (state, { payload }) => {
+      state.task.scheduledStart = payload;
     },
-    setSnoozedUntil: (state, { payload }) => {
-      state.snoozedUntil = payload;
+    setFormSnoozedUntil: (state, { payload }) => {
+      state.task.snoozedUntil = payload;
     },
-    setDue: (state, { payload }) => {
-      state.due = payload;
+    setFormDue: (state, { payload }) => {
+      state.task.due = payload;
     },
-    addTaskBlocker: (state, { payload }) => {
-      state.blockedBy.push({
+    addFormTaskBlocker: (state, { payload }) => {
+      state.task.blockedBy.push({
         type: blockerTypes.TASK,
         config: { taskId: payload },
       });
     },
-    addFreeTextBlocker: (state, { payload }) => {
-      state.blockedBy.push({
+    addFormFreeTextBlocker: (state, { payload }) => {
+      state.task.blockedBy.push({
         type: blockerTypes.FREE_TEXT,
         config: { value: payload },
       });
     },
-    removeBlockerByIndex: (state, { payload }) => {
-      state.blockedBy = (state.blockedBy || []).filter((_, index) => index !== payload);
+    removeFormBlockerByIndex: (state, { payload }) => {
+      state.task.blockedBy = (state.blockedBy || []).filter((_, index) => index !== payload);
     },
-    setRecurringConfig: (state, { payload }) => {
+    setFormCalendarBlockCalendarId: (state, { payload }) => {
+      state.task.calendarBlockCalendarId = payload;
+    },
+    setFormCalendarBlockStart: (state, { payload }) => {
+      state.task.calendarBlockStart = payload;
+    },
+    setFormCalendarBlockEnd: (state, { payload }) => {
+      state.task.calendarBlockEnd = payload;
+    },
+    setAllTaskFormFields: (state, { payload }) => {
+      state.task = payload;
+    },
+    setFormRecurringConfig: (state, { payload }) => {
       state.recurringConfig = payload;
     },
-    setCalendarBlockCalendarId: (state, { payload }) => {
-      state.calendarBlockCalendarId = payload;
-    },
-    setCalendarBlockProviderEventId: (state, { payload }) => {
-      state.calendarBlockProviderEventId = payload;
-    },
-    setCalendarBlockStart: (state, { payload }) => {
-      state.calendarBlockStart = payload;
-    },
-    setCalendarBlockEnd: (state, { payload }) => {
-      state.calendarBlockEnd = payload;
-    },
-    setNewTaskInitialState: () => initialState,
-    setAll: (state, { payload }) => payload,
+    setFormNewTaskInitialState: () => initialState,
   },
 });
 /* eslint-enable no-param-reassign */
@@ -114,22 +121,21 @@ const slice = createSlice({
 export default slice;
 
 export const {
-  setTitle,
-  setDescription,
-  setImpact,
-  setEffort,
-  setScheduledStart,
-  setSnoozedUntil,
-  setDue,
-  addTaskBlocker,
-  addFreeTextBlocker,
-  removeBlockerByIndex,
-  setRecurringConfig,
-  setCalendarBlockCalendarId,
-  setCalendarBlockProviderEventId,
-  setCalendarBlockStart,
-  setCalendarBlockEnd,
-  setNewTaskInitialState,
+  setFormTitle,
+  setFormDescription,
+  setFormImpact,
+  setFormEffort,
+  setFormScheduledStart,
+  setFormSnoozedUntil,
+  setFormDue,
+  addFormTaskBlocker,
+  addFormFreeTextBlocker,
+  removeFormBlockerByIndex,
+  setFormRecurringConfig,
+  setFormCalendarBlockCalendarId,
+  setFormCalendarBlockStart,
+  setFormCalendarBlockEnd,
+  setFormNewTaskInitialState,
 } = slice.actions;
 
 // Thunks
@@ -143,10 +149,10 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
     return false;
   }
 
-  dispatch(slice.actions.setAll(task));
+  dispatch(slice.actions.setAllTaskFormFields(task));
 
   const recurringConfig = selectRecurringConfigByMostRecentTaskId(state, taskId) || null;
-  dispatch(setRecurringConfig(recurringConfig));
+  dispatch(setFormRecurringConfig(recurringConfig));
 
   return true;
 };

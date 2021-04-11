@@ -18,7 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { selectRecurringConfig, setRecurringConfig } from '../../../modules/taskForm';
+import { selectFormRecurringConfig, setFormRecurringConfig } from '../../../modules/taskForm';
 
 import { DAY, MONTH, WEEK } from '../../../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../../../constants/weekdays';
@@ -105,7 +105,7 @@ const RecurringConfigEditing = ({ timestamp }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const currentRecurringConfig = useSelector(selectRecurringConfig);
+  const currentRecurringConfig = useSelector(selectFormRecurringConfig);
 
   const presetOptions = useMemo(() => getPresetOptions(timestamp), [timestamp]);
 
@@ -126,15 +126,15 @@ const RecurringConfigEditing = ({ timestamp }) => {
   const handleSelectChange = (event) => {
     const newValue = event.target.value;
     if (newValue === '') {
-      dispatch(setRecurringConfig(null));
+      dispatch(setFormRecurringConfig(null));
       setSelectValue('');
     } else if (newValue === 'custom') {
       const preset = presetOptions.find(({ key }) => key === 'onceWeekly');
-      dispatch(setRecurringConfig(preset.config));
+      dispatch(setFormRecurringConfig(preset.config));
       setSelectValue('custom');
     } else {
       const preset = presetOptions.find(({ key }) => key === newValue);
-      dispatch(setRecurringConfig(preset.config));
+      dispatch(setFormRecurringConfig(preset.config));
       setSelectValue(preset.key);
     }
   };
@@ -148,7 +148,7 @@ const RecurringConfigEditing = ({ timestamp }) => {
       return;
     }
     dispatch(
-      setRecurringConfig({
+      setFormRecurringConfig({
         ...currentRecurringConfig,
         amount: parseInt(event.target.value, 10),
       }),
@@ -156,7 +156,7 @@ const RecurringConfigEditing = ({ timestamp }) => {
   };
   const handleChangeUnit = (event) => {
     dispatch(
-      setRecurringConfig({
+      setFormRecurringConfig({
         ...currentRecurringConfig,
         unit: event.target.value,
       }),
@@ -168,7 +168,7 @@ const RecurringConfigEditing = ({ timestamp }) => {
       [weekday]: !activeWeekdays[weekday],
     };
     dispatch(
-      setRecurringConfig({
+      setFormRecurringConfig({
         ...currentRecurringConfig,
         activeWeekdays: newActiveWeekdays,
       }),

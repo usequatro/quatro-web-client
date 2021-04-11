@@ -7,7 +7,7 @@ import Grow from '@material-ui/core/Grow';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme } from '@material-ui/core/styles';
 
-import { setNewTaskInitialState, setTaskInForm } from '../../../modules/taskForm';
+import { setFormNewTaskInitialState, setTaskInForm } from '../../../modules/taskForm';
 import TaskDialogForm from './TaskDialogForm';
 import useNewTaskDialogRouterControl from '../../hooks/useNewTaskDialogRouterControl';
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
@@ -41,7 +41,7 @@ const TaskDialog = () => {
   // On opening new task modal, clear it
   useEffect(() => {
     if (newTaskDialogOpen && open) {
-      dispatch(setNewTaskInitialState());
+      dispatch(setFormNewTaskInitialState());
     }
   }, [newTaskDialogOpen, open, dispatch]);
 
