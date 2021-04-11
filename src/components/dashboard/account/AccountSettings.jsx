@@ -148,7 +148,7 @@ const AccountSettings = () => {
     () => Boolean(userTimeZone && isValidTimeZone(userTimeZone)),
     [userTimeZone],
   );
-  const browserDetectedTimeZone = useMemo(getBrowserDetectedTimeZone, []);
+  const browserTimeZone = useMemo(getBrowserDetectedTimeZone, []);
 
   const savedEmail = useSelector(selectUserEmail);
   const [email, setEmail] = useState(savedEmail || '');
@@ -247,10 +247,10 @@ const AccountSettings = () => {
   };
 
   const handleSetTimeZoneToBrowserTimeZone = () => {
-    if (!browserDetectedTimeZone) {
-      throw new Error('No browserDetectedTimeZone');
+    if (!browserTimeZone) {
+      throw new Error('No browserTimeZone');
     }
-    fetchUpdateUserExternalConfig({ timeZone: browserDetectedTimeZone });
+    fetchUpdateUserExternalConfig({ timeZone: browserTimeZone });
   };
 
   const hasChanges =
@@ -392,7 +392,21 @@ const AccountSettings = () => {
                   type="button"
                   onClick={handleSetTimeZoneToBrowserTimeZone}
                 >
-                  Change to {browserDetectedTimeZone.replace(/_/g, ' ')}
+                  Change to {browserTimeZone.replace(/_/g, ' ')}
+                </MuiLink>
+              </Typography>
+            )}
+
+            {userTimeZone && browserTimeZone && userTimeZone !== browserTimeZone && (
+              <Typography variant="body2" gutterBottom>
+                {`Looks like your current time zone is
+                  ${browserTimeZone.replace(/_/g, ' ')}`}
+                <MuiLink
+                  component="button"
+                  type="button"
+                  onClick={handleSetTimeZoneToBrowserTimeZone}
+                >
+                  Change to {browserTimeZone.replace(/_/g, ' ')}
                 </MuiLink>
               </Typography>
             )}
