@@ -2,12 +2,18 @@ import get from 'lodash/get';
 import pick from 'lodash/pick';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
-import { selectTask } from './tasks';
+import { selectTask, selectTaskDashboardTab, updateTask } from './tasks';
 import {
+  createRecurringConfig,
+  deleteRecurringConfig,
   selectRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
+  updateRecurringConfig,
 } from './recurringConfigs';
 import * as blockerTypes from '../constants/blockerTypes';
+import { selectCalendarProviderCalendarId } from './calendars';
+import { createTask, selectDashboardActiveTab } from './dashboard';
+import { TASK_CREATED, TASK_UPDATED } from '../constants/mixpanelEvents';
 
 const name = 'taskForm';
 
@@ -201,4 +207,132 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
   }
 
   return true;
+};
+
+export const saveForm = () => (dispatch, getState, { mixpanel }) => {
+  const state = getState();
+  const editingTaskId = selectFormTaskId(state);
+  const editingRecurringConfigId = selectFormRecurringConfigId(state);
+
+  const title = (selectFormTitle(state) || '').trim();
+  const impact = selectFormImpact(state);
+  const effort = selectFormEffort(state);
+  const description = (selectFormDescription(state) || '').trim();
+  const due = selectFormDue(state);
+  const scheduledStart = selectFormScheduledStart(state);
+  const snoozedUntil = selectFormSnoozedUntil(state);
+  const blockedBy = selectFormBlockedBy(state);
+  const calendarBlockStart = selectFormCalendarBlockStart(state);
+  const calendarBlockEnd = selectFormCalendarBlockEnd(state);
+  const calendarBlockCalendarId = selectFormCalendarBlockCalendarId(state);
+  const recurringConfig = selectFormRecurringConfig(state);
+  const formHasRecurringConfig = selectFormHasRecurringConfig(state);
+
+  const calendarBlockProviderCalendarId = calendarBlockCalendarId
+    ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
+    : undefined;
+  const hasCalendarBlock = Boolean(calendarBlockStart && calendarBlockEnd);
+
+  const taskPromise = editingTaskId
+    ? // updating a task isn't async, so let's fake it 😇
+      Promise.resolve().then(() => {
+        dispatch(
+          updateTask(editingTaskId, {
+            title,
+            impact,
+            effort,
+            description,
+            due,
+            scheduledStart,
+            snoozedUntil,
+            blockedBy,
+            calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+            calendarBlockProviderCalendarId: hasCalendarBlock
+              ? calendarBlockProviderCalendarId
+              : null,
+            calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
+            calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
+            // Make sure to clear recurringConfigId if we don't have any repeat info set
+            ...(!formHasRecurringConfig ? { recurringConfigId: null } : {}),
+          }),
+        ).then(() => {
+          mixpanel.track(TASK_UPDATED, {
+            hasBlockers: blockedBy.length > 0,
+            hasScheduledStart: Boolean(scheduledStart),
+            hasSnoozedUntil: Boolean(snoozedUntil),
+            hasDueDate: Boolean(due),
+            isRecurring: Boolean(recurringConfig),
+            hasCalendarBlock,
+            hasDescription: Boolean(description),
+            impact,
+            effort,
+          });
+        });
+        return { taskId: editingTaskId, taskCreated: false };
+      })
+    : dispatch(
+        createTask(title, impact, effort, {
+          description,
+          due,
+          scheduledStart,
+          snoozedUntil,
+          blockedBy,
+          calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
+          calendarBlockProviderCalendarId: hasCalendarBlock
+            ? calendarBlockProviderCalendarId
+            : null,
+          calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
+          calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
+        }),
+      ).then((taskId) => {
+        mixpanel.track(TASK_CREATED, {
+          hasBlockers: blockedBy.length > 0,
+          hasScheduledStart: Boolean(scheduledStart),
+          hasSnoozedUntil: Boolean(snoozedUntil),
+          hasDueDate: Boolean(due),
+          isRecurring: Boolean(recurringConfig),
+          hasCalendarBlock,
+          hasDescription: Boolean(description),
+          impact,
+          effort,
+        });
+        return { taskId, taskCreated: true };
+      });
+
+  return (
+    taskPromise
+      // Recurring config handling
+      .then(async ({ taskId, ...info }) => {
+        if (formHasRecurringConfig) {
+          if (editingRecurringConfigId) {
+            dispatch(
+              updateRecurringConfig(editingRecurringConfigId, {
+                ...recurringConfig,
+                mostRecentTaskId: taskId,
+              }),
+            );
+          } else {
+            const newRcId = await dispatch(
+              createRecurringConfig({ ...recurringConfig, mostRecentTaskId: taskId }),
+            );
+            dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
+          }
+        } else if (editingRecurringConfigId) {
+          dispatch(deleteRecurringConfig(editingRecurringConfigId));
+        }
+        return { taskId, ...info };
+      })
+      // Add extra info
+      .then(({ taskId, ...info }) => {
+        const postState = getState();
+        const tabTask = selectTaskDashboardTab(postState, taskId);
+        const dashboardActiveTab = selectDashboardActiveTab(state);
+        return {
+          taskId,
+          tabTask,
+          dashboardActiveTab,
+          ...info,
+        };
+      })
+  );
 };
