@@ -9,6 +9,7 @@ import isThursday from 'date-fns/isThursday';
 import isTuesday from 'date-fns/isTuesday';
 import isWednesday from 'date-fns/isWednesday';
 import isEqual from 'lodash/isEqual';
+import get from 'lodash/get';
 
 import Box from '@material-ui/core/Box';
 import Select from '@material-ui/core/Select';
@@ -18,7 +19,18 @@ import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { selectFormRecurringConfig, setFormRecurringConfig } from '../../../modules/taskForm';
+import {
+  selectFormRecurringConfig,
+  clearFormRecurringConfig,
+  setFormRecurringConfigToPreset,
+  setFormRecurringConfigActiveWeekdays,
+  setFormRecurringConfigAmount,
+  setFormRecurringConfigUnit,
+  selectFormHasRecurringConfig,
+  selectFormRecurringConfigUnit,
+  selectFormRecurringConfigAmount,
+  selectFormRecurringConfigActiveWeekdays,
+} from '../../../modules/taskForm';
 
 import { DAY, MONTH, WEEK } from '../../../constants/recurringDurationUnits';
 import * as WEEKDAYS from '../../../constants/weekdays';
@@ -105,12 +117,16 @@ const RecurringConfigEditing = ({ timestamp }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
+  const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
+  const currentUnit = useSelector(selectFormRecurringConfigUnit) || 1;
+  const currentAmount = useSelector(selectFormRecurringConfigAmount) || DAY;
+  const currentActiveWeekdays = useSelector(selectFormRecurringConfigActiveWeekdays) || {};
   const currentRecurringConfig = useSelector(selectFormRecurringConfig);
 
   const presetOptions = useMemo(() => getPresetOptions(timestamp), [timestamp]);
 
   const [selectValue, setSelectValue] = useState(() => {
-    if (!currentRecurringConfig) {
+    if (!formHasRecurringConfig) {
       return '';
     }
     const preset = presetOptions.find(
@@ -126,53 +142,34 @@ const RecurringConfigEditing = ({ timestamp }) => {
   const handleSelectChange = (event) => {
     const newValue = event.target.value;
     if (newValue === '') {
-      dispatch(setFormRecurringConfig(null));
+      dispatch(clearFormRecurringConfig());
       setSelectValue('');
     } else if (newValue === 'custom') {
       const preset = presetOptions.find(({ key }) => key === 'onceWeekly');
-      dispatch(setFormRecurringConfig(preset.config));
+      dispatch(setFormRecurringConfigToPreset(preset.config));
       setSelectValue('custom');
     } else {
       const preset = presetOptions.find(({ key }) => key === newValue);
-      dispatch(setFormRecurringConfig(preset.config));
+      dispatch(setFormRecurringConfigToPreset(preset.config));
       setSelectValue(preset.key);
     }
   };
-
-  const amount = currentRecurringConfig ? currentRecurringConfig.amount : 1;
-  const unit = currentRecurringConfig ? currentRecurringConfig.unit : DAY;
-  const activeWeekdays = currentRecurringConfig ? currentRecurringConfig.activeWeekdays : {};
 
   const handleChangeAmount = (event) => {
     if (Number.isNaN(parseInt(event.target.value, 10)) || event.target.value <= 0) {
       return;
     }
-    dispatch(
-      setFormRecurringConfig({
-        ...currentRecurringConfig,
-        amount: parseInt(event.target.value, 10),
-      }),
-    );
+    dispatch(setFormRecurringConfigAmount(parseInt(event.target.value, 10)));
   };
   const handleChangeUnit = (event) => {
-    dispatch(
-      setFormRecurringConfig({
-        ...currentRecurringConfig,
-        unit: event.target.value,
-      }),
-    );
+    dispatch(setFormRecurringConfigUnit(event.target.value));
   };
   const handleActiveWeekdayToggle = (weekday) => {
     const newActiveWeekdays = {
-      ...activeWeekdays,
-      [weekday]: !activeWeekdays[weekday],
+      ...currentActiveWeekdays,
+      [weekday]: !currentActiveWeekdays[weekday],
     };
-    dispatch(
-      setFormRecurringConfig({
-        ...currentRecurringConfig,
-        activeWeekdays: newActiveWeekdays,
-      }),
-    );
+    dispatch(setFormRecurringConfigActiveWeekdays(newActiveWeekdays));
   };
 
   return (
@@ -185,14 +182,16 @@ const RecurringConfigEditing = ({ timestamp }) => {
         disabled={!timestamp}
         labelId="recurring-config-select-label"
       >
-        <MenuItem value="">Don&apos;t repeat</MenuItem>
+        <MenuItem key="noRepeat" value="">
+          Don&apos;t repeat
+        </MenuItem>
 
         {presetOptions.map((preset) => (
           <MenuItem key={preset.key} value={preset.key}>
-            {preset.label || getUserFacingRecurringText(preset.config, timestamp)}
+            {getUserFacingRecurringText(preset.config, timestamp)}
           </MenuItem>
         ))}
-        <MenuItem value="custom">
+        <MenuItem value="custom" key="custom">
           {selectValue !== 'custom'
             ? 'Custom...'
             : `Custom: ${getUserFacingRecurringText(currentRecurringConfig, timestamp)}`}
@@ -209,18 +208,18 @@ const RecurringConfigEditing = ({ timestamp }) => {
               type="number"
               min="1"
               max="1000"
-              value={amount}
+              value={currentAmount}
               onChange={handleChangeAmount}
               className={classes.amountInput}
             />
-            <Select value={unit} onChange={handleChangeUnit}>
-              <MenuItem value={DAY}>{amount === 1 ? 'day' : 'days'}</MenuItem>
-              <MenuItem value={WEEK}>{amount === 1 ? 'week' : 'weeks'}</MenuItem>
-              <MenuItem value={MONTH}>{amount === 1 ? 'month' : 'months'}</MenuItem>
+            <Select value={currentUnit} onChange={handleChangeUnit}>
+              <MenuItem value={DAY}>{currentAmount === 1 ? 'day' : 'days'}</MenuItem>
+              <MenuItem value={WEEK}>{currentAmount === 1 ? 'week' : 'weeks'}</MenuItem>
+              <MenuItem value={MONTH}>{currentAmount === 1 ? 'month' : 'months'}</MenuItem>
             </Select>
           </Box>
 
-          {unit === WEEK && (
+          {currentUnit === WEEK && (
             <Box display="flex" justifyContent="space-between">
               {weekdayButtons.map(({ value, label, ariaLabel }) => (
                 <Button
@@ -228,8 +227,8 @@ const RecurringConfigEditing = ({ timestamp }) => {
                   aria-label={ariaLabel}
                   size="large"
                   className={classes.weekdayButton}
-                  variant={activeWeekdays && activeWeekdays[value] ? 'contained' : 'text'}
-                  color={activeWeekdays && activeWeekdays[value] ? 'primary' : 'inherit'}
+                  variant={get(currentActiveWeekdays, [value]) ? 'contained' : 'text'}
+                  color={get(currentActiveWeekdays, [value]) ? 'primary' : 'inherit'}
                   onClick={() => handleActiveWeekdayToggle(value)}
                 >
                   {label}

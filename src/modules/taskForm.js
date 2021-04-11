@@ -1,15 +1,19 @@
 import get from 'lodash/get';
+import pick from 'lodash/pick';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 import { selectTask } from './tasks';
-import { selectRecurringConfigByMostRecentTaskId } from './recurringConfigs';
+import {
+  selectRecurringConfig,
+  selectRecurringConfigIdByMostRecentTaskId,
+} from './recurringConfigs';
 import * as blockerTypes from '../constants/blockerTypes';
 
 const name = 'taskForm';
 
 // Selectors
 
-// export const selectFormTaskId = (state) => state[name].taskId;
+export const selectFormTaskId = (state) => state[name].taskId;
 export const selectFormTitle = (state) => state[name].task.title;
 export const selectFormDescription = (state) => state[name].task.description;
 export const selectFormImpact = (state) => state[name].task.impact;
@@ -32,13 +36,18 @@ export const selectFormBlockedByTaskIds = createSelector(selectFormBlockedBy, (b
     .filter(Boolean),
 );
 
-// export const selectFormRecurringConfigId = (state) => state[name].recurringConfigId;
+export const selectFormHasRecurringConfig = (state) => Boolean(state[name].hasRecurringConfig);
+export const selectFormRecurringConfigId = (state) => state[name].recurringConfigId;
 export const selectFormRecurringConfig = (state) => state[name].recurringConfig;
+export const selectFormRecurringConfigUnit = (state) => state[name].recurringConfig.unit;
+export const selectFormRecurringConfigAmount = (state) => state[name].recurringConfig.amount;
+export const selectFormRecurringConfigActiveWeekdays = (state) =>
+  state[name].recurringConfig.activeWeekdays;
 
 // Slice
 
 const initialState = {
-  // taskId: null,
+  taskId: null,
   task: {
     title: '',
     description: '',
@@ -53,8 +62,13 @@ const initialState = {
     calendarBlockStart: null,
     calendarBlockEnd: null,
   },
-  // recurringConfigId: null,
-  recurringConfig: null,
+  hasRecurringConfig: false,
+  recurringConfigId: null,
+  recurringConfig: {
+    unit: null,
+    amount: null,
+    activeWeekdays: null,
+  },
 };
 
 /* eslint-disable no-param-reassign */
@@ -96,7 +110,7 @@ const slice = createSlice({
       });
     },
     removeFormBlockerByIndex: (state, { payload }) => {
-      state.task.blockedBy = (state.blockedBy || []).filter((_, index) => index !== payload);
+      state.task.blockedBy = (state.task.blockedBy || []).filter((_, index) => index !== payload);
     },
     setFormCalendarBlockCalendarId: (state, { payload }) => {
       state.task.calendarBlockCalendarId = payload;
@@ -107,11 +121,34 @@ const slice = createSlice({
     setFormCalendarBlockEnd: (state, { payload }) => {
       state.task.calendarBlockEnd = payload;
     },
-    setAllTaskFormFields: (state, { payload }) => {
-      state.task = payload;
+    setAllTaskFormFields: (state, { payload: { taskId, task } }) => {
+      state.taskId = taskId;
+      state.task = pick(task, Object.keys(initialState.task));
     },
-    setFormRecurringConfig: (state, { payload }) => {
+    setFormRecurringConfigToPreset: (state, { payload }) => {
+      state.hasRecurringConfig = true;
       state.recurringConfig = payload;
+    },
+    clearFormRecurringConfig: (state) => {
+      state.hasRecurringConfig = false;
+      state.recurringConfig = initialState.recurringConfig;
+    },
+    setFormRecurringConfigUnit: (state, { payload }) => {
+      state.recurringConfig.unit = payload;
+    },
+    setFormRecurringConfigAmount: (state, { payload }) => {
+      state.recurringConfig.amount = payload;
+    },
+    setFormRecurringConfigActiveWeekdays: (state, { payload }) => {
+      state.recurringConfig.activeWeekdays = payload;
+    },
+    setAllRecurringConfigFormFields: (
+      state,
+      { payload: { recurringConfigId, recurringConfig } },
+    ) => {
+      state.hasRecurringConfig = true;
+      state.recurringConfigId = recurringConfigId;
+      state.recurringConfig = pick(recurringConfig, Object.keys(initialState.recurringConfig));
     },
     setFormNewTaskInitialState: () => initialState,
   },
@@ -131,11 +168,15 @@ export const {
   addFormTaskBlocker,
   addFormFreeTextBlocker,
   removeFormBlockerByIndex,
-  setFormRecurringConfig,
   setFormCalendarBlockCalendarId,
   setFormCalendarBlockStart,
   setFormCalendarBlockEnd,
   setFormNewTaskInitialState,
+  setFormRecurringConfigToPreset,
+  clearFormRecurringConfig,
+  setFormRecurringConfigUnit,
+  setFormRecurringConfigAmount,
+  setFormRecurringConfigActiveWeekdays,
 } = slice.actions;
 
 // Thunks
@@ -149,10 +190,15 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
     return false;
   }
 
-  dispatch(slice.actions.setAllTaskFormFields(task));
+  dispatch(slice.actions.setAllTaskFormFields({ taskId, task }));
 
-  const recurringConfig = selectRecurringConfigByMostRecentTaskId(state, taskId) || null;
-  dispatch(setFormRecurringConfig(recurringConfig));
+  const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, taskId) || null;
+  const recurringConfig = selectRecurringConfig(state, recurringConfigId) || null;
+  if (recurringConfigId && recurringConfig) {
+    dispatch(slice.actions.setAllRecurringConfigFormFields({ recurringConfigId, recurringConfig }));
+  } else {
+    dispatch(slice.actions.clearFormRecurringConfig());
+  }
 
   return true;
 };

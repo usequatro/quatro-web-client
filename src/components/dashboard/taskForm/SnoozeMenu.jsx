@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
+import uniqBy from 'lodash/uniqBy';
 
 import format from 'date-fns/format';
 import formatISO from 'date-fns/formatISO';
@@ -24,7 +25,7 @@ const getOptions = (now) => {
   const tomorrowMorningTimestamp = addHours(startOfTomorrow(), 9).getTime();
   const nextWeek = addHours(startOfDay(nextMonday(now)), 9).getTime();
 
-  return [
+  const options = [
     {
       value: oneHourFromNow,
       label: '1 hour from now',
@@ -42,6 +43,7 @@ const getOptions = (now) => {
     },
     { value: nextWeek, label: 'Next week', formattedValue: format(nextWeek, 'PP - h:mm a') },
   ];
+  return uniqBy(options, 'value');
 };
 
 const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
@@ -89,7 +91,7 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
         horizontal: 'center',
       }}
     >
-      <MenuItem selected={!snoozedUntil} onClick={handleClear}>
+      <MenuItem selected={!snoozedUntil} onClick={handleClear} key="notSnoozed">
         Not snoozed
       </MenuItem>
 
@@ -107,14 +109,16 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
       ))}
 
       {showCurrentOption && (
-        <MenuItem selected onClick={() => handleSelect(snoozedUntil)}>
+        <MenuItem selected onClick={() => handleSelect(snoozedUntil)} key="current">
           Custom
           <Typography variant="body1" color="textSecondary" component="pre">
             {` (${format(snoozedUntil, 'PPPP, h:mm a')})`}
           </Typography>
         </MenuItem>
       )}
-      <MenuItem onClick={handleCustomSelected}>Custom...</MenuItem>
+      <MenuItem onClick={handleCustomSelected} key="custom">
+        Custom...
+      </MenuItem>
     </Menu>
   );
 };

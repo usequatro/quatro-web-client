@@ -55,12 +55,13 @@ import {
   addFormFreeTextBlocker,
   removeFormBlockerByIndex,
   setTaskInForm,
+  selectFormHasRecurringConfig,
+  selectFormRecurringConfigId,
 } from '../../../modules/taskForm';
 import {
   createRecurringConfig,
   updateRecurringConfig,
   deleteRecurringConfig,
-  selectRecurringConfigIdByMostRecentTaskId,
 } from '../../../modules/recurringConfigs';
 import { selectCalendarProviderCalendarId } from '../../../modules/calendars';
 import Confirm from '../../ui/Confirm';
@@ -155,6 +156,15 @@ RepeatButtonDisabledTooltip.propTypes = {
 
 const runDelayed = (fn, timeout) => setTimeout(fn, timeout);
 
+const RecurringLabelValue = () => {
+  const recurringConfig = useSelector(selectFormRecurringConfig);
+  const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
+
+  return `Repeats ${getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp, {
+    capitalize: false,
+  })}`;
+};
+
 const TaskDialogForm = ({ onClose, taskId }) => {
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
@@ -167,9 +177,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   // This will be defined if we're editing a task
   const editTaskDialogId = taskId;
   // This will be defined if the task we're editing has a recurring config
-  const editRecurringConfigId = useSelector((state) =>
-    selectRecurringConfigIdByMostRecentTaskId(state, editTaskDialogId),
-  );
+  const editRecurringConfigId = useSelector((state) => selectFormRecurringConfigId(state));
 
   const title = useSelector(selectFormTitle);
   const description = useSelector(selectFormDescription);
@@ -190,6 +198,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
       : undefined,
   );
+
+  const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
 
   const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
@@ -312,20 +322,21 @@ const TaskDialogForm = ({ onClose, taskId }) => {
     taskPromise
       // Recurring config handling
       .then(async (tId) => {
-        // Create, update or delete
-        if (!editRecurringConfigId && recurringConfig) {
-          const newRcId = await dispatch(
-            createRecurringConfig({ ...recurringConfig, mostRecentTaskId: tId }),
-          );
-          dispatch(updateTask(tId, { recurringConfigId: newRcId }));
-        } else if (editRecurringConfigId && recurringConfig) {
-          dispatch(
-            updateRecurringConfig(editRecurringConfigId, {
-              ...recurringConfig,
-              mostRecentTaskId: tId,
-            }),
-          );
-        } else if (editRecurringConfigId && !recurringConfig) {
+        if (formHasRecurringConfig) {
+          if (editRecurringConfigId) {
+            dispatch(
+              updateRecurringConfig(editRecurringConfigId, {
+                ...recurringConfig,
+                mostRecentTaskId: tId,
+              }),
+            );
+          } else {
+            const newRcId = await dispatch(
+              createRecurringConfig({ ...recurringConfig, mostRecentTaskId: tId }),
+            );
+            dispatch(updateTask(tId, { recurringConfigId: newRcId }));
+          }
+        } else if (editRecurringConfigId) {
           dispatch(deleteRecurringConfig(editRecurringConfigId));
         }
         return tId;
@@ -457,22 +468,16 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             onClick={() => setShowScheduledStartDialog(true)}
             startIcon={<ScheduledIcon />}
             className={classes.settingButton}
-            color={
-              scheduledStartTimestamp && scheduledStartTimestamp > Date.now()
-                ? 'primary'
-                : 'default'
-            }
+            color={scheduledStartTimestamp ? 'primary' : 'default'}
           >
             {scheduledStartTimestamp
               ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
               : 'No scheduled date'}
 
-            {recurringConfig && (
+            {formHasRecurringConfig && (
               <>
                 <br />
-                {`Repeats ${getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp, {
-                  capitalize: false,
-                })}`}
+                <RecurringLabelValue />
               </>
             )}
 
@@ -563,7 +568,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   title="Delete task"
                   body={[
                     'Are you sure you want to delete this task?',
-                    recurringConfig && 'The task will stop repeating when deleted',
+                    editRecurringConfigId && 'The task will stop repeating when deleted',
                   ].filter(Boolean)}
                   buttonText="Delete"
                 />

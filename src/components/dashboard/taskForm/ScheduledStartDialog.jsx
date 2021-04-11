@@ -40,10 +40,11 @@ import {
   setFormCalendarBlockCalendarId,
   setFormCalendarBlockStart,
   setFormCalendarBlockEnd,
-  setFormRecurringConfig,
+  clearFormRecurringConfig,
   selectFormRecurringConfig,
   selectFormSnoozedUntil,
   setFormSnoozedUntil,
+  selectFormHasRecurringConfig,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import {
@@ -110,6 +111,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
 
   const userDefaultCalendarId = useSelector(selectUserDefaultCalendarId);
 
+  const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
+
   // Non-persisted changes
   const [currentTimestamp, setCurrentTimestamp] = useState(timestamp || getInitialDateTimestamp());
   const [currentBlocksCalendar, setCurrentBlocksCalendar] = useState(blocksCalendar);
@@ -152,8 +155,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     dispatch(setFormCalendarBlockEnd(null));
 
     // If we remove the scheduled start and there was repeat, also clear it
-    if (recurringConfig) {
-      dispatch(setFormRecurringConfig(null));
+    if (formHasRecurringConfig) {
+      dispatch(clearFormRecurringConfig());
     }
     onClose();
   };
@@ -192,8 +195,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     );
 
     // If we remove the scheduled start and there was repeat, also clear it
-    if (!currentTimestamp && recurringConfig) {
-      dispatch(setFormRecurringConfig(null));
+    if (!currentTimestamp && formHasRecurringConfig) {
+      dispatch(clearFormRecurringConfig());
     }
     // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
     if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
@@ -208,7 +211,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
         currentTimestamp,
         'h:mm a',
       )}. ${
-        recurringConfig
+        formHasRecurringConfig
           ? `It will repeat ${getUserFacingRecurringText(recurringConfig, currentTimestamp, {
               capitalize: false,
             })}.`
@@ -301,7 +304,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
               label="Blocks time in connected calendar"
             />
 
-            {recurringConfig && !blockCalendarDisabledReason && currentTimestamp && (
+            {formHasRecurringConfig && !blockCalendarDisabledReason && currentTimestamp && (
               <FormHelperText className={classes.switchHelperText}>
                 Applied to first task only
               </FormHelperText>

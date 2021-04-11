@@ -36,14 +36,7 @@ const TaskDialog = () => {
     } else if (open && !shouldBeOpen) {
       setOpen(false);
     }
-  }, [shouldBeOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // On opening new task modal, clear it
-  useEffect(() => {
-    if (newTaskDialogOpen && open) {
-      dispatch(setFormNewTaskInitialState());
-    }
-  }, [newTaskDialogOpen, open, dispatch]);
+  }, [shouldBeOpen, open]);
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -73,6 +66,7 @@ const TaskDialog = () => {
     <Dialog
       open={open}
       onClose={handleClose}
+      onExited={() => dispatch(setFormNewTaskInitialState())}
       fullScreen={fullScreen}
       aria-labelledby="new-task-dialog-title"
       TransitionComponent={fullScreen ? FullScreenTransition : DialogTransition}
