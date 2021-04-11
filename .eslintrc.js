@@ -28,5 +28,6 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'warn',
     'react/jsx-indent': 'off', // prettier handles
     'react/jsx-wrap-multilines': 'off', // prettier handles
+    'react/jsx-curly-brace-presence': 'off', // avoid errors when using them to use quotes without escaping
   },
 };

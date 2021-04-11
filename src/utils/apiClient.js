@@ -267,8 +267,16 @@ export const listenToUserExternalConfigDocument = (userId, onNext, onError) =>
     .collection(USER_EXTERNAL_CONFIGS)
     .doc(userId)
     .onSnapshot(
-      (doc) => {
-        onNext(doc.data());
+      async (doc) => {
+        const { value, error } = validateExternalConfigSchema(doc.data(), {
+          sync: true,
+          isUpdate: false,
+        });
+        if (error) {
+          onError(error);
+        } else {
+          onNext(value);
+        }
       },
       (error) => {
         onError(error);
@@ -282,6 +290,12 @@ export const listenToUserExternalConfigDocument = (userId, onNext, onError) =>
  */
 export const fetchUpdateUserExternalConfig = async (updates) => {
   const id = firebase.auth().currentUser.uid;
+  if (!id) {
+    throw new Error(`Can't update user external config without logged in user`);
+  }
   const validEntity = await validateExternalConfigSchema(updates, { isUpdate: true });
+  debugConsole.log('Firebase', 'Updating user external config', id, validEntity);
   return db.collection(USER_EXTERNAL_CONFIGS).doc(id).set(validEntity, { merge: true });
 };
+
+window.fetchUpdateUserExternalConfig = fetchUpdateUserExternalConfig;

@@ -1,8 +1,9 @@
 import Joi from '@hapi/joi';
 
 export const userExternalConfigSchema = Joi.object({
-  gapiCalendarOfflineAccess: Joi.boolean(),
-  defaultCalendarId: Joi.string().allow(null),
+  gapiCalendarOfflineAccess: Joi.boolean().default(false),
+  defaultCalendarId: Joi.string().allow(null).default(null),
+  timeZone: Joi.string().allow(null).default(null),
 });
 
 /**
@@ -14,7 +15,7 @@ export const userExternalConfigSchema = Joi.object({
  */
 export const validateExternalConfigSchema = (entity, { isUpdate = false, sync = false } = {}) =>
   userExternalConfigSchema[sync ? 'validate' : 'validateAsync'](entity, {
-    noDefaults: false,
+    noDefaults: isUpdate,
     // We don't allow unknown when updating, but when fetching yes, they'll be stripped out
     allowUnknown: !isUpdate,
     stripUnknown: true,

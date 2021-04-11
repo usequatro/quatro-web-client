@@ -24,6 +24,8 @@ import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 import createOnboardingTasks from '../../utils/createOnboardingTasks';
+import { getBrowserDetectedTimeZone } from '../../utils/timeZoneUtils';
+import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -145,6 +147,12 @@ const Registration = ({ mode }) => {
       .auth()
       .createUserWithEmailAndPassword(emailAddress, password)
       .then((userCredential) => createOnboardingTasks(userCredential.user.uid))
+      .then(() => {
+        const userTimeZone = getBrowserDetectedTimeZone();
+        if (userTimeZone) {
+          fetchUpdateUserExternalConfig({ timeZone: userTimeZone });
+        }
+      })
       .catch((error) => {
         console.error(error); // eslint-disable-line no-console
         setSubmitting(false);
