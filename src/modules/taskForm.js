@@ -125,13 +125,14 @@ const slice = createSlice({
       state.taskId = taskId;
       state.task = pick(task, Object.keys(initialState.task));
     },
-    setFormRecurringConfigToPreset: (state, { payload }) => {
-      state.hasRecurringConfig = true;
-      state.recurringConfig = payload;
-    },
-    clearFormRecurringConfig: (state) => {
-      state.hasRecurringConfig = false;
-      state.recurringConfig = initialState.recurringConfig;
+    setFormRecurringConfig: (state, { payload }) => {
+      if (payload) {
+        state.hasRecurringConfig = true;
+        state.recurringConfig = pick(payload, Object.keys(initialState.recurringConfig));
+      } else {
+        state.hasRecurringConfig = false;
+        state.recurringConfig = initialState.recurringConfig;
+      }
     },
     setFormRecurringConfigUnit: (state, { payload }) => {
       state.recurringConfig.unit = payload;
@@ -172,8 +173,7 @@ export const {
   setFormCalendarBlockStart,
   setFormCalendarBlockEnd,
   setFormNewTaskInitialState,
-  setFormRecurringConfigToPreset,
-  clearFormRecurringConfig,
+  setFormRecurringConfig,
   setFormRecurringConfigUnit,
   setFormRecurringConfigAmount,
   setFormRecurringConfigActiveWeekdays,
@@ -197,7 +197,7 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
   if (recurringConfigId && recurringConfig) {
     dispatch(slice.actions.setAllRecurringConfigFormFields({ recurringConfigId, recurringConfig }));
   } else {
-    dispatch(slice.actions.clearFormRecurringConfig());
+    dispatch(slice.actions.setFormRecurringConfig(null));
   }
 
   return true;

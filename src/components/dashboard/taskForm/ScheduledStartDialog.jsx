@@ -40,11 +40,11 @@ import {
   setFormCalendarBlockCalendarId,
   setFormCalendarBlockStart,
   setFormCalendarBlockEnd,
-  clearFormRecurringConfig,
   selectFormRecurringConfig,
   selectFormSnoozedUntil,
   setFormSnoozedUntil,
   selectFormHasRecurringConfig,
+  setFormRecurringConfig,
 } from '../../../modules/taskForm';
 import { selectGapiHasAllCalendarScopes } from '../../../modules/session';
 import {
@@ -120,6 +120,9 @@ const ScheduledStartDialog = ({ open, onClose }) => {
   const [currentCalendarId, setCurrentCalendarId] = useState(
     calendarBlockCalendarId || userDefaultCalendarId,
   );
+  const [currentRecurringConfig, setCurrentRecurringConfig] = useState(
+    formHasRecurringConfig ? recurringConfig : null,
+  );
 
   const [errors, setErrors] = useState([]);
 
@@ -134,6 +137,7 @@ const ScheduledStartDialog = ({ open, onClose }) => {
       setCurrentTimestamp(timestamp || getInitialDateTimestamp());
       setCurrentDuration(calendarBlockDuration || defaultDuration);
       setCurrentCalendarId(calendarBlockCalendarId || userDefaultCalendarId);
+      setCurrentRecurringConfig(formHasRecurringConfig ? recurringConfig : null);
     }
     previousOpen.current = open;
   }, [
@@ -144,6 +148,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     calendarBlockCalendarId,
     userDefaultCalendarId,
     defaultDuration,
+    formHasRecurringConfig,
+    recurringConfig,
   ]);
 
   const mobile = useMobileViewportSize();
@@ -153,11 +159,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
     dispatch(setFormCalendarBlockCalendarId(null));
     dispatch(setFormCalendarBlockStart(null));
     dispatch(setFormCalendarBlockEnd(null));
+    dispatch(setFormRecurringConfig(null));
 
-    // If we remove the scheduled start and there was repeat, also clear it
-    if (formHasRecurringConfig) {
-      dispatch(clearFormRecurringConfig());
-    }
     onClose();
   };
 
@@ -193,11 +196,8 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           : null,
       ),
     );
+    dispatch(setFormRecurringConfig(currentRecurringConfig));
 
-    // If we remove the scheduled start and there was repeat, also clear it
-    if (!currentTimestamp && formHasRecurringConfig) {
-      dispatch(clearFormRecurringConfig());
-    }
     // If the scheduled start is in the future, and the task was snoozed, we clear the snooze
     if (currentTimestamp && currentTimestamp > Date.now() && snoozedUntilTimestamp) {
       dispatch(setFormSnoozedUntil(null));
@@ -278,7 +278,11 @@ const ScheduledStartDialog = ({ open, onClose }) => {
           </Typography>
 
           <Box ml={4}>
-            <RecurringConfigEditing timestamp={currentTimestamp} />
+            <RecurringConfigEditing
+              timestamp={currentTimestamp}
+              recurringConfig={currentRecurringConfig}
+              onChange={(newRecurringConfig) => setCurrentRecurringConfig(newRecurringConfig)}
+            />
           </Box>
         </Box>
 
