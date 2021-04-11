@@ -48,7 +48,11 @@ import {
   selectUserExternalConfigIsFetching,
 } from '../../../modules/userExternalConfig';
 import { fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
-import { getBrowserDetectedTimeZone, isValidTimeZone } from '../../../utils/timeZoneUtils';
+import {
+  getBrowserDetectedTimeZone,
+  hasBrowserTimeZoneSupport,
+  isValidTimeZone,
+} from '../../../utils/timeZoneUtils';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
 const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
@@ -139,9 +143,11 @@ const AccountSettings = () => {
 
   const userExternalConfigLoaded = !useSelector(selectUserExternalConfigIsFetching);
   const userTimeZone = useSelector(selectUserTimeZone);
-  const userTimeZoneIsValid = useMemo(() => userTimeZone && isValidTimeZone(userTimeZone), [
-    userTimeZone,
-  ]);
+  const browserSupportsIntlTimeZone = useMemo(hasBrowserTimeZoneSupport, []);
+  const userTimeZoneIsValid = useMemo(
+    () => Boolean(userTimeZone && isValidTimeZone(userTimeZone)),
+    [userTimeZone],
+  );
   const browserDetectedTimeZone = useMemo(getBrowserDetectedTimeZone, []);
 
   const savedEmail = useSelector(selectUserEmail);
@@ -378,15 +384,9 @@ const AccountSettings = () => {
               {(userTimeZone || 'None set').replace(/_/g, ' ')}
             </Typography>
 
-            {!userTimeZoneIsValid && (
+            {userTimeZone && browserSupportsIntlTimeZone && !userTimeZoneIsValid && (
               <Typography variant="body2" color="error" gutterBottom>
-                {`Time zone is invalid. Some functionality won't work.`}
-              </Typography>
-            )}
-
-            {browserDetectedTimeZone && browserDetectedTimeZone !== userTimeZone && (
-              <Typography variant="body2">
-                Browser time zone: {browserDetectedTimeZone.replace(/_/g, ' ')}.{' '}
+                {`Time zone is invalid. Some functionality won't work. `}
                 <MuiLink
                   component="button"
                   type="button"

@@ -1,9 +1,13 @@
 import get from 'lodash/get';
 import { createSlice } from '@reduxjs/toolkit';
 
-import { listenToUserExternalConfigDocument } from '../utils/apiClient';
+import {
+  fetchUpdateUserExternalConfig,
+  listenToUserExternalConfigDocument,
+} from '../utils/apiClient';
 import debugConsole from '../utils/debugConsole';
 import { selectUserId } from './session';
+import { getBrowserDetectedTimeZone } from '../utils/timeZoneUtils';
 
 const name = 'userExternalConfig';
 
@@ -44,10 +48,7 @@ export default slice;
 
 // Thunks
 
-export const listenToUserExternalConfig = (nextCallback = () => {}, errorCallback = () => {}) => (
-  dispatch,
-  getState,
-) => {
+export const listenToUserExternalConfig = () => (dispatch, getState) => {
   const state = getState();
   const userId = selectUserId(state);
 
@@ -57,10 +58,19 @@ export const listenToUserExternalConfig = (nextCallback = () => {}, errorCallbac
 
   const onNext = (data = null) => {
     dispatch(slice.actions.setData(data));
-    nextCallback(data);
+
+    // When user doesn't have a timezone, we try to fix it :)
+    if (!data.timeZone) {
+      const browserDetectedTimeZone = getBrowserDetectedTimeZone();
+      if (browserDetectedTimeZone) {
+        fetchUpdateUserExternalConfig({ timeZone: browserDetectedTimeZone });
+      }
+    }
+    // nextCallback(data);
   };
   const onError = (error) => {
-    errorCallback(error);
+    console.error(error); // eslint-disable-line no-console
+    // errorCallback(error);
   };
   dispatch(slice.actions.resetLocalState());
   const unsubscribe = listenToUserExternalConfigDocument(userId, onNext, onError);

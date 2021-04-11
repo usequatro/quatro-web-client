@@ -10,13 +10,21 @@ export const getBrowserDetectedTimeZone = () => {
   }
 };
 
+export const hasBrowserTimeZoneSupport = () => {
+  try {
+    return Boolean(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  } catch (error) {
+    return false;
+  }
+};
+
 /**
  *
  * @param {string} tz
  * @returns {boolean|undefined}
  */
 export const isValidTimeZone = (tz) => {
-  if (!Intl || !Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  if (!hasBrowserTimeZoneSupport()) {
     console.warn('No Intl time zone support'); // eslint-disable-line no-console
     return undefined;
   }
