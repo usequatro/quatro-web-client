@@ -19,14 +19,14 @@ import TimePicker from '../../ui/TimePicker';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import DatePicker from '../../ui/DatePicker';
 
-import { setDue, selectDue } from '../../../modules/taskForm';
+import { setFormDue, selectFormDue } from '../../../modules/taskForm';
 
 const getInitialDueDateTimestamp = () =>
   addHours(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 9).getTime();
 
 const DueDateDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
-  const dueTimestamp = useSelector(selectDue);
+  const dueTimestamp = useSelector(selectFormDue);
 
   const [currentValue, setCurrentValue] = useState(dueTimestamp || getInitialDueDateTimestamp());
 
@@ -47,7 +47,7 @@ const DueDateDialog = ({ open, onClose }) => {
 
   const handleChangeCommitted = (value) => {
     onClose();
-    dispatch(setDue(value));
+    dispatch(setFormDue(value));
   };
 
   return (

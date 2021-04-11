@@ -19,7 +19,7 @@ import TaskList from './tasks/TaskList';
 import CompletedTaskList from './tasks/CompletedTaskList';
 import TaskDialog from './taskForm/TaskDialog';
 import DashboardAppBar, { getTopBarHeight } from './navigation-app-bar/DashboardAppBar';
-import DashboardViewBar, { SECTION_TITLES_BY_TAB } from './DashboardViewBar';
+import DashboardViewBar from './DashboardViewBar';
 import AccountSettings from './account/AccountSettings';
 import CalendarDashboardRouting from './dashboard-calendar/CalendarDashboardRouting';
 import Calendars from './calendars/Calendars';
@@ -269,7 +269,7 @@ const Dashboard = () => {
                       className={classes.mobileTabList}
                     >
                       <Tab
-                        label={SECTION_TITLES_BY_TAB[activeTab] || ''}
+                        label={dashboardTabs.SECTION_TITLES_BY_TAB[activeTab] || ''}
                         id="tab-task-list"
                         aria-controls="scrollable-auto-tabpanel-task-list"
                       />

@@ -19,7 +19,7 @@ import TimePicker from '../../ui/TimePicker';
 import DialogTitleWithClose from '../../ui/DialogTitleWithClose';
 import DatePicker from '../../ui/DatePicker';
 
-import { setSnoozedUntil, selectSnoozedUntil } from '../../../modules/taskForm';
+import { setFormSnoozedUntil, selectFormSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { SNOOZE_CUSTOM_VALUE_SET, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
@@ -29,7 +29,7 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
 
-  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
+  const snoozedUntilTimestamp = useSelector(selectFormSnoozedUntil);
 
   const [currentValue, setCurrentValue] = useState(
     snoozedUntilTimestamp || getInitialSnoozedUntilTimestamp(),
@@ -52,13 +52,13 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
 
   const handleChangeCommitted = (value) => {
     onClose();
-    dispatch(setSnoozedUntil(value));
+    dispatch(setFormSnoozedUntil(value));
     mixpanel.track(SNOOZE_CUSTOM_VALUE_SET, { value: formatISO(value) });
   };
 
   const handleClear = () => {
     onClose();
-    dispatch(setSnoozedUntil(null));
+    dispatch(setFormSnoozedUntil(null));
     mixpanel.track(SNOOZE_CLEARED);
   };
 

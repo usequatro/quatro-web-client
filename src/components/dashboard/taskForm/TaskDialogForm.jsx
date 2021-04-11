@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cond from 'lodash/cond';
+import invert from 'lodash/invert';
 
 import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
@@ -31,38 +32,32 @@ import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 import CloseIcon from '@material-ui/icons/Close';
 import SnoozeIcon from '@material-ui/icons/Snooze';
 
-import { createTask } from '../../../modules/dashboard';
-import { updateTask, deleteTask } from '../../../modules/tasks';
+import { deleteTask, selectTaskDashboardTab } from '../../../modules/tasks';
 import {
-  selectTitle,
-  selectDescription,
-  selectImpact,
-  selectEffort,
-  selectScheduledStart,
-  selectSnoozedUntil,
-  selectDue,
-  selectBlockedBy,
-  selectBlockedByTaskIds,
-  selectRecurringConfig,
-  selectCalendarBlockCalendarId,
-  selectCalendarBlockStart,
-  selectCalendarBlockEnd,
-  setTitle,
-  setDescription,
-  setImpact,
-  setEffort,
-  addTaskBlocker,
-  addFreeTextBlocker,
-  removeBlockerByIndex,
+  selectFormTitle,
+  selectFormDescription,
+  selectFormImpact,
+  selectFormEffort,
+  selectFormScheduledStart,
+  selectFormSnoozedUntil,
+  selectFormDue,
+  selectFormBlockedBy,
+  selectFormBlockedByTaskIds,
+  selectFormRecurringConfig,
+  selectFormCalendarBlockStart,
+  selectFormCalendarBlockEnd,
+  setFormTitle,
+  setFormDescription,
+  setFormImpact,
+  setFormEffort,
+  addFormTaskBlocker,
+  addFormFreeTextBlocker,
+  removeFormBlockerByIndex,
   setTaskInForm,
+  selectFormHasRecurringConfig,
+  selectFormRecurringConfigId,
+  saveForm,
 } from '../../../modules/taskForm';
-import {
-  createRecurringConfig,
-  updateRecurringConfig,
-  deleteRecurringConfig,
-  selectRecurringConfigIdByMostRecentTaskId,
-} from '../../../modules/recurringConfigs';
-import { selectCalendarProviderCalendarId } from '../../../modules/calendars';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
 import DueDateDialog from './DueDateDialog';
@@ -80,11 +75,14 @@ import formatDateTime from '../../../utils/formatDateTime';
 import { IMPACT_LABELS, IMPACT_SLIDER_MARKS } from '../../../constants/impact';
 import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
 import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
-import { useMixpanel } from '../../tracking/MixpanelContext';
-import { TASK_CREATED, TASK_UPDATED } from '../../../constants/mixpanelEvents';
 import ScheduledIcon from '../../icons/ScheduledIcon';
 import BlockedIcon from '../../icons/BlockedIcon';
 import useMobileViewportSize from '../../hooks/useMobileViewportSize';
+import { PATHS_TO_DASHBOARD_TABS } from '../../../constants/paths';
+import { SECTION_TITLES_BY_TAB } from '../../../constants/dashboardTabs';
+import { selectDashboardActiveTab } from '../../../modules/dashboard';
+
+const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
 const useStyles = makeStyles((theme) => ({
   dialogActionBar: {
@@ -155,9 +153,34 @@ RepeatButtonDisabledTooltip.propTypes = {
 
 const runDelayed = (fn, timeout) => setTimeout(fn, timeout);
 
+const RecurringLabelValue = () => {
+  const recurringConfig = useSelector(selectFormRecurringConfig);
+  const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
+
+  return `Repeats ${getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp, {
+    capitalize: false,
+  })}`;
+};
+
+const SavedNotificationAction = ({ renderButton, taskId }) => {
+  const tabTask = useSelector((state) => selectTaskDashboardTab(state, taskId));
+  const dashboardActiveTab = useSelector(selectDashboardActiveTab);
+  if (tabTask !== dashboardActiveTab && DASHBOARD_TABS_TO_PATHS[tabTask]) {
+    return renderButton({
+      component: Link,
+      to: DASHBOARD_TABS_TO_PATHS[tabTask],
+      children: `See ${SECTION_TITLES_BY_TAB[tabTask] || 'tab'}`,
+    });
+  }
+  return null;
+};
+SavedNotificationAction.propTypes = {
+  taskId: PropTypes.string.isRequired,
+  renderButton: PropTypes.func.isRequired,
+};
+
 const TaskDialogForm = ({ onClose, taskId }) => {
   const dispatch = useDispatch();
-  const mixpanel = useMixpanel();
   const classes = useStyles();
 
   const { notifyError, notifyInfo } = useNotification();
@@ -167,29 +190,21 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   // This will be defined if we're editing a task
   const editTaskDialogId = taskId;
   // This will be defined if the task we're editing has a recurring config
-  const editRecurringConfigId = useSelector((state) =>
-    selectRecurringConfigIdByMostRecentTaskId(state, editTaskDialogId),
-  );
+  const editRecurringConfigId = useSelector((state) => selectFormRecurringConfigId(state));
 
-  const title = useSelector(selectTitle);
-  const description = useSelector(selectDescription);
-  const impact = useSelector(selectImpact);
-  const effort = useSelector(selectEffort);
-  const scheduledStartTimestamp = useSelector(selectScheduledStart);
-  const snoozedUntilTimestamp = useSelector(selectSnoozedUntil);
-  const dueTimestamp = useSelector(selectDue);
-  const blockedBy = useSelector(selectBlockedBy);
-  const blockedByTaskIds = useSelector(selectBlockedByTaskIds);
-  const recurringConfig = useSelector(selectRecurringConfig);
-  const calendarBlockCalendarId = useSelector(selectCalendarBlockCalendarId);
-  const calendarBlockStart = useSelector(selectCalendarBlockStart);
-  const calendarBlockEnd = useSelector(selectCalendarBlockEnd);
+  const title = useSelector(selectFormTitle);
+  const description = useSelector(selectFormDescription);
+  const impact = useSelector(selectFormImpact);
+  const effort = useSelector(selectFormEffort);
+  const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
+  const snoozedUntilTimestamp = useSelector(selectFormSnoozedUntil);
+  const dueTimestamp = useSelector(selectFormDue);
+  const blockedBy = useSelector(selectFormBlockedBy);
+  const blockedByTaskIds = useSelector(selectFormBlockedByTaskIds);
+  const calendarBlockStart = useSelector(selectFormCalendarBlockStart);
+  const calendarBlockEnd = useSelector(selectFormCalendarBlockEnd);
 
-  const calendarBlockProviderCalendarId = useSelector((state) =>
-    calendarBlockCalendarId
-      ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
-      : undefined,
-  );
+  const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
 
   const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
@@ -221,117 +236,17 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
     setSubmitting(true);
 
-    const hasCalendarBlock = Boolean(calendarBlockStart && calendarBlockEnd);
-
-    const taskPromise = editTaskDialogId
-      ? // updating a task isn't async, so let's fake it 😇
-        Promise.resolve().then(() => {
-          dispatch(
-            updateTask(editTaskDialogId, {
-              title,
-              impact,
-              effort,
-              description: description.trim(),
-              due: dueTimestamp,
-              scheduledStart: scheduledStartTimestamp,
-              snoozedUntil: snoozedUntilTimestamp,
-              blockedBy,
-              calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
-              calendarBlockProviderCalendarId: hasCalendarBlock
-                ? calendarBlockProviderCalendarId
-                : null,
-              calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
-              calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
-              // Make sure to clear recurringConfigId if we don't have any repeat info set
-              ...(!recurringConfig ? { recurringConfigId: null } : {}),
-            }),
-          ).then(() => {
-            mixpanel.track(TASK_UPDATED, {
-              hasBlockers: blockedBy.length > 0,
-              hasScheduledStart: Boolean(scheduledStartTimestamp),
-              hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
-              hasDueDate: Boolean(dueTimestamp),
-              isRecurring: Boolean(recurringConfig),
-              hasCalendarBlock,
-              hasDescription: Boolean(description.trim()),
-              impact,
-              effort,
-            });
-          });
-          return editTaskDialogId;
-        })
-      : dispatch(
-          createTask(
-            title,
-            impact,
-            effort,
-            {
-              description: description.trim(),
-              due: dueTimestamp,
-              scheduledStart: scheduledStartTimestamp,
-              snoozedUntil: snoozedUntilTimestamp,
-              blockedBy,
-              calendarBlockCalendarId: hasCalendarBlock ? calendarBlockCalendarId : null,
-              calendarBlockProviderCalendarId: hasCalendarBlock
-                ? calendarBlockProviderCalendarId
-                : null,
-              calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
-              calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
-            },
-            ({ notificationButtonText, notificationButtonLink }) => {
-              notifyInfo({
-                message: 'Task created',
-                buttons:
-                  notificationButtonLink && notificationButtonText
-                    ? [
-                        {
-                          component: Link,
-                          to: notificationButtonLink,
-                          children: notificationButtonText,
-                        },
-                      ]
-                    : undefined,
-              });
-            },
-          ),
-        ).then((tId) => {
-          mixpanel.track(TASK_CREATED, {
-            hasBlockers: blockedBy.length > 0,
-            hasScheduledStart: Boolean(scheduledStartTimestamp),
-            hasSnoozedUntil: Boolean(snoozedUntilTimestamp),
-            hasDueDate: Boolean(dueTimestamp),
-            isRecurring: Boolean(recurringConfig),
-            hasCalendarBlock,
-            hasDescription: Boolean(description.trim()),
-            impact,
-            effort,
-          });
-          return tId;
-        });
-
-    taskPromise
-      // Recurring config handling
-      .then(async (tId) => {
-        // Create, update or delete
-        if (!editRecurringConfigId && recurringConfig) {
-          const newRcId = await dispatch(
-            createRecurringConfig({ ...recurringConfig, mostRecentTaskId: tId }),
-          );
-          dispatch(updateTask(tId, { recurringConfigId: newRcId }));
-        } else if (editRecurringConfigId && recurringConfig) {
-          dispatch(
-            updateRecurringConfig(editRecurringConfigId, {
-              ...recurringConfig,
-              mostRecentTaskId: tId,
-            }),
-          );
-        } else if (editRecurringConfigId && !recurringConfig) {
-          dispatch(deleteRecurringConfig(editRecurringConfigId));
-        }
-        return tId;
-      })
-      .then(() => {
+    dispatch(saveForm())
+      .then((result) => {
+        setSubmitting(false);
         onClose();
+
+        notifyInfo({
+          message: result.taskCreated ? 'Task created' : 'Task updated',
+          ButtonListComponent: function CustomButtonListComponent({ ...props }) {
+            return <SavedNotificationAction taskId={result.taskId} {...props} />;
+          },
+        });
       })
       .catch((error) => {
         setSubmitting(false);
@@ -383,7 +298,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                 }
               }}
               onChange={(event) => {
-                dispatch(setTitle(event.target.value));
+                dispatch(setFormTitle(event.target.value));
                 if (validationErrors.includes('title')) {
                   setValidationErrors(validationErrors.filter((e) => e !== 'title'));
                 }
@@ -391,7 +306,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               onBlur={() => {
                 // Prevent leaving whitespaces saved at beginning or end
                 if (title !== title.trim()) {
-                  dispatch(setTitle(title.trim()));
+                  dispatch(setFormTitle(title.trim()));
                 }
               }}
               error={validationErrors.includes('title')}
@@ -422,7 +337,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   handleSubmit(event);
                 }
               }}
-              onChange={(event) => dispatch(setDescription(event.target.value))}
+              onChange={(event) => dispatch(setFormDescription(event.target.value))}
             />
           </Box>
         </Box>
@@ -435,7 +350,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               tooltipTitle="How much impact will this task have on your goals?"
               value={impact}
               getValueText={(i) => IMPACT_LABELS[i] || '-'}
-              onChange={(value) => dispatch(setImpact(value))}
+              onChange={(value) => dispatch(setFormImpact(value))}
               marks={IMPACT_SLIDER_MARKS}
             />
           </Box>
@@ -446,7 +361,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               tooltipTitle="How much time will this task require?"
               value={effort}
               getValueText={(e) => EFFORT_LABELS[e] || '-'}
-              onChange={(value) => dispatch(setEffort(value))}
+              onChange={(value) => dispatch(setFormEffort(value))}
               marks={EFFORT_SLIDER_MARKS}
             />
           </Box>
@@ -457,22 +372,16 @@ const TaskDialogForm = ({ onClose, taskId }) => {
             onClick={() => setShowScheduledStartDialog(true)}
             startIcon={<ScheduledIcon />}
             className={classes.settingButton}
-            color={
-              scheduledStartTimestamp && scheduledStartTimestamp > Date.now()
-                ? 'primary'
-                : 'default'
-            }
+            color={scheduledStartTimestamp ? 'primary' : 'default'}
           >
             {scheduledStartTimestamp
               ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
               : 'No scheduled date'}
 
-            {recurringConfig && (
+            {formHasRecurringConfig && (
               <>
                 <br />
-                {`Repeats ${getUserFacingRecurringText(recurringConfig, scheduledStartTimestamp, {
-                  capitalize: false,
-                })}`}
+                <RecurringLabelValue />
               </>
             )}
 
@@ -530,7 +439,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                             size="small"
                             onClick={(event) => {
                               event.stopPropagation();
-                              dispatch(removeBlockerByIndex(index));
+                              dispatch(removeFormBlockerByIndex(index));
                             }}
                           >
                             <ClearRoundedIcon />
@@ -563,7 +472,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   title="Delete task"
                   body={[
                     'Are you sure you want to delete this task?',
-                    recurringConfig && 'The task will stop repeating when deleted',
+                    editRecurringConfigId && 'The task will stop repeating when deleted',
                   ].filter(Boolean)}
                   buttonText="Delete"
                 />
@@ -689,11 +598,11 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         open={showBlockersDialog}
         onClose={() => setShowBlockersDialog(false)}
         onSelect={(id) => {
-          dispatch(addTaskBlocker(id));
+          dispatch(addFormTaskBlocker(id));
           runDelayed(scrollToBottom, 150);
         }}
         onFreeTextEntered={(value) => {
-          dispatch(addFreeTextBlocker(value));
+          dispatch(addFormFreeTextBlocker(value));
           runDelayed(scrollToBottom, 150);
         }}
         disabledTasks={blockedByTaskIds}

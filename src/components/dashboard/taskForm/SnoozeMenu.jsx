@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
+import uniqBy from 'lodash/uniqBy';
 
 import format from 'date-fns/format';
 import formatISO from 'date-fns/formatISO';
@@ -14,7 +15,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 
-import { selectSnoozedUntil, setSnoozedUntil } from '../../../modules/taskForm';
+import { selectFormSnoozedUntil, setFormSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
 import { SNOOZE_PRESET_SELECTED, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
 
@@ -24,7 +25,7 @@ const getOptions = (now) => {
   const tomorrowMorningTimestamp = addHours(startOfTomorrow(), 9).getTime();
   const nextWeek = addHours(startOfDay(nextMonday(now)), 9).getTime();
 
-  return [
+  const options = [
     {
       value: oneHourFromNow,
       label: '1 hour from now',
@@ -42,24 +43,25 @@ const getOptions = (now) => {
     },
     { value: nextWeek, label: 'Next week', formattedValue: format(nextWeek, 'PP - h:mm a') },
   ];
+  return uniqBy(options, 'value');
 };
 
 const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const dispatch = useDispatch();
   const mixpanel = useMixpanel();
 
-  const snoozedUntil = useSelector(selectSnoozedUntil);
+  const snoozedUntil = useSelector(selectFormSnoozedUntil);
 
   const options = getOptions(Date.now());
 
   const handleSelect = (timestamp, label) => {
     onClose();
-    dispatch(setSnoozedUntil(timestamp));
+    dispatch(setFormSnoozedUntil(timestamp));
     mixpanel.track(SNOOZE_PRESET_SELECTED, { selection: label, value: formatISO(timestamp) });
   };
   const handleClear = () => {
     onClose();
-    dispatch(setSnoozedUntil(null));
+    dispatch(setFormSnoozedUntil(null));
     mixpanel.track(SNOOZE_CLEARED);
   };
   const handleCustomSelected = () => {
@@ -89,7 +91,7 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
         horizontal: 'center',
       }}
     >
-      <MenuItem selected={!snoozedUntil} onClick={handleClear}>
+      <MenuItem selected={!snoozedUntil} onClick={handleClear} key="notSnoozed">
         Not snoozed
       </MenuItem>
 
@@ -107,14 +109,16 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
       ))}
 
       {showCurrentOption && (
-        <MenuItem selected onClick={() => handleSelect(snoozedUntil)}>
+        <MenuItem selected onClick={() => handleSelect(snoozedUntil)} key="current">
           Custom
           <Typography variant="body1" color="textSecondary" component="pre">
             {` (${format(snoozedUntil, 'PPPP, h:mm a')})`}
           </Typography>
         </MenuItem>
       )}
-      <MenuItem onClick={handleCustomSelected}>Custom...</MenuItem>
+      <MenuItem onClick={handleCustomSelected} key="custom">
+        Custom...
+      </MenuItem>
     </Menu>
   );
 };

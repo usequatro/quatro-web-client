@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
 const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour, date }, ref) => {
   const classes = useStyles({ tickHeight });
 
+  /** @var {string[]} */
   const ticks = useMemo(() => {
     const startOfDayDate = startOfDay(date);
 
@@ -55,7 +56,7 @@ const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour, date }, 
 
   return (
     <Box width="100%" px={1} ref={ref}>
-      {ticks.map((tick) => {
+      {ticks.map((tick, index) => {
         const tickClasses = [
           classes.tick,
           tick && classes.tickWithTime,
@@ -67,7 +68,8 @@ const Ticks = forwardRef(({ fontSize, format, tickHeight, ticksPerHour, date }, 
           .join(' ');
 
         return (
-          <Box className={tickClasses} key={Math.random()}>
+          // eslint-disable-next-line react/no-array-index-key
+          <Box className={tickClasses} key={index}>
             <TickLabel className={classes.tickLabel} fontSize={fontSize}>
               {tick}
             </TickLabel>

@@ -42,15 +42,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const SECTION_TITLES_BY_TAB = {
-  [tabs.NOW]: 'Top 4',
-  [tabs.BACKLOG]: 'Backlog',
-  [tabs.BLOCKED]: 'Blocked',
-  [tabs.SCHEDULED]: 'Scheduled',
-  [tabs.COMPLETED]: 'Completed',
-  [tabs.ACCOUNT_SETTINGS]: 'Account',
-  [tabs.CALENDARS]: 'Calendars',
-};
 const ICONS_BY_TAB = {
   [tabs.NOW]: HomeIcon,
   [tabs.BACKLOG]: BacklogIcon,
@@ -64,7 +55,7 @@ const ICONS_BY_TAB = {
 const DashboardViewBar = () => {
   const tab = useSelector(selectDashboardActiveTab);
 
-  const sectionTitle = SECTION_TITLES_BY_TAB[tab] || 'Not found';
+  const sectionTitle = tabs.SECTION_TITLES_BY_TAB[tab] || 'Not found';
   const Icon = ICONS_BY_TAB[tab] || Fragment;
 
   const classes = useStyles();

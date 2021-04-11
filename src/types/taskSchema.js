@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi';
 import * as blockerTypes from '../constants/blockerTypes';
 
-const clampNumber = (min, max) => (value) => Math.min(Math.max(value, min), max);
+export const clampNumber = (min, max) => (value) => Math.min(Math.max(value, min), max);
 
 export const taskSchema = Joi.object({
   // these can't be empty
