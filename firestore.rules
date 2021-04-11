@@ -32,11 +32,6 @@ service cloud.firestore {
     //   return notReceiving(field) || notModifying(field);
     // }
 
-    // @link https://firebase.google.com/docs/firestore/security/rules-fields#allowing_only_certain_fields_to_be_changed
-    function allowlistedChanges(keys) {
-      return incomingData().diff(existingData()).affectedKeys().hasOnly(keys);
-    }
-
     match /tasks/{docId} {
       allow create: if isSignedIn() && isCurrentUser(incomingData().userId);
       allow read, list, update, delete: if isSignedIn() && isCurrentUser(existingData().userId);
@@ -55,7 +50,14 @@ service cloud.firestore {
     match /userExternalConfigs/{docId} {
       allow list, delete: if false;
       allow read: if isSignedIn() && isCurrentUser(docId);
-      allow create, update: if isSignedIn() && isCurrentUser(docId) && allowlistedChanges(['defaultCalendarId']);
+
+      // @link https://firebase.google.com/docs/firestore/security/rules-fields#allowing_only_certain_fields_to_be_changed
+      allow create: if isSignedIn() &&
+      	isCurrentUser(docId) &&
+        incomingData().diff({}).addedKeys().hasOnly(['defaultCalendarId', 'timeZone']);
+      allow update: if isSignedIn() &&
+      	isCurrentUser(docId) &&
+        incomingData().diff(existingData()).affectedKeys().hasOnly(['defaultCalendarId', 'timeZone']);
     }
   }
 }

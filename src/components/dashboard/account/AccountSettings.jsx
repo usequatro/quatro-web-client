@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
@@ -9,9 +9,12 @@ import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Button from '@material-ui/core/Button';
+import MuiLink from '@material-ui/core/Link';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
 import firebase, {
   firebaseSendEmailVerification,
@@ -40,6 +43,12 @@ import {
 } from '../../../modules/session';
 import { useNotification } from '../../Notification';
 import UserIcon from '../../icons/UserIcon';
+import {
+  selectUserTimeZone,
+  selectUserExternalConfigIsFetching,
+} from '../../../modules/userExternalConfig';
+import { fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
+import { getBrowserDetectedTimeZone, isValidTimeZone } from '../../../utils/timeZoneUtils';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
 const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
@@ -95,16 +104,15 @@ const EmailVerificationText = ({ verified }) => {
   ) : (
     <>
       Your email needs to be verified&nbsp;
-      <Button
-        variant="text"
-        onClick={onSend}
-        size="small"
-        color="primary"
+      <MuiLink
+        component="button"
+        type="button"
+        variant="inherit"
         disabled={sent || submitting}
-        endIcon={submitting ? <CircularProgress thickness={4} size="1rem" /> : null}
+        onClick={onSend}
       >
-        Send
-      </Button>
+        Send {submitting ? <CircularProgress thickness={4} size="1rem" /> : null}
+      </MuiLink>
     </>
   );
 };
@@ -128,6 +136,13 @@ const AccountSettings = () => {
 
   const passwordAuthProvider = useSelector(selectPasswordFirebaseAuthProvider);
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
+
+  const userExternalConfigLoaded = !useSelector(selectUserExternalConfigIsFetching);
+  const userTimeZone = useSelector(selectUserTimeZone);
+  const userTimeZoneIsValid = useMemo(() => userTimeZone && isValidTimeZone(userTimeZone), [
+    userTimeZone,
+  ]);
+  const browserDetectedTimeZone = useMemo(getBrowserDetectedTimeZone, []);
 
   const savedEmail = useSelector(selectUserEmail);
   const [email, setEmail] = useState(savedEmail || '');
@@ -223,6 +238,13 @@ const AccountSettings = () => {
         console.error(error); // eslint-disable-line no-console
         notifyError(userFacingErrors[error.code] || 'Error saving changes');
       });
+  };
+
+  const handleSetTimeZoneToBrowserTimeZone = () => {
+    if (!browserDetectedTimeZone) {
+      throw new Error('No browserDetectedTimeZone');
+    }
+    fetchUpdateUserExternalConfig({ timeZone: browserDetectedTimeZone });
   };
 
   const hasChanges =
@@ -335,8 +357,45 @@ const AccountSettings = () => {
 
         {googleFirebaseAuthProvider && (
           <Box my={4}>
-            <Typography>Connected Google Account</Typography>
+            <Typography gutterBottom>Connected Google Account</Typography>
             <Typography variant="body2">{googleFirebaseAuthProvider.email}</Typography>
+          </Box>
+        )}
+
+        {userExternalConfigLoaded && (
+          <Box my={4}>
+            <Typography gutterBottom>
+              User Time Zone{' '}
+              <Tooltip
+                aria-hidden
+                arrow
+                title="Your time zone is used to manage recurring tasks reliably across locations"
+              >
+                <InfoOutlinedIcon style={{ fontSize: '1em' }} />
+              </Tooltip>
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              {(userTimeZone || 'None set').replace(/_/g, ' ')}
+            </Typography>
+
+            {!userTimeZoneIsValid && (
+              <Typography variant="body2" color="error" gutterBottom>
+                {`Time zone is invalid. Some functionality won't work.`}
+              </Typography>
+            )}
+
+            {browserDetectedTimeZone && browserDetectedTimeZone !== userTimeZone && (
+              <Typography variant="body2">
+                Browser time zone: {browserDetectedTimeZone.replace(/_/g, ' ')}.{' '}
+                <MuiLink
+                  component="button"
+                  type="button"
+                  onClick={handleSetTimeZoneToBrowserTimeZone}
+                >
+                  Change to {browserDetectedTimeZone.replace(/_/g, ' ')}
+                </MuiLink>
+              </Typography>
+            )}
           </Box>
         )}
 

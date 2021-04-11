@@ -19,6 +19,7 @@ export const selectUserHasGrantedGoogleCalendarOfflineAccess = (state) =>
   Boolean(get(state[name].data, 'gapiCalendarOfflineAccess', false));
 /** @returns {string|null} */
 export const selectUserDefaultCalendarId = (state) => get(state[name].data, 'defaultCalendarId');
+export const selectUserTimeZone = (state) => get(state[name].data, 'timeZone');
 
 // Slice
 
@@ -32,7 +33,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     resetLocalState: () => initialState,
-    setData: (state, { payload }) => ({
+    setData: (_, { payload }) => ({
       status: LOADED,
       data: payload,
     }),

@@ -17,6 +17,8 @@ import {
 } from '../constants/mixpanelUserProperties';
 import { useNotification } from './Notification';
 import createOnboardingTasks from '../utils/createOnboardingTasks';
+import { getBrowserDetectedTimeZone } from '../utils/timeZoneUtils';
+import { fetchUpdateUserExternalConfig } from '../utils/apiClient';
 
 // const AUTH_IFRAME_LOAD_ERROR = 'idpiframe_initialization_failed';
 
@@ -64,6 +66,11 @@ const AuthManager = () => {
                   debugConsole.log('firebase', 'signInWithCredential', userCredential);
                   if (userCredential.additionalUserInfo.isNewUser) {
                     createOnboardingTasks(userCredential.user.uid);
+
+                    const userTimeZone = getBrowserDetectedTimeZone();
+                    if (userTimeZone) {
+                      fetchUpdateUserExternalConfig({ timeZone: userTimeZone });
+                    }
                   }
                   dispatch(setUserFromFirebaseUser(userCredential.user));
                 })
