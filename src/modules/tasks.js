@@ -528,7 +528,11 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   mixpanel.track(TASK_DELETED);
 };
 
-export const timeboxTask = (id, calendarBlockStart) => (dispatch, getState, { mixpanel }) => {
+export const blockCalendarEventForTask = (id, calendarBlockStart) => (
+  dispatch,
+  getState,
+  { mixpanel },
+) => {
   validateTimestamp(calendarBlockStart);
 
   const state = getState();
