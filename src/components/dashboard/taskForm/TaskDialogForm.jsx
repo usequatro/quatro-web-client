@@ -81,6 +81,7 @@ import useMobileViewportSize from '../../hooks/useMobileViewportSize';
 import { PATHS_TO_DASHBOARD_TABS } from '../../../constants/paths';
 import { SECTION_TITLES_BY_TAB } from '../../../constants/dashboardTabs';
 import { selectDashboardActiveTab } from '../../../modules/dashboard';
+import getApproximatedEffortToCalendarBlockDuration from '../../../utils/getApproximatedEffortToCalendarBlockDuration';
 
 const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
@@ -224,6 +225,15 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       dispatch(setTaskInForm(editTaskDialogId));
     }
   }, [editTaskDialogId, dispatch]);
+
+  useEffect(() => {
+    if (calendarBlockStart && calendarBlockEnd) {
+      const durationMs = calendarBlockEnd - calendarBlockStart;
+      const durationM = durationMs / (1000 * 60);
+      const approximatedEffort = getApproximatedEffortToCalendarBlockDuration(durationM);
+      dispatch(setFormEffort(approximatedEffort));
+    }
+  }, [calendarBlockStart, calendarBlockEnd, dispatch]);
 
   const handleSubmit = (event) => {
     event.preventDefault();

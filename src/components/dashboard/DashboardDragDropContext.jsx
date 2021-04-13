@@ -5,7 +5,7 @@ import addMinutes from 'date-fns/addMinutes';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
-import { setRelativePrioritization, timeboxTask } from '../../modules/tasks';
+import { setRelativePrioritization, blockCalendarEventForTask } from '../../modules/tasks';
 import { selectCalendarDisplayTimestamp } from '../../modules/dashboard';
 import NOW_TASKS_LIMIT from '../../constants/nowTasksLimit';
 
@@ -85,7 +85,7 @@ const DashboardDragDropContext = ({ children }) => {
         calendarDisplayTimestamp, // this date is expected to be startOfDay
         placeholderPosition.minutes,
       ).getTime();
-      dispatch(timeboxTask(taskId, calendarBlockStart));
+      dispatch(blockCalendarEventForTask(taskId, calendarBlockStart));
     } else {
       console.warn(`Unknown droppableId format: ${droppableId}`); // eslint-disable-line no-console
     }
