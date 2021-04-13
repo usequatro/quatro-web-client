@@ -14,6 +14,8 @@ import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import { makeStyles } from '@material-ui/core/styles';
 
+import DoneRoundedIcon from '@material-ui/icons/DoneRounded';
+
 import { completeTask, markTaskIncomplete } from '../../../modules/tasks';
 import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
@@ -50,6 +52,8 @@ const useStyles = makeStyles((theme) => ({
   eventTitleRow: {
     lineHeight: 'inherit',
     flexGrow: 1,
+    display: 'flex',
+    alignItems: 'flex-end',
   },
   eventTitle: {
     fontSize: ({ smallCard }) =>
@@ -84,6 +88,7 @@ const EventCardView = forwardRef(
       taskId,
       completed,
       showCompleteButton,
+      showCheckmark,
       synching,
       selectable,
       draggable,
@@ -123,7 +128,7 @@ const EventCardView = forwardRef(
           classes.eventCard,
           responseStatus === RESPONSE_STATUS.TENTATIVE ? classes.tentativeEvent : '',
           eventType === EVENT_TYPES.OUT_OF_OFFICE ? classes.outOfOfficeEvent : '',
-          isPast(endTimestamp) ? classes.pastEvent : '',
+          isPast(endTimestamp) || completed ? classes.pastEvent : '',
           className,
         ]
           .filter(Boolean)
@@ -158,6 +163,10 @@ const EventCardView = forwardRef(
         )}
 
         <Typography component="p" className={classes.eventTitleRow}>
+          {showCheckmark && (
+            <DoneRoundedIcon fontSize="inherit" style={{ marginRight: '0.25em' }} />
+          )}
+
           <span className={classes.eventTitle}>{summary || '(No title)'}</span>
           {!allDay && (
             <span className={classes.eventDate}>
@@ -210,6 +219,7 @@ EventCardView.propTypes = {
   taskId: PropTypes.string,
   completed: PropTypes.bool.isRequired,
   showCompleteButton: PropTypes.bool.isRequired,
+  showCheckmark: PropTypes.bool.isRequired,
   synching: PropTypes.bool.isRequired,
   selectable: PropTypes.bool.isRequired,
   draggable: PropTypes.bool.isRequired,

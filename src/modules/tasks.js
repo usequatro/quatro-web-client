@@ -81,9 +81,9 @@ export const selectTaskShowsAsCompleted = (state, id) =>
   Boolean(state[name].completedStatusById[id] || selectTaskCompleted(state, id));
 
 /** @returns {boolean} */
-export const selectTaskWasLoadedButNotAnymore = createSelector(
-  [(state) => state[name].removedTaskIds, (_, id) => id],
-  (removedTaskIds, id) => removedTaskIds.includes(id),
+export const selectTaskWasManuallyDeleted = createSelector(
+  [(state) => state[name].taskIdsRecentlyRemoved, (_, id) => id],
+  (taskIdsRecentlyRemoved, id) => taskIdsRecentlyRemoved.includes(id),
 );
 
 /** @returns {number|undefined} */
@@ -314,7 +314,7 @@ const initialState = {
   allIds: [],
   byId: {},
   completedStatusById: {},
-  removedTaskIds: [],
+  taskIdsRecentlyRemoved: [],
 };
 
 /* eslint-disable no-param-reassign */
@@ -328,14 +328,13 @@ const slice = createSlice({
       const newStateWithScores = applyScores(newState);
 
       const addedIds = Object.keys(added);
-      const removedIds = Object.keys(removed);
 
       return {
         ...newStateWithScores,
-        // Clear vistually completed state for added or removed tasks from the collection,
-        // so completed tasks are cleared and new tasks don't show up completed
-        completedStatusById: omit(state.completedStatusById, [...addedIds, ...removedIds]),
-        removedTaskIds: pull([...state.removedTaskIds, ...removedIds], ...addedIds),
+        // Clear vistually completed state for tasks addeed to the collection,
+        // so previous states don't affect the task now.
+        completedStatusById: omit(state.completedStatusById, [...addedIds]),
+        taskIdsRecentlyRemoved: pull([...state.taskIdsRecentlyRemoved], ...addedIds),
       };
     },
     setVisuallyCompletedStatus: {
@@ -351,6 +350,9 @@ const slice = createSlice({
       reducer: (state, { payload }) => {
         delete state.completedStatusById[payload];
       },
+    },
+    addTaskIdRecentlyRemoved: (state, { payload }) => {
+      state.taskIdsRecentlyRemoved.push(payload);
     },
   },
 });
@@ -524,6 +526,8 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   if (recurringConfigId) {
     dispatch(deleteRecurringConfig(recurringConfigId));
   }
+
+  dispatch(slice.actions.addTaskIdRecentlyRemoved(id));
 
   mixpanel.track(TASK_DELETED);
 };

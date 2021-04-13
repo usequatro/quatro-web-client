@@ -19,11 +19,9 @@ import {
   selectCalendarEventCalendarId,
   selectCalendarEventPlaceholderUntilCreated,
   selectCalendarEventTaskId,
+  selectCalendarEventTaskCompleted,
 } from '../../../modules/calendarEvents';
-import {
-  selectTaskShowsAsCompleted,
-  selectTaskWasLoadedButNotAnymore,
-} from '../../../modules/tasks';
+import { selectTaskShowsAsCompleted, selectTaskWasManuallyDeleted } from '../../../modules/tasks';
 import { selectCalendarColor } from '../../../modules/calendars';
 import EventCardView from './EventCardView';
 import CalendarEventPopover from './CalendarEventPopover';
@@ -51,6 +49,7 @@ const CalendarEvent = ({
   const collisionOrder = useSelector((state) => selectCalendarEventCollisionOrder(state, id));
   const calendarId = useSelector((state) => selectCalendarEventCalendarId(state, id));
   const taskId = useSelector((state) => selectCalendarEventTaskId(state, id));
+  const taskCompleted = useSelector((state) => selectCalendarEventTaskCompleted(state, id));
   const placeholderUntilCreated = useSelector((state) =>
     selectCalendarEventPlaceholderUntilCreated(state, id),
   );
@@ -59,11 +58,8 @@ const CalendarEvent = ({
   const completed = useSelector((state) =>
     taskId ? selectTaskShowsAsCompleted(state, taskId) : false,
   );
-
-  // As long as the only reasons why a task is gone is being deleted or completed,
-  // and that the calendar events are removed in both cases, we can show the synching spinner.
-  const associatedTaskIsGone = useSelector((state) =>
-    taskId ? selectTaskWasLoadedButNotAnymore(state, taskId) : false,
+  const associatedTaskDeleted = useSelector((state) =>
+    taskId ? selectTaskWasManuallyDeleted(state, taskId) : false,
   );
 
   const [calendarDetailsOpen, setCalendarDetailsOpen] = useState(false);
@@ -111,7 +107,7 @@ const CalendarEvent = ({
       key={id}
       scrollAnchorRef={scrollAnchorRef}
       elevated={calendarDetailsOpen}
-      synching={Boolean(associatedTaskIsGone || placeholderUntilCreated)}
+      synching={Boolean(associatedTaskDeleted || placeholderUntilCreated)}
       summary={summary}
       startTimestamp={startTimestamp}
       endTimestamp={endTimestamp}
@@ -119,8 +115,9 @@ const CalendarEvent = ({
       eventType={eventType}
       responseStatus={responseStatus}
       taskId={taskId}
-      showCompleteButton={interactive && Boolean(taskId)}
-      selectable={Boolean(interactive && !associatedTaskIsGone && !placeholderUntilCreated)}
+      showCompleteButton={Boolean(interactive && taskId && !taskCompleted)}
+      showCheckmark={taskCompleted}
+      selectable={Boolean(interactive && !associatedTaskDeleted && !placeholderUntilCreated)}
       draggable={isDraggable}
       isBeingRedragged={draggableTaskId === taskId}
       color={color}
