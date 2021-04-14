@@ -126,7 +126,8 @@ const EventCardView = forwardRef(
           classes.eventCard,
           responseStatus === RESPONSE_STATUS.TENTATIVE ? classes.tentativeEvent : '',
           eventType === EVENT_TYPES.OUT_OF_OFFICE ? classes.outOfOfficeEvent : '',
-          isPast(endTimestamp) || completed ? classes.pastEvent : '',
+          !taskId && isPast(endTimestamp) ? classes.pastEvent : '',
+          taskId && (completed || showCheckmark) ? classes.pastEvent : '',
           className,
         ]
           .filter(Boolean)
