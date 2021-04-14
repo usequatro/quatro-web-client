@@ -301,7 +301,7 @@ const applyScores = (state) => ({
       ...memo,
       [id]: {
         ...state.byId[id],
-        score: calculateTaskScore(state.byId[id].impact, state.byId[id].effort, state.byId[id].due),
+        score: calculateTaskScore(state.byId[id]),
       },
     }),
     {},
