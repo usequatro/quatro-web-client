@@ -52,8 +52,6 @@ const useStyles = makeStyles((theme) => ({
   eventTitleRow: {
     lineHeight: 'inherit',
     flexGrow: 1,
-    display: 'flex',
-    alignItems: 'flex-end',
   },
   eventTitle: {
     fontSize: ({ smallCard }) =>
@@ -163,10 +161,6 @@ const EventCardView = forwardRef(
         )}
 
         <Typography component="p" className={classes.eventTitleRow}>
-          {showCheckmark && (
-            <DoneRoundedIcon fontSize="inherit" style={{ marginRight: '0.25em' }} />
-          )}
-
           <span className={classes.eventTitle}>{summary || '(No title)'}</span>
           {!allDay && (
             <span className={classes.eventDate}>
@@ -183,6 +177,8 @@ const EventCardView = forwardRef(
             <CircularProgress thickness={6} size={smallCard ? '1em' : '1.5em'} color="inherit" />
           </Box>
         )}
+
+        {showCheckmark && <DoneRoundedIcon fontSize={smallCard ? 'small' : 'default'} />}
 
         {taskId && showCompleteButton && !synching && (
           <CompleteButton
