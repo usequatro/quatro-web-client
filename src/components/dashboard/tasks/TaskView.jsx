@@ -32,7 +32,7 @@ const formatMinutes = (totalMinutes) => {
   const days = Math.floor(totalHours / 24);
 
   const hours = totalHours % 24;
-  const minutes = totalMinutes % 60;
+  const minutes = Math.round(totalMinutes % 60);
 
   const HOUR_LABELS = { plural: 'hours', singular: 'hour' };
   const MINUTE_LABELS = { plural: 'minutes', singular: 'minute' };

@@ -151,6 +151,7 @@ const CalendarEventPlaceholder = ({ containerRef, tickHeight, ticksPerHour }) =>
         responseStatus={undefined}
         taskId={draggableTaskId}
         showCompleteButton={false}
+        showCheckmark={false}
         completed={false}
         synching={false}
         selectable={false}

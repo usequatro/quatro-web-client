@@ -153,6 +153,7 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
     allDay,
     responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),
+    taskCompleted: parseInt(get(item, 'extendedProperties.private.completed', '0'), 10) > 0,
     eventType: item.eventType,
     visibility: item.visibility,
   };
@@ -164,14 +165,16 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
  * @param {string} providerCalendarId
  * @param {number} startDate - timestamp
  * @param {number} endDate - timestamp
- * @param {number} [updatedMin] - timestamp
+ * @param {Object} filters
+ * @param {number} filters.updatedMin - timestamp
+ * @param {boolean} filters.showDeleted
  * @return {Promise}
  */
 export const gapiListCalendarEvents = async (
   providerCalendarId,
   startDate,
   endDate,
-  updatedMin = undefined,
+  { updatedMin, showDeleted },
 ) =>
   request({
     method: 'GET',
@@ -182,7 +185,7 @@ export const gapiListCalendarEvents = async (
       timeMax: formatISO(endDate),
       updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
       maxResults: 45,
-      showDeleted: true,
+      showDeleted,
       singleEvents: true,
     },
   }).then((response) => {

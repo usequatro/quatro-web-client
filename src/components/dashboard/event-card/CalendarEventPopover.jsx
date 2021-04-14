@@ -267,32 +267,36 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
         {taskId && (
           <DialogActions>
-            <Button
-              variant="outlined"
-              color="default"
-              component={Link}
-              to={{ pathname: getTaskPath(taskId), search: location.search }}
-              onClick={onClose}
-            >
-              Edit Task
-            </Button>
+            {taskExists && (
+              <Button
+                variant="outlined"
+                color="default"
+                component={Link}
+                to={{ pathname: getTaskPath(taskId), search: location.search }}
+                onClick={onClose}
+              >
+                Edit Task
+              </Button>
+            )}
 
-            <Button
-              variant="outlined"
-              color="default"
-              endIcon={
-                completed ? (
-                  <CheckCircleOutlineRoundedIcon color="primary" />
-                ) : (
-                  <RadioButtonUncheckedRoundedIcon color="action" />
-                )
-              }
-              onClick={() => {
-                dispatch(completeTask(taskId, notifyInfo));
-              }}
-            >
-              Complete Task
-            </Button>
+            {taskExists && (
+              <Button
+                variant="outlined"
+                color="default"
+                endIcon={
+                  completed ? (
+                    <CheckCircleOutlineRoundedIcon color="primary" />
+                  ) : (
+                    <RadioButtonUncheckedRoundedIcon color="action" />
+                  )
+                }
+                onClick={() => {
+                  dispatch(completeTask(taskId, notifyInfo));
+                }}
+              >
+                Complete Task
+              </Button>
+            )}
           </DialogActions>
         )}
       </DialogContent>

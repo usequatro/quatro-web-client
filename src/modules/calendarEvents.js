@@ -68,6 +68,7 @@ const calendarEventSchema = Joi.object({
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
   eventType: Joi.valid(EVENT_TYPES.DEFAULT, EVENT_TYPES.OUT_OF_OFFICE),
   taskId: Joi.string().allow(null),
+  taskCompleted: Joi.bool(),
 });
 
 const formatDate = (timestamp) => format(timestamp, 'yyyy-MM-dd');
@@ -104,6 +105,8 @@ export const selectCalendarEventCalendarId = (state, id) => get(state[name].byId
 export const selectCalendarEventProviderCalendarId = (state, id) =>
   get(state[name].byId[id], 'providerCalendarId');
 export const selectCalendarEventTaskId = (state, id) => get(state[name].byId[id], 'taskId');
+export const selectCalendarEventTaskCompleted = (state, id) =>
+  Boolean(get(state[name].byId[id], 'taskCompleted'));
 export const selectCalendarEventPlaceholderUntilCreated = (state, id) =>
   get(state[name].byId[id], 'placeholderUntilCreated');
 /** @returns {string|undefined} */
@@ -335,7 +338,6 @@ const slice = createSlice({
         if (state.byCalendar[calendarId] && state.byCalendar[calendarId].statusByDate) {
           Object.keys(state.byCalendar[calendarId].statusByDate).forEach((dateKey) => {
             set(state.byCalendar, [calendarId, 'statusByDate', dateKey, 'requested'], false);
-            set(state.byCalendar, [calendarId, 'statusByDate', dateKey, 'loaded'], false);
           });
         }
       });
@@ -426,7 +428,6 @@ export const loadCalendarEvents = (calendarId, date, { errorCallback = () => {} 
   getState,
 ) => {
   const state = getState();
-
   if (selectCalendarEventsDateRequested(state, calendarId, date)) {
     return;
   }
@@ -449,7 +450,12 @@ export const loadCalendarEvents = (calendarId, date, { errorCallback = () => {} 
   const start = startOfDay(date).getTime();
   const end = endOfDay(date).getTime();
 
-  gapiListCalendarEvents(providerCalendarId, start, end, lastFetchTimestamp)
+  const wasAlreadyLoaded = selectCalendarEventsDateLoaded(state, calendarId, date);
+
+  gapiListCalendarEvents(providerCalendarId, start, end, {
+    updatedMin: lastFetchTimestamp,
+    showDeleted: wasAlreadyLoaded,
+  })
     .then((events) => events.map((event) => ({ ...event, calendarId, providerCalendarId })))
     .then((events) => {
       dispatch(slice.actions.updateEvents({ calendarId, events, date }));
