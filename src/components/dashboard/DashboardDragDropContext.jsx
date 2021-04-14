@@ -92,7 +92,7 @@ const DashboardDragDropContext = ({ children }) => {
       ).getTime();
       dispatch(blockCalendarEventForTask(taskId, calendarBlockStart))
         .then((result) => {
-          const formattedTime = format(result.calendarBlockStart, 'hh:mm a');
+          const formattedTime = format(result.calendarBlockStart, 'h:mm a');
           notifyInfo({
             icon: <ViewDayIcon />,
             message: result.alreadyHadCalendarBlock
