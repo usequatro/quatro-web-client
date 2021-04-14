@@ -17,7 +17,7 @@ const TYPE_WARNING = 'warning';
 const TYPE_INFO = 'info';
 const TYPE_SUCCESS = 'success';
 
-const AUTO_HIDE_DURATION = 2500;
+const AUTO_HIDE_DURATION = 3000;
 
 const initialState = {
   isOpen: false,
@@ -156,6 +156,7 @@ export function NotificationSnackbar() {
             ? undefined
             : {
                 string: <Icon style={{ lineHeight: 1 }}>{icon}</Icon>,
+                object: icon,
               }[typeof icon]
         }
         action={
