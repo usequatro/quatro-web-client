@@ -104,6 +104,10 @@ export function NotificationContextProvider({ children }) {
     state,
   };
 
+  if (process.env.REACT_APP_DEVELOPMENT) {
+    window.notification = contextValue;
+  }
+
   return (
     <NotificationContext.Provider value={contextValue}>{children}</NotificationContext.Provider>
   );
@@ -116,6 +120,9 @@ NotificationContextProvider.propTypes = {
 const useStyles = makeStyles((theme) => ({
   snackbar: {
     marginBottom: theme.spacing(2),
+  },
+  noBackground: {
+    backgroundColor: theme.palette.background.paper,
   },
 }));
 
@@ -148,9 +155,13 @@ export function NotificationSnackbar() {
     >
       <Alert
         elevation={8}
-        variant="filled"
+        variant="standard"
         onClose={closeNotification}
         severity={type}
+        classes={{
+          standardInfo: classes.noBackground,
+          standardSuccess: classes.noBackground,
+        }}
         icon={
           !icon
             ? undefined
