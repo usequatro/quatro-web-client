@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, needsAction, smallCard }) => ({
     width: '100%',
     height: '100%',
-    padding: `${theme.spacing(1) / (smallCard ? 4 : 2)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(smallCard ? 0 : 0.5)}px ${theme.spacing(1)}px`,
     borderRadius: 5,
     color: needsAction ? color : theme.palette.getContrastText(color),
     backgroundColor: needsAction ? theme.palette.background.paper : color,
@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
   eventDate: {
     fontSize: `${parseFloat(theme.typography.body2.fontSize) * 0.8}rem`,
   },
-  completeButton: ({ smallCard }) => (smallCard ? { paddingTop: 0 } : {}),
+  completeButton: ({ smallCard }) => (smallCard ? { paddingTop: 1 } : {}),
   scrollAnchor: {
     width: 0,
     height: 0,
@@ -179,7 +179,12 @@ const EventCardView = forwardRef(
           </Box>
         )}
 
-        {showCheckmark && <DoneRoundedIcon fontSize={smallCard ? 'small' : 'default'} />}
+        {showCheckmark && (
+          <DoneRoundedIcon
+            fontSize={smallCard ? 'small' : 'default'}
+            style={{ marginTop: smallCard ? 2 : 0 }}
+          />
+        )}
 
         {taskId && showCompleteButton && !synching && (
           <CompleteButton
@@ -187,7 +192,7 @@ const EventCardView = forwardRef(
             completed={completed}
             onCompleteTask={() => dispatch(completeTask(taskId, notifyInfo))}
             onMarkTaskIncomplete={() => dispatch(markTaskIncomplete(taskId))}
-            fontSize={smallCard ? 'small' : 'default'}
+            fontSize={smallCard ? 'inherit' : 'default'}
             size="small"
             className={classes.completeButton}
           />
