@@ -48,9 +48,10 @@ export default slice;
 // Thunks
 
 export const updateRecurringConfig = (id, updates) => () => fetchUpdateRecurringConfig(id, updates);
+
 export const deleteRecurringConfig = (id) => () => fetchDeleteRecurringConfig(id);
 
-export const createRecurringConfig = (recurringConfig) => async (dispatch, getState) => {
+export const createRecurringConfig = (recurringConfig) => async (_, getState) => {
   const state = getState();
   const userId = selectUserId(state);
   const recurringConfigWithUserId = { ...recurringConfig, userId };
