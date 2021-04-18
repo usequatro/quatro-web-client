@@ -49,6 +49,7 @@ const DatePicker = ({ timestamp, onChange, ...props }) => (
       animateYearScrolling
       TextFieldComponent={DatePickerTextFieldComponent}
       showTodayButton
+      autoOk
     />
   </MuiPickersUtilsProvider>
 );
