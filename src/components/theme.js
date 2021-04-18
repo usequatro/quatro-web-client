@@ -130,6 +130,11 @@ muiTheme.overrides = {
       },
     },
   },
+  MuiPickersDay: {
+    current: {
+      border: 'solid 1px currentColor',
+    },
+  },
 };
 
 // const breakpointMd = muiTheme.breakpoints.up('md');
