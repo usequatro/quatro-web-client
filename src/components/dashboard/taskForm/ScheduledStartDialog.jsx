@@ -252,7 +252,6 @@ const ScheduledStartDialog = ({ open, onClose }) => {
                 <DatePicker
                   timestamp={currentTimestamp}
                   onChange={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
-                  disablePast
                   minDateMessage="Heads up! That's past already"
                 />
               </Box>
