@@ -25,40 +25,35 @@ const TaskDialog = () => {
 
   const dashboardLoaded = useSelector(selectDashboadIsLoaded);
 
-  const [newTaskDialogOpen, , closeNewTaskDialog] = useNewTaskDialogRouterControl();
-  const [editTaskDialogId, , closeEditTaskDialog] = useEditTaskDialogRouterControl();
+  const [newTaskByUrl, , removeNewTaskParam] = useNewTaskDialogRouterControl();
+  const [editTaskByUrl, , removeEditTaskParam] = useEditTaskDialogRouterControl();
 
-  const shouldBeOpen = Boolean(dashboardLoaded && (newTaskDialogOpen || editTaskDialogId));
+  const shouldBeOpen = Boolean(dashboardLoaded && (newTaskByUrl || editTaskByUrl));
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!open && shouldBeOpen) {
+    if (shouldBeOpen) {
       setOpen(true);
-    } else if (open && !shouldBeOpen) {
-      setOpen(false);
     }
-  }, [shouldBeOpen, open]);
+  }, [shouldBeOpen]);
 
   // On opening edit task modal, load task data
   useEffect(() => {
-    if (open && editTaskDialogId) {
-      const success = dispatch(setTaskInForm(editTaskDialogId));
+    if (open && editTaskByUrl) {
+      const success = dispatch(setTaskInForm(editTaskByUrl));
       if (!success) {
-        closeEditTaskDialog();
+        removeEditTaskParam();
+        setOpen(false);
       }
     }
-  }, [open, editTaskDialogId, closeEditTaskDialog, dispatch]);
+  }, [open, editTaskByUrl, removeEditTaskParam, dispatch]);
 
   const handleClose = () => {
     setOpen(false);
-    if (newTaskDialogOpen) {
-      setTimeout(() => {
-        closeNewTaskDialog();
-      }, 150);
+    if (newTaskByUrl) {
+      removeNewTaskParam();
     }
-    if (editTaskDialogId) {
-      setTimeout(() => {
-        closeEditTaskDialog();
-      }, 150);
+    if (editTaskByUrl) {
+      removeEditTaskParam();
     }
   };
 
@@ -68,10 +63,9 @@ const TaskDialog = () => {
       onClose={handleClose}
       onExited={() => dispatch(setFormNewTaskInitialState())}
       fullScreen={fullScreen}
-      aria-labelledby="new-task-dialog-title"
       TransitionComponent={fullScreen ? FullScreenTransition : DialogTransition}
     >
-      <TaskDialogForm onClose={handleClose} taskId={editTaskDialogId} />
+      <TaskDialogForm onClose={handleClose} />
     </Dialog>
   );
 };

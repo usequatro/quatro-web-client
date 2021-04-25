@@ -17,13 +17,11 @@ export default function useEditTaskDialogRouterControl() {
     },
     [history],
   );
-  const close = useCallback(() => {
-    if (isOpen) {
-      const updatedSearch = new URLSearchParams(history.location.search);
-      updatedSearch.delete('tid');
-      history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
-    }
-  }, [history, isOpen]);
+  const remove = useCallback(() => {
+    const updatedSearch = new URLSearchParams(history.location.search);
+    updatedSearch.delete('tid');
+    history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
+  }, [history]);
 
-  return [isOpen, open, close];
+  return [isOpen, open, remove];
 }
