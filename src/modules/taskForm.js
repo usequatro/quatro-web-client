@@ -2,6 +2,9 @@ import get from 'lodash/get';
 import pick from 'lodash/pick';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
+import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
+import format from 'date-fns/format';
+
 import { selectTask, selectTaskDashboardTab, updateTask } from './tasks';
 import {
   createRecurringConfig,
@@ -304,17 +307,26 @@ export const saveForm = () => (dispatch, getState, { mixpanel }) => {
       // Recurring config handling
       .then(async ({ taskId, ...info }) => {
         if (formHasRecurringConfig) {
+          const payload = {
+            ...recurringConfig,
+            mostRecentTaskId: taskId,
+            // we always keep the details below in sync with the most recent task
+            // @todo: make it optional to apply task updates to the recurring config
+            referenceDate: scheduledStart,
+            taskDetails: {
+              title,
+              scheduledTime: format(scheduledStart, 'HH:mm'),
+              description,
+              effort,
+              impact,
+              dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
+              dueTime: due ? format(due, 'HH:mm') : null,
+            },
+          };
           if (editingRecurringConfigId) {
-            dispatch(
-              updateRecurringConfig(editingRecurringConfigId, {
-                ...recurringConfig,
-                mostRecentTaskId: taskId,
-              }),
-            );
+            dispatch(updateRecurringConfig(editingRecurringConfigId, payload));
           } else {
-            const newRcId = await dispatch(
-              createRecurringConfig({ ...recurringConfig, mostRecentTaskId: taskId }),
-            );
+            const newRcId = await dispatch(createRecurringConfig(payload));
             dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
           }
         } else if (editingRecurringConfigId) {
