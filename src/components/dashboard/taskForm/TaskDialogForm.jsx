@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import cond from 'lodash/cond';
 import invert from 'lodash/invert';
-
 import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
@@ -628,9 +627,29 @@ const TaskDialogForm = ({ onClose }) => {
             <FormControlLabel value="0" label="This task" control={<Radio size="small" />} />
             <FormControlLabel
               value="1"
-              label="This and following tasks"
+              label="This and repeating tasks"
               control={<Radio size="small" />}
             />
+
+            <Box pb={2} />
+
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Updates that will apply to repeating tasks:
+            </Typography>
+            <Box component="ul" m={0} pl={2}>
+              {recurringChangesToConfirm.map((field) => (
+                <Typography key={field} component="li" variant="body2" color="textSecondary">
+                  {{
+                    title: `Title`,
+                    description: `Description`,
+                    impact: `Impact`,
+                    effort: `Time`,
+                    scheduledStart: `Scheduled date`,
+                    due: `Due date`,
+                  }[field] || '-'}
+                </Typography>
+              ))}
+            </Box>
           </RadioGroup>
         </DialogContent>
         <DialogActions>
