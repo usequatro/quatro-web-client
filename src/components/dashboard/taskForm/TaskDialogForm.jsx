@@ -286,7 +286,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const handleDelete = () => {
     onClose();
     dispatch(deleteTask(editTaskDialogId, { appliesRecurringChanges }));
-    notifyInfo('Task Deleted');
+    notifyInfo('Task deleted');
   };
 
   const ctaText = newTaskDialogOpen ? 'Create' : 'Save';
