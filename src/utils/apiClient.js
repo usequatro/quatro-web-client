@@ -54,6 +54,7 @@ export const fetchCreateTask = async (userId = isRequired('userId'), task) => {
     created: Date.now(),
     source: SOURCES.USER,
   });
+  debugConsole.log('Firestore', 'Creating task', validatedTask);
   return db.collection(TASKS).add(validatedTask);
 };
 
@@ -113,6 +114,7 @@ export const fetchListCompletedTasks = async (userId, lastTaskId = null) => {
  */
 export const fetchUpdateTask = async (taskId, updates) => {
   const validatedUpdates = await validateTaskSchema(updates, { isUpdate: true });
+  debugConsole.log('Firestore', 'Updating task', taskId, validatedUpdates);
   return db.collection(TASKS).doc(taskId).update(validatedUpdates);
 };
 
@@ -120,7 +122,10 @@ export const fetchUpdateTask = async (taskId, updates) => {
  * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchDeleteTask = (id) => db.collection(TASKS).doc(id).delete();
+export const fetchDeleteTask = (id) => {
+  debugConsole.log('Firestore', 'Deleting task', id);
+  return db.collection(TASKS).doc(id).delete();
+};
 
 /**
  * Attaches a listener for recurring config list events.
@@ -150,6 +155,7 @@ export const listenListRecurringConfigs = (userId, onNext, onError) =>
  */
 export const fetchCreateRecurringConfig = async (recurringConfig) => {
   const validEntity = await validateRecurringConfigSchema(recurringConfig);
+  debugConsole.log('Firestore', 'Creating recurring config', validEntity);
   return db.collection(RECURRING_CONFIGS).add(validEntity);
 };
 
@@ -160,6 +166,7 @@ export const fetchCreateRecurringConfig = async (recurringConfig) => {
  */
 export const fetchUpdateRecurringConfig = async (id, updates) => {
   const validEntity = await validateRecurringConfigSchema(updates, { isUpdate: true });
+  debugConsole.log('Firestore', 'Updating recurring config', id, validEntity);
   return db.collection(RECURRING_CONFIGS).doc(id).set(validEntity, { merge: true });
 };
 
@@ -167,21 +174,9 @@ export const fetchUpdateRecurringConfig = async (id, updates) => {
  * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchDeleteRecurringConfig = (id) => db.collection(RECURRING_CONFIGS).doc(id).delete();
-
-export const connectCalendar = (calendarObject) => db.collection(CALENDARS).add(calendarObject);
-
-export const disconnectCalendar = async (calendarId, userId) => {
-  const documentId = await db
-    .collection(CALENDARS)
-    .where('userId', '==', userId)
-    .where('calendarId', '==', calendarId)
-    .limit(1)
-    .get()
-    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
-  if (documentId) {
-    await db.collection(CALENDARS).doc(documentId).delete();
-  }
+export const fetchDeleteRecurringConfig = (id) => {
+  debugConsole.log('Firestore', 'Deleting recurring config', id);
+  return db.collection(RECURRING_CONFIGS).doc(id).delete();
 };
 
 export const fetchConnectedCalendars = async (userId) => {
@@ -234,6 +229,7 @@ export const listenToListCalendars = (userId, onNext, onError) =>
  */
 export const fetchCreateCalendar = async (calendar) => {
   const validEntity = await validateCalendarSchema(calendar);
+  debugConsole.log('Firestore', 'Creating calendar', validEntity);
   return db.collection(CALENDARS).add(validEntity);
 };
 
@@ -247,6 +243,7 @@ export const fetchUpdateCalendar = async (id, updates) => {
     isUpdate: true,
     sync: true,
   });
+  debugConsole.log('Firestore', 'Updating calendar', id, validatedUpdates);
   return db.collection(CALENDARS).doc(id).set(validatedUpdates, { merge: true });
 };
 
@@ -254,7 +251,10 @@ export const fetchUpdateCalendar = async (id, updates) => {
  * @param {string} id
  * @return {Promise<void>}
  */
-export const fetchDeleteCalendar = (id) => db.collection(CALENDARS).doc(id).delete();
+export const fetchDeleteCalendar = (id) => {
+  debugConsole.log('Firestore', 'Deleting calendar', id);
+  return db.collection(CALENDARS).doc(id).delete();
+};
 
 /**
  * @param {string} userId
@@ -294,7 +294,7 @@ export const fetchUpdateUserExternalConfig = async (updates) => {
     throw new Error(`Can't update user external config without logged in user`);
   }
   const validEntity = await validateExternalConfigSchema(updates, { isUpdate: true });
-  debugConsole.log('Firebase', 'Updating user external config', id, validEntity);
+  debugConsole.log('Firestore', 'Updating user external config', id, validEntity);
   return db.collection(USER_EXTERNAL_CONFIGS).doc(id).set(validEntity, { merge: true });
 };
 
