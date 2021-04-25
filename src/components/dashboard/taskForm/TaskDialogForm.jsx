@@ -266,7 +266,9 @@ const TaskDialogForm = ({ onClose }) => {
 
     setSubmitting(true);
 
-    dispatch(saveForm({ appliesRecurringChanges }))
+    dispatch(
+      saveForm({ recurringConfigTaskDetailsChanged: appliesRecurringChanges ? changes : null }),
+    )
       .then((result) => {
         setSubmitting(false);
         onClose();

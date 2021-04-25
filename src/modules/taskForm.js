@@ -1,11 +1,23 @@
 import get from 'lodash/get';
 import pick from 'lodash/pick';
+import flow from 'lodash/flow';
+import fpSet from 'lodash/fp/set';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
 import format from 'date-fns/format';
 
-import { selectTask, selectTaskDashboardTab, selectTaskScheduledStart, updateTask } from './tasks';
+import {
+  selectTask,
+  selectTaskDashboardTab,
+  selectTaskDescription,
+  selectTaskDue,
+  selectTaskEffort,
+  selectTaskImpact,
+  selectTaskScheduledStart,
+  selectTaskTitle,
+  updateTask,
+} from './tasks';
 import {
   createRecurringConfig,
   deleteRecurringConfig,
@@ -76,6 +88,13 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
   const formScheduledStart = selectFormScheduledStart(state);
   const formDue = selectFormDue(state);
 
+  const taskTitle = selectTaskTitle(state, taskId);
+  const taskDescription = selectTaskDescription(state, taskId);
+  const taskEffort = selectTaskEffort(state, taskId);
+  const taskImpact = selectTaskImpact(state, taskId);
+  const taskDue = selectTaskDue(state, taskId);
+  const taskScheduledStart = selectTaskScheduledStart(state, taskId);
+
   const rcSavedTitle = selectRecurringConfigTaskTitle(state, rcId);
   const rcSavedDescription = selectRecurringConfigTaskDescription(state, rcId);
   const rcSavedEffort = selectRecurringConfigTaskEffort(state, rcId);
@@ -83,22 +102,24 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
   const rcSavedDueOffsetDays = selectRecurringConfigTaskDueOffsetDays(state, rcId);
   const rcSavedDueTime = selectRecurringConfigTaskDueTime(state, rcId);
 
-  const taskScheduledStart = selectTaskScheduledStart(state, taskId);
-
   const dueSame =
+    formDue === taskDue ||
     (!formDue && !rcSavedDueOffsetDays) ||
     (formDue &&
       rcSavedDueOffsetDays &&
       differenceInCalendarDays(formDue, formScheduledStart) === rcSavedDueOffsetDays &&
       format(formDue, 'HH:mm') === rcSavedDueTime);
 
-  const scheduledStartChanged = formScheduledStart !== taskScheduledStart;
+  const scheduledStartChanged =
+    taskScheduledStart !== formScheduledStart && formScheduledStart !== taskScheduledStart;
 
   const changes = [
-    formTitle !== rcSavedTitle ? 'title' : null,
-    formDescription !== rcSavedDescription ? 'description' : null,
-    formEffort !== rcSavedEffort ? 'effort' : null,
-    formImpact !== rcSavedImpact ? 'impact' : null,
+    taskTitle !== formTitle && formTitle !== rcSavedTitle ? 'title' : null,
+    taskDescription !== formDescription && formDescription !== rcSavedDescription
+      ? 'description'
+      : null,
+    taskEffort !== formEffort && formEffort !== rcSavedEffort ? 'effort' : null,
+    taskImpact !== formImpact && formImpact !== rcSavedImpact ? 'impact' : null,
     !dueSame ? 'due' : null,
     scheduledStartChanged ? 'scheduledStart' : null,
   ].filter(Boolean);
@@ -265,10 +286,16 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
   return true;
 };
 
-export const saveForm = ({ appliesRecurringChanges }) => (dispatch, getState, { mixpanel }) => {
+export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
+  dispatch,
+  getState,
+  { mixpanel },
+) => {
   const state = getState();
   const editingTaskId = selectFormTaskId(state);
   const editingRecurringConfigId = selectFormRecurringConfigId(state);
+
+  const savedRecurringConfig = selectRecurringConfig(state, editingRecurringConfigId);
 
   const title = (selectFormTitle(state) || '').trim();
   const impact = selectFormImpact(state);
@@ -360,27 +387,57 @@ export const saveForm = ({ appliesRecurringChanges }) => (dispatch, getState, { 
       // Recurring config handling
       .then(async ({ taskId, ...info }) => {
         if (formHasRecurringConfig) {
-          const payload = {
-            ...recurringConfig,
-            mostRecentTaskId: taskId,
-            // we always keep the details below in sync with the most recent task
-            // @todo: make it optional to apply task updates to the recurring config
-            referenceDate: scheduledStart,
-            taskDetails: {
-              title,
-              scheduledTime: format(scheduledStart, 'HH:mm'),
-              description,
-              effort,
-              impact,
-              dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
-              dueTime: due ? format(due, 'HH:mm') : null,
-            },
-          };
           if (editingRecurringConfigId) {
-            if (appliesRecurringChanges) {
-              dispatch(updateRecurringConfig(editingRecurringConfigId, payload));
+            if (
+              recurringConfigTaskDetailsChanged &&
+              recurringConfigTaskDetailsChanged.length > 0 &&
+              savedRecurringConfig
+            ) {
+              // We mutate taskDetails because we can't merge changes to a sub-object in Firestore
+              const addDetailFunction = {
+                title: (payload) => fpSet(`taskDetails.title`, title, payload),
+                description: (payload) => fpSet(`taskDetails.description`, description, payload),
+                effort: (payload) => fpSet(`taskDetails.effort`, effort, payload),
+                impact: (payload) => fpSet(`taskDetails.impact`, impact, payload),
+                due: (payload) =>
+                  flow(
+                    fpSet(
+                      `taskDetails.dueOffsetDays`,
+                      due ? differenceInCalendarDays(due, scheduledStart) : null,
+                    ),
+                    fpSet(`taskDetails.dueTime`, due ? format(due, 'HH:mm') : null),
+                  )(payload),
+                scheduledStart: (payload) =>
+                  flow(
+                    fpSet(`referenceDate`, scheduledStart),
+                    fpSet(`taskDetails.scheduledTime`, format(scheduledStart, 'HH:mm')),
+                  )(payload),
+              };
+              let updates = {
+                ...recurringConfig,
+                taskDetails: { ...savedRecurringConfig.taskDetails },
+                mostRecentTaskId: taskId,
+              };
+              recurringConfigTaskDetailsChanged.forEach((field) => {
+                updates = addDetailFunction[field](updates);
+              });
+              dispatch(updateRecurringConfig(editingRecurringConfigId, updates));
             }
           } else {
+            const payload = {
+              ...recurringConfig,
+              mostRecentTaskId: taskId,
+              referenceDate: scheduledStart,
+              taskDetails: {
+                title,
+                scheduledTime: format(scheduledStart, 'HH:mm'),
+                description,
+                effort,
+                impact,
+                dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
+                dueTime: due ? format(due, 'HH:mm') : null,
+              },
+            };
             const newRcId = await dispatch(createRecurringConfig(payload));
             dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
           }
