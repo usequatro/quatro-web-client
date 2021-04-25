@@ -179,28 +179,6 @@ export const fetchDeleteRecurringConfig = (id) => {
   return db.collection(RECURRING_CONFIGS).doc(id).delete();
 };
 
-export const fetchConnectedCalendars = async (userId) => {
-  const results = await db
-    .collection(CALENDARS)
-    .where('userId', '==', userId)
-    .get()
-    .then((querySnapshot) => querySnapshot.docs.map((doc) => [doc.id, doc.data()]));
-  return results;
-};
-export const saveCalendar = async (calendarObject) => {
-  const documentId = await db
-    .collection(CALENDARS)
-    .where('userId', '==', calendarObject.userId)
-    .where('calendarId', '==', calendarObject.calendarId)
-    .limit(1)
-    .get()
-    .then((querySnapshot) => (querySnapshot.size > 0 ? querySnapshot.docs[0].id : null));
-  if (documentId) {
-    return db.collection(CALENDARS).doc(documentId).update(calendarObject);
-  }
-  return Promise.reject();
-};
-
 /**
  * Attaches a listener for calendar list events.
  *
