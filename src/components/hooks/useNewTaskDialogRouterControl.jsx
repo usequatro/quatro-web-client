@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 /**
@@ -8,18 +9,16 @@ export default function useNewTaskDialogRouterControl() {
   const history = useHistory();
 
   const isOpen = new URLSearchParams(history.location.search).get('newTask') !== null;
-  const open = () => {
+  const open = useCallback(() => {
     const updatedSearch = new URLSearchParams(history.location.search);
     updatedSearch.set('newTask', '1');
     history.push({ pathname: history.location.pathname, search: updatedSearch.toString() });
-  };
-  const close = () => {
-    if (isOpen) {
-      const updatedSearch = new URLSearchParams(history.location.search);
-      updatedSearch.delete('newTask');
-      history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
-    }
-  };
+  }, [history]);
+  const remove = useCallback(() => {
+    const updatedSearch = new URLSearchParams(history.location.search);
+    updatedSearch.delete('newTask');
+    history.replace({ pathname: history.location.pathname, search: updatedSearch.toString() });
+  }, [history]);
 
-  return [isOpen, open, close];
+  return [isOpen, open, remove];
 }

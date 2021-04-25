@@ -64,6 +64,7 @@ import {
   selectFormRecurringConfigId,
   saveForm,
   selectThunkTaskChangesApplicableToRecurringConfig,
+  selectFormTaskId,
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
@@ -187,12 +188,13 @@ SavedNotificationAction.propTypes = {
   renderButton: PropTypes.func.isRequired,
 };
 
-const TaskDialogForm = ({ onClose, taskId }) => {
+const TaskDialogForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
   const { notifyError, notifyInfo } = useNotification();
 
+  const taskId = useSelector(selectFormTaskId);
   const newTaskDialogOpen = !taskId;
 
   // This will be defined if we're editing a task
@@ -692,11 +694,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
 
 TaskDialogForm.propTypes = {
   onClose: PropTypes.func.isRequired,
-  taskId: PropTypes.string,
 };
 
-TaskDialogForm.defaultProps = {
-  taskId: null,
-};
+TaskDialogForm.defaultProps = {};
 
 export default TaskDialogForm;
