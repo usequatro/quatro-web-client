@@ -4,6 +4,7 @@ const colorByPrefix = {
   'google api': 'background: #fff; color: #000',
   dnd: 'background: #18a669; color: #fff',
   fallback: 'background: #2196f3; color: #000',
+  redux: 'background: #764abc; color: #fff',
 };
 
 export default {

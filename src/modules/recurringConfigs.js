@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import get from 'lodash/get';
 
 import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
@@ -19,10 +20,29 @@ export const selectRecurringConfigIdByMostRecentTaskId = (state, mostRecentTaskI
   mostRecentTaskId
     ? state[name].allIds.find((id) => state[name].byId[id].mostRecentTaskId === mostRecentTaskId)
     : undefined;
+
+// @todo: remopve this selector. mostRecentTaskId will be deprecated
 export const selectRecurringConfigByMostRecentTaskId = (state, taskId) => {
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, taskId);
   return recurringConfigId ? state[name].byId[recurringConfigId] : undefined;
 };
+
+export const selectRecurringConfigTaskTitle = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.title');
+export const selectRecurringConfigTaskDescription = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.description');
+export const selectRecurringConfigTaskImpact = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.impact');
+export const selectRecurringConfigTaskEffort = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.effort');
+export const selectRecurringConfigTaskScheduledTime = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.scheduledTime');
+export const selectRecurringConfigTaskDueTime = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.dueTime');
+export const selectRecurringConfigTaskDueOffsetDays = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.dueOffsetDays');
+// export const selectRecurringConfigReferenceDate = (state, id) =>
+//   get(selectRecurringConfig(state, id), 'referenceDate');
 
 // Slice
 

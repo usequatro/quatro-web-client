@@ -8,6 +8,8 @@ import invert from 'lodash/invert';
 import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
 
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
@@ -23,6 +25,9 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import Radio from '@material-ui/core/Radio';
 
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
 import NotesIcon from '@material-ui/icons/Notes';
@@ -57,6 +62,7 @@ import {
   selectFormHasRecurringConfig,
   selectFormRecurringConfigId,
   saveForm,
+  selectThunkTaskChangesApplicableToRecurringConfig,
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
@@ -214,6 +220,8 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   const [showBlockersDialog, setShowBlockersDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [recurringChangesToConfirm, setRecurringChangesToConfirm] = useState([]);
+  const [appliesRecurringChanges, setAppliesRecurringChanges] = useState(false);
 
   const snoozeButtonRef = useRef();
 
@@ -244,9 +252,18 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       return;
     }
 
+    const changes = dispatch(selectThunkTaskChangesApplicableToRecurringConfig());
+    if (changes.length > 0 && !recurringChangesToConfirm.length > 0) {
+      setRecurringChangesToConfirm(changes);
+      return;
+    }
+    if (recurringChangesToConfirm.length > 0) {
+      setRecurringChangesToConfirm([]);
+    }
+
     setSubmitting(true);
 
-    dispatch(saveForm())
+    dispatch(saveForm({ appliesRecurringChanges }))
       .then((result) => {
         setSubmitting(false);
         onClose();
@@ -283,10 +300,17 @@ const TaskDialogForm = ({ onClose, taskId }) => {
   return (
     <Box
       onSubmit={handleSubmit}
+      id="task-dialog-form"
       component="form"
       display="flex"
       height="100%"
       flexDirection="column"
+      // hitting ENTER with anything focused inside the form will make it submit :)
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          handleSubmit(event);
+        }
+      }}
     >
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
         <Box pt={2} pb={4} display="flex" flexDirection="column" alignItems="stretch">
@@ -302,11 +326,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               multiline
               rowsMax={3}
               value={title}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  handleSubmit(event);
-                }
-              }}
               onChange={(event) => {
                 dispatch(setFormTitle(event.target.value));
                 if (validationErrors.includes('title')) {
@@ -341,11 +360,6 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   </Tooltip>
                 ),
                 className: classes.descriptionField,
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  handleSubmit(event);
-                }
               }}
               onChange={(event) => dispatch(setFormDescription(event.target.value))}
             />
@@ -566,10 +580,39 @@ const TaskDialogForm = ({ onClose, taskId }) => {
               submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
             }
           >
-            {ctaText}
+            {`${ctaText}`}
           </Button>
         </Box>
       </DialogActions>
+
+      <Dialog
+        open={recurringChangesToConfirm.length > 0}
+        onClose={() => setRecurringChangesToConfirm([])}
+        aria-labelledby="apply-recurring-changes-dialog"
+      >
+        <DialogTitle id="apply-recurring-changes-dialog">Edit repeating task</DialogTitle>
+        <DialogContent>
+          <RadioGroup
+            value={appliesRecurringChanges ? '1' : '0'}
+            onChange={(event) => setAppliesRecurringChanges(event.target.value === '1')}
+          >
+            <FormControlLabel value="0" label="This task" control={<Radio size="small" />} />
+            <FormControlLabel
+              value="1"
+              label="This and following tasks"
+              control={<Radio size="small" />}
+            />
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRecurringChangesToConfirm([])} variant="text">
+            Cancel
+          </Button>
+          <Button variant="text" color="primary" autoFocus type="submit" form="task-dialog-form">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {snoozedUntilTimestamp && snoozedUntilTimestamp > Date.now() && (
         <DialogActions style={{ paddingTop: 0 }}>

@@ -5,18 +5,25 @@ import { createSlice, createSelector } from '@reduxjs/toolkit';
 import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
 import format from 'date-fns/format';
 
-import { selectTask, selectTaskDashboardTab, updateTask } from './tasks';
+import { selectTask, selectTaskDashboardTab, selectTaskScheduledStart, updateTask } from './tasks';
 import {
   createRecurringConfig,
   deleteRecurringConfig,
   selectRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
+  selectRecurringConfigTaskDescription,
+  selectRecurringConfigTaskDueOffsetDays,
+  selectRecurringConfigTaskDueTime,
+  selectRecurringConfigTaskEffort,
+  selectRecurringConfigTaskImpact,
+  selectRecurringConfigTaskTitle,
   updateRecurringConfig,
 } from './recurringConfigs';
 import * as blockerTypes from '../constants/blockerTypes';
 import { selectCalendarProviderCalendarId } from './calendars';
 import { createTask, selectDashboardActiveTab } from './dashboard';
 import { TASK_CREATED, TASK_UPDATED } from '../constants/mixpanelEvents';
+import debugConsole from '../utils/debugConsole';
 
 const name = 'taskForm';
 
@@ -52,6 +59,52 @@ export const selectFormRecurringConfigUnit = (state) => state[name].recurringCon
 export const selectFormRecurringConfigAmount = (state) => state[name].recurringConfig.amount;
 export const selectFormRecurringConfigActiveWeekdays = (state) =>
   state[name].recurringConfig.activeWeekdays;
+
+const selectTaskChangesApplicableToRecurringConfig = (state) => {
+  const taskId = selectFormTaskId(state);
+  const rcId = selectFormRecurringConfigId(state);
+
+  // If it's new or was recurring, never has changes
+  if (!rcId || !taskId) {
+    return [];
+  }
+
+  const formTitle = selectFormTitle(state);
+  const formDescription = selectFormDescription(state);
+  const formEffort = selectFormEffort(state);
+  const formImpact = selectFormImpact(state);
+  const formScheduledStart = selectFormScheduledStart(state);
+  const formDue = selectFormDue(state);
+
+  const rcSavedTitle = selectRecurringConfigTaskTitle(state, rcId);
+  const rcSavedDescription = selectRecurringConfigTaskDescription(state, rcId);
+  const rcSavedEffort = selectRecurringConfigTaskEffort(state, rcId);
+  const rcSavedImpact = selectRecurringConfigTaskImpact(state, rcId);
+  const rcSavedDueOffsetDays = selectRecurringConfigTaskDueOffsetDays(state, rcId);
+  const rcSavedDueTime = selectRecurringConfigTaskDueTime(state, rcId);
+
+  const taskScheduledStart = selectTaskScheduledStart(state, taskId);
+
+  const dueSame =
+    (!formDue && !rcSavedDueOffsetDays) ||
+    (formDue &&
+      rcSavedDueOffsetDays &&
+      differenceInCalendarDays(formDue, formScheduledStart) === rcSavedDueOffsetDays &&
+      format(formDue, 'HH:mm') === rcSavedDueTime);
+
+  const scheduledStartChanged = formScheduledStart !== taskScheduledStart;
+
+  const changes = [
+    formTitle !== rcSavedTitle ? 'title' : null,
+    formDescription !== rcSavedDescription ? 'description' : null,
+    formEffort !== rcSavedEffort ? 'effort' : null,
+    formImpact !== rcSavedImpact ? 'impact' : null,
+    !dueSame ? 'due' : null,
+    scheduledStartChanged ? 'scheduledStart' : null,
+  ].filter(Boolean);
+
+  return changes;
+};
 
 // Slice
 
@@ -212,7 +265,7 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
   return true;
 };
 
-export const saveForm = () => (dispatch, getState, { mixpanel }) => {
+export const saveForm = ({ appliesRecurringChanges }) => (dispatch, getState, { mixpanel }) => {
   const state = getState();
   const editingTaskId = selectFormTaskId(state);
   const editingRecurringConfigId = selectFormRecurringConfigId(state);
@@ -324,7 +377,9 @@ export const saveForm = () => (dispatch, getState, { mixpanel }) => {
             },
           };
           if (editingRecurringConfigId) {
-            dispatch(updateRecurringConfig(editingRecurringConfigId, payload));
+            if (appliesRecurringChanges) {
+              dispatch(updateRecurringConfig(editingRecurringConfigId, payload));
+            }
           } else {
             const newRcId = await dispatch(createRecurringConfig(payload));
             dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
@@ -347,4 +402,21 @@ export const saveForm = () => (dispatch, getState, { mixpanel }) => {
         };
       })
   );
+};
+
+/**
+ * Returns if the changes in the form differ from what's saved in the recurring config
+ *
+ * This breaks Redux flow a bit, but having this selector in a thunk allows React to run it
+ * on the submit callback, as opposed to on every render
+ *
+ * @returns {bool}
+ */
+export const selectThunkTaskChangesApplicableToRecurringConfig = () => (_, getState) => {
+  const state = getState();
+  const changes = selectTaskChangesApplicableToRecurringConfig(state);
+
+  debugConsole.log('REDUX', 'selectThunkTaskChangesApplicableToRecurringConfig', changes);
+
+  return changes;
 };
