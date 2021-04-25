@@ -27,6 +27,13 @@ export const selectRecurringConfigByMostRecentTaskId = (state, taskId) => {
   return recurringConfigId ? state[name].byId[recurringConfigId] : undefined;
 };
 
+// export const selectRecurringConfigUnit = (state, id) =>
+//   get(selectRecurringConfig(state, id), 'unit');
+// export const selectRecurringConfigAmount = (state, id) =>
+//   get(selectRecurringConfig(state, id), 'amount');
+// export const selectRecurringConfigActiveWeekdays = (state, id) =>
+//   get(selectRecurringConfig(state, id), 'activeWeekdays');
+
 export const selectRecurringConfigTaskTitle = (state, id) =>
   get(selectRecurringConfig(state, id), 'taskDetails.title');
 export const selectRecurringConfigTaskDescription = (state, id) =>

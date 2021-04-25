@@ -419,7 +419,9 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
                 mostRecentTaskId: taskId,
               };
               recurringConfigTaskDetailsChanged.forEach((field) => {
-                updates = addDetailFunction[field](updates);
+                if (addDetailFunction[field]) {
+                  updates = addDetailFunction[field](updates);
+                }
               });
               dispatch(updateRecurringConfig(editingRecurringConfigId, updates));
             }

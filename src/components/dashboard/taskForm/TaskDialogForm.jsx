@@ -266,7 +266,9 @@ const TaskDialogForm = ({ onClose }) => {
     setSubmitting(true);
 
     dispatch(
-      saveForm({ recurringConfigTaskDetailsChanged: appliesRecurringChanges ? changes : null }),
+      saveForm({
+        recurringConfigTaskDetailsChanged: appliesRecurringChanges ? changes : null,
+      }),
     )
       .then((result) => {
         setSubmitting(false);
@@ -627,14 +629,14 @@ const TaskDialogForm = ({ onClose }) => {
             <FormControlLabel value="0" label="This task" control={<Radio size="small" />} />
             <FormControlLabel
               value="1"
-              label="This and repeating tasks"
+              label="This and future tasks"
               control={<Radio size="small" />}
             />
 
             <Box pb={2} />
 
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              Updates that will apply to repeating tasks:
+              Changes made that would apply to future tasks:
             </Typography>
             <Box component="ul" m={0} pl={2}>
               {recurringChangesToConfirm.map((field) => (
