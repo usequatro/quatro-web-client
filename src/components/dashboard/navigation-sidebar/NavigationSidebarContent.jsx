@@ -111,6 +111,8 @@ const NavigationSidebarContent = ({ open }) => {
         </ListItem>
       </TooltipWhenClosed>
 
+      <Divider />
+
       <TooltipWhenClosed title="Calendars" placement="right" arrow>
         <ListItem
           button
