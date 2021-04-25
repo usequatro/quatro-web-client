@@ -10,6 +10,7 @@ import differenceInMinutes from 'date-fns/differenceInMinutes';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
@@ -282,6 +283,12 @@ const TaskDialogForm = ({ onClose, taskId }) => {
       });
   };
 
+  const handleDelete = () => {
+    onClose();
+    dispatch(deleteTask(editTaskDialogId, { appliesRecurringChanges }));
+    notifyInfo('Task Deleted');
+  };
+
   const ctaText = newTaskDialogOpen ? 'Create' : 'Save';
 
   const scrollToBottom = useCallback(() => {
@@ -482,11 +489,7 @@ const TaskDialogForm = ({ onClose, taskId }) => {
         <Box flexGrow={1}>
           {editTaskDialogId && (
             <Confirm
-              onConfirm={() => {
-                onClose();
-                dispatch(deleteTask(editTaskDialogId));
-                notifyInfo('Task Deleted');
-              }}
+              onConfirm={handleDelete}
               renderDialog={(open, onConfirm, onConfirmationClose) => (
                 <ConfirmationDialog
                   open={open}
@@ -494,10 +497,32 @@ const TaskDialogForm = ({ onClose, taskId }) => {
                   onConfirm={onConfirm}
                   id="confirm-delete-task"
                   title="Delete task"
-                  body={[
-                    'Are you sure you want to delete this task?',
-                    editRecurringConfigId && 'The task will stop repeating when deleted',
-                  ].filter(Boolean)}
+                  body={
+                    <>
+                      <DialogContentText>
+                        Are you sure you want to delete this task?
+                      </DialogContentText>
+                      {editRecurringConfigId && (
+                        <RadioGroup
+                          value={appliesRecurringChanges ? '1' : '0'}
+                          onChange={(event) => {
+                            setAppliesRecurringChanges(event.target.value === '1');
+                          }}
+                        >
+                          <FormControlLabel
+                            value="0"
+                            label="Only this task"
+                            control={<Radio size="small" />}
+                          />
+                          <FormControlLabel
+                            value="1"
+                            label="This and following tasks"
+                            control={<Radio size="small" />}
+                          />
+                        </RadioGroup>
+                      )}
+                    </>
+                  }
                   buttonText="Delete"
                 />
               )}

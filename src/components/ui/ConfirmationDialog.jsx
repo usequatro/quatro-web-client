@@ -9,21 +9,23 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 
+const renderBody = cond([
+  [(body) => typeof body === 'string', (body) => <DialogContentText>{body}</DialogContentText>],
+  [
+    (body) => isArray(body),
+    (body) =>
+      body.map((line, index) =>
+        // eslint-disable-next-line react/no-array-index-key
+        typeof line === 'string' ? <DialogContentText key={index}>{line}</DialogContentText> : line,
+      ),
+  ],
+  [() => true, (body) => body],
+]);
+
 const ConfirmationDialog = ({ open, onClose, onConfirm, id, title, body, buttonText }) => (
   <Dialog open={open} onClose={onClose} aria-labelledby={id}>
     <DialogTitle id={id}>{title}</DialogTitle>
-    <DialogContent>
-      {cond([
-        [() => typeof body === 'string', () => <DialogContentText>{body}</DialogContentText>],
-        [
-          () => isArray(body),
-          () =>
-            // eslint-disable-next-line react/no-array-index-key
-            body.map((line, index) => <DialogContentText key={index}>{line}</DialogContentText>),
-        ],
-        [() => true, () => body],
-      ])()}
-    </DialogContent>
+    <DialogContent>{renderBody(body)}</DialogContent>
 
     <DialogActions>
       <Button onClick={onClose} variant="text">
