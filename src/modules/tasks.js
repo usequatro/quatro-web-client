@@ -511,7 +511,11 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
   };
 };
 
-export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
+export const deleteTask = (id, { appliesRecurringChanges }) => (
+  dispatch,
+  getState,
+  { mixpanel },
+) => {
   // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
@@ -523,7 +527,7 @@ export const deleteTask = (id) => (dispatch, getState, { mixpanel }) => {
   });
 
   fetchDeleteTask(id);
-  if (recurringConfigId) {
+  if (recurringConfigId && appliesRecurringChanges) {
     dispatch(deleteRecurringConfig(recurringConfigId));
   }
 
