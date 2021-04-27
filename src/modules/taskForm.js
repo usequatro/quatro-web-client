@@ -43,6 +43,16 @@ import debugConsole from '../utils/debugConsole';
 
 const name = 'taskForm';
 
+export const FIELDS = {
+  TITLE: 'title',
+  DESCRIPTION: 'description',
+  IMPACT: 'impact',
+  EFFORT: 'effort',
+  DUE: 'due',
+  SCHEDULED_START: 'scheduledStart',
+  RECURRENCE: 'recurrence',
+};
+
 // Selectors
 
 export const selectFormTaskId = (state) => state[name].taskId;
@@ -132,15 +142,15 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
     taskScheduledStart !== formScheduledStart && formScheduledStart !== taskScheduledStart;
 
   const changes = [
-    taskTitle !== formTitle && formTitle !== rcSavedTitle ? 'title' : null,
+    taskTitle !== formTitle && formTitle !== rcSavedTitle ? FIELDS.TITLE : null,
     taskDescription !== formDescription && formDescription !== rcSavedDescription
-      ? 'description'
+      ? FIELDS.DESCRIPTION
       : null,
-    taskImpact !== formImpact && formImpact !== rcSavedImpact ? 'impact' : null,
-    taskEffort !== formEffort && formEffort !== rcSavedEffort ? 'effort' : null,
-    !dueSame ? 'due' : null,
-    scheduledStartChanged ? 'scheduledStart' : null,
-    !recurrenceSame ? 'recurrence' : null,
+    taskImpact !== formImpact && formImpact !== rcSavedImpact ? FIELDS.IMPACT : null,
+    taskEffort !== formEffort && formEffort !== rcSavedEffort ? FIELDS.EFFORT : null,
+    !dueSame ? FIELDS.DUE : null,
+    scheduledStartChanged ? FIELDS.SCHEDULED_START : null,
+    !recurrenceSame ? FIELDS.RECURRENCE : null,
   ].filter(Boolean);
 
   return changes;
