@@ -1,6 +1,7 @@
 import get from 'lodash/get';
 import pick from 'lodash/pick';
 import flow from 'lodash/flow';
+import isEqual from 'lodash/isEqual';
 import fpSet from 'lodash/fp/set';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
@@ -30,6 +31,9 @@ import {
   selectRecurringConfigTaskImpact,
   selectRecurringConfigTaskTitle,
   updateRecurringConfig,
+  selectRecurringConfigUnit,
+  selectRecurringConfigAmount,
+  selectRecurringConfigActiveWeekdays,
 } from './recurringConfigs';
 import * as blockerTypes from '../constants/blockerTypes';
 import { selectCalendarProviderCalendarId } from './calendars';
@@ -38,6 +42,16 @@ import { TASK_CREATED, TASK_UPDATED } from '../constants/mixpanelEvents';
 import debugConsole from '../utils/debugConsole';
 
 const name = 'taskForm';
+
+export const FIELDS = {
+  TITLE: 'title',
+  DESCRIPTION: 'description',
+  IMPACT: 'impact',
+  EFFORT: 'effort',
+  DUE: 'due',
+  SCHEDULED_START: 'scheduledStart',
+  RECURRENCE: 'recurrence',
+};
 
 // Selectors
 
@@ -74,10 +88,9 @@ export const selectFormRecurringConfigActiveWeekdays = (state) =>
 
 const selectTaskChangesApplicableToRecurringConfig = (state) => {
   const taskId = selectFormTaskId(state);
-  const rcId = selectFormRecurringConfigId(state);
 
   // If it's new or was recurring, never has changes
-  if (!rcId || !taskId) {
+  if (!taskId) {
     return [];
   }
 
@@ -87,6 +100,11 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
   const formImpact = selectFormImpact(state);
   const formScheduledStart = selectFormScheduledStart(state);
   const formDue = selectFormDue(state);
+
+  const rcId = selectFormRecurringConfigId(state);
+  const formRcUnit = selectFormRecurringConfigUnit(state);
+  const formRcAmount = selectFormRecurringConfigAmount(state);
+  const formRcActiveWeekdays = selectFormRecurringConfigActiveWeekdays(state);
 
   const taskTitle = selectTaskTitle(state, taskId);
   const taskDescription = selectTaskDescription(state, taskId);
@@ -102,6 +120,16 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
   const rcSavedDueOffsetDays = selectRecurringConfigTaskDueOffsetDays(state, rcId);
   const rcSavedDueTime = selectRecurringConfigTaskDueTime(state, rcId);
 
+  const rcSavedUnit = selectRecurringConfigUnit(state, rcId);
+  const rcSavedAmount = selectRecurringConfigAmount(state, rcId);
+  const rcSavedActiveWeekdays = selectRecurringConfigActiveWeekdays(state, rcId);
+
+  const recurrenceSame =
+    rcId &&
+    formRcUnit === rcSavedUnit &&
+    formRcAmount === rcSavedAmount &&
+    isEqual(formRcActiveWeekdays, rcSavedActiveWeekdays);
+
   const dueSame =
     formDue === taskDue ||
     (!formDue && !rcSavedDueOffsetDays) ||
@@ -114,14 +142,15 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
     taskScheduledStart !== formScheduledStart && formScheduledStart !== taskScheduledStart;
 
   const changes = [
-    taskTitle !== formTitle && formTitle !== rcSavedTitle ? 'title' : null,
+    taskTitle !== formTitle && formTitle !== rcSavedTitle ? FIELDS.TITLE : null,
     taskDescription !== formDescription && formDescription !== rcSavedDescription
-      ? 'description'
+      ? FIELDS.DESCRIPTION
       : null,
-    taskEffort !== formEffort && formEffort !== rcSavedEffort ? 'effort' : null,
-    taskImpact !== formImpact && formImpact !== rcSavedImpact ? 'impact' : null,
-    !dueSame ? 'due' : null,
-    scheduledStartChanged ? 'scheduledStart' : null,
+    taskImpact !== formImpact && formImpact !== rcSavedImpact ? FIELDS.IMPACT : null,
+    taskEffort !== formEffort && formEffort !== rcSavedEffort ? FIELDS.EFFORT : null,
+    !dueSame ? FIELDS.DUE : null,
+    scheduledStartChanged ? FIELDS.SCHEDULED_START : null,
+    !recurrenceSame ? FIELDS.RECURRENCE : null,
   ].filter(Boolean);
 
   return changes;
@@ -308,8 +337,11 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
   const calendarBlockStart = selectFormCalendarBlockStart(state);
   const calendarBlockEnd = selectFormCalendarBlockEnd(state);
   const calendarBlockCalendarId = selectFormCalendarBlockCalendarId(state);
-  const recurringConfig = selectFormRecurringConfig(state);
   const formHasRecurringConfig = selectFormHasRecurringConfig(state);
+
+  const recurringConfigUnit = selectFormRecurringConfigUnit(state);
+  const recurringConfigAmount = selectFormRecurringConfigAmount(state);
+  const recurringConfigActiveWeekdays = selectFormRecurringConfigActiveWeekdays(state);
 
   const calendarBlockProviderCalendarId = calendarBlockCalendarId
     ? selectCalendarProviderCalendarId(state, calendarBlockCalendarId)
@@ -344,7 +376,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
             hasScheduledStart: Boolean(scheduledStart),
             hasSnoozedUntil: Boolean(snoozedUntil),
             hasDueDate: Boolean(due),
-            isRecurring: Boolean(recurringConfig),
+            isRecurring: formHasRecurringConfig,
             hasCalendarBlock,
             hasDescription: Boolean(description),
             impact,
@@ -373,7 +405,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
           hasScheduledStart: Boolean(scheduledStart),
           hasSnoozedUntil: Boolean(snoozedUntil),
           hasDueDate: Boolean(due),
-          isRecurring: Boolean(recurringConfig),
+          isRecurring: formHasRecurringConfig,
           hasCalendarBlock,
           hasDescription: Boolean(description),
           impact,
@@ -388,11 +420,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
       .then(async ({ taskId, ...info }) => {
         if (formHasRecurringConfig) {
           if (editingRecurringConfigId) {
-            if (
-              recurringConfigTaskDetailsChanged &&
-              recurringConfigTaskDetailsChanged.length > 0 &&
-              savedRecurringConfig
-            ) {
+            if (recurringConfigTaskDetailsChanged.length > 0 && savedRecurringConfig) {
               // We mutate taskDetails because we can't merge changes to a sub-object in Firestore
               const addDetailFunction = {
                 title: (payload) => fpSet(`taskDetails.title`, title, payload),
@@ -412,10 +440,17 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
                     fpSet(`referenceDate`, scheduledStart),
                     fpSet(`taskDetails.scheduledTime`, format(scheduledStart, 'HH:mm')),
                   )(payload),
+                recurrence: (payload) =>
+                  flow(
+                    fpSet(`unit`, recurringConfigUnit),
+                    fpSet(`amount`, recurringConfigAmount),
+                    fpSet(`activeWeekdays`, recurringConfigActiveWeekdays || null),
+                  )(payload),
               };
               let updates = {
-                ...recurringConfig,
-                taskDetails: { ...savedRecurringConfig.taskDetails },
+                ...(savedRecurringConfig.taskDetails
+                  ? { taskDetails: { ...savedRecurringConfig.taskDetails } }
+                  : {}),
                 mostRecentTaskId: taskId,
               };
               recurringConfigTaskDetailsChanged.forEach((field) => {
@@ -427,7 +462,9 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
             }
           } else {
             const payload = {
-              ...recurringConfig,
+              unit: recurringConfigUnit,
+              amount: recurringConfigAmount,
+              activeWeekdays: recurringConfigActiveWeekdays,
               mostRecentTaskId: taskId,
               referenceDate: scheduledStart,
               taskDetails: {
