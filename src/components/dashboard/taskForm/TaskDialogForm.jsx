@@ -223,7 +223,7 @@ const TaskDialogForm = ({ onClose }) => {
   const [validationErrors, setValidationErrors] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [recurringChangesToConfirm, setRecurringChangesToConfirm] = useState([]);
-  const [appliesRecurringChanges, setAppliesRecurringChanges] = useState(false);
+  const [appliesChangesRecurringly, setAppliesChangesRecurringly] = useState(false);
 
   const snoozeButtonRef = useRef();
 
@@ -255,8 +255,9 @@ const TaskDialogForm = ({ onClose }) => {
     }
 
     const changes = dispatch(selectThunkTaskChangesApplicableToRecurringConfig());
-    if (changes.length > 0 && !recurringChangesToConfirm.length > 0) {
-      setRecurringChangesToConfirm(changes);
+    const changesThatNeedConfirmation = changes.filter((c) => c !== 'recurrence');
+    if (changesThatNeedConfirmation.length > 0 && !recurringChangesToConfirm.length > 0) {
+      setRecurringChangesToConfirm(changesThatNeedConfirmation);
       return;
     }
     if (recurringChangesToConfirm.length > 0) {
@@ -265,9 +266,14 @@ const TaskDialogForm = ({ onClose }) => {
 
     setSubmitting(true);
 
+    // if only applying changes to this task, we at least apply the repeat cadence change
+    const recurringChangesToPersist = appliesChangesRecurringly
+      ? changes
+      : changes.filter((c) => c === 'recurrence');
+
     dispatch(
       saveForm({
-        recurringConfigTaskDetailsChanged: appliesRecurringChanges ? changes : null,
+        recurringConfigTaskDetailsChanged: recurringChangesToPersist,
       }),
     )
       .then((result) => {
@@ -290,7 +296,7 @@ const TaskDialogForm = ({ onClose }) => {
 
   const handleDelete = () => {
     onClose();
-    dispatch(deleteTask(editTaskDialogId, { appliesRecurringChanges }));
+    dispatch(deleteTask(editTaskDialogId, { appliesChangesRecurringly }));
     notifyInfo('Task deleted');
   };
 
@@ -509,9 +515,9 @@ const TaskDialogForm = ({ onClose }) => {
                       </DialogContentText>
                       {editRecurringConfigId && (
                         <RadioGroup
-                          value={appliesRecurringChanges ? '1' : '0'}
+                          value={appliesChangesRecurringly ? '1' : '0'}
                           onChange={(event) => {
-                            setAppliesRecurringChanges(event.target.value === '1');
+                            setAppliesChangesRecurringly(event.target.value === '1');
                           }}
                         >
                           <FormControlLabel
@@ -623,8 +629,8 @@ const TaskDialogForm = ({ onClose }) => {
         <DialogTitle id="apply-recurring-changes-dialog">Edit repeating task</DialogTitle>
         <DialogContent>
           <RadioGroup
-            value={appliesRecurringChanges ? '1' : '0'}
-            onChange={(event) => setAppliesRecurringChanges(event.target.value === '1')}
+            value={appliesChangesRecurringly ? '1' : '0'}
+            onChange={(event) => setAppliesChangesRecurringly(event.target.value === '1')}
           >
             <FormControlLabel value="0" label="This task" control={<Radio size="small" />} />
             <FormControlLabel
