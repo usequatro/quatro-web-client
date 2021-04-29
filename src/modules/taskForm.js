@@ -43,15 +43,13 @@ import debugConsole from '../utils/debugConsole';
 
 const name = 'taskForm';
 
-export const FIELDS = {
-  TITLE: 'title',
-  DESCRIPTION: 'description',
-  IMPACT: 'impact',
-  EFFORT: 'effort',
-  DUE: 'due',
-  SCHEDULED_START: 'scheduledStart',
-  RECURRENCE: 'recurrence',
-};
+export const FIELD_TITLE = 'title';
+export const FIELD_DESCRIPTION = 'description';
+export const FIELD_IMPACT = 'impact';
+export const FIELD_EFFORT = 'effort';
+export const FIELD_DUE = 'due';
+export const FIELD_SCHEDULED_START = 'scheduledStart';
+export const FIELD_RECURRENCE = 'recurrence';
 
 // Selectors
 
@@ -142,15 +140,15 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
     taskScheduledStart !== formScheduledStart && formScheduledStart !== taskScheduledStart;
 
   const changes = [
-    taskTitle !== formTitle && formTitle !== rcSavedTitle ? FIELDS.TITLE : null,
+    taskTitle !== formTitle && formTitle !== rcSavedTitle ? FIELD_TITLE : null,
     taskDescription !== formDescription && formDescription !== rcSavedDescription
-      ? FIELDS.DESCRIPTION
+      ? FIELD_DESCRIPTION
       : null,
-    taskImpact !== formImpact && formImpact !== rcSavedImpact ? FIELDS.IMPACT : null,
-    taskEffort !== formEffort && formEffort !== rcSavedEffort ? FIELDS.EFFORT : null,
-    !dueSame ? FIELDS.DUE : null,
-    scheduledStartChanged ? FIELDS.SCHEDULED_START : null,
-    !recurrenceSame ? FIELDS.RECURRENCE : null,
+    taskImpact !== formImpact && formImpact !== rcSavedImpact ? FIELD_IMPACT : null,
+    taskEffort !== formEffort && formEffort !== rcSavedEffort ? FIELD_EFFORT : null,
+    !dueSame ? FIELD_DUE : null,
+    scheduledStartChanged ? FIELD_SCHEDULED_START : null,
+    !recurrenceSame ? FIELD_RECURRENCE : null,
   ].filter(Boolean);
 
   return changes;
@@ -423,11 +421,12 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
             if (recurringConfigTaskDetailsChanged.length > 0 && savedRecurringConfig) {
               // We mutate taskDetails because we can't merge changes to a sub-object in Firestore
               const addDetailFunction = {
-                title: (payload) => fpSet(`taskDetails.title`, title, payload),
-                description: (payload) => fpSet(`taskDetails.description`, description, payload),
-                effort: (payload) => fpSet(`taskDetails.effort`, effort, payload),
-                impact: (payload) => fpSet(`taskDetails.impact`, impact, payload),
-                due: (payload) =>
+                [FIELD_TITLE]: (payload) => fpSet(`taskDetails.title`, title, payload),
+                [FIELD_DESCRIPTION]: (payload) =>
+                  fpSet(`taskDetails.description`, description, payload),
+                [FIELD_EFFORT]: (payload) => fpSet(`taskDetails.effort`, effort, payload),
+                [FIELD_IMPACT]: (payload) => fpSet(`taskDetails.impact`, impact, payload),
+                [FIELD_DUE]: (payload) =>
                   flow(
                     fpSet(
                       `taskDetails.dueOffsetDays`,
@@ -435,12 +434,12 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
                     ),
                     fpSet(`taskDetails.dueTime`, due ? format(due, 'HH:mm') : null),
                   )(payload),
-                scheduledStart: (payload) =>
+                [FIELD_SCHEDULED_START]: (payload) =>
                   flow(
                     fpSet(`referenceDate`, scheduledStart),
                     fpSet(`taskDetails.scheduledTime`, format(scheduledStart, 'HH:mm')),
                   )(payload),
-                recurrence: (payload) =>
+                [FIELD_RECURRENCE]: (payload) =>
                   flow(
                     fpSet(`unit`, recurringConfigUnit),
                     fpSet(`amount`, recurringConfigAmount),
