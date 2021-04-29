@@ -64,7 +64,7 @@ import {
   saveForm,
   selectThunkTaskChangesApplicableToRecurringConfig,
   selectFormTaskId,
-  FIELDS,
+  FIELD_RECURRENCE,
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
@@ -256,7 +256,7 @@ const TaskDialogForm = ({ onClose }) => {
     }
 
     const changes = dispatch(selectThunkTaskChangesApplicableToRecurringConfig());
-    const changesThatNeedConfirmation = changes.filter((c) => c !== FIELDS.RECURRENCE);
+    const changesThatNeedConfirmation = changes.filter((c) => c !== FIELD_RECURRENCE);
     if (changesThatNeedConfirmation.length > 0 && !recurringChangesToConfirm.length > 0) {
       setRecurringChangesToConfirm(changesThatNeedConfirmation);
       return;
@@ -270,7 +270,7 @@ const TaskDialogForm = ({ onClose }) => {
     // if only applying changes to this task, we at least apply the repeat cadence change
     const recurringChangesToPersist = appliesChangesRecurringly
       ? changes
-      : changes.filter((c) => c === FIELDS.RECURRENCE);
+      : changes.filter((c) => c === FIELD_RECURRENCE);
 
     dispatch(
       saveForm({
