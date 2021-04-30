@@ -463,7 +463,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
             const payload = {
               unit: recurringConfigUnit,
               amount: recurringConfigAmount,
-              activeWeekdays: recurringConfigActiveWeekdays,
+              activeWeekdays: recurringConfigActiveWeekdays || null,
               mostRecentTaskId: taskId,
               referenceDate: scheduledStart,
               taskDetails: {
