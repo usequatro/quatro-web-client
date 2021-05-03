@@ -25,7 +25,7 @@ import { clearRelativePrioritization, COMPLETE_DELAY } from '../../../modules/ta
 import formatDateTime from '../../../utils/formatDateTime';
 import CompleteButton from './CompleteButton';
 import { EFFORT_LABELS } from '../../../constants/effort';
-import AppLogoPlain from '../../icons/AppLogoPlain';
+import AppLogoFull from '../../icons/AppLogoFull';
 
 const formatMinutes = (totalMinutes) => {
   const totalHours = Math.floor(totalMinutes / 60);
@@ -282,7 +282,7 @@ const TaskView = ({
       </Box>
 
       {renderCompletedAnimationIcon && (
-        <AppLogoPlain className={classes.completeAppLogo} aria-hidden="true" />
+        <AppLogoFull className={classes.completeAppLogo} aria-hidden="true" />
       )}
     </Component>
   );
