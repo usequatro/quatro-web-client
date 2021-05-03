@@ -17,7 +17,7 @@ import Typography from '@material-ui/core/Typography';
 
 import { selectFormSnoozedUntil, setFormSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
-import { SNOOZE_PRESET_SELECTED, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
+import { SNOOZE_PRESET_SELECTED } from '../../../constants/mixpanelEvents';
 
 const getOptions = (now) => {
   const oneHourFromNow = addHours(startOfMinute(now), 1).getTime();
@@ -62,7 +62,6 @@ const SnoozeMenu = ({ anchorEl, open, onClose, onCustomSelected }) => {
   const handleClear = () => {
     onClose();
     dispatch(setFormSnoozedUntil(null));
-    mixpanel.track(SNOOZE_CLEARED);
   };
   const handleCustomSelected = () => {
     onClose();

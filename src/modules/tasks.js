@@ -28,13 +28,7 @@ import {
   selectRecurringConfigIdByMostRecentTaskId,
   deleteRecurringConfig,
 } from './recurringConfigs';
-import {
-  TASK_DELETED,
-  TASK_COMPLETED,
-  TASK_UNDO_COMPLETE,
-  TASK_MANUALLY_ARRANGED,
-  TASK_DRAGGED_TO_CALENDAR,
-} from '../constants/mixpanelEvents';
+import { TASK_DRAGGED_TO_CALENDAR } from '../constants/mixpanelEvents';
 import { EFFORT_TO_DURATION } from '../constants/effort';
 import { addPlaceholderEventUntilCreated, selectCalendarEventIdByTaskId } from './calendarEvents';
 import isRequired from '../utils/isRequired';
@@ -392,7 +386,6 @@ export const updateTask = (id, updates) => () => fetchUpdateTask(id, updates);
 export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
   dispatch,
   getState,
-  { mixpanel },
 ) => {
   const state = getState();
 
@@ -431,8 +424,6 @@ export const setRelativePrioritization = (sourceIndex, destinationIndex) => asyn
   tasksPrioritizedBefore.forEach((task) => {
     fetchUpdateTask(task.id, { prioritizedAheadOf: taskAfter.id });
   });
-
-  mixpanel.track(TASK_MANUALLY_ARRANGED);
 };
 
 export const clearRelativePrioritization = (id) => () =>
@@ -450,19 +441,17 @@ const cancelTaskCompletionNotExecutedYet = (id) => (dispatch) => {
   dispatch(slice.actions.clearVisuallyCompletedStatus(id));
 };
 
-export const markTaskIncomplete = (id = isRequired('id')) => (dispatch, _, { mixpanel }) => {
+export const markTaskIncomplete = (id = isRequired('id')) => (dispatch) => {
   if (taskCompletions[id]) {
     dispatch(cancelTaskCompletionNotExecutedYet(id));
     return;
   }
   fetchUpdateTask(id, { completed: null });
-  mixpanel.track(TASK_UNDO_COMPLETE);
 };
 
 export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('notifyInfo')) => (
   dispatch,
   getState,
-  { mixpanel },
 ) => {
   // If already visually completed, then we cancel
   if (taskCompletions[id]) {
@@ -500,7 +489,6 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
     });
 
     fetchUpdateTask(id, { completed: Date.now() });
-    mixpanel.track(TASK_COMPLETED);
 
     // the visually completed status is cleared when the task is loaded again
   }, COMPLETE_DELAY);
@@ -511,11 +499,7 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
   };
 };
 
-export const deleteTask = (id, { appliesRecurringChanges }) => (
-  dispatch,
-  getState,
-  { mixpanel },
-) => {
+export const deleteTask = (id, { appliesRecurringChanges }) => (dispatch, getState) => {
   // If there's a recurring config associated, we clear it too so it stops repeating
   const state = getState();
   const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
@@ -532,8 +516,6 @@ export const deleteTask = (id, { appliesRecurringChanges }) => (
   }
 
   dispatch(slice.actions.addTaskIdRecentlyRemoved(id));
-
-  mixpanel.track(TASK_DELETED);
 };
 
 export const blockCalendarEventForTask = (id, calendarBlockStart) => async (

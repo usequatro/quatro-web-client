@@ -21,7 +21,7 @@ import DatePicker from '../../ui/DatePicker';
 
 import { setFormSnoozedUntil, selectFormSnoozedUntil } from '../../../modules/taskForm';
 import { useMixpanel } from '../../tracking/MixpanelContext';
-import { SNOOZE_CUSTOM_VALUE_SET, SNOOZE_CLEARED } from '../../../constants/mixpanelEvents';
+import { SNOOZE_CUSTOM_VALUE_SET } from '../../../constants/mixpanelEvents';
 
 const getInitialSnoozedUntilTimestamp = () => addHours(startOfTomorrow(), 9).getTime();
 
@@ -59,7 +59,6 @@ const SnoozeCustomDialog = ({ open, onClose }) => {
   const handleClear = () => {
     onClose();
     dispatch(setFormSnoozedUntil(null));
-    mixpanel.track(SNOOZE_CLEARED);
   };
 
   return (
