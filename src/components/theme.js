@@ -60,13 +60,13 @@ const muiTheme = createMuiTheme({
 muiTheme.overrides = {
   MuiCssBaseline: {
     '@global': {
-      '*': {
-        'scrollbar-width': 'thin',
-      },
-      '*::-webkit-scrollbar': {
-        width: '4px',
-        height: '4px',
-      },
+      // '*': {
+      //   'scrollbar-width': 'thin',
+      // },
+      // '*::-webkit-scrollbar': {
+      //   width: '4px',
+      //   height: '4px',
+      // },
       '@font-face': [
         {
           fontFamily: 'GTEestiProText',
