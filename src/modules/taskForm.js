@@ -38,7 +38,6 @@ import {
 import * as blockerTypes from '../constants/blockerTypes';
 import { selectCalendarProviderCalendarId } from './calendars';
 import { createTask, selectDashboardActiveTab } from './dashboard';
-import { TASK_CREATED, TASK_UPDATED } from '../constants/mixpanelEvents';
 import debugConsole from '../utils/debugConsole';
 
 const name = 'taskForm';
@@ -313,11 +312,7 @@ export const setTaskInForm = (taskId) => (dispatch, getState) => {
   return true;
 };
 
-export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
-  dispatch,
-  getState,
-  { mixpanel },
-) => {
+export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (dispatch, getState) => {
   const state = getState();
   const editingTaskId = selectFormTaskId(state);
   const editingRecurringConfigId = selectFormRecurringConfigId(state);
@@ -368,19 +363,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
             // Make sure to clear recurringConfigId if we don't have any repeat info set
             ...(!formHasRecurringConfig ? { recurringConfigId: null } : {}),
           }),
-        ).then(() => {
-          mixpanel.track(TASK_UPDATED, {
-            hasBlockers: blockedBy.length > 0,
-            hasScheduledStart: Boolean(scheduledStart),
-            hasSnoozedUntil: Boolean(snoozedUntil),
-            hasDueDate: Boolean(due),
-            isRecurring: formHasRecurringConfig,
-            hasCalendarBlock,
-            hasDescription: Boolean(description),
-            impact,
-            effort,
-          });
-        });
+        );
         return { taskId: editingTaskId, taskCreated: false };
       })
     : dispatch(
@@ -397,20 +380,7 @@ export const saveForm = ({ recurringConfigTaskDetailsChanged }) => (
           calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
           calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
         }),
-      ).then((taskId) => {
-        mixpanel.track(TASK_CREATED, {
-          hasBlockers: blockedBy.length > 0,
-          hasScheduledStart: Boolean(scheduledStart),
-          hasSnoozedUntil: Boolean(snoozedUntil),
-          hasDueDate: Boolean(due),
-          isRecurring: formHasRecurringConfig,
-          hasCalendarBlock,
-          hasDescription: Boolean(description),
-          impact,
-          effort,
-        });
-        return { taskId, taskCreated: true };
-      });
+      ).then((taskId) => ({ taskId, taskCreated: true }));
 
   return (
     taskPromise
