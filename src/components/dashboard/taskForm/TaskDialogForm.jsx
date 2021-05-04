@@ -257,7 +257,11 @@ const TaskDialogForm = ({ onClose }) => {
 
     const changes = dispatch(selectThunkTaskChangesApplicableToRecurringConfig());
     const changesThatNeedConfirmation = changes.filter((c) => c !== FIELD_RECURRENCE);
-    if (changesThatNeedConfirmation.length > 0 && !recurringChangesToConfirm.length > 0) {
+    if (
+      editRecurringConfigId &&
+      changesThatNeedConfirmation.length > 0 &&
+      !recurringChangesToConfirm.length > 0
+    ) {
       setRecurringChangesToConfirm(changesThatNeedConfirmation);
       return;
     }
