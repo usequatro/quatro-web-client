@@ -202,6 +202,10 @@ const Dashboard = () => {
         dispatch(refreshCurrentTimestamp());
       }
     }, 1000);
+
+    if (process.env.REACT_APP_DEVELOPMENT) {
+      window.setCurrentTimestamp = (t) => dispatch(refreshCurrentTimestamp(t));
+    }
     return () => clearInterval(interval);
   }, [dispatch, currentTimestamp]);
 

@@ -71,8 +71,8 @@ const slice = createSlice({
     setCalendarDisplayTimestamp: (state, { payload }) => {
       state.calendarDisplayTimestamp = startOfDay(payload).getTime();
     },
-    refreshCurrentTimestamp: (state) => {
-      const currentTimestamp = startOfMinute(Date.now()).getTime();
+    refreshCurrentTimestamp: (state, { payload: timestamp = Date.now() }) => {
+      const currentTimestamp = startOfMinute(timestamp).getTime();
       if (state.currentTimestamp !== currentTimestamp) {
         state.currentTimestamp = currentTimestamp;
       }
