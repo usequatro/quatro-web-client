@@ -1,11 +1,11 @@
 import React, { memo, forwardRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import cond from 'lodash/cond';
 
 import format from 'date-fns/format';
-import isPast from 'date-fns/isPast';
+import isAfter from 'date-fns/isAfter';
 import isValid from 'date-fns/isValid';
 
 import Typography from '@material-ui/core/Typography';
@@ -21,6 +21,7 @@ import CompleteButton from '../tasks/CompleteButton';
 import { useNotification } from '../../Notification';
 import * as RESPONSE_STATUS from '../../../constants/responseStatus';
 import * as EVENT_TYPES from '../../../constants/eventTypes';
+import { selectCurrentTimestamp } from '../../../modules/dashboard';
 
 const useStyles = makeStyles((theme) => ({
   eventCard: ({ color, needsAction, smallCard }) => ({
@@ -99,6 +100,7 @@ const EventCardView = forwardRef(
   ) => {
     const dispatch = useDispatch();
     const { notifyInfo } = useNotification();
+    const currentTimestamp = useSelector(selectCurrentTimestamp);
 
     const classes = useStyles({
       color,
@@ -126,7 +128,7 @@ const EventCardView = forwardRef(
           classes.eventCard,
           responseStatus === RESPONSE_STATUS.TENTATIVE ? classes.tentativeEvent : '',
           eventType === EVENT_TYPES.OUT_OF_OFFICE ? classes.outOfOfficeEvent : '',
-          !taskId && isPast(endTimestamp) ? classes.pastEvent : '',
+          !taskId && isAfter(currentTimestamp, endTimestamp) ? classes.pastEvent : '',
           taskId && (completed || showCheckmark) ? classes.pastEvent : '',
           className,
         ]
