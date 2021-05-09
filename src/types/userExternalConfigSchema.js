@@ -4,6 +4,7 @@ export const userExternalConfigSchema = Joi.object({
   gapiCalendarOfflineAccess: Joi.boolean().default(false),
   defaultCalendarId: Joi.string().allow(null).default(null),
   timeZone: Joi.string().allow(null).default(null),
+  emailDailyDigestEnabled: Joi.bool(),
 });
 
 /**

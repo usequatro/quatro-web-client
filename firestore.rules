@@ -54,10 +54,10 @@ service cloud.firestore {
       // @link https://firebase.google.com/docs/firestore/security/rules-fields#allowing_only_certain_fields_to_be_changed
       allow create: if isSignedIn() &&
       	isCurrentUser(docId) &&
-        incomingData().diff({}).addedKeys().hasOnly(['defaultCalendarId', 'timeZone']);
+        incomingData().diff({}).addedKeys().hasOnly(['defaultCalendarId', 'timeZone', 'emailDailyDigestEnabled']);
       allow update: if isSignedIn() &&
       	isCurrentUser(docId) &&
-        incomingData().diff(existingData()).affectedKeys().hasOnly(['defaultCalendarId', 'timeZone']);
+        incomingData().diff(existingData()).affectedKeys().hasOnly(['defaultCalendarId', 'timeZone', 'emailDailyDigestEnabled']);
     }
   }
 }
