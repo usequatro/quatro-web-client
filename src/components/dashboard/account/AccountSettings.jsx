@@ -12,8 +12,6 @@ import Button from '@material-ui/core/Button';
 import MuiLink from '@material-ui/core/Link';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import { makeStyles } from '@material-ui/core/styles';
 
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
@@ -47,7 +45,6 @@ import { useNotification } from '../../Notification';
 import UserIcon from '../../icons/UserIcon';
 import {
   selectUserTimeZone,
-  selectUserEmailDailyDigestEnabled,
   selectUserExternalConfigIsFetching,
 } from '../../../modules/userExternalConfig';
 import { fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
@@ -76,7 +73,6 @@ const useStyles = makeStyles(() => ({
     width: '30rem',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'auto',
   },
   profilePhoto: {
     borderRadius: '100%',
@@ -154,14 +150,6 @@ const AccountSettings = () => {
   );
   const browserTimeZone = useMemo(getBrowserDetectedTimeZone, []);
 
-  const savedEmailDailyDigestEnabled = useSelector(selectUserEmailDailyDigestEnabled);
-  const [emailDailyDigestEnabled, setEmailDailyDigestEnabled] = useState(
-    savedEmailDailyDigestEnabled,
-  );
-  useEffect(() => {
-    setEmailDailyDigestEnabled(savedEmailDailyDigestEnabled);
-  }, [savedEmailDailyDigestEnabled]);
-
   const savedEmail = useSelector(selectUserEmail);
   const [email, setEmail] = useState(savedEmail || '');
   useEffect(() => {
@@ -205,11 +193,6 @@ const AccountSettings = () => {
         email !== savedEmail && passwordAuthProvider ? firebaseUpdateUserEmail(email) : undefined,
       )
       .then(() => (newPassword !== '' ? firebaseUpdateUserPassword(email) : undefined))
-      .then(() => {
-        if (emailDailyDigestEnabled !== savedEmailDailyDigestEnabled) {
-          fetchUpdateUserExternalConfig({ emailDailyDigestEnabled });
-        }
-      })
       .then(() => {
         notifySuccess('Changes saved successfully');
         setSubmitting(false);
@@ -274,8 +257,7 @@ const AccountSettings = () => {
     displayName !== savedDisplayName ||
     email !== savedEmail ||
     newPassword !== '' ||
-    photoURL !== savedPhotoURL ||
-    emailDailyDigestEnabled !== savedEmailDailyDigestEnabled;
+    photoURL !== savedPhotoURL;
 
   return (
     <Box
@@ -431,34 +413,12 @@ const AccountSettings = () => {
           </Box>
         )}
 
-        {userExternalConfigLoaded && (
-          <Box my={4}>
-            <Typography gutterBottom>Email preferences</Typography>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  color="primary"
-                  checked={emailDailyDigestEnabled}
-                  onChange={(event) => setEmailDailyDigestEnabled(event.target.checked)}
-                  name="emailDailyDigestEnabled"
-                />
-              }
-              label={
-                <Typography component="span" variant="body2">
-                  Daily Digest: every day at 8pm, receive an email detailing completed tasks from
-                  the day and tomorrow’s Top 4
-                </Typography>
-              }
-            />
-          </Box>
-        )}
-
         <Box display="flex" justifyContent="flex-end" pt={4}>
           <Button
             type="submit"
             variant="contained"
             color="primary"
-            disabled={submitting || !hasChanges || !userExternalConfigLoaded}
+            disabled={submitting || !hasChanges}
             endIcon={submitting ? <CircularProgress thickness={4} size="1.25rem" /> : null}
           >
             Save
@@ -466,7 +426,7 @@ const AccountSettings = () => {
         </Box>
       </form>
 
-      <Box display="flex" justifyContent="flex-end" py={4}>
+      <Box display="flex" justifyContent="flex-end" pt={4}>
         <Confirm
           onConfirm={handleDeleteAccount}
           renderDialog={(open, onConfirm, onConfirmationClose) => (
