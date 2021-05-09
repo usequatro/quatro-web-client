@@ -24,6 +24,8 @@ export const selectUserHasGrantedGoogleCalendarOfflineAccess = (state) =>
 /** @returns {string|null} */
 export const selectUserDefaultCalendarId = (state) => get(state[name].data, 'defaultCalendarId');
 export const selectUserTimeZone = (state) => get(state[name].data, 'timeZone');
+export const selectUserEmailDailyDigestEnabled = (state) =>
+  Boolean(get(state[name].data, 'emailDailyDigestEnabled'));
 
 // Slice
 
