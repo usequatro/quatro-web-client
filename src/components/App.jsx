@@ -13,6 +13,7 @@ import { NotificationContextProvider, NotificationSnackbar } from './Notificatio
 import AuthManager from './AuthManager';
 import muiTheme from './theme';
 import createStore from '../store';
+import LastActivityDateTracker from './tracking/LastActivityDateTracker';
 
 const store = createStore();
 
@@ -31,6 +32,7 @@ const App = () => (
           <CssBaseline />
           <Router {...routerProps}>
             <RouterChangeTracker />
+            <LastActivityDateTracker />
             <Div100vh style={{ width: '100%', height: '100rvh' }}>
               <NotificationContextProvider>
                 <AuthManager />

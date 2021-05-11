@@ -5,6 +5,7 @@ export const userExternalConfigSchema = Joi.object({
   defaultCalendarId: Joi.string().allow(null).default(null),
   timeZone: Joi.string().allow(null).default(null),
   emailDailyDigestEnabled: Joi.bool(),
+  lastActivityDate: Joi.number(),
 });
 
 /**
