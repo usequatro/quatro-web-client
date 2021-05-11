@@ -26,6 +26,7 @@ export const selectUserDefaultCalendarId = (state) => get(state[name].data, 'def
 export const selectUserTimeZone = (state) => get(state[name].data, 'timeZone');
 export const selectUserEmailDailyDigestEnabled = (state) =>
   Boolean(get(state[name].data, 'emailDailyDigestEnabled'));
+export const selectUserLastActivityDate = (state) => get(state[name].data, 'lastActivityDate');
 
 // Slice
 
