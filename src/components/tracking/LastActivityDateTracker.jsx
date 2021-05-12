@@ -2,7 +2,10 @@ import { useSelector } from 'react-redux';
 import isBefore from 'date-fns/isBefore';
 import isSameHour from 'date-fns/isSameHour';
 import { selectCurrentTimestamp } from '../../modules/dashboard';
-import { selectUserLastActivityDate } from '../../modules/userExternalConfig';
+import {
+  selectUserLastActivityDate,
+  selectUserExternalConfigIsFetching,
+} from '../../modules/userExternalConfig';
 import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
 import { selectFirebaseUserIsLoggedIn } from '../../modules/session';
 
@@ -12,10 +15,11 @@ import { selectFirebaseUserIsLoggedIn } from '../../modules/session';
  */
 const LastActivityDateTracker = () => {
   const firebaseUserIsLoggedIn = useSelector(selectFirebaseUserIsLoggedIn);
+  const userExternalConfigLoaded = !useSelector(selectUserExternalConfigIsFetching);
   const lastActivityDate = useSelector(selectUserLastActivityDate);
   const currentTime = useSelector(selectCurrentTimestamp);
 
-  if (!firebaseUserIsLoggedIn) {
+  if (!firebaseUserIsLoggedIn || !userExternalConfigLoaded) {
     return null;
   }
 
