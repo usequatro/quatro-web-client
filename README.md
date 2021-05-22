@@ -50,7 +50,7 @@ For Firebase, use its CLI to toggle between them with `firebase use [env]`. Chec
 Continuous deployment is wired with GitHub Actions:
 
 - Merging into `main` or `release/*` branches will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
-- Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables.
+- Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables. Use GitHub Releases to produce the tag and release documentation.
 
 For more details, see the [workflows folder](.github/workflows).
 
