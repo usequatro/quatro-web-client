@@ -31,7 +31,7 @@ const ERROR = 'error';
 const getSection = cond([
   [(completed) => isToday(completed), () => 'today'],
   [(completed) => isYesterday(completed), () => 'yesterday'],
-  [(completed) => isThisWeek(completed), () => 'thisWeek'],
+  [(completed) => isThisWeek(completed, { weekStartsOn: 1 }), () => 'thisWeek'],
   [() => true, () => 'rest'],
 ]);
 
