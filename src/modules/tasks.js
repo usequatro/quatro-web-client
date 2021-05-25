@@ -97,8 +97,13 @@ const selectAllTaskIdsAsMap = createSelector(
   (ids) => ids.reduce((memo, id) => ({ ...memo, [id]: true }), {}),
 );
 
+/** @returns {Object} */
+const selectTasksMap = (state) => state[name].byId;
+
 /** @returns {Array<[string, Object]>} */
-const selectAllTasks = (state) => selectAllTaskIds(state).map((id) => [id, state[name].byId[id]]);
+const selectAllTasks = createSelector(selectAllTaskIds, selectTasksMap, (tasksIds, tasksMap) =>
+  tasksIds.map((id) => [id, tasksMap[id]]),
+);
 
 /** @returns {Array<[string, Object]>} */
 const selectAllUpcomingTasks = createSelector(selectAllTasks, (allTasks) => {
