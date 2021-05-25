@@ -5,6 +5,7 @@ import cond from 'lodash/cond';
 import isToday from 'date-fns/isToday';
 import isYesterday from 'date-fns/isYesterday';
 import isThisWeek from 'date-fns/isThisWeek';
+import differenceInCalendarWeeks from 'date-fns/differenceInCalendarWeeks';
 
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -28,10 +29,13 @@ const FETCHING = 'fetching';
 const FETCHED = 'fetched';
 const ERROR = 'error';
 
+const isLastWeek = (date) => differenceInCalendarWeeks(new Date(), date, { weekStartsOn: 1 }) === 1;
+
 const getSection = cond([
   [(completed) => isToday(completed), () => 'today'],
   [(completed) => isYesterday(completed), () => 'yesterday'],
-  [(completed) => isThisWeek(completed), () => 'thisWeek'],
+  [(completed) => isThisWeek(completed, { weekStartsOn: 1 }), () => 'thisWeek'],
+  [(completed) => isLastWeek(completed), () => 'lastWeek'],
   [() => true, () => 'rest'],
 ]);
 
@@ -78,13 +82,14 @@ const CompletedTaskList = () => {
 
   const taskListContainerRef = useRef();
 
-  const { todayTasks, yesterdayTasks, thisWeekTasks, restTasks } = useMemo(
+  const { todayTasks, yesterdayTasks, thisWeekTasks, lastWeekTasks, restTasks } = useMemo(
     () => ({
       todayTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'today'),
       yesterdayTasks: completedTasks.filter(
         ([, task]) => getSection(task.completed) === 'yesterday',
       ),
       thisWeekTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'thisWeek'),
+      lastWeekTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'lastWeek'),
       restTasks: completedTasks.filter(([, task]) => getSection(task.completed) === 'rest'),
     }),
     [completedTasks],
@@ -232,6 +237,13 @@ const CompletedTaskList = () => {
                 <>
                   <TaskListHeader>This week</TaskListHeader>
                   {thisWeekTasks.map(([id, task]) => renderTask(id, task))}
+                </>
+              )}
+
+              {lastWeekTasks.length > 0 && (
+                <>
+                  <TaskListHeader>Last week</TaskListHeader>
+                  {lastWeekTasks.map(([id, task]) => renderTask(id, task))}
                 </>
               )}
 
