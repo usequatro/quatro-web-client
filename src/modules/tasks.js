@@ -556,6 +556,19 @@ export const blockCalendarEventForTask = (id, calendarBlockStart) => async (
     );
   }
 
+  const task = selectTask(state, id);
+  const previousCalendarBlockStart = get(task, 'calendarBlockStart');
+  const previousCalendarBlockEnd = get(task, 'calendarBlockEnd');
+  if (
+    calendarBlockStart === previousCalendarBlockStart &&
+    calendarBlockEnd === previousCalendarBlockEnd
+  ) {
+    return {
+      calendarBlockStart,
+      alreadyHadCalendarBlock,
+    };
+  }
+
   fetchUpdateTask(id, {
     calendarBlockCalendarId,
     calendarBlockProviderCalendarId,
