@@ -196,6 +196,36 @@ export const gapiListCalendarEvents = async (
   });
 
 /**
+ * @link https://developers.google.com/calendar/v3/reference/events/update
+ * @param {string} providerCalendarId
+ * @param {string} eventId
+ * @param {string} updatedResponseStatus
+ * @return {Promise}
+ */
+export const gapiUpdateCalendarEventResponseStatus = async (
+  providerCalendarId,
+  eventId,
+  updatedResponseStatus,
+) => {
+  const { result: event } = await request({
+    method: 'GET',
+    path: `/calendar/v3/calendars/${providerCalendarId}/events/${eventId}`,
+  });
+  debugConsole.log('Google API', 'Calendar event fetched successfully');
+
+  // Self: Whether the organizer corresponds to the calendar on which this copy of the event appears
+  const index = event.attendees.findIndex((attendee) => Boolean(attendee.self));
+  event.attendees[index].responseStatus = updatedResponseStatus;
+
+  await request({
+    method: 'PUT',
+    path: `/calendar/v3/calendars/${providerCalendarId}/events/${eventId}`,
+    body: event,
+  });
+  debugConsole.log('Google API', 'Calendar event updated successfully');
+};
+
+/**
  * @link https://developers.google.com/calendar/v3/reference/calendarList/list
  */
 export const gapiListCalendars = async () =>

@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
@@ -14,9 +14,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import { makeStyles } from '@material-ui/core/styles';
 
 import GroupRoundedIcon from '@material-ui/icons/GroupRounded';
+import HowToRegIcon from '@material-ui/icons/HowToReg';
 import LaunchRoundedIcon from '@material-ui/icons/LaunchRounded';
 import NotesIcon from '@material-ui/icons/Notes';
 import QueryBuilderRoundedIcon from '@material-ui/icons/QueryBuilderRounded';
@@ -29,6 +33,8 @@ import HelpOutlineRoundedIcon from '@material-ui/icons/HelpOutlineRounded';
 import CheckRoundedIcon from '@material-ui/icons/CheckRounded';
 import NotInterestedRoundedIcon from '@material-ui/icons/NotInterestedRounded';
 
+import { gapiUpdateCalendarEventResponseStatus } from '../../../googleApi';
+
 import {
   selectCalendarEventSummary,
   selectCalendarEventDescription,
@@ -36,6 +42,7 @@ import {
   selectCalendarEventLocation,
   selectCalendarEventAttendees,
   selectCalendarEventAttendeesOmitted,
+  selectCalendarEventResponseStatus,
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
   selectCalendarEventAllDay,
@@ -125,6 +132,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const eventLocation = useSelector((state) => selectCalendarEventLocation(state, id));
   const attendees = useSelector((state) => selectCalendarEventAttendees(state, id));
   const attendeesOmitted = useSelector((state) => selectCalendarEventAttendeesOmitted(state, id));
+  const responseStatus = useSelector((state) => selectCalendarEventResponseStatus(state, id));
   const providerCalendarId = useSelector((state) =>
     selectCalendarEventProviderCalendarId(state, id),
   );
@@ -153,6 +161,18 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
   const timeFormat =
     differenceInCalendarDays(endTimestamp, startTimestamp) < 1 ? 'h:mm a' : 'PP - h:mm a';
+
+  const [calendarEventResponseStatus, setCalendarEventResponseStatus] = useState(responseStatus);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const handleSelectChange = async (event) => {
+    const updatedResponseStatus = event.target.value;
+    if (isUpdating) return;
+    setIsUpdating(true);
+    setCalendarEventResponseStatus(updatedResponseStatus);
+    const eventId = id.split('-').pop();
+    await gapiUpdateCalendarEventResponseStatus(providerCalendarId, eventId, updatedResponseStatus);
+    setIsUpdating(false);
+  };
 
   return (
     <Popover
@@ -232,6 +252,39 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
             </Box>
           </Box>
         )}
+
+        <Box mb={3} display="flex">
+          <InformativeIcon title="Attendance" Icon={HowToRegIcon} />
+
+          <Box minWidth={120}>
+            <InputLabel shrink id="attendance-select-label">
+              Going?
+            </InputLabel>
+            <Select
+              onChange={handleSelectChange}
+              value={
+                calendarEventResponseStatus === RESPONSE_STATUS.NEEDS_ACTION
+                  ? ''
+                  : calendarEventResponseStatus
+              }
+              fullWidth
+              labelId="attendance-select-label"
+              disabled={isUpdating}
+            >
+              <MenuItem key={RESPONSE_STATUS.ACCEPTED} value={RESPONSE_STATUS.ACCEPTED}>
+                Yes
+              </MenuItem>
+
+              <MenuItem key={RESPONSE_STATUS.DECLINED} value={RESPONSE_STATUS.DECLINED}>
+                No
+              </MenuItem>
+
+              <MenuItem key={RESPONSE_STATUS.TENTATIVE} value={RESPONSE_STATUS.TENTATIVE}>
+                Maybe
+              </MenuItem>
+            </Select>
+          </Box>
+        </Box>
 
         {/* visibility is missing on GCal quite often */}
         {visibility && (
