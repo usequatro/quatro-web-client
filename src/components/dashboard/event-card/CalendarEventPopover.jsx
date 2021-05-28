@@ -226,7 +226,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
         {attendees && attendees.length > 0 && (
           <>
-            <Box mb={3} display="flex">
+            <Box mb={2} display="flex">
               <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
 
               <Box component="ul" m={0} pl={2}>
