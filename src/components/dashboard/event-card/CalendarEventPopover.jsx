@@ -225,66 +225,70 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
         )}
 
         {attendees && attendees.length > 0 && (
-          <Box mb={3} display="flex">
-            <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
+          <>
+            <Box mb={3} display="flex">
+              <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
 
-            <Box component="ul" m={0} pl={2}>
-              {attendees.map((attendee, index) => (
-                <Box component="li" key={attendee.id || attendee.email || index}>
-                  <Typography
-                    variant="body2"
-                    style={{ display: 'flex', alignItems: 'center' }}
-                    color={attendee.responseStatus === 'declined' ? 'textSecondary' : 'textPrimary'}
-                  >
-                    {attendee.displayName || attendee.email}{' '}
-                    {attendee.organizer && (
-                      <Typography component="span" variant="caption">
-                        {' '}
-                        &nbsp;(Organizer){' '}
-                      </Typography>
-                    )}
-                    <AttendeeStatusIcon responseStatus={attendee.responseStatus} />
-                  </Typography>
-                </Box>
-              ))}
+              <Box component="ul" m={0} pl={2}>
+                {attendees.map((attendee, index) => (
+                  <Box component="li" key={attendee.id || attendee.email || index}>
+                    <Typography
+                      variant="body2"
+                      style={{ display: 'flex', alignItems: 'center' }}
+                      color={
+                        attendee.responseStatus === 'declined' ? 'textSecondary' : 'textPrimary'
+                      }
+                    >
+                      {attendee.displayName || attendee.email}{' '}
+                      {attendee.organizer && (
+                        <Typography component="span" variant="caption">
+                          {' '}
+                          &nbsp;(Organizer){' '}
+                        </Typography>
+                      )}
+                      <AttendeeStatusIcon responseStatus={attendee.responseStatus} />
+                    </Typography>
+                  </Box>
+                ))}
 
-              {attendeesOmitted && <Box component="li">...</Box>}
+                {attendeesOmitted && <Box component="li">...</Box>}
+              </Box>
             </Box>
-          </Box>
+
+            <Box mb={3} display="flex">
+              <InformativeIcon title="Attendance" Icon={HowToRegIcon} />
+
+              <Box minWidth={120}>
+                <InputLabel shrink id="attendance-select-label">
+                  Going?
+                </InputLabel>
+                <Select
+                  onChange={handleSelectChange}
+                  value={
+                    calendarEventResponseStatus === RESPONSE_STATUS.NEEDS_ACTION
+                      ? ''
+                      : calendarEventResponseStatus
+                  }
+                  fullWidth
+                  labelId="attendance-select-label"
+                  disabled={isUpdating}
+                >
+                  <MenuItem key={RESPONSE_STATUS.ACCEPTED} value={RESPONSE_STATUS.ACCEPTED}>
+                    Yes
+                  </MenuItem>
+
+                  <MenuItem key={RESPONSE_STATUS.DECLINED} value={RESPONSE_STATUS.DECLINED}>
+                    No
+                  </MenuItem>
+
+                  <MenuItem key={RESPONSE_STATUS.TENTATIVE} value={RESPONSE_STATUS.TENTATIVE}>
+                    Maybe
+                  </MenuItem>
+                </Select>
+              </Box>
+            </Box>
+          </>
         )}
-
-        <Box mb={3} display="flex">
-          <InformativeIcon title="Attendance" Icon={HowToRegIcon} />
-
-          <Box minWidth={120}>
-            <InputLabel shrink id="attendance-select-label">
-              Going?
-            </InputLabel>
-            <Select
-              onChange={handleSelectChange}
-              value={
-                calendarEventResponseStatus === RESPONSE_STATUS.NEEDS_ACTION
-                  ? ''
-                  : calendarEventResponseStatus
-              }
-              fullWidth
-              labelId="attendance-select-label"
-              disabled={isUpdating}
-            >
-              <MenuItem key={RESPONSE_STATUS.ACCEPTED} value={RESPONSE_STATUS.ACCEPTED}>
-                Yes
-              </MenuItem>
-
-              <MenuItem key={RESPONSE_STATUS.DECLINED} value={RESPONSE_STATUS.DECLINED}>
-                No
-              </MenuItem>
-
-              <MenuItem key={RESPONSE_STATUS.TENTATIVE} value={RESPONSE_STATUS.TENTATIVE}>
-                Maybe
-              </MenuItem>
-            </Select>
-          </Box>
-        </Box>
 
         {/* visibility is missing on GCal quite often */}
         {visibility && (
