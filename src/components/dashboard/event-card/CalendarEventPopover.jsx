@@ -167,8 +167,9 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const handleSelectChange = async (event) => {
     const updatedResponseStatus = event.target.value;
     if (isUpdating) return;
-    onClose();
     setIsUpdating(true);
+    onClose();
+    notifyInfo({ message: 'Event updated' });
     setCalendarEventResponseStatus(updatedResponseStatus);
     const eventId = id.split('-').pop();
     await gapiUpdateCalendarEventResponseStatus(providerCalendarId, eventId, updatedResponseStatus);
