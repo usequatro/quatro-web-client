@@ -124,7 +124,7 @@ InformativeIcon.propTypes = {
 
 const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const dispatch = useDispatch();
-  const { notifyInfo } = useNotification();
+  const { notifyInfo, notifyError } = useNotification();
 
   const summary = useSelector((state) => selectCalendarEventSummary(state, id));
   const description = useSelector((state) => selectCalendarEventDescription(state, id));
@@ -164,7 +164,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
   const [calendarEventResponseStatus, setCalendarEventResponseStatus] = useState(responseStatus);
   const [isUpdating, setIsUpdating] = useState(false);
-  const handleSelectChange = async (event) => {
+  const handleSelectChange = (event) => {
     const updatedResponseStatus = event.target.value;
     if (isUpdating) return;
     setIsUpdating(true);
@@ -172,8 +172,14 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
     notifyInfo({ message: 'Event updated' });
     setCalendarEventResponseStatus(updatedResponseStatus);
     const eventId = id.split('-').pop();
-    await gapiUpdateCalendarEventResponseStatus(providerCalendarId, eventId, updatedResponseStatus);
-    setIsUpdating(false);
+    gapiUpdateCalendarEventResponseStatus(providerCalendarId, eventId, updatedResponseStatus)
+      .then(() => {
+        setIsUpdating(false);
+      })
+      .catch(() => {
+        setIsUpdating(false);
+        notifyError("Couldn't update the response");
+      });
   };
 
   return (
