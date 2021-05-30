@@ -275,17 +275,11 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
                   labelId="attendance-select-label"
                   disabled={isUpdating}
                 >
-                  <MenuItem key={RESPONSE_STATUS.ACCEPTED} value={RESPONSE_STATUS.ACCEPTED}>
-                    Yes
-                  </MenuItem>
+                  <MenuItem value={RESPONSE_STATUS.ACCEPTED}>Yes</MenuItem>
 
-                  <MenuItem key={RESPONSE_STATUS.DECLINED} value={RESPONSE_STATUS.DECLINED}>
-                    No
-                  </MenuItem>
+                  <MenuItem value={RESPONSE_STATUS.DECLINED}>No</MenuItem>
 
-                  <MenuItem key={RESPONSE_STATUS.TENTATIVE} value={RESPONSE_STATUS.TENTATIVE}>
-                    Maybe
-                  </MenuItem>
+                  <MenuItem value={RESPONSE_STATUS.TENTATIVE}>Maybe</MenuItem>
                 </Select>
               </Box>
             </Box>
