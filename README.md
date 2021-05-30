@@ -49,12 +49,22 @@ For Firebase, use its CLI to toggle between them with `firebase use [env]`. Chec
 
 Continuous deployment is wired with GitHub Actions:
 
-- Merging into `main` or `release/*` branches will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
-- Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables. Use GitHub Releases to produce the tag and release documentation.
+* Merging into `main` or `release/*` branches will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
+* Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables. Use GitHub Releases to produce the tag and release documentation.
 
 For more details, see the [workflows folder](.github/workflows).
 
 There's a slack integration configured (see [notifyDeploy.sh](./script/notifyDeploy.sh)) to notify the Quatro #deploys channel in Slack.
+
+### Releases
+
+We use GitHub Releases to document release notes, as well as triggering a new version deployment.
+
+1. Go to the GitHub Releases page.
+2. Click "Draft a new release".
+3. Set a tag version 1 number above the last tag. Use patch increases for bug fixes and improvements, and minor increases for new features. Major increases are only for visually major changes that mean "a new Quatro".
+4. Summarize the changes in the Release title
+5. Add bullet points for all changes in the release and links to their pull requests in the description. [Example](https://github.com/usequatro/quatro-web-client/releases/edit/v1.17.0).
 
 ### Manual deployment
 
