@@ -180,7 +180,6 @@ export const gapiListCalendarEvents = async (
     method: 'GET',
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
-      maxAttendees: 10,
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
