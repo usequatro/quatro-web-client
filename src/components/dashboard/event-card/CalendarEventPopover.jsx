@@ -172,13 +172,20 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
     notifyInfo({ message: 'Event updated' });
     setCalendarEventResponseStatus(updatedResponseStatus);
     const eventId = id.split('-').pop();
-    gapiUpdateCalendarEventResponseStatus(providerCalendarId, eventId, updatedResponseStatus)
+    gapiUpdateCalendarEventResponseStatus(
+      providerCalendarId,
+      eventId,
+      updatedResponseStatus,
+      attendees,
+    )
       .then(() => {
         setIsUpdating(false);
       })
-      .catch(() => {
-        setIsUpdating(false);
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(error);
         notifyError("Couldn't update the response");
+        setIsUpdating(false);
       });
   };
 
