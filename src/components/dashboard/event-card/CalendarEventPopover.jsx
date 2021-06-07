@@ -41,7 +41,6 @@ import {
   selectCalendarEventHtmlLink,
   selectCalendarEventLocation,
   selectCalendarEventAttendees,
-  selectCalendarEventAttendeesOmitted,
   selectCalendarEventResponseStatus,
   selectCalendarEventStartTimestamp,
   selectCalendarEventEndTimestamp,
@@ -122,6 +121,8 @@ InformativeIcon.propTypes = {
   title: PropTypes.string.isRequired,
 };
 
+const ATTENDEE_RENDER_LIMIT = 15;
+
 const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const dispatch = useDispatch();
   const { notifyInfo, notifyError } = useNotification();
@@ -131,7 +132,6 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const htmlLink = useSelector((state) => selectCalendarEventHtmlLink(state, id));
   const eventLocation = useSelector((state) => selectCalendarEventLocation(state, id));
   const attendees = useSelector((state) => selectCalendarEventAttendees(state, id));
-  const attendeesOmitted = useSelector((state) => selectCalendarEventAttendeesOmitted(state, id));
   const responseStatus = useSelector((state) => selectCalendarEventResponseStatus(state, id));
   const providerCalendarId = useSelector((state) =>
     selectCalendarEventProviderCalendarId(state, id),
@@ -161,6 +161,11 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
 
   const timeFormat =
     differenceInCalendarDays(endTimestamp, startTimestamp) < 1 ? 'h:mm a' : 'PP - h:mm a';
+
+  const attendeesRenderSubset =
+    attendees.length > ATTENDEE_RENDER_LIMIT
+      ? attendees.slice(0, ATTENDEE_RENDER_LIMIT)
+      : attendees;
 
   const [calendarEventResponseStatus, setCalendarEventResponseStatus] = useState(responseStatus);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -239,13 +244,13 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
           </Box>
         )}
 
-        {attendees && attendees.length > 0 && (
+        {attendeesRenderSubset && attendeesRenderSubset.length > 0 && (
           <>
             <Box mb={2} display="flex">
               <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
 
               <Box component="ul" m={0} pl={2}>
-                {attendees.map((attendee, index) => (
+                {attendeesRenderSubset.map((attendee, index) => (
                   <Box component="li" key={attendee.id || attendee.email || index}>
                     <Typography
                       variant="body2"
@@ -266,7 +271,7 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
                   </Box>
                 ))}
 
-                {attendeesOmitted && <Box component="li">...</Box>}
+                {attendeesRenderSubset.length < attendees.length && <Box component="li">...</Box>}
               </Box>
             </Box>
 
