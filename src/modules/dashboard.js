@@ -82,11 +82,8 @@ const slice = createSlice({
 /* eslint-enable no-param-reassign */
 
 export default slice;
-export const {
-  setDashboardActiveTab,
-  setCalendarDisplayTimestamp,
-  refreshCurrentTimestamp,
-} = slice.actions;
+export const { setDashboardActiveTab, setCalendarDisplayTimestamp, refreshCurrentTimestamp } =
+  slice.actions;
 
 // Thunks
 
@@ -178,55 +175,57 @@ const tabTextAndLink = {
  * @param {number} [params.calendarBlockEnd]
  * @returns {Promise<string>} - Promise resolving with the new task ID
  */
-export const createTask = (
-  title,
-  impact,
-  effort,
-  {
-    description,
-    due,
-    scheduledStart,
-    snoozedUntil,
-    blockedBy,
-    calendarBlockCalendarId,
-    calendarBlockProviderCalendarId,
-    calendarBlockStart,
-    calendarBlockEnd,
-  } = {},
-  callback = () => {},
-) => (_, getState) => {
-  const state = getState();
-  const userId = selectUserId(state);
-
-  const task = {
+export const createTask =
+  (
     title,
     impact,
     effort,
-    description,
-    due,
-    scheduledStart,
-    snoozedUntil,
-    blockedBy,
-    calendarBlockCalendarId,
-    calendarBlockProviderCalendarId,
-    calendarBlockStart,
-    calendarBlockEnd,
-  };
+    {
+      description,
+      due,
+      scheduledStart,
+      snoozedUntil,
+      blockedBy,
+      calendarBlockCalendarId,
+      calendarBlockProviderCalendarId,
+      calendarBlockStart,
+      calendarBlockEnd,
+    } = {},
+    callback = () => {},
+  ) =>
+  (_, getState) => {
+    const state = getState();
+    const userId = selectUserId(state);
 
-  return apiClient.fetchCreateTask(userId, task).then(({ id }) => {
-    const stateTask = getState();
-    const tabTask = selectTaskDashboardTab(stateTask, id);
-    const isSameTab = tabTask === selectDashboardActiveTab(state);
+    const task = {
+      title,
+      impact,
+      effort,
+      description,
+      due,
+      scheduledStart,
+      snoozedUntil,
+      blockedBy,
+      calendarBlockCalendarId,
+      calendarBlockProviderCalendarId,
+      calendarBlockStart,
+      calendarBlockEnd,
+    };
 
-    const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
+    return apiClient.fetchCreateTask(userId, task).then(({ id }) => {
+      const stateTask = getState();
+      const tabTask = selectTaskDashboardTab(stateTask, id);
+      const isSameTab = tabTask === selectDashboardActiveTab(state);
 
-    callback({
-      id,
-      task,
-      notificationButtonText: isSameTab ? '' : `See ${text}`,
-      notificationButtonLink: isSameTab ? '' : link,
+      const { text, link } = tabTextAndLink[tabTask] || tabTextAndLink[dashboardTabs.NOW];
+
+      callback({
+        id,
+        task,
+        notificationButtonText: isSameTab ? '' : `See ${text}`,
+        notificationButtonLink: isSameTab ? '' : link,
+      });
+
+      return id;
     });
-
-    return id;
-  });
-};
+  };

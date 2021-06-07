@@ -95,48 +95,47 @@ const getCalendarWatcherUpdates = (previousState, newState) => {
   return calendarIdsWithChanges;
 };
 
-export const listenToCalendarsList = (nextCallback = () => {}, errorCallback = () => {}) => (
-  dispatch,
-  getState,
-) => {
-  const state = getState();
-  const userId = selectUserId(state);
+export const listenToCalendarsList =
+  (nextCallback = () => {}, errorCallback = () => {}) =>
+  (dispatch, getState) => {
+    const state = getState();
+    const userId = selectUserId(state);
 
-  let initial = true;
+    let initial = true;
 
-  const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
-    debugConsole.log('Firestore', 'listenToCalendarsList', {
-      groupedChangedEntities,
-      hasEntityChanges,
-      hasLocalUnsavedChanges,
-    });
-    if (hasEntityChanges || initial) {
-      const previousState = getState();
-      dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
+    const onNext = ({ groupedChangedEntities, hasEntityChanges, hasLocalUnsavedChanges }) => {
+      debugConsole.log('Firestore', 'listenToCalendarsList', {
+        groupedChangedEntities,
+        hasEntityChanges,
+        hasLocalUnsavedChanges,
+      });
+      if (hasEntityChanges || initial) {
+        const previousState = getState();
+        dispatch(slice.actions.addChangesToLocalState(groupedChangedEntities));
 
-      // If the calendar received updates via webhook, we flag its events as stale
-      const calendarIdsChanged = getCalendarWatcherUpdates(previousState, getState());
-      if (calendarIdsChanged.length > 0) {
-        debugConsole.log(
-          'Firestore',
-          'listenToCalendarsList',
-          'calendar watcher update detected',
-          calendarIdsChanged,
-        );
-        dispatch(staleAllEventsForCalendar(calendarIdsChanged));
+        // If the calendar received updates via webhook, we flag its events as stale
+        const calendarIdsChanged = getCalendarWatcherUpdates(previousState, getState());
+        if (calendarIdsChanged.length > 0) {
+          debugConsole.log(
+            'Firestore',
+            'listenToCalendarsList',
+            'calendar watcher update detected',
+            calendarIdsChanged,
+          );
+          dispatch(staleAllEventsForCalendar(calendarIdsChanged));
+        }
+        initial = false;
       }
-      initial = false;
-    }
-    nextCallback(hasLocalUnsavedChanges);
-  };
-  const onError = (error) => {
-    errorCallback(error);
-  };
-  dispatch(slice.actions.resetLocalState());
-  const unsubscribe = listenToListCalendars(userId, onNext, onError);
+      nextCallback(hasLocalUnsavedChanges);
+    };
+    const onError = (error) => {
+      errorCallback(error);
+    };
+    dispatch(slice.actions.resetLocalState());
+    const unsubscribe = listenToListCalendars(userId, onNext, onError);
 
-  return () => {
-    debugConsole.log('Firestore', 'listenToCalendarsList', 'unsubscribe');
-    unsubscribe();
+    return () => {
+      debugConsole.log('Firestore', 'listenToCalendarsList', 'unsubscribe');
+      unsubscribe();
+    };
   };
-};

@@ -423,52 +423,51 @@ export const {
 
 // Thunks
 
-export const loadCalendarEvents = (calendarId, date, { errorCallback = () => {} }) => (
-  dispatch,
-  getState,
-) => {
-  const state = getState();
-  if (selectCalendarEventsDateRequested(state, calendarId, date)) {
-    return;
-  }
+export const loadCalendarEvents =
+  (calendarId, date, { errorCallback = () => {} }) =>
+  (dispatch, getState) => {
+    const state = getState();
+    if (selectCalendarEventsDateRequested(state, calendarId, date)) {
+      return;
+    }
 
-  dispatch(slice.actions.setDateRequested({ calendarId, date, value: true }));
+    dispatch(slice.actions.setDateRequested({ calendarId, date, value: true }));
 
-  const providerCalendarId = selectCalendarProviderCalendarId(state, calendarId);
+    const providerCalendarId = selectCalendarProviderCalendarId(state, calendarId);
 
-  // We want to use the last fetch timestamp when we're refreshing an already loaded interval
-  const lastFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
-  const newFetchTimestamp = Date.now();
-  dispatch(
-    slice.actions.setLastFetchTimestamp({
-      calendarId,
-      lastFetchTimestamp: newFetchTimestamp,
-      date,
-    }),
-  );
+    // We want to use the last fetch timestamp when we're refreshing an already loaded interval
+    const lastFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
+    const newFetchTimestamp = Date.now();
+    dispatch(
+      slice.actions.setLastFetchTimestamp({
+        calendarId,
+        lastFetchTimestamp: newFetchTimestamp,
+        date,
+      }),
+    );
 
-  const start = startOfDay(date).getTime();
-  const end = endOfDay(date).getTime();
+    const start = startOfDay(date).getTime();
+    const end = endOfDay(date).getTime();
 
-  const wasAlreadyLoaded = selectCalendarEventsDateLoaded(state, calendarId, date);
+    const wasAlreadyLoaded = selectCalendarEventsDateLoaded(state, calendarId, date);
 
-  gapiListCalendarEvents(providerCalendarId, start, end, {
-    updatedMin: lastFetchTimestamp,
-    showDeleted: wasAlreadyLoaded,
-  })
-    .then((events) => events.map((event) => ({ ...event, calendarId, providerCalendarId })))
-    .then((events) => {
-      dispatch(slice.actions.updateEvents({ calendarId, events, date }));
+    gapiListCalendarEvents(providerCalendarId, start, end, {
+      updatedMin: lastFetchTimestamp,
+      showDeleted: wasAlreadyLoaded,
     })
-    .catch((error) => {
-      console.error(error); // eslint-disable-line no-console
+      .then((events) => events.map((event) => ({ ...event, calendarId, providerCalendarId })))
+      .then((events) => {
+        dispatch(slice.actions.updateEvents({ calendarId, events, date }));
+      })
+      .catch((error) => {
+        console.error(error); // eslint-disable-line no-console
 
-      // Restore last fetched timestamp if it didn't change in the meantime
-      const currentFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
-      if (currentFetchTimestamp === newFetchTimestamp) {
-        dispatch(slice.actions.setLastFetchTimestamp({ calendarId, lastFetchTimestamp, date }));
-      }
+        // Restore last fetched timestamp if it didn't change in the meantime
+        const currentFetchTimestamp = selectCalendarEventsDateLastFetched(state, calendarId, date);
+        if (currentFetchTimestamp === newFetchTimestamp) {
+          dispatch(slice.actions.setLastFetchTimestamp({ calendarId, lastFetchTimestamp, date }));
+        }
 
-      errorCallback(error);
-    });
-};
+        errorCallback(error);
+      });
+  };

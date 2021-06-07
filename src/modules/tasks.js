@@ -388,48 +388,46 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
 
 export const updateTask = (id, updates) => () => fetchUpdateTask(id, updates);
 
-export const setRelativePrioritization = (sourceIndex, destinationIndex) => async (
-  dispatch,
-  getState,
-) => {
-  const state = getState();
+export const setRelativePrioritization =
+  (sourceIndex, destinationIndex) => async (dispatch, getState) => {
+    const state = getState();
 
-  const allTasks = [...selectNowTasks(state), ...selectBacklogTasks(state)];
-  const sourceTaskId = get(allTasks, [sourceIndex, '0']);
-  if (!sourceTaskId) {
-    throw new Error(`No source task found with index ${sourceIndex}`);
-  }
+    const allTasks = [...selectNowTasks(state), ...selectBacklogTasks(state)];
+    const sourceTaskId = get(allTasks, [sourceIndex, '0']);
+    if (!sourceTaskId) {
+      throw new Error(`No source task found with index ${sourceIndex}`);
+    }
 
-  if (destinationIndex >= allTasks.length || !allTasks[destinationIndex]) {
-    throw new Error(`Movement not supported with destination index ${destinationIndex}`);
-  }
+    if (destinationIndex >= allTasks.length || !allTasks[destinationIndex]) {
+      throw new Error(`Movement not supported with destination index ${destinationIndex}`);
+    }
 
-  const targetTaskId = get(allTasks, [destinationIndex, '0']);
-  if (!targetTaskId) {
-    throw new Error(`No target task found for destination index ${destinationIndex}`);
-  }
+    const targetTaskId = get(allTasks, [destinationIndex, '0']);
+    if (!targetTaskId) {
+      throw new Error(`No target task found for destination index ${destinationIndex}`);
+    }
 
-  if (targetTaskId === sourceTaskId) {
-    debugConsole.log('DND', 'Nothing to do, target and source are the same');
-    return; // nothing to do on this case, the task is already where it needs to be.
-  }
+    if (targetTaskId === sourceTaskId) {
+      debugConsole.log('DND', 'Nothing to do, target and source are the same');
+      return; // nothing to do on this case, the task is already where it needs to be.
+    }
 
-  const sourceTask = get(allTasks, [sourceIndex, '1']);
-  if (sourceTask.prioritizedAheadOf === targetTaskId) {
-    debugConsole.log('DND', 'Nothing to do, task is already prioritized ahead of that one');
-    return;
-  }
+    const sourceTask = get(allTasks, [sourceIndex, '1']);
+    if (sourceTask.prioritizedAheadOf === targetTaskId) {
+      debugConsole.log('DND', 'Nothing to do, task is already prioritized ahead of that one');
+      return;
+    }
 
-  // If there are other tasks depending on the one that is going to be moved,
-  // we're going to associate them to the next one, so that they stay on the same spot.
-  const tasksPrioritizedBefore = selectTasksPrioritizedAheadOfGivenTask(state, sourceTaskId);
-  const taskAfter = allTasks[sourceIndex + 1];
+    // If there are other tasks depending on the one that is going to be moved,
+    // we're going to associate them to the next one, so that they stay on the same spot.
+    const tasksPrioritizedBefore = selectTasksPrioritizedAheadOfGivenTask(state, sourceTaskId);
+    const taskAfter = allTasks[sourceIndex + 1];
 
-  fetchUpdateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId });
-  tasksPrioritizedBefore.forEach((task) => {
-    fetchUpdateTask(task.id, { prioritizedAheadOf: taskAfter.id });
-  });
-};
+    fetchUpdateTask(sourceTaskId, { prioritizedAheadOf: targetTaskId });
+    tasksPrioritizedBefore.forEach((task) => {
+      fetchUpdateTask(task.id, { prioritizedAheadOf: taskAfter.id });
+    });
+  };
 
 export const clearRelativePrioritization = (id) => () =>
   fetchUpdateTask(id, { prioritizedAheadOf: null });
@@ -446,46 +444,74 @@ const cancelTaskCompletionNotExecutedYet = (id) => (dispatch) => {
   dispatch(slice.actions.clearVisuallyCompletedStatus(id));
 };
 
-export const markTaskIncomplete = (id = isRequired('id')) => (dispatch) => {
-  if (taskCompletions[id]) {
-    dispatch(cancelTaskCompletionNotExecutedYet(id));
-    return;
-  }
-  fetchUpdateTask(id, { completed: null });
-};
+export const markTaskIncomplete =
+  (id = isRequired('id')) =>
+  (dispatch) => {
+    if (taskCompletions[id]) {
+      dispatch(cancelTaskCompletionNotExecutedYet(id));
+      return;
+    }
+    fetchUpdateTask(id, { completed: null });
+  };
 
-export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('notifyInfo')) => (
-  dispatch,
-  getState,
-) => {
-  // If already visually completed, then we cancel
-  if (taskCompletions[id]) {
-    dispatch(cancelTaskCompletionNotExecutedYet(id));
-    return;
-  }
+export const completeTask =
+  (id = isRequired('id'), notifyInfo = isRequired('notifyInfo')) =>
+  (dispatch, getState) => {
+    // If already visually completed, then we cancel
+    if (taskCompletions[id]) {
+      dispatch(cancelTaskCompletionNotExecutedYet(id));
+      return;
+    }
 
-  dispatch(slice.actions.setVisuallyCompletedStatus(id, true));
+    dispatch(slice.actions.setVisuallyCompletedStatus(id, true));
 
-  const closeNotification = notifyInfo({
-    icon: '🎉',
-    message: 'Task Completed!',
-    buttons: [
-      {
-        children: 'Undo',
-        onClick: () => {
-          if (taskCompletions[id]) {
-            dispatch(cancelTaskCompletionNotExecutedYet(id));
-          } else {
-            dispatch(markTaskIncomplete(id));
-          }
+    const closeNotification = notifyInfo({
+      icon: '🎉',
+      message: 'Task Completed!',
+      buttons: [
+        {
+          children: 'Undo',
+          onClick: () => {
+            if (taskCompletions[id]) {
+              dispatch(cancelTaskCompletionNotExecutedYet(id));
+            } else {
+              dispatch(markTaskIncomplete(id));
+            }
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
 
-  const timeout = setTimeout(() => {
-    delete taskCompletions[id];
+    const timeout = setTimeout(() => {
+      delete taskCompletions[id];
+      const state = getState();
+
+      // Clear relative prioritization depending on this task
+      const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(
+        state,
+        id,
+      );
+      tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
+        fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
+      });
+
+      fetchUpdateTask(id, { completed: Date.now() });
+
+      // the visually completed status is cleared when the task is loaded again
+    }, COMPLETE_DELAY);
+
+    taskCompletions[id] = {
+      timeout,
+      closeNotification,
+    };
+  };
+
+export const deleteTask =
+  (id, { appliesRecurringChanges }) =>
+  (dispatch, getState) => {
+    // If there's a recurring config associated, we clear it too so it stops repeating
     const state = getState();
+    const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
 
     // Clear relative prioritization depending on this task
     const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
@@ -493,119 +519,95 @@ export const completeTask = (id = isRequired('id'), notifyInfo = isRequired('not
       fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
     });
 
-    fetchUpdateTask(id, { completed: Date.now() });
+    fetchDeleteTask(id);
+    if (recurringConfigId && appliesRecurringChanges) {
+      dispatch(deleteRecurringConfig(recurringConfigId));
+    }
 
-    // the visually completed status is cleared when the task is loaded again
-  }, COMPLETE_DELAY);
-
-  taskCompletions[id] = {
-    timeout,
-    closeNotification,
+    dispatch(slice.actions.addTaskIdRecentlyRemoved(id));
   };
-};
 
-export const deleteTask = (id, { appliesRecurringChanges }) => (dispatch, getState) => {
-  // If there's a recurring config associated, we clear it too so it stops repeating
-  const state = getState();
-  const recurringConfigId = selectRecurringConfigIdByMostRecentTaskId(state, id);
+export const blockCalendarEventForTask =
+  (id, calendarBlockStart) =>
+  async (dispatch, getState, { mixpanel }) => {
+    validateTimestamp(calendarBlockStart);
 
-  // Clear relative prioritization depending on this task
-  const tasksPrioritizedAheadOfCompletedTask = selectTasksPrioritizedAheadOfGivenTask(state, id);
-  tasksPrioritizedAheadOfCompletedTask.forEach(([relatedTaskId]) => {
-    fetchUpdateTask(relatedTaskId, { prioritizedAheadOf: null });
-  });
+    const state = getState();
+    const calendarBlockCalendarId =
+      selectTaskCalendarBlockCalendarId(state, id) ||
+      selectUserDefaultCalendarId(state) ||
+      selectFallbackCalendarId(state);
 
-  fetchDeleteTask(id);
-  if (recurringConfigId && appliesRecurringChanges) {
-    dispatch(deleteRecurringConfig(recurringConfigId));
-  }
+    const previousCalendarBlockDuration = selectTaskCalendarBlockDuration(state, id);
+    const duration =
+      previousCalendarBlockDuration ||
+      EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
+      EFFORT_TO_DURATION[2];
 
-  dispatch(slice.actions.addTaskIdRecentlyRemoved(id));
-};
+    const alreadyHadCalendarBlock = Boolean(previousCalendarBlockDuration);
 
-export const blockCalendarEventForTask = (id, calendarBlockStart) => async (
-  dispatch,
-  getState,
-  { mixpanel },
-) => {
-  validateTimestamp(calendarBlockStart);
+    const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
 
-  const state = getState();
-  const calendarBlockCalendarId =
-    selectTaskCalendarBlockCalendarId(state, id) ||
-    selectUserDefaultCalendarId(state) ||
-    selectFallbackCalendarId(state);
-
-  const previousCalendarBlockDuration = selectTaskCalendarBlockDuration(state, id);
-  const duration =
-    previousCalendarBlockDuration ||
-    EFFORT_TO_DURATION[selectTaskEffort(state, id)] ||
-    EFFORT_TO_DURATION[2];
-
-  const alreadyHadCalendarBlock = Boolean(previousCalendarBlockDuration);
-
-  const calendarBlockEnd = add(calendarBlockStart, { minutes: duration }).getTime();
-
-  const calendarBlockProviderCalendarId = selectCalendarProviderCalendarId(
-    state,
-    calendarBlockCalendarId,
-  );
-  if (!calendarBlockProviderCalendarId) {
-    throw new Error(
-      `Missing calendarBlockProviderCalendarId for calendar ${calendarBlockCalendarId}`,
+    const calendarBlockProviderCalendarId = selectCalendarProviderCalendarId(
+      state,
+      calendarBlockCalendarId,
     );
-  }
+    if (!calendarBlockProviderCalendarId) {
+      throw new Error(
+        `Missing calendarBlockProviderCalendarId for calendar ${calendarBlockCalendarId}`,
+      );
+    }
 
-  const task = selectTask(state, id);
-  const previousCalendarBlockStart = get(task, 'calendarBlockStart');
-  const previousCalendarBlockEnd = get(task, 'calendarBlockEnd');
-  if (
-    calendarBlockStart === previousCalendarBlockStart &&
-    calendarBlockEnd === previousCalendarBlockEnd
-  ) {
+    const task = selectTask(state, id);
+    const previousCalendarBlockStart = get(task, 'calendarBlockStart');
+    const previousCalendarBlockEnd = get(task, 'calendarBlockEnd');
+    if (
+      calendarBlockStart === previousCalendarBlockStart &&
+      calendarBlockEnd === previousCalendarBlockEnd
+    ) {
+      return {
+        calendarBlockStart,
+        alreadyHadCalendarBlock,
+      };
+    }
+
+    fetchUpdateTask(id, {
+      calendarBlockCalendarId,
+      calendarBlockProviderCalendarId,
+      scheduledStart: calendarBlockStart,
+      calendarBlockStart,
+      calendarBlockEnd,
+      snoozedUntil: null,
+    });
+
+    const title = selectTaskTitle(state, id);
+    const calendarEventId = selectCalendarEventIdByTaskId(state, id);
+
+    dispatch(
+      addPlaceholderEventUntilCreated({
+        id: calendarEventId || `_${uuidv4()}`,
+        calendarId: calendarBlockCalendarId,
+        summary: title,
+        start: {
+          timestamp: calendarBlockStart,
+        },
+        end: {
+          timestamp: calendarBlockEnd,
+        },
+        allDay: false,
+        taskId: id,
+      }),
+    );
+
+    mixpanel.track(TASK_DRAGGED_TO_CALENDAR, {
+      calendarEventDuration: duration,
+      alreadyHadCalendarBlock,
+    });
+
     return {
       calendarBlockStart,
+      calendarBlockEnd,
+      calendarBlockProviderCalendarId,
       alreadyHadCalendarBlock,
     };
-  }
-
-  fetchUpdateTask(id, {
-    calendarBlockCalendarId,
-    calendarBlockProviderCalendarId,
-    scheduledStart: calendarBlockStart,
-    calendarBlockStart,
-    calendarBlockEnd,
-    snoozedUntil: null,
-  });
-
-  const title = selectTaskTitle(state, id);
-  const calendarEventId = selectCalendarEventIdByTaskId(state, id);
-
-  dispatch(
-    addPlaceholderEventUntilCreated({
-      id: calendarEventId || `_${uuidv4()}`,
-      calendarId: calendarBlockCalendarId,
-      summary: title,
-      start: {
-        timestamp: calendarBlockStart,
-      },
-      end: {
-        timestamp: calendarBlockEnd,
-      },
-      allDay: false,
-      taskId: id,
-    }),
-  );
-
-  mixpanel.track(TASK_DRAGGED_TO_CALENDAR, {
-    calendarEventDuration: duration,
-    alreadyHadCalendarBlock,
-  });
-
-  return {
-    calendarBlockStart,
-    calendarBlockEnd,
-    calendarBlockProviderCalendarId,
-    alreadyHadCalendarBlock,
   };
-};
