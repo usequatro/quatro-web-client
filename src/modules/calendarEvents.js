@@ -62,7 +62,6 @@ const calendarEventSchema = Joi.object({
       }),
     )
     .default([]),
-  attendeesOmitted: Joi.bool(),
   allDay: Joi.bool(),
   declined: Joi.bool(),
   visibility: Joi.valid(DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL), // present when user is organizer
@@ -95,8 +94,6 @@ export const selectCalendarEventResponseStatus = (state, id) =>
   get(state[name].byId[id], 'responseStatus');
 export const selectCalendarEventAttendees = (state, id) =>
   get(state[name].byId[id], 'attendees', []);
-export const selectCalendarEventAttendeesOmitted = (state, id) =>
-  get(state[name].byId[id], 'attendeesOmitted');
 export const selectCalendarEventCollisionCount = (state, id) =>
   get(state[name].byId[id], 'collisionCount');
 export const selectCalendarEventCollisionOrder = (state, id) =>
@@ -350,10 +347,10 @@ const slice = createSlice({
 
     updateEvents: (state, { payload: { calendarId, events, date } }) => {
       const dateKey = formatDate(date);
-      const eventsUpdated = events.filter((event) => event.status !== 'cancelled');
-      const eventIdsRemoved = events
-        .filter((event) => event.status === 'cancelled')
-        .map((event) => event.id);
+      const isEventRemoved = (event) =>
+        event.status === 'cancelled' || event.responseStatus === RESPONSE_STATUS.DECLINED;
+      const eventsUpdated = events.filter((event) => !isEventRemoved(event));
+      const eventIdsRemoved = events.filter(isEventRemoved).map((event) => event.id);
 
       // Remove placeholders that already got a real event
       const newEventByTaskIds = events

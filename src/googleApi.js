@@ -13,7 +13,6 @@ import {
   CALENDAR_LIST_READ,
   CALENDAR_EVENTS_MANAGE,
 } from './constants/googleApiScopes';
-import { DECLINED } from './constants/responseStatus';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -96,11 +95,6 @@ const getSelfResponseStatus = (item) => {
 const formatCalendarAPIFormat = (item, providerCalendarId) => {
   const responseStatus = getSelfResponseStatus(item);
 
-  // We intentionally skip declined invites
-  if (responseStatus === DECLINED) {
-    return null;
-  }
-
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
 
@@ -149,7 +143,6 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
       }
       return 0;
     }),
-    attendeesOmitted: item.attendeesOmitted,
     allDay,
     responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),
@@ -180,7 +173,6 @@ export const gapiListCalendarEvents = async (
     method: 'GET',
     path: `/calendar/v3/calendars/${providerCalendarId}/events`,
     params: {
-      maxAttendees: 10,
       timeMin: formatISO(startDate),
       timeMax: formatISO(endDate),
       updatedMin: updatedMin ? formatISO(updatedMin) : undefined,
@@ -194,6 +186,34 @@ export const gapiListCalendarEvents = async (
       .map((item) => formatCalendarAPIFormat(item, providerCalendarId))
       .filter(Boolean);
   });
+
+/**
+ * @link https://developers.google.com/calendar/v3/reference/events/update
+ * @param {string} providerCalendarId
+ * @param {string} eventId
+ * @param {string} updatedResponseStatus
+ * @param {array} attendees
+ * @return {Promise}
+ */
+export const gapiUpdateCalendarEventResponseStatus = async (
+  providerCalendarId,
+  eventId,
+  updatedResponseStatus,
+  attendees,
+) => {
+  const updatedAttendees = attendees.map((attendee) =>
+    attendee.self ? { ...attendee, responseStatus: updatedResponseStatus } : attendee,
+  );
+
+  await request({
+    method: 'PATCH',
+    path: `/calendar/v3/calendars/${providerCalendarId}/events/${eventId}`,
+    body: {
+      attendees: updatedAttendees,
+    },
+  });
+  debugConsole.log('Google API', 'Calendar event updated successfully');
+};
 
 /**
  * @link https://developers.google.com/calendar/v3/reference/calendarList/list
