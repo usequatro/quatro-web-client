@@ -60,7 +60,8 @@ export default function useGoogleApiSignIn() {
     const authInstance = await gapiGetAuthInstance();
     return (
       authInstance
-        .signIn()
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        .signIn({ ux_mode: 'redirect' })
         .then(async () => {
           const authResponse = authInstance.currentUser.get().getAuthResponse(true);
           return firebaseConnectGoogleAccountFromGapiCredential(
@@ -138,29 +139,32 @@ export default function useGoogleApiSignIn() {
     }
 
     const authInstance = await gapiGetAuthInstance();
-    return authInstance
-      .signIn()
-      .then(async () => {
-        const gapiUserId = authInstance.currentUser.get().getId();
-        if (gapiUserId !== firebaseGoogleAuthProvider.uid) {
-          return authInstance.signOut().then(() => {
-            notifyError(
-              `Looks like your account is already connected to ${firebaseGoogleAuthProvider.email},
+    return (
+      authInstance
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        .signIn({ ux_mode: 'redirect' })
+        .then(async () => {
+          const gapiUserId = authInstance.currentUser.get().getId();
+          if (gapiUserId !== firebaseGoogleAuthProvider.uid) {
+            return authInstance.signOut().then(() => {
+              notifyError(
+                `Looks like your account is already connected to ${firebaseGoogleAuthProvider.email},
                 but you selected a different Google account.
                 Please select ${firebaseGoogleAuthProvider.email}`,
-            );
-          });
-        }
-        return undefined;
-      })
-      .catch((error) => {
-        if (error.code === 'auth/popup-closed-by-user') {
-          console.info(error); // eslint-disable-line no-console
-          return;
-        }
-        console.error(error); // eslint-disable-line no-console
-        notifyError('An error happened');
-      });
+              );
+            });
+          }
+          return undefined;
+        })
+        .catch((error) => {
+          if (error.code === 'auth/popup-closed-by-user') {
+            console.info(error); // eslint-disable-line no-console
+            return;
+          }
+          console.error(error); // eslint-disable-line no-console
+          notifyError('An error happened');
+        })
+    );
   }, [notifyError]);
 
   const signOut = useCallback(async () => {
