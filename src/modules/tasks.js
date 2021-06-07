@@ -507,7 +507,7 @@ export const completeTask =
   };
 
 export const deleteTask =
-  (id, { appliesRecurringChanges }) =>
+  (id, { appliesChangesRecurringly }) =>
   (dispatch, getState) => {
     // If there's a recurring config associated, we clear it too so it stops repeating
     const state = getState();
@@ -520,7 +520,7 @@ export const deleteTask =
     });
 
     fetchDeleteTask(id);
-    if (recurringConfigId && appliesRecurringChanges) {
+    if (recurringConfigId && appliesChangesRecurringly) {
       dispatch(deleteRecurringConfig(recurringConfigId));
     }
 
