@@ -347,10 +347,10 @@ const slice = createSlice({
 
     updateEvents: (state, { payload: { calendarId, events, date } }) => {
       const dateKey = formatDate(date);
-      const eventsUpdated = events.filter((event) => event.status !== 'cancelled');
-      const eventIdsRemoved = events
-        .filter((event) => event.status === 'cancelled')
-        .map((event) => event.id);
+      const isEventRemoved = (event) =>
+        event.status === 'cancelled' || event.responseStatus === RESPONSE_STATUS.DECLINED;
+      const eventsUpdated = events.filter((event) => !isEventRemoved(event));
+      const eventIdsRemoved = events.filter(isEventRemoved).map((event) => event.id);
 
       // Remove placeholders that already got a real event
       const newEventByTaskIds = events

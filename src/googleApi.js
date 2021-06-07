@@ -13,7 +13,6 @@ import {
   CALENDAR_LIST_READ,
   CALENDAR_EVENTS_MANAGE,
 } from './constants/googleApiScopes';
-import { DECLINED } from './constants/responseStatus';
 
 // Start promise on load, loading the client lib and initializing it.
 const clientLoadPromise = new Promise((resolve) => {
@@ -95,11 +94,6 @@ const getSelfResponseStatus = (item) => {
 
 const formatCalendarAPIFormat = (item, providerCalendarId) => {
   const responseStatus = getSelfResponseStatus(item);
-
-  // We intentionally skip declined invites
-  if (responseStatus === DECLINED) {
-    return null;
-  }
 
   const startTimestamp = parseTimestamp(item.start);
   const endTimestamp = parseTimestamp(item.end);
