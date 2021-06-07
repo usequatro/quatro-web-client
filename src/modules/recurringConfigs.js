@@ -5,7 +5,7 @@ import debugConsole from '../utils/debugConsole';
 import { applyGroupedEntityChanges } from '../utils/firestoreRealtimeHelpers';
 import { selectUserId } from './session';
 import {
-  fetchCreateRecurringConfig,
+  fetchCreateRecurringConfigWithId,
   listenListRecurringConfigs,
   fetchDeleteRecurringConfig,
   fetchUpdateRecurringConfig,
@@ -78,12 +78,11 @@ export const updateRecurringConfig = (id, updates) => () => fetchUpdateRecurring
 
 export const deleteRecurringConfig = (id) => () => fetchDeleteRecurringConfig(id);
 
-export const createRecurringConfig = (recurringConfig) => async (_, getState) => {
+export const createRecurringConfigWithId = (recurringConfig, newId) => async (_, getState) => {
   const state = getState();
   const userId = selectUserId(state);
   const recurringConfigWithUserId = { ...recurringConfig, userId };
-  const newId = await fetchCreateRecurringConfig(recurringConfigWithUserId).then(({ id }) => id);
-  return newId;
+  return fetchCreateRecurringConfigWithId(recurringConfigWithUserId, newId);
 };
 
 export const listenToRecurringConfigList = (userId, nextCallback, errorCallback) => (dispatch) => {
