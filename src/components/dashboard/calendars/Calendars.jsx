@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 
@@ -24,6 +24,7 @@ import {
   selectGapiUserSignedIn,
   selectGapiHasAllCalendarScopes,
   selectGoogleFirebaseAuthProvider,
+  selectUserEmailVerified,
 } from '../../../modules/session';
 import useDelayedState from '../../hooks/useDelayedState';
 import GoogleButton from '../../ui/GoogleButton';
@@ -52,6 +53,7 @@ const Calendars = () => {
   const connectNewCalendarButton = useRef();
 
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
+  const userEmailVerified = useSelector(selectUserEmailVerified);
   const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
@@ -66,7 +68,7 @@ const Calendars = () => {
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
+  const { signInToConnectGoogleAccount, connectGoogleAccount } = useGoogleApiSignIn();
 
   const showLoader =
     useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching && googleSignedIn;
@@ -78,6 +80,12 @@ const Calendars = () => {
       () => setSigningInToGoogle(false),
     );
   };
+
+  useEffect(() => {
+    if (googleSignedIn && !userEmailVerified) {
+      connectGoogleAccount();
+    }
+  }, [connectGoogleAccount, googleSignedIn, userEmailVerified]);
 
   return (
     <Box className={classes.mainContainer}>
