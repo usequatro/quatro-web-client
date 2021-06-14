@@ -173,6 +173,7 @@ const tabTextAndLink = {
  * @param {string} [params.calendarBlockCalendarId]
  * @param {number} [params.calendarBlockStart]
  * @param {number} [params.calendarBlockEnd]
+ * @param {string} [params.recurringConfigId] - Pre-generated when creating a recurring task
  * @returns {Promise<string>} - Promise resolving with the new task ID
  */
 export const createTask =
@@ -190,6 +191,7 @@ export const createTask =
       calendarBlockProviderCalendarId,
       calendarBlockStart,
       calendarBlockEnd,
+      recurringConfigId,
     } = {},
     callback = () => {},
   ) =>
@@ -210,6 +212,7 @@ export const createTask =
       calendarBlockProviderCalendarId,
       calendarBlockStart,
       calendarBlockEnd,
+      recurringConfigId,
     };
 
     return apiClient.fetchCreateTask(userId, task).then(({ id }) => {

@@ -151,13 +151,20 @@ export const listenListRecurringConfigs = (userId, onNext, onError) =>
 
 /**
  * @param {Object} recurringConfig
+ * @param {string} newId
  * @return {Promise<firebase.firestore.DocumentReference>}
  */
-export const fetchCreateRecurringConfig = async (recurringConfig) => {
+export const fetchCreateRecurringConfigWithId = async (recurringConfig, newId) => {
   const validEntity = await validateRecurringConfigSchema(recurringConfig);
-  debugConsole.log('Firestore', 'Creating recurring config', validEntity);
-  return db.collection(RECURRING_CONFIGS).add(validEntity);
+  debugConsole.log('Firestore', 'Creating recurring config', newId, validEntity);
+  return db.collection(RECURRING_CONFIGS).doc(newId).set(validEntity);
 };
+
+/**
+ * Generates a new document ID without persisting a document
+ * @returns string
+ */
+export const makeNewRecurringConfigId = () => db.collection(RECURRING_CONFIGS).doc().id;
 
 /**
  * @param {string} id
@@ -275,5 +282,3 @@ export const fetchUpdateUserExternalConfig = async (updates) => {
   debugConsole.log('Firestore', 'Updating user external config', id, validEntity);
   return db.collection(USER_EXTERNAL_CONFIGS).doc(id).set(validEntity, { merge: true });
 };
-
-window.fetchUpdateUserExternalConfig = fetchUpdateUserExternalConfig;

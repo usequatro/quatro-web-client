@@ -20,7 +20,7 @@ import {
   updateTask,
 } from './tasks';
 import {
-  createRecurringConfig,
+  createRecurringConfigWithId,
   deleteRecurringConfig,
   selectRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
@@ -35,6 +35,7 @@ import {
   selectRecurringConfigAmount,
   selectRecurringConfigActiveWeekdays,
 } from './recurringConfigs';
+import { makeNewRecurringConfigId } from '../utils/apiClient';
 import * as blockerTypes from '../constants/blockerTypes';
 import { selectCalendarProviderCalendarId } from './calendars';
 import { createTask, selectDashboardActiveTab } from './dashboard';
@@ -343,6 +344,21 @@ export const saveForm =
       : undefined;
     const hasCalendarBlock = Boolean(calendarBlockStart && calendarBlockEnd);
 
+    const needToCreateRecurringConfig = Boolean(
+      formHasRecurringConfig && !editingRecurringConfigId,
+    );
+    const needToUpdateRecurringConfig = Boolean(
+      formHasRecurringConfig &&
+        editingRecurringConfigId &&
+        recurringConfigTaskDetailsChanged.length > 0 &&
+        savedRecurringConfig,
+    );
+    const needToDeleteRecurringConfig = Boolean(
+      !formHasRecurringConfig && editingRecurringConfigId,
+    );
+
+    const newRecurringConfigId = needToCreateRecurringConfig ? makeNewRecurringConfigId() : null;
+
     const taskPromise = editingTaskId
       ? // updating a task isn't async, so let's fake it 😇
         Promise.resolve().then(() => {
@@ -362,8 +378,11 @@ export const saveForm =
                 : null,
               calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
               calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
-              // Make sure to clear recurringConfigId if we don't have any repeat info set
-              ...(!formHasRecurringConfig ? { recurringConfigId: null } : {}),
+              recurringConfigId: formHasRecurringConfig
+                ? // Set the ID of new recurring config to avoid needing to do an update right away
+                  newRecurringConfigId || editingRecurringConfigId || null
+                : // Make sure to clear recurringConfigId if we don't have any repeat info set
+                  null,
             }),
           );
           return { taskId: editingTaskId, taskCreated: false };
@@ -381,6 +400,11 @@ export const saveForm =
               : null,
             calendarBlockStart: hasCalendarBlock ? calendarBlockStart : null,
             calendarBlockEnd: hasCalendarBlock ? calendarBlockEnd : null,
+            recurringConfigId: formHasRecurringConfig
+              ? // Set the ID of new recurring config to avoid needing to do an update right away
+                newRecurringConfigId || editingRecurringConfigId || null
+              : // Make sure to clear recurringConfigId if we don't have any repeat info set
+                null,
           }),
         ).then((taskId) => ({ taskId, taskCreated: true }));
 
@@ -388,70 +412,65 @@ export const saveForm =
       taskPromise
         // Recurring config handling
         .then(async ({ taskId, ...info }) => {
-          if (formHasRecurringConfig) {
-            if (editingRecurringConfigId) {
-              if (recurringConfigTaskDetailsChanged.length > 0 && savedRecurringConfig) {
-                // We mutate taskDetails because we can't merge changes to a sub-object in Firestore
-                const addDetailFunction = {
-                  [FIELD_TITLE]: (payload) => fpSet(`taskDetails.title`, title, payload),
-                  [FIELD_DESCRIPTION]: (payload) =>
-                    fpSet(`taskDetails.description`, description, payload),
-                  [FIELD_EFFORT]: (payload) => fpSet(`taskDetails.effort`, effort, payload),
-                  [FIELD_IMPACT]: (payload) => fpSet(`taskDetails.impact`, impact, payload),
-                  [FIELD_DUE]: (payload) =>
-                    flow(
-                      fpSet(
-                        `taskDetails.dueOffsetDays`,
-                        due ? differenceInCalendarDays(due, scheduledStart) : null,
-                      ),
-                      fpSet(`taskDetails.dueTime`, due ? format(due, 'HH:mm') : null),
-                    )(payload),
-                  [FIELD_SCHEDULED_START]: (payload) =>
-                    flow(
-                      fpSet(`referenceDate`, scheduledStart),
-                      fpSet(`taskDetails.scheduledTime`, format(scheduledStart, 'HH:mm')),
-                    )(payload),
-                  [FIELD_RECURRENCE]: (payload) =>
-                    flow(
-                      fpSet(`unit`, recurringConfigUnit),
-                      fpSet(`amount`, recurringConfigAmount),
-                      fpSet(`activeWeekdays`, recurringConfigActiveWeekdays || null),
-                    )(payload),
-                };
-                let updates = {
-                  ...(savedRecurringConfig.taskDetails
-                    ? { taskDetails: { ...savedRecurringConfig.taskDetails } }
-                    : {}),
-                  mostRecentTaskId: taskId,
-                };
-                recurringConfigTaskDetailsChanged.forEach((field) => {
-                  if (addDetailFunction[field]) {
-                    updates = addDetailFunction[field](updates);
-                  }
-                });
-                dispatch(updateRecurringConfig(editingRecurringConfigId, updates));
+          if (needToCreateRecurringConfig) {
+            const payload = {
+              unit: recurringConfigUnit,
+              amount: recurringConfigAmount,
+              activeWeekdays: recurringConfigActiveWeekdays || null,
+              mostRecentTaskId: taskId,
+              referenceDate: scheduledStart,
+              taskDetails: {
+                title,
+                scheduledTime: format(scheduledStart, 'HH:mm'),
+                description,
+                effort,
+                impact,
+                dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
+                dueTime: due ? format(due, 'HH:mm') : null,
+              },
+            };
+            await dispatch(createRecurringConfigWithId(payload, newRecurringConfigId));
+          } else if (needToUpdateRecurringConfig) {
+            // We mutate taskDetails because we can't merge changes to a sub-object in Firestore
+            const addDetailFunction = {
+              [FIELD_TITLE]: (payload) => fpSet(`taskDetails.title`, title, payload),
+              [FIELD_DESCRIPTION]: (payload) =>
+                fpSet(`taskDetails.description`, description, payload),
+              [FIELD_EFFORT]: (payload) => fpSet(`taskDetails.effort`, effort, payload),
+              [FIELD_IMPACT]: (payload) => fpSet(`taskDetails.impact`, impact, payload),
+              [FIELD_DUE]: (payload) =>
+                flow(
+                  fpSet(
+                    `taskDetails.dueOffsetDays`,
+                    due ? differenceInCalendarDays(due, scheduledStart) : null,
+                  ),
+                  fpSet(`taskDetails.dueTime`, due ? format(due, 'HH:mm') : null),
+                )(payload),
+              [FIELD_SCHEDULED_START]: (payload) =>
+                flow(
+                  fpSet(`referenceDate`, scheduledStart),
+                  fpSet(`taskDetails.scheduledTime`, format(scheduledStart, 'HH:mm')),
+                )(payload),
+              [FIELD_RECURRENCE]: (payload) =>
+                flow(
+                  fpSet(`unit`, recurringConfigUnit),
+                  fpSet(`amount`, recurringConfigAmount),
+                  fpSet(`activeWeekdays`, recurringConfigActiveWeekdays || null),
+                )(payload),
+            };
+            let updates = {
+              ...(savedRecurringConfig.taskDetails
+                ? { taskDetails: { ...savedRecurringConfig.taskDetails } }
+                : {}),
+              mostRecentTaskId: taskId,
+            };
+            recurringConfigTaskDetailsChanged.forEach((field) => {
+              if (addDetailFunction[field]) {
+                updates = addDetailFunction[field](updates);
               }
-            } else {
-              const payload = {
-                unit: recurringConfigUnit,
-                amount: recurringConfigAmount,
-                activeWeekdays: recurringConfigActiveWeekdays || null,
-                mostRecentTaskId: taskId,
-                referenceDate: scheduledStart,
-                taskDetails: {
-                  title,
-                  scheduledTime: format(scheduledStart, 'HH:mm'),
-                  description,
-                  effort,
-                  impact,
-                  dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
-                  dueTime: due ? format(due, 'HH:mm') : null,
-                },
-              };
-              const newRcId = await dispatch(createRecurringConfig(payload));
-              dispatch(updateTask(taskId, { recurringConfigId: newRcId }));
-            }
-          } else if (editingRecurringConfigId) {
+            });
+            dispatch(updateRecurringConfig(editingRecurringConfigId, updates));
+          } else if (needToDeleteRecurringConfig) {
             dispatch(deleteRecurringConfig(editingRecurringConfigId));
           }
           return { taskId, ...info };
