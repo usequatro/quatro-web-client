@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 
@@ -24,7 +25,6 @@ import {
   selectGapiUserSignedIn,
   selectGapiHasAllCalendarScopes,
   selectGoogleFirebaseAuthProvider,
-  selectUserEmailVerified,
 } from '../../../modules/session';
 import useDelayedState from '../../hooks/useDelayedState';
 import GoogleButton from '../../ui/GoogleButton';
@@ -49,11 +49,11 @@ const useStyles = makeStyles((theme) => ({
 
 const Calendars = () => {
   const classes = useStyles();
+  const history = useHistory();
 
   const connectNewCalendarButton = useRef();
 
   const googleSignedIn = useSelector(selectGapiUserSignedIn);
-  const userEmailVerified = useSelector(selectUserEmailVerified);
   const gapiHasAllCalendarScopes = useSelector(selectGapiHasAllCalendarScopes);
 
   const [newCalendarMenuOpen, setNewCalendarMenuOpen] = useState(false);
@@ -82,10 +82,13 @@ const Calendars = () => {
   };
 
   useEffect(() => {
-    if (googleSignedIn && !userEmailVerified) {
+    const justConnectedGoogleProvider =
+      new URLSearchParams(history.location.search).get('googleconnected') === '1';
+    if (justConnectedGoogleProvider && googleSignedIn) {
       connectGoogleAccount();
+      history.replace('/dashboard/calendars');
     }
-  }, [connectGoogleAccount, googleSignedIn, userEmailVerified]);
+  }, [connectGoogleAccount, googleSignedIn, history]);
 
   return (
     <Box className={classes.mainContainer}>

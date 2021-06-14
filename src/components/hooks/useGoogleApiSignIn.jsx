@@ -58,7 +58,10 @@ export default function useGoogleApiSignIn() {
     return (
       authInstance
         // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
-        .signIn({ ux_mode: 'redirect' })
+        .signIn({
+          ux_mode: 'redirect',
+          redirect_uri: 'http://localhost:3000/dashboard/calendars?googleconnected=1',
+        })
     );
   }, []);
 
