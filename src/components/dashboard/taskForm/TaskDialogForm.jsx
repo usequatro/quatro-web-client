@@ -36,6 +36,7 @@ import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 import CloseIcon from '@material-ui/icons/Close';
 import SnoozeIcon from '@material-ui/icons/Snooze';
+import AddIcon from '@material-ui/icons/Add';
 
 import { deleteTask, selectTaskDashboardTab } from '../../../modules/tasks';
 import {
@@ -53,6 +54,8 @@ import {
   selectFormCalendarBlockEnd,
   setFormTitle,
   setFormDescription,
+  selectFormHasSubtasks,
+  setFormNewSubtask,
   setFormImpact,
   setFormEffort,
   addFormTaskBlocker,
@@ -68,6 +71,7 @@ import {
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
+import SubtasksList from './SubtasksList';
 import DueDateDialog from './DueDateDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
 import SnoozeCustomDialog from './SnoozeCustomDialog';
@@ -204,6 +208,7 @@ const TaskDialogForm = ({ onClose }) => {
 
   const title = useSelector(selectFormTitle);
   const description = useSelector(selectFormDescription);
+  const formHasSubtasks = useSelector(selectFormHasSubtasks);
   const impact = useSelector(selectFormImpact);
   const effort = useSelector(selectFormEffort);
   const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
@@ -336,7 +341,7 @@ const TaskDialogForm = ({ onClose }) => {
       }}
     >
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        <Box pt={2} pb={4} display="flex" flexDirection="column" alignItems="stretch">
+        <Box pt={2} pb={1} display="flex" flexDirection="column" alignItems="stretch">
           <Box pb={2}>
             <TextFieldWithTypography
               typography="h6"
@@ -387,6 +392,18 @@ const TaskDialogForm = ({ onClose }) => {
               onChange={(event) => dispatch(setFormDescription(event.target.value))}
             />
           </Box>
+        </Box>
+
+        <Box pb={2}>
+          {formHasSubtasks && <SubtasksList />}
+
+          <Button
+            type="button"
+            onClick={() => dispatch(setFormNewSubtask())}
+            startIcon={<AddIcon />}
+          >
+            Add Subtask
+          </Button>
         </Box>
 
         <Box pt={2} pb={4} display="flex">
@@ -615,7 +632,8 @@ const TaskDialogForm = ({ onClose }) => {
           <Button
             variant="outlined"
             color="primary"
-            type="submit"
+            type="button"
+            onClick={(event) => handleSubmit(event)}
             disabled={submitting}
             startIcon={
               submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />

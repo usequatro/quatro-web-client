@@ -3,7 +3,7 @@ import pick from 'lodash/pick';
 import flow from 'lodash/flow';
 import isEqual from 'lodash/isEqual';
 import fpSet from 'lodash/fp/set';
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createSelector, nanoid } from '@reduxjs/toolkit';
 
 import differenceInCalendarDays from 'date-fns/differenceInCalendarDays';
 import format from 'date-fns/format';
@@ -55,6 +55,8 @@ export const FIELD_RECURRENCE = 'recurrence';
 export const selectFormTaskId = (state) => state[name].taskId;
 export const selectFormTitle = (state) => state[name].task.title;
 export const selectFormDescription = (state) => state[name].task.description;
+export const selectFormSubtasks = (state) => state[name].task.subtasks;
+export const selectFormHasSubtasks = (state) => state[name].task.subtasks.length > 0;
 export const selectFormImpact = (state) => state[name].task.impact;
 export const selectFormEffort = (state) => state[name].task.effort;
 export const selectFormScheduledStart = (state) => state[name].task.scheduledStart;
@@ -170,6 +172,7 @@ const initialState = {
     calendarBlockCalendarId: null,
     calendarBlockStart: null,
     calendarBlockEnd: null,
+    subtasks: [],
   },
   hasRecurringConfig: false,
   recurringConfigId: null,
@@ -261,6 +264,24 @@ const slice = createSlice({
       state.recurringConfig = pick(recurringConfig, Object.keys(initialState.recurringConfig));
     },
     setFormNewTaskInitialState: () => initialState,
+    setFormNewSubtask: {
+      reducer: (state, { payload }) => {
+        state.task.subtasks.push(payload);
+      },
+      prepare: () => ({ payload: { subtaskId: nanoid(), text: '', completed: false } }),
+    },
+    setFormSubtaskText: (state, { payload: { subtaskId, text } }) => {
+      const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
+      state.task.subtasks[index].text = text;
+    },
+    setFormSubtaskStatus: (state, { payload: { subtaskId, completed } }) => {
+      const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
+      state.task.subtasks[index].completed = completed;
+    },
+    deleteFormSubtask: (state, { payload: subtaskId }) => {
+      const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
+      state.task.subtasks.splice(index, 1);
+    },
   },
 });
 /* eslint-enable no-param-reassign */
@@ -282,6 +303,10 @@ export const {
   setFormCalendarBlockStart,
   setFormCalendarBlockEnd,
   setFormNewTaskInitialState,
+  setFormNewSubtask,
+  setFormSubtaskText,
+  setFormSubtaskStatus,
+  deleteFormSubtask,
   setFormRecurringConfig,
   setFormRecurringConfigUnit,
   setFormRecurringConfigAmount,
@@ -325,6 +350,8 @@ export const saveForm =
     const impact = selectFormImpact(state);
     const effort = selectFormEffort(state);
     const description = (selectFormDescription(state) || '').trim();
+    // Get subtasks and filter empty ones
+    const subtasks = selectFormSubtasks(state).filter((subtask) => subtask.text);
     const due = selectFormDue(state);
     const scheduledStart = selectFormScheduledStart(state);
     const snoozedUntil = selectFormSnoozedUntil(state);
@@ -352,6 +379,7 @@ export const saveForm =
               impact,
               effort,
               description,
+              subtasks,
               due,
               scheduledStart,
               snoozedUntil,
@@ -371,6 +399,7 @@ export const saveForm =
       : dispatch(
           createTask(title, impact, effort, {
             description,
+            subtasks,
             due,
             scheduledStart,
             snoozedUntil,
@@ -442,6 +471,7 @@ export const saveForm =
                   title,
                   scheduledTime: format(scheduledStart, 'HH:mm'),
                   description,
+                  subtasks,
                   effort,
                   impact,
                   dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
