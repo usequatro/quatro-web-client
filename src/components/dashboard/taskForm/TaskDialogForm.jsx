@@ -132,11 +132,6 @@ const useStyles = makeStyles((theme) => ({
       opacity: 0.5,
     },
   },
-  closeButtonContainer: {
-    position: 'absolute',
-    top: theme.spacing(2),
-    right: theme.spacing(2),
-  },
 }));
 
 const getBlockerTitle = cond([
@@ -340,8 +335,14 @@ const TaskDialogForm = ({ onClose }) => {
         }
       }}
     >
+      <Box display="flex" justifyContent="flex-end" p={1}>
+        <IconButton size="small" color="inherit" onClick={onClose} aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        <Box pt={2} pb={1} display="flex" flexDirection="column" alignItems="stretch">
+        <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
           <Box pb={2}>
             <TextFieldWithTypography
               typography="h6"
@@ -700,12 +701,6 @@ const TaskDialogForm = ({ onClose }) => {
           </Typography>
         </DialogActions>
       )}
-
-      <Box className={classes.closeButtonContainer}>
-        <IconButton edge="end" size="small" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Box>
 
       <ScheduledStartDialog
         open={showScheduledStartDialog}
