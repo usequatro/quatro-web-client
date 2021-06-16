@@ -8,6 +8,7 @@ import {
   selectFirebaseUserIsLoggedIn,
   selectFirebaseInErrorStatus,
   selectFirebaseUserLoading,
+  selectGapiUserSignedIn,
 } from '../modules/session';
 import * as paths from '../constants/paths';
 import Dashboard from './dashboard/Dashboard';
@@ -18,12 +19,16 @@ const AppRouting = () => {
   const firebaseInErrorStatus = useSelector(selectFirebaseInErrorStatus);
   const firebaseUserLoading = useSelector(selectFirebaseUserLoading);
   const firebaseUserIsLoggedIn = useSelector(selectFirebaseUserIsLoggedIn);
+  const gapiUserIsSignedIn = useSelector(selectGapiUserSignedIn);
 
   // Expose theme when developing on window for convenience
   const theme = useTheme();
   if (process.env.NODE_ENV === 'development') {
     window.theme = theme;
   }
+
+  // The condition below happens normally after coming back from the Google Auth redirect
+  const gapiSignedInAndFirebaseNotYet = gapiUserIsSignedIn && !firebaseUserIsLoggedIn;
 
   return cond([
     [
@@ -33,7 +38,7 @@ const AppRouting = () => {
       ),
     ],
     [
-      () => firebaseUserLoading,
+      () => firebaseUserLoading || gapiSignedInAndFirebaseNotYet,
       () => (
         <LoaderScreen key="loading" background="secondary.main" color="common.white" delay={500} />
       ),

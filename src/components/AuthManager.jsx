@@ -22,6 +22,21 @@ import { fetchUpdateUserExternalConfig } from '../utils/apiClient';
 
 // const AUTH_IFRAME_LOAD_ERROR = 'idpiframe_initialization_failed';
 
+const getGoogleAuthProviderCredentials = (gapiAuthInstance) => {
+  const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
+
+  if (!authResponse) {
+    return null;
+  }
+
+  const credential = firebase.auth.GoogleAuthProvider.credential(
+    authResponse.id_token,
+    authResponse.access_token,
+  );
+
+  return credential;
+};
+
 const AuthManager = () => {
   const mixpanel = useMixpanel();
   const dispatch = useDispatch();
@@ -30,6 +45,26 @@ const AuthManager = () => {
   // Load and initial sign in state or listen for changes
   useEffect(() => {
     let unsubscribe;
+
+    const signInFirebaseFromGoogleApiCredentials = (credential) =>
+      firebase
+        .auth()
+        .signInWithCredential(credential)
+        .then((userCredential) => {
+          debugConsole.log('firebase', 'signInWithCredential', userCredential);
+          if (userCredential.additionalUserInfo.isNewUser) {
+            createOnboardingTasks(userCredential.user.uid);
+
+            const userTimeZone = getBrowserDetectedTimeZone();
+            if (userTimeZone) {
+              fetchUpdateUserExternalConfig({ timeZone: userTimeZone });
+            }
+          }
+          dispatch(setUserFromFirebaseUser(userCredential.user));
+        })
+        .catch((error) => {
+          console.error(error); // eslint-disable-line no-console
+        });
 
     gapiGetAuthInstance()
       .then((gapiAuthInstance) => {
@@ -51,33 +86,9 @@ const AuthManager = () => {
           dispatch(setGapiUser(signInState ? gapiAuthInstance.currentUser.get() : null));
 
           // Log in with Firebase after logging in with Google API
-          if (signInState) {
-            if (!firebase.auth().currentUser) {
-              const authResponse = gapiAuthInstance.currentUser.get().getAuthResponse(true);
-
-              const credential = firebase.auth.GoogleAuthProvider.credential(
-                authResponse.id_token,
-                authResponse.access_token,
-              );
-              firebase
-                .auth()
-                .signInWithCredential(credential)
-                .then((userCredential) => {
-                  debugConsole.log('firebase', 'signInWithCredential', userCredential);
-                  if (userCredential.additionalUserInfo.isNewUser) {
-                    createOnboardingTasks(userCredential.user.uid);
-
-                    const userTimeZone = getBrowserDetectedTimeZone();
-                    if (userTimeZone) {
-                      fetchUpdateUserExternalConfig({ timeZone: userTimeZone });
-                    }
-                  }
-                  dispatch(setUserFromFirebaseUser(userCredential.user));
-                })
-                .catch((error) => {
-                  console.error(error); // eslint-disable-line no-console
-                });
-            }
+          if (signInState && !firebase.auth().currentUser) {
+            const credential = getGoogleAuthProviderCredentials(gapiAuthInstance);
+            signInFirebaseFromGoogleApiCredentials(credential);
           }
         });
 
@@ -86,11 +97,16 @@ const AuthManager = () => {
           debugConsole.log('firebase', 'onAuthStateChanged', Boolean(user));
           dispatch(setUserFromFirebaseUser(user));
 
-          // If Firebase logs out, we log out Google too
           if (!user && gapiAuthInstance.isSignedIn.get()) {
-            gapiAuthInstance.signOut().then(() => {
-              debugConsole.log('Google API', 'google logged out because Firebase logged out');
-            });
+            const credential = getGoogleAuthProviderCredentials(gapiAuthInstance);
+            // If Google API is logged-in, we log Firease with it. Otherwise, log Firebase out
+            if (credential) {
+              signInFirebaseFromGoogleApiCredentials(credential);
+            } else {
+              gapiAuthInstance.signOut().then(() => {
+                debugConsole.log('Google API', 'google logged out because Firebase logged out');
+              });
+            }
           }
         });
 

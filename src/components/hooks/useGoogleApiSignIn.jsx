@@ -1,12 +1,10 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { gapiGetAuthInstance, gapiGrantCalendarManagementScope } from '../../googleApi';
 import firebase, {
   firebaseUpdateUserProfile,
   firebaseConnectGoogleAccountFromGapiCredential,
 } from '../../firebase';
-import { CALENDARS as CALENDARS_PATH } from '../../constants/paths';
 import { setUserFromFirebaseUser, setGapiUser } from '../../modules/session';
 import debugConsole from '../../utils/debugConsole';
 import { useNotification } from '../Notification';
@@ -22,7 +20,6 @@ import { useMixpanel } from '../tracking/MixpanelContext';
 export default function useGoogleApiSignIn() {
   const dispatch = useDispatch();
   const { notifyError } = useNotification();
-  const history = useHistory();
   const mixpanel = useMixpanel();
 
   const grantAccessToGoogleCalendar = useCallback(
@@ -60,74 +57,44 @@ export default function useGoogleApiSignIn() {
     const authInstance = await gapiGetAuthInstance();
     return (
       authInstance
-        .signIn()
-        .then(async () => {
-          const authResponse = authInstance.currentUser.get().getAuthResponse(true);
-          return firebaseConnectGoogleAccountFromGapiCredential(
-            authResponse.id_token,
-            authResponse.access_token,
-          ).catch((error) => {
-            console.error(error); // eslint-disable-line no-console
-            // If connecting the provider fails, cancel the operation and log Google API out
-            return authInstance.signOut().then(() => {
-              const propagatedError = new Error(error.message);
-              propagatedError.code = error.code;
-              throw propagatedError;
-            });
-          });
-        })
-        .then(() => {
-          mixpanel.track(GOOGLE_ACCOUNT_LINKED);
-        })
-        // Update user in Redux
-        .then(() => {
-          const newFirebaseUser = firebase.auth().currentUser;
-          dispatch(setUserFromFirebaseUser(newFirebaseUser));
-        })
-        // If the user didn't have a photo URL or displayName previously,
-        // set the ones they use in Google
-        .then(() => {
-          const newFirebaseUser = firebase.auth().currentUser;
-          const googleProvider = newFirebaseUser.providerData.find(
-            ({ providerId }) => providerId === 'google.com',
-          );
-          const newPhotoUrl = !newFirebaseUser.photoURL
-            ? (googleProvider || {}).photoURL
-            : undefined;
-          const newDisplayName = !newFirebaseUser.displayName
-            ? (googleProvider || {}).displayName
-            : undefined;
-
-          if (newPhotoUrl || newDisplayName) {
-            // We intentionally don't return this promise so we don't wait on it
-            firebaseUpdateUserProfile({
-              ...(newPhotoUrl ? { photoURL: newPhotoUrl } : {}),
-              ...(newDisplayName ? { displayName: newDisplayName } : {}),
-            }).then(() => {
-              // Refresh user in Redux
-              dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
-            });
-          }
-        })
-        // Redirect to let them connect calendars
-        .then(() => {
-          history.push(CALENDARS_PATH);
-        })
-        .catch((error) => {
-          if (error.code === 'auth/popup-closed-by-user') {
-            console.info(error); // eslint-disable-line no-console
-            return;
-          }
-          console.error(error); // eslint-disable-line no-console
-          notifyError(
-            {
-              'auth/credential-already-in-use':
-                'This Google account is already being used by another Quatro account',
-            }[error.code] || 'An error happened',
-          );
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        .signIn({
+          ux_mode: 'redirect',
+          redirect_uri: 'dashboard/calendars?googleconnected=1',
         })
     );
-  }, [dispatch, history, notifyError, mixpanel]);
+  }, []);
+
+  const connectGoogleAccount = useCallback(async () => {
+    const authInstance = await gapiGetAuthInstance();
+    const authResponse = authInstance.currentUser.get().getAuthResponse(true);
+    await firebaseConnectGoogleAccountFromGapiCredential(
+      authResponse.id_token,
+      authResponse.access_token,
+    );
+
+    mixpanel.track(GOOGLE_ACCOUNT_LINKED);
+
+    const newFirebaseUser = firebase.auth().currentUser;
+    const googleProvider = newFirebaseUser.providerData.find(
+      ({ providerId }) => providerId === 'google.com',
+    );
+    const newPhotoUrl = !newFirebaseUser.photoURL ? (googleProvider || {}).photoURL : undefined;
+    const newDisplayName = !newFirebaseUser.displayName
+      ? (googleProvider || {}).displayName
+      : undefined;
+
+    if (newPhotoUrl || newDisplayName) {
+      // We intentionally don't return this promise so we don't wait on it
+      firebaseUpdateUserProfile({
+        ...(newPhotoUrl ? { photoURL: newPhotoUrl } : {}),
+        ...(newDisplayName ? { displayName: newDisplayName } : {}),
+      }).then(() => {
+        // Refresh user in Redux
+        dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
+      });
+    }
+  }, [dispatch, mixpanel]);
 
   const signInAlreadyConnectedGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase
@@ -138,29 +105,32 @@ export default function useGoogleApiSignIn() {
     }
 
     const authInstance = await gapiGetAuthInstance();
-    return authInstance
-      .signIn()
-      .then(async () => {
-        const gapiUserId = authInstance.currentUser.get().getId();
-        if (gapiUserId !== firebaseGoogleAuthProvider.uid) {
-          return authInstance.signOut().then(() => {
-            notifyError(
-              `Looks like your account is already connected to ${firebaseGoogleAuthProvider.email},
+    return (
+      authInstance
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        .signIn({ ux_mode: 'redirect' })
+        .then(async () => {
+          const gapiUserId = authInstance.currentUser.get().getId();
+          if (gapiUserId !== firebaseGoogleAuthProvider.uid) {
+            return authInstance.signOut().then(() => {
+              notifyError(
+                `Looks like your account is already connected to ${firebaseGoogleAuthProvider.email},
                 but you selected a different Google account.
                 Please select ${firebaseGoogleAuthProvider.email}`,
-            );
-          });
-        }
-        return undefined;
-      })
-      .catch((error) => {
-        if (error.code === 'auth/popup-closed-by-user') {
-          console.info(error); // eslint-disable-line no-console
-          return;
-        }
-        console.error(error); // eslint-disable-line no-console
-        notifyError('An error happened');
-      });
+              );
+            });
+          }
+          return undefined;
+        })
+        .catch((error) => {
+          if (error.code === 'auth/popup-closed-by-user') {
+            console.info(error); // eslint-disable-line no-console
+            return;
+          }
+          console.error(error); // eslint-disable-line no-console
+          notifyError('An error happened');
+        })
+    );
   }, [notifyError]);
 
   const signOut = useCallback(async () => {
@@ -191,5 +161,6 @@ export default function useGoogleApiSignIn() {
     signInAlreadyConnectedGoogleAccount,
     signOut,
     grantAccessToGoogleCalendar,
+    connectGoogleAccount,
   };
 }
