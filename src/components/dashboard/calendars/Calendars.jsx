@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import cond from 'lodash/cond';
 
@@ -48,6 +49,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Calendars = () => {
   const classes = useStyles();
+  const history = useHistory();
 
   const connectNewCalendarButton = useRef();
 
@@ -66,7 +68,7 @@ const Calendars = () => {
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const { signInToConnectGoogleAccount } = useGoogleApiSignIn();
+  const { signInToConnectGoogleAccount, connectGoogleAccount } = useGoogleApiSignIn();
 
   const showLoader =
     useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching && googleSignedIn;
@@ -78,6 +80,15 @@ const Calendars = () => {
       () => setSigningInToGoogle(false),
     );
   };
+
+  useEffect(() => {
+    const justConnectedGoogleProvider =
+      new URLSearchParams(history.location.search).get('googleconnected') === '1';
+    if (justConnectedGoogleProvider && googleSignedIn) {
+      connectGoogleAccount();
+      history.replace('/dashboard/calendars');
+    }
+  }, [connectGoogleAccount, googleSignedIn, history]);
 
   return (
     <Box className={classes.mainContainer}>
