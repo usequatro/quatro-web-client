@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -37,9 +37,17 @@ const SubtasksList = () => {
 
   const subtasks = useSelector(selectFormSubtasks);
 
+  const [currentSubtaskIndex, setCurrentSubtaskIndex] = useState(null);
+  const currentSubtask = useRef(null);
+  useEffect(() => {
+    if (currentSubtask.current) {
+      currentSubtask.current.querySelector('input').select();
+    }
+  }, [currentSubtaskIndex]);
+
   return (
     <List dense>
-      {subtasks.map(({ subtaskId, text, completed }) => (
+      {subtasks.map(({ subtaskId, text, completed }, index) => (
         <ListItem key={subtaskId} disableGutters>
           <ListItemIcon className={classes.listItemIcon}>
             <Checkbox
@@ -54,6 +62,7 @@ const SubtasksList = () => {
 
           <ListItemText
             id={subtaskId}
+            ref={currentSubtaskIndex === index ? currentSubtask : null}
             style={completed ? { textDecoration: 'line-through' } : {}}
             primary={
               <InputWithTypography
@@ -62,6 +71,7 @@ const SubtasksList = () => {
                 fullWidth
                 value={text}
                 autoFocus={!text}
+                onFocus={() => setCurrentSubtaskIndex(index)}
                 onChange={(event) => {
                   dispatch(setFormSubtaskText({ subtaskId, text: event.target.value }));
                 }}
@@ -74,10 +84,12 @@ const SubtasksList = () => {
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
                     event.stopPropagation();
-                    dispatch(setFormNewSubtask());
+                    dispatch(setFormNewSubtask(index + 1));
+                    setCurrentSubtaskIndex(index + 1);
                   }
                   if (event.key === 'Backspace' && text === '') {
                     dispatch(deleteFormSubtask(subtaskId));
+                    setCurrentSubtaskIndex(index - 1);
                   }
                 }}
               />
