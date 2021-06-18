@@ -264,11 +264,13 @@ const slice = createSlice({
       state.recurringConfig = pick(recurringConfig, Object.keys(initialState.recurringConfig));
     },
     setFormNewTaskInitialState: () => initialState,
-    setFormNewSubtask: {
-      reducer: (state, { payload }) => {
-        state.task.subtasks.push(payload);
-      },
-      prepare: () => ({ payload: { subtaskId: nanoid(), text: '', completed: false } }),
+    setFormNewSubtask: (state, { payload: index }) => {
+      const newSubtask = { subtaskId: nanoid(), text: '', completed: false };
+      if (index) {
+        state.task.subtasks.splice(index, 0, newSubtask);
+      } else {
+        state.task.subtasks.push(newSubtask);
+      }
     },
     setFormSubtaskText: (state, { payload: { subtaskId, text } }) => {
       const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
