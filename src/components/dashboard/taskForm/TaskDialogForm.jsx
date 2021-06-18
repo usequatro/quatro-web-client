@@ -104,7 +104,9 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   dialogContent: {
+    paddingTop: theme.spacing(0),
     paddingBottom: theme.spacing(2),
+    borderTop: 'none',
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       maxWidth: '100%',
@@ -131,6 +133,11 @@ const useStyles = makeStyles((theme) => ({
     '&::before, &::after': {
       opacity: 0.5,
     },
+  },
+  closeButtonContainer: {
+    position: 'absolute',
+    top: theme.spacing(2),
+    right: theme.spacing(2),
   },
 }));
 
@@ -335,42 +342,38 @@ const TaskDialogForm = ({ onClose }) => {
         }
       }}
     >
-      <Box display="flex" justifyContent="flex-end" p={1}>
-        <IconButton size="small" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Box>
+      <DialogTitle>
+        <Box pt={2}>
+          <TextFieldWithTypography
+            typography="h6"
+            fullWidth
+            aria-label="What do you need to do?"
+            placeholder="What do you need to do?"
+            className={classes.titleTextField}
+            // Autofocus with real keyboard, not when screen keyboard because it's annoying
+            autoFocus={!isTouchEnabledScreen}
+            multiline
+            rowsMax={3}
+            value={title}
+            onChange={(event) => {
+              dispatch(setFormTitle(event.target.value));
+              if (validationErrors.includes('title')) {
+                setValidationErrors(validationErrors.filter((e) => e !== 'title'));
+              }
+            }}
+            onBlur={() => {
+              // Prevent leaving whitespaces saved at beginning or end
+              if (title !== title.trim()) {
+                dispatch(setFormTitle(title.trim()));
+              }
+            }}
+            error={validationErrors.includes('title')}
+          />
+        </Box>
+      </DialogTitle>
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
         <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
-          <Box pb={2}>
-            <TextFieldWithTypography
-              typography="h6"
-              fullWidth
-              aria-label="What do you need to do?"
-              placeholder="What do you need to do?"
-              className={classes.titleTextField}
-              // Autofocus with real keyboard, not when screen keyboard because it's annoying
-              autoFocus={!isTouchEnabledScreen}
-              multiline
-              rowsMax={3}
-              value={title}
-              onChange={(event) => {
-                dispatch(setFormTitle(event.target.value));
-                if (validationErrors.includes('title')) {
-                  setValidationErrors(validationErrors.filter((e) => e !== 'title'));
-                }
-              }}
-              onBlur={() => {
-                // Prevent leaving whitespaces saved at beginning or end
-                if (title !== title.trim()) {
-                  dispatch(setFormTitle(title.trim()));
-                }
-              }}
-              error={validationErrors.includes('title')}
-            />
-          </Box>
-
           <Box>
             <TextField
               placeholder="Notes"
@@ -701,6 +704,12 @@ const TaskDialogForm = ({ onClose }) => {
           </Typography>
         </DialogActions>
       )}
+
+      <Box className={classes.closeButtonContainer}>
+        <IconButton size="small" color="inherit" onClick={onClose} aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
       <ScheduledStartDialog
         open={showScheduledStartDialog}
