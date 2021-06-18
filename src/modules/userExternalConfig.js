@@ -63,7 +63,7 @@ export const listenToUserExternalConfig = () => (dispatch, getState) => {
     dispatch(slice.actions.setData(data));
 
     // When user doesn't have a timezone, we try to fix it :)
-    if (!data.timeZone) {
+    if (data && !data.timeZone) {
       const browserDetectedTimeZone = getBrowserDetectedTimeZone();
       if (browserDetectedTimeZone) {
         fetchUpdateUserExternalConfig({ timeZone: browserDetectedTimeZone });

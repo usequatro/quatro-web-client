@@ -190,7 +190,11 @@ const Registration = ({ mode }) => {
       return;
     }
     gapiGetAuthInstance()
-      .then((authInstance) => authInstance.signIn())
+      .then((authInstance) => {
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        const result = authInstance.signIn({ ux_mode: 'redirect' });
+        return result;
+      })
       .then(() => {
         setWaitingForGoogle(true);
       })
