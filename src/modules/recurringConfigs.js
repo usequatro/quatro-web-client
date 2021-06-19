@@ -38,6 +38,8 @@ export const selectRecurringConfigTaskTitle = (state, id) =>
   get(selectRecurringConfig(state, id), 'taskDetails.title');
 export const selectRecurringConfigTaskDescription = (state, id) =>
   get(selectRecurringConfig(state, id), 'taskDetails.description');
+export const selectRecurringConfigTaskSubtasks = (state, id) =>
+  get(selectRecurringConfig(state, id), 'taskDetails.subtasks');
 export const selectRecurringConfigTaskImpact = (state, id) =>
   get(selectRecurringConfig(state, id), 'taskDetails.impact');
 export const selectRecurringConfigTaskEffort = (state, id) =>

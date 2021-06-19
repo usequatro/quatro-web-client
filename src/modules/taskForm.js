@@ -12,6 +12,7 @@ import {
   selectTask,
   selectTaskDashboardTab,
   selectTaskDescription,
+  selectSubtasks,
   selectTaskDue,
   selectTaskEffort,
   selectTaskImpact,
@@ -25,6 +26,7 @@ import {
   selectRecurringConfig,
   selectRecurringConfigIdByMostRecentTaskId,
   selectRecurringConfigTaskDescription,
+  selectRecurringConfigTaskSubtasks,
   selectRecurringConfigTaskDueOffsetDays,
   selectRecurringConfigTaskDueTime,
   selectRecurringConfigTaskEffort,
@@ -45,6 +47,7 @@ const name = 'taskForm';
 
 export const FIELD_TITLE = 'title';
 export const FIELD_DESCRIPTION = 'description';
+export const FIELD_SUBTASKS = 'subtasks';
 export const FIELD_IMPACT = 'impact';
 export const FIELD_EFFORT = 'effort';
 export const FIELD_DUE = 'due';
@@ -96,6 +99,7 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
 
   const formTitle = selectFormTitle(state);
   const formDescription = selectFormDescription(state);
+  const formSubtasks = selectFormSubtasks(state);
   const formEffort = selectFormEffort(state);
   const formImpact = selectFormImpact(state);
   const formScheduledStart = selectFormScheduledStart(state);
@@ -108,6 +112,7 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
 
   const taskTitle = selectTaskTitle(state, taskId);
   const taskDescription = selectTaskDescription(state, taskId);
+  const subtasks = selectSubtasks(state, taskId);
   const taskEffort = selectTaskEffort(state, taskId);
   const taskImpact = selectTaskImpact(state, taskId);
   const taskDue = selectTaskDue(state, taskId);
@@ -115,6 +120,7 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
 
   const rcSavedTitle = selectRecurringConfigTaskTitle(state, rcId);
   const rcSavedDescription = selectRecurringConfigTaskDescription(state, rcId);
+  const rcSavedSubtasks = selectRecurringConfigTaskSubtasks(state, rcId);
   const rcSavedEffort = selectRecurringConfigTaskEffort(state, rcId);
   const rcSavedImpact = selectRecurringConfigTaskImpact(state, rcId);
   const rcSavedDueOffsetDays = selectRecurringConfigTaskDueOffsetDays(state, rcId);
@@ -146,6 +152,7 @@ const selectTaskChangesApplicableToRecurringConfig = (state) => {
     taskDescription !== formDescription && formDescription !== rcSavedDescription
       ? FIELD_DESCRIPTION
       : null,
+    subtasks !== formSubtasks && formSubtasks !== rcSavedSubtasks ? FIELD_SUBTASKS : null,
     taskImpact !== formImpact && formImpact !== rcSavedImpact ? FIELD_IMPACT : null,
     taskEffort !== formEffort && formEffort !== rcSavedEffort ? FIELD_EFFORT : null,
     !dueSame ? FIELD_DUE : null,
@@ -454,6 +461,7 @@ export const saveForm =
                 title,
                 scheduledTime: format(scheduledStart, 'HH:mm'),
                 description,
+                subtasks,
                 effort,
                 impact,
                 dueOffsetDays: due ? differenceInCalendarDays(due, scheduledStart) : null,
@@ -467,6 +475,7 @@ export const saveForm =
               [FIELD_TITLE]: (payload) => fpSet(`taskDetails.title`, title, payload),
               [FIELD_DESCRIPTION]: (payload) =>
                 fpSet(`taskDetails.description`, description, payload),
+              [FIELD_SUBTASKS]: (payload) => fpSet(`taskDetails.subtasks`, subtasks, payload),
               [FIELD_EFFORT]: (payload) => fpSet(`taskDetails.effort`, effort, payload),
               [FIELD_IMPACT]: (payload) => fpSet(`taskDetails.impact`, impact, payload),
               [FIELD_DUE]: (payload) =>

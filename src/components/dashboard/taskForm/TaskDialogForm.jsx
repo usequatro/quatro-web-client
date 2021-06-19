@@ -677,6 +677,7 @@ const TaskDialogForm = ({ onClose }) => {
                   {{
                     title: `Title`,
                     description: `Description`,
+                    subtasks: `Subtasks`,
                     impact: `Impact`,
                     effort: `Time`,
                     scheduledStart: `Scheduled date`,
