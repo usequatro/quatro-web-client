@@ -116,6 +116,9 @@ const useStyles = makeStyles((theme) => ({
   titleTextField: {
     flexGrow: 1,
   },
+  addSubtaskButton: {
+    fontWeight: 'normal',
+  },
   settingButton: {
     justifyContent: 'flex-start',
     textAlign: 'left',
@@ -405,6 +408,7 @@ const TaskDialogForm = ({ onClose }) => {
             type="button"
             onClick={() => dispatch(setFormNewSubtask())}
             startIcon={<AddIcon />}
+            className={classes.addSubtaskButton}
           >
             Add Subtask
           </Button>
