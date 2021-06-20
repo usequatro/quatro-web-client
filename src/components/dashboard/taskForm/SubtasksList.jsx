@@ -21,6 +21,12 @@ import {
 import { InputWithTypography } from '../../ui/InputWithTypography';
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    padding: 0,
+    '&& > li': {
+      padding: 0,
+    },
+  },
   listItemIcon: {
     minWidth: theme.spacing(5),
   },
@@ -46,7 +52,7 @@ const SubtasksList = () => {
   }, [currentSubtaskIndex]);
 
   return (
-    <List dense>
+    <List className={classes.root}>
       {subtasks.map(({ subtaskId, text, completed }, index) => (
         <ListItem key={subtaskId} disableGutters>
           <ListItemIcon className={classes.listItemIcon}>
