@@ -59,8 +59,6 @@ const SubtasksList = () => {
             <Checkbox
               onClick={() => dispatch(setFormSubtaskStatus({ subtaskId, completed: !completed }))}
               checked={completed}
-              tabIndex={-1}
-              disableRipple
               icon={<RadioButtonUncheckedRoundedIcon fontSize="small" />}
               checkedIcon={<CheckCircleOutlineRoundedIcon fontSize="small" />}
             />
