@@ -60,7 +60,7 @@ export default function useGoogleApiSignIn() {
         // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
         .signIn({
           ux_mode: 'redirect',
-          redirect_uri: 'dashboard/calendars?googleconnected=1',
+          redirect_uri: `${window.location.origin}/dashboard/calendars?googleconnected=1`,
         })
     );
   }, []);
