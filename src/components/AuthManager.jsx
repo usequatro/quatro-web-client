@@ -14,6 +14,7 @@ import {
 import {
   SIGNED_IN_WITH_PASSWORD,
   SIGNED_IN_WITH_GOOGLE,
+  DESKTOP_CLIENT_VERSION,
 } from '../constants/mixpanelUserProperties';
 import { useNotification } from './Notification';
 import createOnboardingTasks from '../utils/createOnboardingTasks';
@@ -132,6 +133,12 @@ const AuthManager = () => {
         try {
           mixpanel.identify(user.uid);
 
+          // Not very elegant to get the desktop client version from window. But oh well.
+          const { desktopClientVersion } = window.quatro;
+          if (desktopClientVersion) {
+            debugConsole.info(`identify() with desktopClientVersion ${desktopClientVersion}`);
+          }
+
           // These properties are updated for Mixpanel when logging-in and on every refresh
           mixpanel.people.set({
             $name: user.displayName,
@@ -143,6 +150,7 @@ const AuthManager = () => {
             [SIGNED_IN_WITH_GOOGLE]: Boolean(
               user.providerData.find(({ providerId }) => providerId === 'google.com'),
             ),
+            ...(desktopClientVersion ? { [DESKTOP_CLIENT_VERSION]: desktopClientVersion } : {}),
           });
         } catch (error) {
           console.error(error); // eslint-disable-line no-console

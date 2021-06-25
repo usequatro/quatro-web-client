@@ -5,6 +5,7 @@ const colorByPrefix = {
   dnd: 'background: #18a669; color: #fff',
   fallback: 'background: #2196f3; color: #000',
   redux: 'background: #764abc; color: #fff',
+  message: 'background: gray; color: black',
 };
 
 export default {
