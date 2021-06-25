@@ -31,8 +31,11 @@ window.addEventListener('message', (event) => {
   }
   if (event.data) {
     try {
-      const data = JSON.parse(event.data);
-      debugConsole.log('Message', data);
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if (data.source !== 'quatro-desktop-client') {
+        return;
+      }
+      debugConsole.log('Quatro Desktop Client Message', data);
       if (data.desktopClientVersion) {
         window.quatro.desktopClientVersion = data.desktopClientVersion;
       }
