@@ -209,7 +209,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
 
   return (
     <ListItem disableGutters className={classes.listItem}>
-      <Box display="flex" mb={2} alignItems="center">
+      <Box display="flex" mb={2} alignItems="center" flexWrap="wrap" justifyContent="flex-end">
         <ListItemAvatar>
           <Avatar
             alt={name || email}
@@ -218,7 +218,7 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
           />
         </ListItemAvatar>
 
-        <Box display="flex" flexDirection="column" flexGrow={1}>
+        <Box display="flex" flexDirection="column" flexGrow={1} mr={1}>
           <Typography variant="body1">{name}</Typography>
           <Typography variant="body2" color="textSecondary">
             {email}
