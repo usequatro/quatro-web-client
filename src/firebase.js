@@ -42,7 +42,9 @@ export const firebaseUpdateUserProfile = async ({ displayName, photoURL }) =>
     if (!user) {
       throw new Error('No logged in user');
     }
-    return user.updateProfile({ displayName, photoURL });
+    return user.updateProfile({ displayName, photoURL }).then(() => {
+      debugConsole.log('Firebase', 'User profile updated', { displayName, photoURL });
+    });
   });
 
 export const firebaseUpdateUserEmail = async (email) =>
@@ -86,7 +88,11 @@ export const firebaseConnectGoogleAccountFromGapiCredential = (idToken, accessTo
   return firebase
     .auth()
     .currentUser.linkWithCredential(credential)
-    .then((result) => firebase.auth().signInWithCredential(result.credential));
+    .then((result) => firebase.auth().signInWithCredential(result.credential))
+    .then((userCredential) => {
+      debugConsole.log('Firebase', 'Firebase account connected to Google account with credential');
+      return userCredential;
+    });
 };
 
 /**
