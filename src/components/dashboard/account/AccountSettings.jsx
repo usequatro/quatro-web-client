@@ -51,6 +51,7 @@ import {
   selectUserExternalConfigIsFetching,
 } from '../../../modules/userExternalConfig';
 import { fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
+import { getClientDesktopVersion } from '../../../utils/applicationClient';
 import {
   getBrowserDetectedTimeZone,
   hasBrowserTimeZoneSupport,
@@ -281,6 +282,8 @@ const AccountSettings = () => {
     photoURL !== savedPhotoURL ||
     emailDailyDigestEnabled !== savedEmailDailyDigestEnabled;
 
+  const desktopClientVersion = getClientDesktopVersion();
+
   return (
     <Box
       className={classes.container}
@@ -495,7 +498,7 @@ const AccountSettings = () => {
       <Box>
         <Typography color="textSecondary" variant="body2" align="center">
           Quatro v1
-          {window.quatro.desktopClientVersion && `. Desktop client v0.1`}
+          {desktopClientVersion && `. Desktop client v${desktopClientVersion}`}
         </Typography>
       </Box>
 

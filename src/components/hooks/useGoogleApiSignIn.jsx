@@ -13,6 +13,8 @@ import {
   GOOGLE_ACCOUNT_LINKED,
 } from '../../constants/mixpanelEvents';
 import { useMixpanel } from '../tracking/MixpanelContext';
+import { isClientDesktop } from '../../utils/applicationClient';
+import { CALENDARS } from '../../constants/paths';
 
 /**
  * This hook exists because of how complex the different cases for signing in with Google API are
@@ -46,26 +48,8 @@ export default function useGoogleApiSignIn() {
     [notifyError, dispatch, mixpanel],
   );
 
-  const signInToConnectGoogleAccount = useCallback(async () => {
-    const firebaseGoogleAuthProvider = firebase
-      .auth()
-      .currentUser.providerData.find(({ providerId }) => providerId === 'google.com');
-    if (firebaseGoogleAuthProvider) {
-      throw new Error("This function shouldn't be called when account is already connected");
-    }
-
-    const authInstance = await gapiGetAuthInstance();
-    return (
-      authInstance
-        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
-        .signIn({
-          ux_mode: 'redirect',
-          redirect_uri: `${window.location.origin}/dashboard/calendars?googleconnected=1`,
-        })
-    );
-  }, []);
-
-  const connectGoogleAccount = useCallback(async () => {
+  const connectGoogleAccountAfterGAPISignIn = useCallback(async () => {
+    debugConsole.info('connectGoogleAccountAfterGAPISignIn called');
     const authInstance = await gapiGetAuthInstance();
     const authResponse = authInstance.currentUser.get().getAuthResponse(true);
     await firebaseConnectGoogleAccountFromGapiCredential(
@@ -84,6 +68,7 @@ export default function useGoogleApiSignIn() {
       ? (googleProvider || {}).displayName
       : undefined;
 
+    // If new info, upload profile and refresh it in Redux.
     if (newPhotoUrl || newDisplayName) {
       // We intentionally don't return this promise so we don't wait on it
       firebaseUpdateUserProfile({
@@ -94,7 +79,44 @@ export default function useGoogleApiSignIn() {
         dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
       });
     }
+    // If no new info, we still refresh the Firebase user to get the new provider info
+    else {
+      dispatch(setUserFromFirebaseUser(firebase.auth().currentUser));
+    }
   }, [dispatch, mixpanel]);
+
+  const signInToConnectGoogleAccount = useCallback(async () => {
+    const firebaseGoogleAuthProvider = firebase
+      .auth()
+      .currentUser.providerData.find(({ providerId }) => providerId === 'google.com');
+    if (firebaseGoogleAuthProvider) {
+      throw new Error("This function shouldn't be called when account is already connected");
+    }
+
+    const clientIsDesktop = isClientDesktop();
+
+    const authInstance = await gapiGetAuthInstance();
+
+    // On the desktop client, we're forced to do auth via redirect.
+    // Therefore, we redirect to ?googleconnected=1. When we're back, we'll process the linking
+    if (clientIsDesktop) {
+      return (
+        authInstance
+          // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+          .signIn({
+            ux_mode: 'redirect',
+            redirect_uri: `${window.location.origin}${CALENDARS}?googleconnected=1`,
+          })
+      );
+    }
+    // On the web client (not desktop), sign up via popup and process the linking without refresh
+    return (
+      authInstance
+        // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
+        .signIn({ ux_mode: 'popup' })
+        .then(connectGoogleAccountAfterGAPISignIn)
+    );
+  }, [connectGoogleAccountAfterGAPISignIn]);
 
   const signInAlreadyConnectedGoogleAccount = useCallback(async () => {
     const firebaseGoogleAuthProvider = firebase
@@ -104,11 +126,15 @@ export default function useGoogleApiSignIn() {
       throw new Error("This function shouldn't be called when google account isn't connected");
     }
 
+    const clientIsDesktop = isClientDesktop();
+
     const authInstance = await gapiGetAuthInstance();
     return (
       authInstance
+        // On desktop client, we must sign up via redirect for it to work.
+        // Leaving popup mode for the rest of cases, as it works more reliably on mobile.
         // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
-        .signIn({ ux_mode: 'redirect' })
+        .signIn({ ux_mode: clientIsDesktop ? 'redirect' : 'popup' })
         .then(async () => {
           const gapiUserId = authInstance.currentUser.get().getId();
           if (gapiUserId !== firebaseGoogleAuthProvider.uid) {
@@ -158,9 +184,9 @@ export default function useGoogleApiSignIn() {
 
   return {
     signInToConnectGoogleAccount,
+    connectGoogleAccountAfterGAPISignIn,
     signInAlreadyConnectedGoogleAccount,
     signOut,
     grantAccessToGoogleCalendar,
-    connectGoogleAccount,
   };
 }

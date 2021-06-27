@@ -26,6 +26,7 @@ import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 import createOnboardingTasks from '../../utils/createOnboardingTasks';
 import { getBrowserDetectedTimeZone } from '../../utils/timeZoneUtils';
 import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
+import { isClientDesktop } from '../../utils/applicationClient';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -191,8 +192,12 @@ const Registration = ({ mode }) => {
     }
     gapiGetAuthInstance()
       .then((authInstance) => {
+        const clientIsDesktop = isClientDesktop();
+
+        // On desktop client, we must sign up via redirect for it to work.
+        // Leaving popup mode for the rest of cases, as it works more reliably on mobile.
         // @link https://developers.google.com/identity/sign-in/web/reference#googleauthsignin
-        const result = authInstance.signIn({ ux_mode: 'redirect' });
+        const result = authInstance.signIn({ ux_mode: clientIsDesktop ? 'redirect' : 'popup' });
         return result;
       })
       .then(() => {

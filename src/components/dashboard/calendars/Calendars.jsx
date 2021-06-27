@@ -29,6 +29,7 @@ import {
 import useDelayedState from '../../hooks/useDelayedState';
 import GoogleButton from '../../ui/GoogleButton';
 import LoaderScreen from '../../ui/LoaderScreen';
+import { CALENDARS } from '../../../constants/paths';
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
@@ -68,7 +69,8 @@ const Calendars = () => {
 
   const googleFirebaseAuthProvider = useSelector(selectGoogleFirebaseAuthProvider);
 
-  const { signInToConnectGoogleAccount, connectGoogleAccount } = useGoogleApiSignIn();
+  const { signInToConnectGoogleAccount, connectGoogleAccountAfterGAPISignIn } =
+    useGoogleApiSignIn();
 
   const showLoader =
     useDelayedState(calendarsAreFetching, 500) && calendarsAreFetching && googleSignedIn;
@@ -81,14 +83,18 @@ const Calendars = () => {
     );
   };
 
+  // This effect executes when loading the URL with ?googleconnected=1, after signing up with Google
+  // on an account that was created without Google sign-in.
   useEffect(() => {
     const justConnectedGoogleProvider =
       new URLSearchParams(history.location.search).get('googleconnected') === '1';
     if (justConnectedGoogleProvider && googleSignedIn) {
-      connectGoogleAccount();
-      history.replace('/dashboard/calendars');
+      connectGoogleAccountAfterGAPISignIn().then(() => {
+        // remove the ?googleconnected URL param
+        history.replace(CALENDARS);
+      });
     }
-  }, [connectGoogleAccount, googleSignedIn, history]);
+  }, [connectGoogleAccountAfterGAPISignIn, googleSignedIn, history]);
 
   return (
     <Box className={classes.mainContainer}>
