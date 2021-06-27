@@ -492,6 +492,13 @@ const AccountSettings = () => {
         />
       </Box>
 
+      <Box>
+        <Typography color="textSecondary" variant="body2" align="center">
+          Quatro v1
+          {window.quatro.desktopClientVersion && `. Desktop client v0.1`}
+        </Typography>
+      </Box>
+
       <PasswordConfirmDialog
         open={Boolean(typeof recentLoginCallback === 'function' && passwordAuthProvider)}
         onClose={() => setRecentLoginCallback(null)}
