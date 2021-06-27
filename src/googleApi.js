@@ -231,5 +231,9 @@ export const gapiListCalendars = async () =>
 export const revokeAllScopes = async () => {
   const auth2 = await gapiGetAuthInstance();
   const currentUser = auth2.currentUser.get();
-  return currentUser.isSignedIn() ? currentUser.disconnect() : undefined;
+  if (currentUser.isSignedIn()) {
+    debugConsole.log('Google API', 'Disconnecting user');
+    return currentUser.disconnect();
+  }
+  return undefined;
 };

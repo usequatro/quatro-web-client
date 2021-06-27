@@ -230,8 +230,12 @@ const AccountSettings = () => {
 
   const handleDeleteAccount = () => {
     Promise.resolve()
-      .then(() => firebaseDeleteUser())
+      // first revoke Google API scopes
+      // @todo: maybe this can be done async by a function?
       .then(() => revokeAllScopes())
+      // then delete the user.
+      // Ensure it's after signing out Google API, otherwise the auth flow re-creates the user
+      .then(() => firebaseDeleteUser())
       .then(() => {
         // Redirect to initial screen to reset the Redux
         window.location = window.location.origin;

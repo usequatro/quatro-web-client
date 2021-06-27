@@ -66,7 +66,10 @@ export const firebaseDeleteUser = async () =>
     if (!user) {
       throw new Error('No logged in user');
     }
-    return user.delete();
+    // @link https://firebase.google.com/docs/reference/js/firebase.User#delete
+    return user.delete().then(() => {
+      debugConsole.log('Firebase', 'User deleted');
+    });
   });
 
 export const firebaseReauthenticateUserWithPassword = async (currentPassword) =>
