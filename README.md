@@ -1,6 +1,8 @@
 # Quatro Web Client App
 
-![CI](https://github.com/usequatro/quatro-web-client/workflows/CI/badge.svg)
+![CI badge](https://github.com/usequatro/quatro-web-client/workflows/CI/badge.svg)
+![Dev CI badge](https://github.com/usequatro/quatro-web-client/workflows/Dev%20Continuous%20Deployment/badge.svg)
+![Production Deployment badge](https://github.com/usequatro/quatro-web-client/workflows/Production%20Deployment/badge.svg)
 
 ## Environments
 
