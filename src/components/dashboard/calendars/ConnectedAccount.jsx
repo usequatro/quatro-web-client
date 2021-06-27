@@ -196,7 +196,9 @@ const ConnectedAccount = ({ uid, imageUrl, email, name, providerId }) => {
         }
       })
       .then(
-        () => setDisconectingProvider(false),
+        () => {
+          /* nothing to do, component unmounts */
+        },
         () => setDisconectingProvider(false),
       );
   };
