@@ -2,14 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { makeStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Checkbox,
+  InputAdornment,
+  IconButton,
+} from '@material-ui/core';
 
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
+import ClearIcon from '@material-ui/icons/Clear';
 
 import {
   selectFormSubtasks,
@@ -33,6 +38,18 @@ const useStyles = makeStyles((theme) => ({
   inputWithTypography: {
     '&&&:before': {
       borderBottom: 'none',
+    },
+    // Show only delete subtask button on input focus or hover
+    '&:hover': {
+      '&& > .MuiInputAdornment-root': {
+        opacity: 1,
+      },
+    },
+    '&& > .MuiInputAdornment-root': {
+      opacity: 0,
+    },
+    '&.Mui-focused > .MuiInputAdornment-root': {
+      opacity: 1,
     },
   },
 }));
@@ -73,6 +90,17 @@ const SubtasksList = () => {
                 className={classes.inputWithTypography}
                 typography="body2"
                 fullWidth
+                endAdornment={
+                  <InputAdornment position="end" disableTypography>
+                    <IconButton
+                      aria-label="delete subtask"
+                      size="small"
+                      onClick={() => dispatch(deleteFormSubtask(subtaskId))}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                }
                 value={text}
                 autoFocus={!text}
                 onFocus={() => setCurrentSubtaskIndex(index)}
