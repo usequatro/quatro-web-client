@@ -202,6 +202,8 @@ const TaskView = ({
             <Typography paragraph>{title.trim() || '(no title)'} </Typography>
             {totalSubtasks > 0 && (
               <Chip
+                clickable
+                disableRipple
                 variant="outlined"
                 size="small"
                 color={totalCompletedSubtasks === totalSubtasks ? 'primary' : 'default'}
