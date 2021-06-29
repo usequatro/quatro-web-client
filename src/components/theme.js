@@ -108,6 +108,14 @@ muiTheme.overrides = {
       width: `calc(100% - ${muiTheme.spacing(4)}px)`, // reducing margin on sides a bit on mobile
     },
   },
+  MuiDialogTitle: {
+    root: {
+      padding: `${muiTheme.spacing(2)}px`,
+      [muiTheme.breakpoints.up('md')]: {
+        padding: `${muiTheme.spacing(2)}px ${muiTheme.spacing(3)}px`,
+      },
+    },
+  },
   MuiDialogContent: {
     root: {
       padding: `${muiTheme.spacing(2)}px`,

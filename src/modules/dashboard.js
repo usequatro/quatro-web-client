@@ -183,6 +183,7 @@ export const createTask =
     effort,
     {
       description,
+      subtasks,
       due,
       scheduledStart,
       snoozedUntil,
@@ -204,6 +205,7 @@ export const createTask =
       impact,
       effort,
       description,
+      subtasks,
       due,
       scheduledStart,
       snoozedUntil,

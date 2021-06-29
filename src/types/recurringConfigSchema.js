@@ -28,6 +28,15 @@ export const recurringConfigSchema = Joi.object({
     title: Joi.string(),
     scheduledTime: Joi.string().allow(null),
     description: Joi.string().allow('').default(''),
+    subtasks: Joi.array()
+      .items(
+        Joi.object({
+          subtaskId: Joi.string(),
+          text: Joi.string(),
+          completed: Joi.boolean(),
+        }),
+      )
+      .default([]),
     effort: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
     impact: Joi.number().integer().custom(clampNumber(0, 3), 'clampNumber'),
     dueOffsetDays: Joi.number().integer().allow(null),

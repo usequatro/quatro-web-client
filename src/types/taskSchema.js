@@ -19,6 +19,15 @@ export const taskSchema = Joi.object({
   description: Joi.string().allow('').default(''),
 
   // these can be empty and we add defaults
+  subtasks: Joi.array()
+    .items(
+      Joi.object({
+        subtaskId: Joi.string(),
+        text: Joi.string(),
+        completed: Joi.boolean(),
+      }),
+    )
+    .default([]),
   completed: Joi.number().allow(null).default(null),
   prioritizedAheadOf: Joi.string().allow(null).default(null),
   blockedBy: Joi.array()
