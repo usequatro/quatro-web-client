@@ -127,11 +127,6 @@ const useStyles = makeStyles((theme) => ({
   blockersList: {
     flexGrow: 1,
   },
-  inputStartIcon: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing(1),
-    color: theme.palette.text.secondary,
-  },
   descriptionField: {
     '&::before, &::after': {
       opacity: 0.5,
@@ -226,6 +221,7 @@ const TaskDialogForm = ({ onClose }) => {
 
   const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
 
+  const [showFormDescription, setShowFormDescription] = useState(Boolean(description));
   const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showSnoozedUntilDialog, setShowSnoozedUntilDialog] = useState(false);
@@ -277,6 +273,11 @@ const TaskDialogForm = ({ onClose }) => {
     }
     if (recurringChangesToConfirm.length > 0) {
       setRecurringChangesToConfirm([]);
+    }
+
+    // Clear out description if is hidden
+    if (!showFormDescription) {
+      dispatch(setFormDescription(''));
     }
 
     setSubmitting(true);
@@ -371,35 +372,43 @@ const TaskDialogForm = ({ onClose }) => {
               }
             }}
             error={validationErrors.includes('title')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle notes visibility"
+                    size="small"
+                    onClick={() => setShowFormDescription(!showFormDescription)}
+                  >
+                    <NotesIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
       </DialogTitle>
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
-          <Box>
-            <TextField
-              placeholder="Notes"
-              aria-label="Notes"
-              fullWidth
-              multiline
-              rows={1}
-              rowsMax={10}
-              value={description}
-              InputProps={{
-                startAdornment: (
-                  <Tooltip title="Notes" arrow enterDelay={500} placement="top">
-                    <InputAdornment position="start" className={classes.inputStartIcon}>
-                      <NotesIcon />
-                    </InputAdornment>
-                  </Tooltip>
-                ),
-                className: classes.descriptionField,
-              }}
-              onChange={(event) => dispatch(setFormDescription(event.target.value))}
-            />
+        {showFormDescription && (
+          <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
+            <Box>
+              <TextField
+                placeholder="Notes"
+                aria-label="Notes"
+                fullWidth
+                multiline
+                rows={1}
+                rowsMax={10}
+                value={description}
+                InputProps={{
+                  className: classes.descriptionField,
+                }}
+                onChange={(event) => dispatch(setFormDescription(event.target.value))}
+              />
+            </Box>
           </Box>
-        </Box>
+        )}
 
         <Box pb={2}>
           {formHasSubtasks && <SubtasksList />}
