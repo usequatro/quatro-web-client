@@ -281,8 +281,9 @@ const slice = createSlice({
       }
     },
     setFormSubtaskText: (state, { payload: { subtaskId, title } }) => {
-      const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
-      state.task.subtasks[index].title = title;
+      state.task.subtasks = state.task.subtasks.map((subtask) =>
+        subtask.subtaskId === subtaskId ? { ...subtask, title } : subtask,
+      );
     },
     setFormSubtaskStatus: (state, { payload: { subtaskId, completed } }) => {
       const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
