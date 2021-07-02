@@ -36,6 +36,7 @@ import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 import CloseIcon from '@material-ui/icons/Close';
 import SnoozeIcon from '@material-ui/icons/Snooze';
+import AddIcon from '@material-ui/icons/Add';
 
 import { deleteTask, selectTaskDashboardTab } from '../../../modules/tasks';
 import {
@@ -53,6 +54,8 @@ import {
   selectFormCalendarBlockEnd,
   setFormTitle,
   setFormDescription,
+  selectFormHasSubtasks,
+  setFormNewSubtask,
   setFormImpact,
   setFormEffort,
   addFormTaskBlocker,
@@ -68,6 +71,7 @@ import {
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
+import SubtasksList from './SubtasksList';
 import DueDateDialog from './DueDateDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
 import SnoozeCustomDialog from './SnoozeCustomDialog';
@@ -100,7 +104,9 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   dialogContent: {
+    paddingTop: theme.spacing(0),
     paddingBottom: theme.spacing(2),
+    borderTop: 'none',
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       maxWidth: '100%',
@@ -110,6 +116,9 @@ const useStyles = makeStyles((theme) => ({
   titleTextField: {
     flexGrow: 1,
   },
+  addSubtaskButton: {
+    fontWeight: 'normal',
+  },
   settingButton: {
     justifyContent: 'flex-start',
     textAlign: 'left',
@@ -117,11 +126,6 @@ const useStyles = makeStyles((theme) => ({
   },
   blockersList: {
     flexGrow: 1,
-  },
-  inputStartIcon: {
-    alignSelf: 'flex-start',
-    marginTop: theme.spacing(1),
-    color: theme.palette.text.secondary,
   },
   descriptionField: {
     '&::before, &::after': {
@@ -204,6 +208,7 @@ const TaskDialogForm = ({ onClose }) => {
 
   const title = useSelector(selectFormTitle);
   const description = useSelector(selectFormDescription);
+  const formHasSubtasks = useSelector(selectFormHasSubtasks);
   const impact = useSelector(selectFormImpact);
   const effort = useSelector(selectFormEffort);
   const scheduledStartTimestamp = useSelector(selectFormScheduledStart);
@@ -216,6 +221,7 @@ const TaskDialogForm = ({ onClose }) => {
 
   const formHasRecurringConfig = useSelector(selectFormHasRecurringConfig);
 
+  const [showFormDescription, setShowFormDescription] = useState(Boolean(description));
   const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false);
   const [showDueDialog, setShowDueDialog] = useState(false);
   const [showSnoozedUntilDialog, setShowSnoozedUntilDialog] = useState(false);
@@ -267,6 +273,11 @@ const TaskDialogForm = ({ onClose }) => {
     }
     if (recurringChangesToConfirm.length > 0) {
       setRecurringChangesToConfirm([]);
+    }
+
+    // Clear out description if is hidden
+    if (!showFormDescription) {
+      dispatch(setFormDescription(''));
     }
 
     setSubmitting(true);
@@ -335,58 +346,83 @@ const TaskDialogForm = ({ onClose }) => {
         }
       }}
     >
-      <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        <Box pt={2} pb={4} display="flex" flexDirection="column" alignItems="stretch">
-          <Box pb={2}>
-            <TextFieldWithTypography
-              typography="h6"
-              fullWidth
-              aria-label="What do you need to do?"
-              placeholder="What do you need to do?"
-              className={classes.titleTextField}
-              // Autofocus with real keyboard, not when screen keyboard because it's annoying
-              autoFocus={!isTouchEnabledScreen}
-              multiline
-              rowsMax={3}
-              value={title}
-              onChange={(event) => {
-                dispatch(setFormTitle(event.target.value));
-                if (validationErrors.includes('title')) {
-                  setValidationErrors(validationErrors.filter((e) => e !== 'title'));
-                }
-              }}
-              onBlur={() => {
-                // Prevent leaving whitespaces saved at beginning or end
-                if (title !== title.trim()) {
-                  dispatch(setFormTitle(title.trim()));
-                }
-              }}
-              error={validationErrors.includes('title')}
-            />
-          </Box>
-
-          <Box>
-            <TextField
-              placeholder="Notes"
-              aria-label="Notes"
-              fullWidth
-              multiline
-              rows={1}
-              rowsMax={10}
-              value={description}
-              InputProps={{
-                startAdornment: (
-                  <Tooltip title="Notes" arrow enterDelay={500} placement="top">
-                    <InputAdornment position="start" className={classes.inputStartIcon}>
+      <DialogTitle>
+        <Box pt={2}>
+          <TextFieldWithTypography
+            typography="h6"
+            fullWidth
+            aria-label="What do you need to do?"
+            placeholder="What do you need to do?"
+            className={classes.titleTextField}
+            // Autofocus with real keyboard, not when screen keyboard because it's annoying
+            autoFocus={!isTouchEnabledScreen}
+            multiline
+            rowsMax={3}
+            value={title}
+            onChange={(event) => {
+              dispatch(setFormTitle(event.target.value));
+              if (validationErrors.includes('title')) {
+                setValidationErrors(validationErrors.filter((e) => e !== 'title'));
+              }
+            }}
+            onBlur={() => {
+              // Prevent leaving whitespaces saved at beginning or end
+              if (title !== title.trim()) {
+                dispatch(setFormTitle(title.trim()));
+              }
+            }}
+            error={validationErrors.includes('title')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title={showFormDescription ? 'Remove notes' : 'Add notes'} arrow>
+                    <IconButton
+                      aria-label="toggle notes visibility"
+                      size="small"
+                      onClick={() => setShowFormDescription(!showFormDescription)}
+                    >
                       <NotesIcon />
-                    </InputAdornment>
+                    </IconButton>
                   </Tooltip>
-                ),
-                className: classes.descriptionField,
-              }}
-              onChange={(event) => dispatch(setFormDescription(event.target.value))}
-            />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      </DialogTitle>
+
+      <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
+        {showFormDescription && (
+          <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
+            <Box>
+              <TextField
+                placeholder="Notes"
+                aria-label="Notes"
+                fullWidth
+                multiline
+                rows={1}
+                rowsMax={10}
+                value={description}
+                InputProps={{
+                  className: classes.descriptionField,
+                }}
+                onChange={(event) => dispatch(setFormDescription(event.target.value))}
+              />
+            </Box>
           </Box>
+        )}
+
+        <Box pb={2}>
+          {formHasSubtasks && <SubtasksList />}
+
+          <Button
+            type="button"
+            onClick={() => dispatch(setFormNewSubtask())}
+            startIcon={<AddIcon />}
+            className={classes.addSubtaskButton}
+          >
+            Add Subtask
+          </Button>
         </Box>
 
         <Box pt={2} pb={4} display="flex">
@@ -615,7 +651,8 @@ const TaskDialogForm = ({ onClose }) => {
           <Button
             variant="outlined"
             color="primary"
-            type="submit"
+            type="button"
+            onClick={(event) => handleSubmit(event)}
             disabled={submitting}
             startIcon={
               submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
@@ -655,6 +692,7 @@ const TaskDialogForm = ({ onClose }) => {
                   {{
                     title: `Title`,
                     description: `Description`,
+                    subtasks: `Subtasks`,
                     impact: `Impact`,
                     effort: `Time`,
                     scheduledStart: `Scheduled date`,
@@ -684,7 +722,7 @@ const TaskDialogForm = ({ onClose }) => {
       )}
 
       <Box className={classes.closeButtonContainer}>
-        <IconButton edge="end" size="small" color="inherit" onClick={onClose} aria-label="close">
+        <IconButton size="small" color="inherit" onClick={onClose} aria-label="close">
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>

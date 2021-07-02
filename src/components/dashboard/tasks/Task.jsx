@@ -6,6 +6,8 @@ import TaskView from './TaskView';
 import {
   selectTaskTitle,
   selectTaskDescription,
+  selectTotalSubtasks,
+  selectTotalCompletedSubtasks,
   selectTaskScore,
   selectTaskShowsAsCompleted,
   selectTaskScheduledStart,
@@ -35,6 +37,8 @@ const Task = ({
 
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
+  const totalSubtasks = useSelector((state) => selectTotalSubtasks(state, id));
+  const totalCompletedSubtasks = useSelector((state) => selectTotalCompletedSubtasks(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
   const effort = useSelector((state) => selectTaskEffort(state, id));
   const completed = useSelector((state) => selectTaskShowsAsCompleted(state, id));
@@ -70,6 +74,8 @@ const Task = ({
       editable={editable}
       title={title}
       description={description}
+      totalSubtasks={totalSubtasks}
+      totalCompletedSubtasks={totalCompletedSubtasks}
       score={score}
       completed={completed}
       showCompletedAnimation={completed}
