@@ -50,10 +50,10 @@ export const selectTaskDescription = (state, id) => get(selectTask(state, id), '
 /** @returns {Array<Object>} */
 export const selectSubtasks = (state, id) => get(selectTask(state, id), 'subtasks');
 /** @returns {number} */
-export const selectTotalSubtasks = (state, id) => get(selectTask(state, id), 'subtasks').length;
+export const selectTotalSubtasks = (state, id) => get(selectTask(state, id), 'subtasks', []).length;
 /** @returns {number} */
 export const selectTotalCompletedSubtasks = (state, id) =>
-  get(selectTask(state, id), 'subtasks').filter((subtask) => subtask.completed).length;
+  get(selectTask(state, id), 'subtasks', []).filter((subtask) => subtask.completed).length;
 /** @returns {number} */
 export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');
 /** @returns {number} */
