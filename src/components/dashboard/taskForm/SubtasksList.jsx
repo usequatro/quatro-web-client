@@ -70,7 +70,7 @@ const SubtasksList = () => {
 
   return (
     <List className={classes.root}>
-      {subtasks.map(({ subtaskId, text, completed }, index) => (
+      {subtasks.map(({ subtaskId, title, completed }, index) => (
         <ListItem key={subtaskId} disableGutters>
           <ListItemIcon className={classes.listItemIcon}>
             <Checkbox
@@ -101,16 +101,16 @@ const SubtasksList = () => {
                     </IconButton>
                   </InputAdornment>
                 }
-                value={text}
-                autoFocus={!text}
+                value={title}
+                autoFocus={!title}
                 onFocus={() => setCurrentSubtaskIndex(index)}
                 onChange={(event) => {
-                  dispatch(setFormSubtaskText({ subtaskId, text: event.target.value }));
+                  dispatch(setFormSubtaskText({ subtaskId, title: event.target.value }));
                 }}
                 onBlur={() => {
                   // Prevent leaving whitespaces saved at beginning or end
-                  if (text !== text.trim()) {
-                    dispatch(setFormSubtaskText({ subtaskId, text: text.trim() }));
+                  if (title !== title.trim()) {
+                    dispatch(setFormSubtaskText({ subtaskId, title: title.trim() }));
                   }
                 }}
                 onKeyDown={(event) => {
@@ -119,7 +119,7 @@ const SubtasksList = () => {
                     dispatch(setFormNewSubtask(index + 1));
                     setCurrentSubtaskIndex(index + 1);
                   }
-                  if (event.key === 'Backspace' && text === '') {
+                  if (event.key === 'Backspace' && title === '') {
                     dispatch(deleteFormSubtask(subtaskId));
                     setCurrentSubtaskIndex(index - 1);
                   }

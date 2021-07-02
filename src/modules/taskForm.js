@@ -273,16 +273,16 @@ const slice = createSlice({
     },
     setFormNewTaskInitialState: () => initialState,
     setFormNewSubtask: (state, { payload: index }) => {
-      const newSubtask = { subtaskId: nanoid(), text: '', completed: false };
+      const newSubtask = { subtaskId: nanoid(), title: '', completed: false };
       if (index) {
         state.task.subtasks.splice(index, 0, newSubtask);
       } else {
         state.task.subtasks.push(newSubtask);
       }
     },
-    setFormSubtaskText: (state, { payload: { subtaskId, text } }) => {
+    setFormSubtaskText: (state, { payload: { subtaskId, title } }) => {
       const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
-      state.task.subtasks[index].text = text;
+      state.task.subtasks[index].title = title;
     },
     setFormSubtaskStatus: (state, { payload: { subtaskId, completed } }) => {
       const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
@@ -361,7 +361,7 @@ export const saveForm =
     const effort = selectFormEffort(state);
     const description = (selectFormDescription(state) || '').trim();
     // Get subtasks and filter empty ones
-    const subtasks = selectFormSubtasks(state).filter((subtask) => subtask.text);
+    const subtasks = selectFormSubtasks(state).filter((subtask) => subtask.title);
     const due = selectFormDue(state);
     const scheduledStart = selectFormScheduledStart(state);
     const snoozedUntil = selectFormSnoozedUntil(state);

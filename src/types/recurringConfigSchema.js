@@ -32,7 +32,7 @@ export const recurringConfigSchema = Joi.object({
       .items(
         Joi.object({
           subtaskId: Joi.string(),
-          text: Joi.string(),
+          title: Joi.string(),
           completed: Joi.boolean(),
         }),
       )
