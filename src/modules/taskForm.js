@@ -289,8 +289,9 @@ const slice = createSlice({
       state.task.subtasks[index].completed = completed;
     },
     deleteFormSubtask: (state, { payload: subtaskId }) => {
-      const index = state.task.subtasks.findIndex((subtask) => subtask.subtaskId === subtaskId);
-      state.task.subtasks.splice(index, 1);
+      state.task.subtasks = state.task.subtasks.filter(
+        (subtask) => subtask.subtaskId !== subtaskId,
+      );
     },
   },
 });
