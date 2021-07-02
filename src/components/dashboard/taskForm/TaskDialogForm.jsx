@@ -375,13 +375,15 @@ const TaskDialogForm = ({ onClose }) => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle notes visibility"
-                    size="small"
-                    onClick={() => setShowFormDescription(!showFormDescription)}
-                  >
-                    <NotesIcon />
-                  </IconButton>
+                  <Tooltip title={showFormDescription ? 'Remove notes' : 'Add notes'} arrow>
+                    <IconButton
+                      aria-label="toggle notes visibility"
+                      size="small"
+                      onClick={() => setShowFormDescription(!showFormDescription)}
+                    >
+                      <NotesIcon />
+                    </IconButton>
+                  </Tooltip>
                 </InputAdornment>
               ),
             }}
