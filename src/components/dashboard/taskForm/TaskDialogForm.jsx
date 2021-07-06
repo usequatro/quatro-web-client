@@ -296,7 +296,6 @@ const TaskDialogForm = ({ onClose }) => {
       }),
     )
       .then((result) => {
-        setSubmitting(false);
         onClose();
 
         notifyInfo({
