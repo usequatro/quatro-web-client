@@ -143,6 +143,11 @@ const BlockerSelectionDialog = ({
                   setFreeTextError(false);
                 }
               }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleFreeTextEntered(event);
+                }
+              }}
             />
 
             <Button variant="text" color="primary" type="submit">
