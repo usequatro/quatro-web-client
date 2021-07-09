@@ -145,7 +145,7 @@ const BlockerSelectionDialog = ({
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
-                  handleFreeTextEntered(event);
+                  event.stopPropagation();
                 }
               }}
             />
