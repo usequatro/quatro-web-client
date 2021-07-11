@@ -256,7 +256,9 @@ const TaskDialogForm = ({ onClose }) => {
     event.preventDefault();
 
     // Early return if the task is already submitting
-    if (submitting) return;
+    if (submitting) {
+      return;
+    }
 
     const errors = [title.trim() === '' && 'title'].filter(Boolean);
     setValidationErrors(errors);
