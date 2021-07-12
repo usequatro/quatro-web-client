@@ -115,7 +115,7 @@ const SubtasksList = () => {
                 }}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
-                    event.stopPropagation();
+                    event.preventDefault();
                     dispatch(setFormNewSubtask(index + 1));
                     setCurrentSubtaskIndex(index + 1);
                   }

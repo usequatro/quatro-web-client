@@ -343,12 +343,6 @@ const TaskDialogForm = ({ onClose }) => {
       display="flex"
       height="100%"
       flexDirection="column"
-      // hitting ENTER with anything focused inside the form will make it submit :)
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          handleSubmit(event);
-        }
-      }}
     >
       <DialogTitle>
         <Box pt={2}>
@@ -373,6 +367,11 @@ const TaskDialogForm = ({ onClose }) => {
               // Prevent leaving whitespaces saved at beginning or end
               if (title !== title.trim()) {
                 dispatch(setFormTitle(title.trim()));
+              }
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                handleSubmit(event);
               }
             }}
             error={validationErrors.includes('title')}
@@ -655,8 +654,7 @@ const TaskDialogForm = ({ onClose }) => {
           <Button
             variant="outlined"
             color="primary"
-            type="button"
-            onClick={(event) => handleSubmit(event)}
+            type="submit"
             disabled={submitting}
             startIcon={
               submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
