@@ -255,6 +255,11 @@ const TaskDialogForm = ({ onClose }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // Early return if the task is already submitting
+    if (submitting) {
+      return;
+    }
+
     const errors = [title.trim() === '' && 'title'].filter(Boolean);
     setValidationErrors(errors);
     if (errors.length) {
@@ -293,7 +298,6 @@ const TaskDialogForm = ({ onClose }) => {
       }),
     )
       .then((result) => {
-        setSubmitting(false);
         onClose();
 
         notifyInfo({

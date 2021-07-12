@@ -171,7 +171,9 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const handleSelectChange = (event) => {
     const updatedResponseStatus = event.target.value;
-    if (isUpdating) return;
+    if (isUpdating) {
+      return;
+    }
     setIsUpdating(true);
     onClose();
     notifyInfo({ message: 'Event updated' });

@@ -20,6 +20,7 @@ module.exports = {
     },
   ],
   rules: {
+    curly: ['error', 'all'],
     'react/prop-types': 'warn',
     'jsx-a11y/label-has-for': 'off', // this rule was deprecated.
     'react/jsx-props-no-spreading': 'off',
