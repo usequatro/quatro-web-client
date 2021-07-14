@@ -4,11 +4,11 @@
 
 if [[ "$GCLOUD_PROJECT" == "quatro-dev-88030" ]]; then
     LATEST_COMMIT=$(git log --pretty=format:"%h - %an, %ar: \\\"%s\\\"" -1);
-    ./scripts/messageSlack.sh ":canoe:" "Deployed to DEVELOPMENT - https://dev.usequatro.com - ${LATEST_COMMIT}"
+    ./scripts/messageSlack.sh "Quatro web development" ":canoe:" "Deployed https://dev.usequatro.com - ${LATEST_COMMIT}"
 elif [[ "$GCLOUD_PROJECT" == "tasket-project" ]]; then
     LATEST_COMMIT=$(git log --pretty=format:"%h - %an, %ar: \\\"%s\\\"" -1);
     LATEST_TAG=$(git describe --abbrev=0 --tags);
-    ./scripts/messageSlack.sh ":rocket:" "Deployed to PRODUCTION - https://app.usequatro.com - ${LATEST_COMMIT} - Tag: ${LATEST_TAG}"
+    ./scripts/messageSlack.sh "Quatro web production" ":rocket:" "Deployed https://app.usequatro.com - ${LATEST_COMMIT} - Tag: ${LATEST_TAG}"
 else
     printf "Unknown Firebase project ${BRed}$GCLOUD_PROJECT${Color_Off}\n";
     exit 1;
