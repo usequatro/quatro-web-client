@@ -35,20 +35,27 @@ const useStyles = makeStyles((theme) => ({
   listItemIcon: {
     minWidth: theme.spacing(5),
   },
+  listItem: {
+    // Show the delete button when hovering the entire subtask input title
+    '&&:hover .MuiInputAdornment-root > button': {
+      opacity: 1,
+    },
+  },
   inputWithTypography: {
     '&&&:before': {
       borderBottom: 'none',
     },
-    // Show only delete subtask button on input focus or hover
-    '&:hover': {
-      '&& > .MuiInputAdornment-root': {
-        opacity: 1,
-      },
-    },
-    '&& > .MuiInputAdornment-root': {
+    // Hide the delete button by default
+    '&& > .MuiInputAdornment-root > button': {
       opacity: 0,
     },
-    '&.Mui-focused > .MuiInputAdornment-root': {
+
+    // When focusing the delete button, we show it
+    '&& > .MuiInputAdornment-root > button:focus': {
+      opacity: 1,
+    },
+    // When the subtask title input is focused, we show the delete
+    '&.Mui-focused > .MuiInputAdornment-root > button': {
       opacity: 1,
     },
   },
@@ -71,7 +78,7 @@ const SubtasksList = () => {
   return (
     <List className={classes.root}>
       {subtasks.map(({ subtaskId, title, completed }, index) => (
-        <ListItem key={subtaskId} disableGutters>
+        <ListItem key={subtaskId} disableGutters className={classes.listItem}>
           <ListItemIcon className={classes.listItemIcon}>
             <Checkbox
               onClick={() => dispatch(setFormSubtaskStatus({ subtaskId, completed: !completed }))}
@@ -114,8 +121,9 @@ const SubtasksList = () => {
                   }
                 }}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
+                  if (event.key === 'Enter' && !(event.metaKey || event.ctrlKey)) {
                     event.preventDefault();
+                    event.stopPropagation();
                     dispatch(setFormNewSubtask(index + 1));
                     setCurrentSubtaskIndex(index + 1);
                   }
