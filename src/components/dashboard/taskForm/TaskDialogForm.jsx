@@ -371,7 +371,7 @@ const TaskDialogForm = ({ onClose }) => {
             }}
             onBlur={() => {
               // Prevent leaving whitespaces saved at beginning or end
-              if (title !== title.trim()) {
+              if (typeof title === 'string' && title !== title.trim()) {
                 dispatch(setFormTitle(title.trim()));
               }
             }}
