@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
       textAlign: 'center',
     },
     // @see https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp
-    '$ input[type=number]': {
+    '& input[type=number]': {
       '-moz-appearance': 'textfield',
     },
     '& input::-webkit-outer-spin-button': {
