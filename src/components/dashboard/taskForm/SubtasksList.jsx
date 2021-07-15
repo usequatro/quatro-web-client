@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -22,6 +23,7 @@ import {
   setFormSubtaskText,
   setFormSubtaskStatus,
   deleteFormSubtask,
+  reorderFormSubtasks,
 } from '../../../modules/taskForm';
 import { InputWithTypography } from '../../ui/InputWithTypography';
 
@@ -34,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
   },
   listItemIcon: {
     minWidth: theme.spacing(5),
+  },
+  completeCheckbox: {
+    cursor: 'grab',
   },
   listItem: {
     // Show the delete button when hovering the entire subtask input title
@@ -75,69 +80,115 @@ const SubtasksList = () => {
     }
   }, [currentSubtaskIndex]);
 
-  return (
-    <List className={classes.root}>
-      {subtasks.map(({ subtaskId, title, completed }, index) => (
-        <ListItem key={subtaskId} disableGutters className={classes.listItem}>
-          <ListItemIcon className={classes.listItemIcon}>
-            <Checkbox
-              onClick={() => dispatch(setFormSubtaskStatus({ subtaskId, completed: !completed }))}
-              checked={completed}
-              icon={<RadioButtonUncheckedRoundedIcon fontSize="small" />}
-              checkedIcon={<CheckCircleOutlineRoundedIcon fontSize="small" />}
-            />
-          </ListItemIcon>
+  const handleDragEnd = (result) => {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+    dispatch(
+      reorderFormSubtasks({
+        sourceIndex: result.source.index,
+        destinationIndex: result.destination.index,
+      }),
+    );
+  };
 
-          <ListItemText
-            id={subtaskId}
-            ref={currentSubtaskIndex === index ? currentSubtask : null}
-            style={completed ? { textDecoration: 'line-through' } : {}}
-            primary={
-              <InputWithTypography
-                className={classes.inputWithTypography}
-                typography="body2"
-                fullWidth
-                endAdornment={
-                  <InputAdornment position="end" disableTypography>
-                    <IconButton
-                      aria-label="delete subtask"
-                      size="small"
-                      onClick={() => dispatch(deleteFormSubtask(subtaskId))}
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="droppable">
+        {(droppableProvided) => (
+          <List
+            className={classes.root}
+            {...droppableProvided.droppableProps}
+            ref={droppableProvided.innerRef}
+          >
+            {subtasks.map(({ subtaskId, title, completed }, index) => (
+              <Draggable
+                key={subtaskId}
+                draggableId={subtaskId}
+                index={index}
+                disableInteractiveElementBlocking
+              >
+                {(draggableProvided) => (
+                  <ListItem
+                    key={subtaskId}
+                    disableGutters
+                    className={classes.listItem}
+                    ref={draggableProvided.innerRef}
+                    {...draggableProvided.draggableProps}
+                    style={draggableProvided.draggableProps.style}
+                  >
+                    <ListItemIcon
+                      className={classes.listItemIcon}
+                      {...draggableProvided.dragHandleProps}
                     >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                }
-                value={title}
-                autoFocus={!title}
-                onFocus={() => setCurrentSubtaskIndex(index)}
-                onChange={(event) => {
-                  dispatch(setFormSubtaskText({ subtaskId, title: event.target.value }));
-                }}
-                onBlur={() => {
-                  // Prevent leaving whitespaces saved at beginning or end
-                  if (typeof title === 'string' && title !== title.trim()) {
-                    dispatch(setFormSubtaskText({ subtaskId, title: title.trim() }));
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !(event.metaKey || event.ctrlKey)) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    dispatch(setFormNewSubtask(index + 1));
-                    setCurrentSubtaskIndex(index + 1);
-                  }
-                  if (event.key === 'Backspace' && title === '') {
-                    dispatch(deleteFormSubtask(subtaskId));
-                    setCurrentSubtaskIndex(index - 1);
-                  }
-                }}
-              />
-            }
-          />
-        </ListItem>
-      ))}
-    </List>
+                      <Checkbox
+                        className={classes.completeCheckbox}
+                        onClick={() =>
+                          dispatch(setFormSubtaskStatus({ subtaskId, completed: !completed }))
+                        }
+                        checked={completed}
+                        icon={<RadioButtonUncheckedRoundedIcon fontSize="small" />}
+                        checkedIcon={<CheckCircleOutlineRoundedIcon fontSize="small" />}
+                      />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      id={subtaskId}
+                      ref={currentSubtaskIndex === index ? currentSubtask : null}
+                      style={completed ? { textDecoration: 'line-through' } : {}}
+                      primary={
+                        <InputWithTypography
+                          className={classes.inputWithTypography}
+                          typography="body2"
+                          fullWidth
+                          endAdornment={
+                            <InputAdornment position="end" disableTypography>
+                              <IconButton
+                                aria-label="delete subtask"
+                                size="small"
+                                onClick={() => dispatch(deleteFormSubtask(subtaskId))}
+                              >
+                                <ClearIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                          value={title}
+                          autoFocus={!title}
+                          onFocus={() => setCurrentSubtaskIndex(index)}
+                          onChange={(event) => {
+                            dispatch(setFormSubtaskText({ subtaskId, title: event.target.value }));
+                          }}
+                          onBlur={() => {
+                            // Prevent leaving whitespaces saved at beginning or end
+                            if (typeof title === 'string' && title !== title.trim()) {
+                              dispatch(setFormSubtaskText({ subtaskId, title: title.trim() }));
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' && !(event.metaKey || event.ctrlKey)) {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              dispatch(setFormNewSubtask(index + 1));
+                              setCurrentSubtaskIndex(index + 1);
+                            }
+                            if (event.key === 'Backspace' && title === '') {
+                              dispatch(deleteFormSubtask(subtaskId));
+                              setCurrentSubtaskIndex(index - 1);
+                            }
+                          }}
+                        />
+                      }
+                    />
+                  </ListItem>
+                )}
+              </Draggable>
+            ))}
+            {droppableProvided.placeholder}
+          </List>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 

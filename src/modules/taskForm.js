@@ -294,6 +294,13 @@ const slice = createSlice({
         (subtask) => subtask.subtaskId !== subtaskId,
       );
     },
+    reorderFormSubtasks: (state, { payload: { sourceIndex, destinationIndex } }) => {
+      const result = Array.from(state.task.subtasks);
+      const [removed] = result.splice(sourceIndex, 1);
+      result.splice(destinationIndex, 0, removed);
+
+      state.task.subtasks = result;
+    },
   },
 });
 /* eslint-enable no-param-reassign */
@@ -319,6 +326,7 @@ export const {
   setFormSubtaskText,
   setFormSubtaskStatus,
   deleteFormSubtask,
+  reorderFormSubtasks,
   setFormRecurringConfig,
   setFormRecurringConfigUnit,
   setFormRecurringConfigAmount,
