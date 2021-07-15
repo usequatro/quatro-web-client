@@ -348,8 +348,8 @@ const TaskDialogForm = ({ onClose }) => {
   const touchEnabledScreen = useIsTouchEnabledScreen();
   const macPlatform = useIsMacPlaform();
 
-  const descritionWasHidden = usePrevious(showFormDescription, true);
-  const descriptionJustBecameVisible = !descritionWasHidden && showFormDescription;
+  const descriptionWasHidden = usePrevious(showFormDescription, true);
+  const descriptionJustBecameVisible = !descriptionWasHidden && showFormDescription;
 
   return (
     <Box
