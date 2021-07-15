@@ -6,6 +6,7 @@ import cond from 'lodash/cond';
 import invert from 'lodash/invert';
 import isPast from 'date-fns/isPast';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -94,6 +95,9 @@ import { PATHS_TO_DASHBOARD_TABS } from '../../../constants/paths';
 import { SECTION_TITLES_BY_TAB } from '../../../constants/dashboardTabs';
 import { selectDashboardActiveTab } from '../../../modules/dashboard';
 import getApproximatedEffortToCalendarBlockDuration from '../../../utils/getApproximatedEffortToCalendarBlockDuration';
+import useIsMacPlaform from '../../hooks/useIsMacPlatform';
+import usePrevious from '../../hooks/usePrevious';
+import debugConsole from '../../../utils/debugConsole';
 
 const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
@@ -192,6 +196,9 @@ SavedNotificationAction.propTypes = {
   renderButton: PropTypes.func.isRequired,
 };
 
+const EVENT_SUBMIT_HOTKEYS = 'ctrl+enter,command+enter';
+const isEventSubmitShortcut = (event) => event.key === 'Enter' && (event.ctrlKey || event.metaKey);
+
 const TaskDialogForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -233,8 +240,6 @@ const TaskDialogForm = ({ onClose }) => {
   const [appliesChangesRecurringly, setAppliesChangesRecurringly] = useState(false);
 
   const snoozeButtonRef = useRef();
-
-  const mobile = useMobileViewportSize();
 
   // On opening edit task modal, load task data
   useEffect(() => {
@@ -333,7 +338,19 @@ const TaskDialogForm = ({ onClose }) => {
     }
   }, []);
 
-  const isTouchEnabledScreen = useIsTouchEnabledScreen();
+  // Add a global listener to for the dialog submit shortcut. This way, even if no input
+  // in the modal is focused, it'll still submit.
+  useHotkeys(EVENT_SUBMIT_HOTKEYS, (event) => {
+    debugConsole.info('React', 'Submitting task dialog form by keyboard shortcut');
+    handleSubmit(event);
+  });
+
+  const mobile = useMobileViewportSize();
+  const touchEnabledScreen = useIsTouchEnabledScreen();
+  const macPlatform = useIsMacPlaform();
+
+  const descriptionWasHidden = usePrevious(showFormDescription, true);
+  const descriptionJustBecameVisible = !descriptionWasHidden && showFormDescription;
 
   return (
     <Box
@@ -343,9 +360,11 @@ const TaskDialogForm = ({ onClose }) => {
       display="flex"
       height="100%"
       flexDirection="column"
-      // hitting ENTER with anything focused inside the form will make it submit :)
+      // On textareas, the Enter+cmd event doesn't propagate all the way to hotkeys,
+      // so adding it here as well to cover all cases
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
+        if (isEventSubmitShortcut(event)) {
+          event.stopPropagation();
           handleSubmit(event);
         }
       }}
@@ -359,7 +378,7 @@ const TaskDialogForm = ({ onClose }) => {
             placeholder="What do you need to do?"
             className={classes.titleTextField}
             // Autofocus with real keyboard, not when screen keyboard because it's annoying
-            autoFocus={!isTouchEnabledScreen}
+            autoFocus={!touchEnabledScreen}
             multiline
             rowsMax={3}
             value={title}
@@ -375,6 +394,14 @@ const TaskDialogForm = ({ onClose }) => {
                 dispatch(setFormTitle(title.trim()));
               }
             }}
+            onKeyDown={(event) => {
+              // On the task title, we submit when pressing ENTER for convenience
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                handleSubmit(event);
+              }
+            }}
             error={validationErrors.includes('title')}
             InputProps={{
               endAdornment: (
@@ -383,7 +410,16 @@ const TaskDialogForm = ({ onClose }) => {
                     <IconButton
                       aria-label="toggle notes visibility"
                       size="small"
-                      onClick={() => setShowFormDescription(!showFormDescription)}
+                      onKeyDown={(event) => {
+                        // Stop propagation to not make the upper input execute its onKeyDown
+                        if (event.key === 'Enter' && !isEventSubmitShortcut(event)) {
+                          event.stopPropagation();
+                        }
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setShowFormDescription(!showFormDescription);
+                      }}
                     >
                       <NotesIcon />
                     </IconButton>
@@ -410,6 +446,7 @@ const TaskDialogForm = ({ onClose }) => {
                 InputProps={{
                   className: classes.descriptionField,
                 }}
+                autoFocus={!touchEnabledScreen && descriptionJustBecameVisible}
                 onChange={(event) => dispatch(setFormDescription(event.target.value))}
               />
             </Box>
@@ -519,11 +556,14 @@ const TaskDialogForm = ({ onClose }) => {
                       <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
 
                       <ListItemSecondaryAction>
-                        <Tooltip title="Delete Blocker" arrow>
+                        <Tooltip title="Delete blocker" arrow>
                           <IconButton
                             edge="end"
                             aria-label="remove"
                             size="small"
+                            onFocus={(event) => {
+                              event.stopPropagation();
+                            }}
                             onClick={(event) => {
                               event.stopPropagation();
                               dispatch(removeFormBlockerByIndex(index));
@@ -652,18 +692,26 @@ const TaskDialogForm = ({ onClose }) => {
             </Box>
           )}
 
-          <Button
-            variant="outlined"
-            color="primary"
-            type="button"
-            onClick={(event) => handleSubmit(event)}
-            disabled={submitting}
-            startIcon={
-              submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
-            }
+          <Tooltip
+            // Tooltip shortcut text different for Mac or the rest (Windows, Linux)
+            title={macPlatform ? 'Cmd + Enter' : 'Control + Enter'}
+            enterDelay={1000}
+            disableFocusListener // no focus listener, we show only on hover
+            arrow
+            placement="top"
           >
-            {`${ctaText}`}
-          </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              type="submit"
+              disabled={submitting}
+              startIcon={
+                submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
+              }
+            >
+              {`${ctaText}`}
+            </Button>
+          </Tooltip>
         </Box>
       </DialogActions>
 
