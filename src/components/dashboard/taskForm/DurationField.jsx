@@ -92,7 +92,7 @@ const DurationField = ({ duration: passedDuration, onChange, error }) => {
           onChange={handleChange}
           onBlur={handleBlur}
           endAdornment="m"
-          inputProps={{ min: 5, step: 5, pattern: '[0-9]*' }}
+          inputProps={{ min: 5, step: 5, pattern: '[0-9]*', inputMode: 'numeric' }}
           onKeyDown={(event) => {
             // Stop propagation because the calendar is picking it up
             event.stopPropagation();
