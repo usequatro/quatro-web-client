@@ -333,7 +333,9 @@ const ScheduledStartDialog = ({ open, onClose }) => {
                   startDateTimestamp={currentTimestamp}
                   onChangeStartDateTimestamp={(newTimestamp) => setCurrentTimestamp(newTimestamp)}
                   duration={currentDuration}
-                  onDurationChange={(newDuration) => setCurrentDuration(newDuration)}
+                  onDurationChange={(newDuration) =>
+                    setCurrentDuration(typeof newDuration === 'number' ? newDuration : 0)
+                  }
                   calendarId={currentCalendarId}
                   onCalendarIdChange={(newCalendarId) => setCurrentCalendarId(newCalendarId)}
                   errors={errors}
