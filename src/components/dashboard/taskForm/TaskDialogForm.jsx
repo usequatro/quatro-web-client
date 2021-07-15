@@ -196,6 +196,9 @@ SavedNotificationAction.propTypes = {
   renderButton: PropTypes.func.isRequired,
 };
 
+const EVENT_SUBMIT_HOTKEYS = 'ctrl+enter,command+enter';
+const isEventSubmitShortcut = (event) => event.key === 'Enter' && (event.ctrlKey || event.metaKey);
+
 const TaskDialogForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -337,12 +340,10 @@ const TaskDialogForm = ({ onClose }) => {
 
   // Add a global listener to for the dialog submit shortcut. This way, even if no input
   // in the modal is focused, it'll still submit.
-  useHotkeys('ctrl+enter,command+enter', (event) => {
+  useHotkeys(EVENT_SUBMIT_HOTKEYS, (event) => {
     debugConsole.info('React', 'Submitting task dialog form by keyboard shortcut');
     handleSubmit(event);
   });
-  const isEventSubmitShortcut = (event) =>
-    event.key === 'Enter' && (event.ctrlKey || event.metaKey);
 
   const mobile = useMobileViewportSize();
   const touchEnabledScreen = useIsTouchEnabledScreen();
