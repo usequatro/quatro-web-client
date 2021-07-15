@@ -152,6 +152,8 @@ export function NotificationSnackbar() {
       open={isOpen}
       onClose={closeNotification}
       autoHideDuration={type === TYPE_ERROR || type === TYPE_WARNING ? null : AUTO_HIDE_DURATION}
+      // on touch screens, tapping it, or tapping on its sides, will make it close
+      onTouchEnd={closeNotification}
     >
       <Alert
         elevation={8}
@@ -180,11 +182,16 @@ export function NotificationSnackbar() {
                 color="inherit"
                 variant="outlined"
                 {...button}
+                onTouchEnd={(event) => {
+                  // Stop propagation of the touchend event that the snackbar itself uses to close
+                  event.stopPropagation();
+                }}
                 onClick={(event) => {
+                  event.stopPropagation();
+                  closeNotification();
                   if (button.onClick) {
                     button.onClick(event);
                   }
-                  closeNotification();
                 }}
               />
             )}
