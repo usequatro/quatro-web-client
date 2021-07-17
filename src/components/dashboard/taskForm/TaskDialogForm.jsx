@@ -101,6 +101,8 @@ import debugConsole from '../../../utils/debugConsole';
 
 const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
+const FORM_HTML_ID = 'task-dialog-form';
+
 const useStyles = makeStyles((theme) => ({
   dialogActionBar: {
     display: 'flex',
@@ -353,27 +355,13 @@ const TaskDialogForm = ({ onClose }) => {
   const descriptionJustBecameVisible = !descriptionWasHidden && showFormDescription;
 
   return (
-    <Box
-      onSubmit={handleSubmit}
-      id="task-dialog-form"
-      component="form"
-      display="flex"
-      height="100%"
-      flexDirection="column"
-      // On textareas, the Enter+cmd event doesn't propagate all the way to hotkeys,
-      // so adding it here as well to cover all cases
-      onKeyDown={(event) => {
-        if (isEventSubmitShortcut(event)) {
-          event.stopPropagation();
-          handleSubmit(event);
-        }
-      }}
-    >
+    <>
       <DialogTitle>
         <Box pt={2}>
           <TextFieldWithTypography
             typography="h6"
             fullWidth
+            form={FORM_HTML_ID}
             aria-label="What do you need to do?"
             placeholder="What do you need to do?"
             className={classes.titleTextField}
@@ -432,152 +420,166 @@ const TaskDialogForm = ({ onClose }) => {
       </DialogTitle>
 
       <DialogContent className={classes.dialogContent} id="task-dialog-content" dividers={mobile}>
-        {showFormDescription && (
-          <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
-            <Box>
-              <TextField
-                placeholder="Notes"
-                aria-label="Notes"
-                fullWidth
-                multiline
-                rows={1}
-                rowsMax={10}
-                value={description}
-                InputProps={{
-                  className: classes.descriptionField,
-                }}
-                autoFocus={!touchEnabledScreen && descriptionJustBecameVisible}
-                onChange={(event) => dispatch(setFormDescription(event.target.value))}
+        <Box
+          onSubmit={handleSubmit}
+          id={FORM_HTML_ID}
+          component="form"
+          // On textareas, the Enter+cmd event doesn't propagate all the way to hotkeys,
+          // so adding it here as well to cover all cases
+          onKeyDown={(event) => {
+            if (isEventSubmitShortcut(event)) {
+              event.stopPropagation();
+              handleSubmit(event);
+            }
+          }}
+        >
+          {showFormDescription && (
+            <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
+              <Box>
+                <TextField
+                  placeholder="Notes"
+                  aria-label="Notes"
+                  fullWidth
+                  multiline
+                  rows={1}
+                  rowsMax={10}
+                  value={description}
+                  InputProps={{
+                    className: classes.descriptionField,
+                  }}
+                  autoFocus={!touchEnabledScreen && descriptionJustBecameVisible}
+                  onChange={(event) => dispatch(setFormDescription(event.target.value))}
+                />
+              </Box>
+            </Box>
+          )}
+
+          <Box pb={2}>
+            {formHasSubtasks && <SubtasksList />}
+
+            <Button
+              type="button"
+              onClick={() => dispatch(setFormNewSubtask())}
+              startIcon={<AddIcon />}
+              className={classes.addSubtaskButton}
+            >
+              Add Subtask
+            </Button>
+          </Box>
+
+          <Box pt={2} pb={4} display="flex">
+            <Box width="50%" mr={mobile ? 4 : 8}>
+              <SliderField
+                id="impact-slider"
+                label="Impact"
+                tooltipTitle="How much impact will this task have on your goals?"
+                value={impact}
+                getValueText={(i) => IMPACT_LABELS[i] || '-'}
+                onChange={(value) => dispatch(setFormImpact(value))}
+                marks={IMPACT_SLIDER_MARKS}
+              />
+            </Box>
+            <Box width="50%">
+              <SliderField
+                id="effort-slider"
+                label="Time"
+                tooltipTitle="How much time will this task require?"
+                value={effort}
+                getValueText={(e) => EFFORT_LABELS[e] || '-'}
+                onChange={(value) => dispatch(setFormEffort(value))}
+                marks={EFFORT_SLIDER_MARKS}
               />
             </Box>
           </Box>
-        )}
 
-        <Box pb={2}>
-          {formHasSubtasks && <SubtasksList />}
+          <Box pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
+            <Button
+              onClick={() => setShowScheduledStartDialog(true)}
+              startIcon={<ScheduledIcon />}
+              className={classes.settingButton}
+              color={scheduledStartTimestamp ? 'primary' : 'default'}
+            >
+              {scheduledStartTimestamp
+                ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
+                : 'No scheduled date'}
 
-          <Button
-            type="button"
-            onClick={() => dispatch(setFormNewSubtask())}
-            startIcon={<AddIcon />}
-            className={classes.addSubtaskButton}
-          >
-            Add Subtask
-          </Button>
-        </Box>
+              {formHasRecurringConfig && (
+                <>
+                  <br />
+                  <RecurringLabelValue />
+                </>
+              )}
 
-        <Box pt={2} pb={4} display="flex">
-          <Box width="50%" mr={mobile ? 4 : 8}>
-            <SliderField
-              id="impact-slider"
-              label="Impact"
-              tooltipTitle="How much impact will this task have on your goals?"
-              value={impact}
-              getValueText={(i) => IMPACT_LABELS[i] || '-'}
-              onChange={(value) => dispatch(setFormImpact(value))}
-              marks={IMPACT_SLIDER_MARKS}
-            />
+              {calendarBlockStart && calendarBlockEnd && (
+                <>
+                  <br />
+                  {`${differenceInMinutes(
+                    calendarBlockEnd,
+                    calendarBlockStart,
+                  )} minutes blocked in calendar`}
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={() => setShowDueDialog(true)}
+              startIcon={
+                <AccessAlarmRoundedIcon
+                  color={dueTimestamp && isPast(dueTimestamp) ? 'error' : 'inherit'}
+                />
+              }
+              className={classes.settingButton}
+              color={dueTimestamp ? 'primary' : 'default'}
+            >
+              {dueTimestamp ? `Due date: ${formatDateTime(dueTimestamp)}` : 'No due date'}
+            </Button>
+
+            <Button
+              component="div"
+              onClick={() => setShowBlockersDialog(true)}
+              className={classes.settingButton}
+              startIcon={
+                <Tooltip title="Add Blocker" arrow>
+                  <Box component="span" display="flex">
+                    <BlockedIcon fontSize="small" />
+                  </Box>
+                </Tooltip>
+              }
+            >
+              <List disablePadding className={classes.blockersList}>
+                {blockedBy && blockedBy.length
+                  ? blockedBy.map((blockerDescriptor, index) => (
+                      <ListItem
+                        key={index /* eslint-disable-line react/no-array-index-key */}
+                        disableGutters
+                        dense
+                      >
+                        <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
+
+                        <ListItemSecondaryAction>
+                          <Tooltip title="Delete blocker" arrow>
+                            <IconButton
+                              edge="end"
+                              aria-label="remove"
+                              size="small"
+                              onFocus={(event) => {
+                                event.stopPropagation();
+                              }}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                dispatch(removeFormBlockerByIndex(index));
+                              }}
+                            >
+                              <ClearRoundedIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))
+                  : 'No blockers'}
+              </List>
+            </Button>
           </Box>
-          <Box width="50%">
-            <SliderField
-              id="effort-slider"
-              label="Time"
-              tooltipTitle="How much time will this task require?"
-              value={effort}
-              getValueText={(e) => EFFORT_LABELS[e] || '-'}
-              onChange={(value) => dispatch(setFormEffort(value))}
-              marks={EFFORT_SLIDER_MARKS}
-            />
-          </Box>
-        </Box>
-
-        <Box pt={0} pb={0} display="flex" flexDirection="column" alignItems="flexStart">
-          <Button
-            onClick={() => setShowScheduledStartDialog(true)}
-            startIcon={<ScheduledIcon />}
-            className={classes.settingButton}
-            color={scheduledStartTimestamp ? 'primary' : 'default'}
-          >
-            {scheduledStartTimestamp
-              ? `Scheduled date: ${formatDateTime(scheduledStartTimestamp)}`
-              : 'No scheduled date'}
-
-            {formHasRecurringConfig && (
-              <>
-                <br />
-                <RecurringLabelValue />
-              </>
-            )}
-
-            {calendarBlockStart && calendarBlockEnd && (
-              <>
-                <br />
-                {`${differenceInMinutes(
-                  calendarBlockEnd,
-                  calendarBlockStart,
-                )} minutes blocked in calendar`}
-              </>
-            )}
-          </Button>
-
-          <Button
-            onClick={() => setShowDueDialog(true)}
-            startIcon={
-              <AccessAlarmRoundedIcon
-                color={dueTimestamp && isPast(dueTimestamp) ? 'error' : 'inherit'}
-              />
-            }
-            className={classes.settingButton}
-            color={dueTimestamp ? 'primary' : 'default'}
-          >
-            {dueTimestamp ? `Due date: ${formatDateTime(dueTimestamp)}` : 'No due date'}
-          </Button>
-
-          <Button
-            component="div"
-            onClick={() => setShowBlockersDialog(true)}
-            className={classes.settingButton}
-            startIcon={
-              <Tooltip title="Add Blocker" arrow>
-                <Box component="span" display="flex">
-                  <BlockedIcon fontSize="small" />
-                </Box>
-              </Tooltip>
-            }
-          >
-            <List disablePadding className={classes.blockersList}>
-              {blockedBy && blockedBy.length
-                ? blockedBy.map((blockerDescriptor, index) => (
-                    <ListItem
-                      key={index /* eslint-disable-line react/no-array-index-key */}
-                      disableGutters
-                      dense
-                    >
-                      <ListItemText primary={getBlockerTitle(blockerDescriptor)} />
-
-                      <ListItemSecondaryAction>
-                        <Tooltip title="Delete blocker" arrow>
-                          <IconButton
-                            edge="end"
-                            aria-label="remove"
-                            size="small"
-                            onFocus={(event) => {
-                              event.stopPropagation();
-                            }}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              dispatch(removeFormBlockerByIndex(index));
-                            }}
-                          >
-                            <ClearRoundedIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))
-                : 'No blockers'}
-            </List>
-          </Button>
         </Box>
       </DialogContent>
 
@@ -704,6 +706,7 @@ const TaskDialogForm = ({ onClose }) => {
               variant="outlined"
               color="primary"
               type="submit"
+              form={FORM_HTML_ID}
               disabled={submitting}
               startIcon={
                 submitting ? <CircularProgress thickness={6} size="1rem" /> : <SendRoundedIcon />
@@ -759,7 +762,7 @@ const TaskDialogForm = ({ onClose }) => {
           <Button onClick={() => setRecurringChangesToConfirm([])} variant="text">
             Cancel
           </Button>
-          <Button variant="text" color="primary" autoFocus type="submit" form="task-dialog-form">
+          <Button variant="text" color="primary" autoFocus type="submit" form={FORM_HTML_ID}>
             Save
           </Button>
         </DialogActions>
@@ -812,7 +815,7 @@ const TaskDialogForm = ({ onClose }) => {
         disabledTasks={blockedByTaskIds}
         hiddenTasks={editTaskDialogId ? [editTaskDialogId] : []}
       />
-    </Box>
+    </>
   );
 };
 

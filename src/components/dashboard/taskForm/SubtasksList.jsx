@@ -28,7 +28,7 @@ import {
 import { InputWithTypography } from '../../ui/InputWithTypography';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  list: {
     padding: 0,
     '&& > li': {
       padding: 0,
@@ -100,7 +100,7 @@ const SubtasksList = () => {
       <Droppable droppableId="droppable">
         {(droppableProvided) => (
           <List
-            className={classes.root}
+            className={classes.list}
             {...droppableProvided.droppableProps}
             ref={droppableProvided.innerRef}
           >

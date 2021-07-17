@@ -63,6 +63,12 @@ const TaskDialog = () => {
       onClose={handleClose}
       onExited={() => dispatch(setFormNewTaskInitialState())}
       fullScreen={fullScreen}
+      PaperProps={{
+        // We disable overflow on the paper, as it's taken care of by SuiDialogContent
+        // Prevents react-beautiful-dnd warning due to nested scroll containers on the subtask list
+        // @link https://github.com/atlassian/react-beautiful-dnd/issues/131
+        style: { overflow: 'hidden' },
+      }}
       TransitionComponent={fullScreen ? FullScreenTransition : DialogTransition}
     >
       <TaskDialogForm onClose={handleClose} />
