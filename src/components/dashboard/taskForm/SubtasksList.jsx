@@ -43,6 +43,9 @@ const useStyles = makeStyles((theme) => ({
   listItem: {
     backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
+    userSelect: 'none',
+    '-webkit-user-select': 'none',
+    '-webkit-touch-callout': 'none',
     // Show the delete button when hovering the entire subtask input title
     '&&:hover .MuiInputAdornment-root > button': {
       opacity: 1,
