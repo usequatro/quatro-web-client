@@ -41,6 +41,8 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'grab',
   },
   listItem: {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
     // Show the delete button when hovering the entire subtask input title
     '&&:hover .MuiInputAdornment-root > button': {
       opacity: 1,
