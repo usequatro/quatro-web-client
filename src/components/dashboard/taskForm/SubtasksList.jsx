@@ -47,10 +47,13 @@ const useStyles = makeStyles((theme) => ({
     '&&:hover .MuiInputAdornment-root > button': {
       opacity: 1,
     },
+    '&&:hover .MuiInput-underline:before': {
+      borderColor: 'rgba(0, 0, 0, 0.42)',
+    },
   },
   inputWithTypography: {
     '&&&:before': {
-      borderBottom: 'none',
+      borderColor: 'transparent',
     },
     // Hide the delete button by default
     '&& > .MuiInputAdornment-root > button': {
@@ -78,7 +81,10 @@ const SubtasksList = () => {
   const currentSubtask = useRef(null);
   useEffect(() => {
     if (currentSubtask.current) {
-      currentSubtask.current.querySelector('input').select();
+      const input = currentSubtask.current.querySelector('input');
+      if (document.activeElement !== input) {
+        input.select();
+      }
     }
   }, [currentSubtaskIndex]);
 
