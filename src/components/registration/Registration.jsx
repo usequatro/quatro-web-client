@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     minHeight: '100%',
     flexDirection: 'column',
-    backgroundColor: theme.palette.primary.light,
+    backgroundColor: theme.palette.secondary.main,
     [theme.breakpoints.up('sm')]: {
       justifyContent: 'center',
     },
