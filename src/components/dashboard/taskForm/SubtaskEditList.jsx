@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     minWidth: 0,
     opacity: 0.75,
   },
-  deleteSubtaskIconButton: {
+  subtaskIconButton: {
     opacity: 0.75,
   },
   listItem: {
@@ -114,9 +114,8 @@ const SubtaskEditList = () => {
                             <InputAdornment position="start" disableTypography>
                               <IconButton
                                 aria-label="reorder subtask"
-                                className={classes.deleteSubtaskIconButton}
+                                className={classes.subtaskIconButton}
                                 size="small"
-                                onClick={() => dispatch(deleteFormSubtask(subtaskId))}
                                 {...draggableProvided.dragHandleProps}
                               >
                                 <DragHandleIcon fontSize="small" />
@@ -127,7 +126,7 @@ const SubtaskEditList = () => {
                             <InputAdornment position="end" disableTypography>
                               <IconButton
                                 aria-label="delete subtask"
-                                className={classes.deleteSubtaskIconButton}
+                                className={classes.subtaskIconButton}
                                 size="small"
                                 onClick={() => dispatch(deleteFormSubtask(subtaskId))}
                               >
