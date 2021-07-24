@@ -13,6 +13,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
 import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
 
+import TextWithLinks from '../../ui/TextWithLinks';
+
 const useStyles = makeStyles((theme) => ({
   subtaskList: {
     marginBottom: theme.spacing(0.5),
@@ -67,8 +69,8 @@ const SubtaskList = ({ subtasks, onSubtaskStatusChange, enableStatusChange, show
             </ListItemIcon>
 
             <ListItemText
-              primary={completed ? undefined : title}
-              secondary={completed ? title : undefined}
+              primary={completed ? undefined : <TextWithLinks text={title} />}
+              secondary={completed ? <TextWithLinks text={title} /> : undefined}
             />
           </ListItem>
         ))}
