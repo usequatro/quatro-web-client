@@ -116,7 +116,6 @@ const SubtaskEditList = () => {
                                 aria-label="reorder subtask"
                                 className={classes.deleteSubtaskIconButton}
                                 size="small"
-                                onClick={() => dispatch(deleteFormSubtask(subtaskId))}
                                 {...draggableProvided.dragHandleProps}
                               >
                                 <DragHandleIcon fontSize="small" />
