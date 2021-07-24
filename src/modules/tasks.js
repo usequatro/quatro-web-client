@@ -50,11 +50,6 @@ export const selectTaskDescription = (state, id) => get(selectTask(state, id), '
 /** @returns {Array<Object>} */
 export const selectSubtasks = (state, id) => get(selectTask(state, id), 'subtasks');
 /** @returns {number} */
-export const selectTotalSubtasks = (state, id) => get(selectTask(state, id), 'subtasks', []).length;
-/** @returns {number} */
-export const selectTotalCompletedSubtasks = (state, id) =>
-  get(selectTask(state, id), 'subtasks', []).filter((subtask) => subtask.completed).length;
-/** @returns {number} */
 export const selectTaskImpact = (state, id) => get(selectTask(state, id), 'impact');
 /** @returns {number} */
 export const selectTaskEffort = (state, id) => get(selectTask(state, id), 'effort');
@@ -394,6 +389,15 @@ export const listenToTaskList = (userId, nextCallback, errorCallback) => (dispat
 };
 
 export const updateTask = (id, updates) => () => fetchUpdateTask(id, updates);
+
+export const updateSubtaskStatus = (id, subtaskId, completed) => (_, getState) => {
+  const state = getState();
+  const subtasks = selectSubtasks(state, id);
+  const updatedSubtasks = subtasks.map((subtask) =>
+    subtask.subtaskId !== subtaskId ? subtask : { ...subtask, completed },
+  );
+  fetchUpdateTask(id, { subtasks: updatedSubtasks });
+};
 
 export const setRelativePrioritization =
   (sourceIndex, destinationIndex) => async (dispatch, getState) => {

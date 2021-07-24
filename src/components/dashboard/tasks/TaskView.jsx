@@ -4,12 +4,10 @@ import PropTypes from 'prop-types';
 import isPast from 'date-fns/isPast';
 
 import { makeStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import ListItem from '@material-ui/core/ListItem';
 
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import AccessAlarmRoundedIcon from '@material-ui/icons/AccessAlarmRounded';
 import CalendarViewDayRoundedIcon from '@material-ui/icons/CalendarViewDayRounded';
 import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
@@ -19,6 +17,7 @@ import SnoozeIcon from '@material-ui/icons/Snooze';
 
 import ScheduledIcon from '../../icons/ScheduledIcon';
 import TaskTitle from './TaskTitle';
+import SubtaskList from './SubtaskList';
 import TaskRecurringLabel from './TaskRecurringLabel';
 import TaskViewSubtitle from './TaskViewSubtitle';
 import TaskViewBlockersList from './TaskViewBlockersList';
@@ -149,14 +148,14 @@ const TaskView = ({
   prioritizedAheadOf,
   showBlockers,
   description,
-  totalSubtasks,
-  totalCompletedSubtasks,
+  subtasks,
   score,
   hasRecurringConfig,
   completed,
   showCompletedAnimation,
   onClick,
   onCompleteTask,
+  onSubtaskStatusChange,
   onMarkTaskIncomplete,
   parentContainerWidth,
 }) => {
@@ -200,17 +199,6 @@ const TaskView = ({
         <Box className={classes.copyContainer}>
           <Box display="flex" justifyContent="space-between">
             <Typography paragraph>{title.trim() || '(no title)'} </Typography>
-            {totalSubtasks > 0 && (
-              <Chip
-                clickable
-                disableRipple
-                variant="outlined"
-                size="small"
-                color={totalCompletedSubtasks === totalSubtasks ? 'primary' : 'default'}
-                icon={<CheckCircleOutlineIcon />}
-                label={`${totalCompletedSubtasks}/${totalSubtasks}`}
-              />
-            )}
           </Box>
 
           {description && (
@@ -222,6 +210,15 @@ const TaskView = ({
             >
               <TextWithLinks text={description} maxLength={1200} />
             </Typography>
+          )}
+
+          {subtasks.length > 0 && (
+            <SubtaskList
+              subtasks={subtasks}
+              onSubtaskStatusChange={onSubtaskStatusChange}
+              enableStatusChange={!completed}
+              showProgressBar={!completed}
+            />
           )}
 
           {snoozedUntil && (
@@ -311,10 +308,16 @@ TaskView.propTypes = {
   title: PropTypes.string.isRequired,
   effort: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
-  totalSubtasks: PropTypes.number.isRequired,
-  totalCompletedSubtasks: PropTypes.number.isRequired,
+  subtasks: PropTypes.arrayOf(
+    PropTypes.shape({
+      subtaskId: PropTypes.string,
+      title: PropTypes.string,
+      completed: PropTypes.bool,
+    }),
+  ).isRequired,
   showBlockers: PropTypes.bool.isRequired,
   onCompleteTask: PropTypes.func.isRequired,
+  onSubtaskStatusChange: PropTypes.func.isRequired,
   onMarkTaskIncomplete: PropTypes.func.isRequired,
   hasRecurringConfig: PropTypes.bool.isRequired,
   score: PropTypes.number,

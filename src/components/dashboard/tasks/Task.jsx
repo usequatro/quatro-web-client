@@ -6,8 +6,7 @@ import TaskView from './TaskView';
 import {
   selectTaskTitle,
   selectTaskDescription,
-  selectTotalSubtasks,
-  selectTotalCompletedSubtasks,
+  selectSubtasks,
   selectTaskScore,
   selectTaskShowsAsCompleted,
   selectTaskScheduledStart,
@@ -15,6 +14,7 @@ import {
   selectTaskDue,
   selectTaskPrioritizedAheadOf,
   completeTask,
+  updateSubtaskStatus,
   markTaskIncomplete,
   selectTaskEffort,
   selectTaskSnoozedUntil,
@@ -37,8 +37,7 @@ const Task = ({
 
   const title = useSelector((state) => selectTaskTitle(state, id));
   const description = useSelector((state) => selectTaskDescription(state, id));
-  const totalSubtasks = useSelector((state) => selectTotalSubtasks(state, id));
-  const totalCompletedSubtasks = useSelector((state) => selectTotalCompletedSubtasks(state, id));
+  const subtasks = useSelector((state) => selectSubtasks(state, id));
   const score = useSelector((state) => selectTaskScore(state, id));
   const effort = useSelector((state) => selectTaskEffort(state, id));
   const completed = useSelector((state) => selectTaskShowsAsCompleted(state, id));
@@ -65,6 +64,13 @@ const Task = ({
     dispatch(markTaskIncomplete(id));
   }, [dispatch, id]);
 
+  const onSubtaskStatusChange = useCallback(
+    (subtaskId, subtaskCompleted) => {
+      dispatch(updateSubtaskStatus(id, subtaskId, subtaskCompleted));
+    },
+    [dispatch, id],
+  );
+
   return (
     <TaskView
       id={id}
@@ -74,8 +80,7 @@ const Task = ({
       editable={editable}
       title={title}
       description={description}
-      totalSubtasks={totalSubtasks}
-      totalCompletedSubtasks={totalCompletedSubtasks}
+      subtasks={subtasks}
       score={score}
       completed={completed}
       showCompletedAnimation={completed}
@@ -89,6 +94,7 @@ const Task = ({
       showBlockers={showBlockers}
       onClick={editable ? handleClick : undefined}
       onCompleteTask={onCompleteTask}
+      onSubtaskStatusChange={onSubtaskStatusChange}
       onMarkTaskIncomplete={onMarkTaskIncomplete}
       parentContainerWidth={parentContainerWidth}
     />
