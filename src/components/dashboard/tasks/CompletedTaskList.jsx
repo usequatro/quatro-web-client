@@ -29,6 +29,8 @@ const FETCHING = 'fetching';
 const FETCHED = 'fetched';
 const ERROR = 'error';
 
+const noop = () => {};
+
 const isLastWeek = (date) => differenceInCalendarWeeks(new Date(), date, { weekStartsOn: 1 }) === 1;
 
 const getSection = cond([
@@ -188,6 +190,7 @@ const CompletedTaskList = () => {
           title={task.title}
           description={task.description}
           scheduledStart={task.scheduledStart}
+          subtasks={task.subtasks}
           snoozedUntil={null}
           due={task.due}
           effort={task.effort}
@@ -203,6 +206,7 @@ const CompletedTaskList = () => {
           showCompletedAnimation={false}
           onMarkTaskIncomplete={onMarkTaskIncomplete}
           onCompleteTask={onCompleteTask}
+          onSubtaskStatusChange={noop}
           parentContainerWidth={listWidth}
         />
       )}

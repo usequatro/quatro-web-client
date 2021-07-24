@@ -3,25 +3,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import { makeStyles } from '@material-ui/core/styles';
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Checkbox,
-  InputAdornment,
-  IconButton,
-} from '@material-ui/core';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
 
-import CheckCircleOutlineRoundedIcon from '@material-ui/icons/CheckCircleOutlineRounded';
-import RadioButtonUncheckedRoundedIcon from '@material-ui/icons/RadioButtonUncheckedRounded';
-import ClearIcon from '@material-ui/icons/Clear';
+import DragHandleIcon from '@material-ui/icons/DragHandle';
+import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 
 import {
   selectFormSubtasks,
   setFormNewSubtask,
   setFormSubtaskText,
-  setFormSubtaskStatus,
   deleteFormSubtask,
   reorderFormSubtasks,
 } from '../../../modules/taskForm';
@@ -35,46 +29,24 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   listItemIcon: {
-    minWidth: theme.spacing(5),
+    minWidth: 0,
+    opacity: 0.75,
   },
-  completeCheckbox: {
-    cursor: 'grab',
+  deleteSubtaskIconButton: {
+    opacity: 0.75,
   },
   listItem: {
     backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
-    userSelect: 'none',
-    '-webkit-user-select': 'none',
-    '-webkit-touch-callout': 'none',
-    // Show the delete button when hovering the entire subtask input title
-    '&&:hover .MuiInputAdornment-root > button': {
-      opacity: 1,
-    },
-    '&&:hover .MuiInput-underline:before': {
-      borderColor: 'rgba(0, 0, 0, 0.42)',
-    },
   },
   inputWithTypography: {
-    '&&&:before': {
-      borderColor: 'transparent',
-    },
-    // Hide the delete button by default
-    '&& > .MuiInputAdornment-root > button': {
-      opacity: 0,
-    },
-
-    // When focusing the delete button, we show it
-    '&& > .MuiInputAdornment-root > button:focus': {
-      opacity: 1,
-    },
-    // When the subtask title input is focused, we show the delete
-    '&.Mui-focused > .MuiInputAdornment-root > button': {
-      opacity: 1,
+    '&::before': {
+      opacity: 0.1,
     },
   },
 }));
 
-const SubtasksList = () => {
+const SubtaskEditList = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -112,8 +84,9 @@ const SubtasksList = () => {
             className={classes.list}
             {...droppableProvided.droppableProps}
             ref={droppableProvided.innerRef}
+            subheader="Subtasks:"
           >
-            {subtasks.map(({ subtaskId, title, completed }, index) => (
+            {subtasks.map(({ subtaskId, title }, index) => (
               <Draggable
                 key={subtaskId}
                 draggableId={subtaskId}
@@ -129,38 +102,36 @@ const SubtasksList = () => {
                     {...draggableProvided.draggableProps}
                     style={draggableProvided.draggableProps.style}
                   >
-                    <ListItemIcon
-                      className={classes.listItemIcon}
-                      {...draggableProvided.dragHandleProps}
-                    >
-                      <Checkbox
-                        className={classes.completeCheckbox}
-                        onClick={() =>
-                          dispatch(setFormSubtaskStatus({ subtaskId, completed: !completed }))
-                        }
-                        checked={completed}
-                        icon={<RadioButtonUncheckedRoundedIcon fontSize="small" />}
-                        checkedIcon={<CheckCircleOutlineRoundedIcon fontSize="small" />}
-                      />
-                    </ListItemIcon>
-
                     <ListItemText
                       id={subtaskId}
                       ref={currentSubtaskIndex === index ? currentSubtask : null}
-                      style={completed ? { textDecoration: 'line-through' } : {}}
                       primary={
                         <InputWithTypography
                           className={classes.inputWithTypography}
                           typography="body2"
                           fullWidth
+                          startAdornment={
+                            <InputAdornment position="start" disableTypography>
+                              <IconButton
+                                aria-label="reorder subtask"
+                                className={classes.deleteSubtaskIconButton}
+                                size="small"
+                                onClick={() => dispatch(deleteFormSubtask(subtaskId))}
+                                {...draggableProvided.dragHandleProps}
+                              >
+                                <DragHandleIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          }
                           endAdornment={
                             <InputAdornment position="end" disableTypography>
                               <IconButton
                                 aria-label="delete subtask"
+                                className={classes.deleteSubtaskIconButton}
                                 size="small"
                                 onClick={() => dispatch(deleteFormSubtask(subtaskId))}
                               >
-                                <ClearIcon fontSize="small" />
+                                <DeleteOutlineIcon fontSize="small" />
                               </IconButton>
                             </InputAdornment>
                           }
@@ -203,4 +174,4 @@ const SubtasksList = () => {
   );
 };
 
-export default SubtasksList;
+export default SubtaskEditList;

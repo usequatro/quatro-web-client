@@ -37,7 +37,7 @@ import ClearRoundedIcon from '@material-ui/icons/ClearRounded';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 import CloseIcon from '@material-ui/icons/Close';
 import SnoozeIcon from '@material-ui/icons/Snooze';
-import AddIcon from '@material-ui/icons/Add';
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
 
 import { deleteTask, selectTaskDashboardTab } from '../../../modules/tasks';
 import {
@@ -72,7 +72,7 @@ import {
 } from '../../../modules/taskForm';
 import Confirm from '../../ui/Confirm';
 import { TextFieldWithTypography } from '../../ui/InputWithTypography';
-import SubtasksList from './SubtasksList';
+import SubtasksEditList from './SubtaskEditList';
 import DueDateDialog from './DueDateDialog';
 import ScheduledStartDialog from './ScheduledStartDialog';
 import SnoozeCustomDialog from './SnoozeCustomDialog';
@@ -122,9 +122,6 @@ const useStyles = makeStyles((theme) => ({
   titleTextField: {
     flexGrow: 1,
   },
-  addSubtaskButton: {
-    fontWeight: 'normal',
-  },
   settingButton: {
     justifyContent: 'flex-start',
     textAlign: 'left',
@@ -134,7 +131,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   descriptionField: {
-    '&::before, &::after': {
+    '&::before': {
       opacity: 0.5,
     },
   },
@@ -434,7 +431,7 @@ const TaskDialogForm = ({ onClose }) => {
           }}
         >
           {showFormDescription && (
-            <Box pb={1} display="flex" flexDirection="column" alignItems="stretch">
+            <Box pb={2} display="flex" flexDirection="column" alignItems="stretch">
               <Box>
                 <TextField
                   placeholder="Notes"
@@ -455,15 +452,16 @@ const TaskDialogForm = ({ onClose }) => {
           )}
 
           <Box pb={2}>
-            {formHasSubtasks && <SubtasksList />}
+            {formHasSubtasks && <SubtasksEditList />}
 
             <Button
-              type="button"
+              variant="text"
+              size="small"
               onClick={() => dispatch(setFormNewSubtask())}
-              startIcon={<AddIcon />}
+              startIcon={<PlaylistAddIcon />}
               className={classes.addSubtaskButton}
             >
-              Add Subtask
+              Add subtask
             </Button>
           </Box>
 
