@@ -15,8 +15,6 @@ import debugConsole from './utils/debugConsole';
 //   // version: '' OPTIONAL Your application version
 // });
 
-ReactDOM.render(<App />, document.getElementById('root'));
-
 // app info for debugging
 window.quatro = {
   buildEnv: process.env.NODE_ENV,
@@ -44,3 +42,5 @@ window.addEventListener('message', (event) => {
     }
   }
 });
+
+ReactDOM.render(<App />, document.getElementById('root'));
