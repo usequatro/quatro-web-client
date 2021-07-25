@@ -198,7 +198,9 @@ const TaskView = ({
 
         <Box className={classes.copyContainer}>
           <Box display="flex" justifyContent="space-between">
-            <Typography paragraph>{title.trim() || '(no title)'} </Typography>
+            <Typography paragraph={!description} gutterBottom={Boolean(description)}>
+              {title.trim() || '(no title)'}{' '}
+            </Typography>
           </Box>
 
           {description && (

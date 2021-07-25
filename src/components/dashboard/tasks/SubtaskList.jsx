@@ -42,7 +42,7 @@ const SubtaskList = ({ subtasks, onSubtaskStatusChange, enableStatusChange, show
   const completedPercentage = Math.round(100 * (completedAmount / subtasks.length));
 
   return (
-    <Box pb={2}>
+    <Box pb={3}>
       <List disablePadding className={classes.subtaskList}>
         {subtasks.map(({ subtaskId, title, completed }) => (
           <ListItem key={subtaskId} dense disableGutters>
