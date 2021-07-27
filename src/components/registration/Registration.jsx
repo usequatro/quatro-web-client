@@ -44,12 +44,16 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('sm')]: {
       justifyContent: 'center',
     },
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'drag',
   },
   paper: {
     width: '100%',
     maxWidth: '100%',
     minHeight: '80vh',
     padding: theme.spacing(5),
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'no-drag',
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       minHeight: 0,
