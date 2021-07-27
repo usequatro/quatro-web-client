@@ -31,6 +31,11 @@ export const getTopBarHeight = (theme) => theme.spacing(6);
 const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'drag',
+    '& button': {
+      '-webkit-app-region': 'no-drag',
+    },
   },
   appBarLogo: {
     height: theme.spacing(3),
