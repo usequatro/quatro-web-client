@@ -1,16 +1,20 @@
 /**
+ * @todo remove window.quatro.desktopClientVersion
  * @returns {bool} - true if using from a web browser
  */
 export function isClientWeb() {
   return window.quatro.desktopClientVersion === undefined && window.todesktop === undefined;
 }
 /**
+ * @todo remove window.quatro.desktopClientVersion
  * @returns {bool} - true if using from the Quatro desktop client
  */
 export function isClientDesktop() {
   return window.quatro.desktopClientVersion !== undefined || window.todesktop !== undefined;
 }
 /**
+ * @todo remove window.quatro.desktopClientVersion
+ * @see https://docs.todesktop.com/javascript-api/info
  * @returns {string|undefined} - string with version if using from the Quatro desktop client
  */
 export function getClientDesktopVersion() {
