@@ -26,7 +26,8 @@ import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 import createOnboardingTasks from '../../utils/createOnboardingTasks';
 import { getBrowserDetectedTimeZone } from '../../utils/timeZoneUtils';
 import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
-import { isClientDesktop } from '../../utils/applicationClient';
+import { isClientDesktop, toggleMaximizeWindow } from '../../utils/applicationClient';
+import { isMacPlaform } from '../hooks/useIsMacPlatform';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -44,12 +45,16 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('sm')]: {
       justifyContent: 'center',
     },
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'drag',
   },
   paper: {
     width: '100%',
     maxWidth: '100%',
     minHeight: '80vh',
     padding: theme.spacing(5),
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'no-drag',
     [theme.breakpoints.up('sm')]: {
       width: '500px',
       minHeight: 0,
@@ -95,6 +100,17 @@ const ERROR_MESSAGE_BY_CODE = {
   [ERROR_EMAIL_IN_USE]: 'Email already in use',
 };
 const ERROR_MESSAGE_FALLBACK = 'An error happened';
+
+const handleStoppingPropagation = (event) => {
+  event.stopPropagation();
+};
+
+const handleContainerDoubleClick = () => {
+  // Since on the mac desktop app we hide the native titlebar, we implement maximize behavior here
+  if (isClientDesktop() && isMacPlaform()) {
+    toggleMaximizeWindow();
+  }
+};
 
 const Registration = ({ mode }) => {
   const classes = useStyles();
@@ -216,8 +232,8 @@ const Registration = ({ mode }) => {
   };
 
   return (
-    <div className={classes.container}>
-      <Paper className={classes.paper}>
+    <div className={classes.container} onDoubleClick={handleContainerDoubleClick}>
+      <Paper className={classes.paper} onDoubleClick={handleStoppingPropagation}>
         <Box display="flex" alignItems="center" flexDirection="column">
           <SvgIcon
             component={LogoArrowsFull}

@@ -25,12 +25,19 @@ import useDelayedState from '../../hooks/useDelayedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import UserIcon from '../../icons/UserIcon';
 import AppLogoPlain from '../../icons/AppLogoPlain';
+import { isClientDesktop, toggleMaximizeWindow } from '../../../utils/applicationClient';
+import { isMacPlaform } from '../../hooks/useIsMacPlatform';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
+    // @see https://docs.todesktop.com/customizing-your-app/making-a-transparent-titlebar-draggable-macos-only
+    '-webkit-app-region': 'drag',
+    '& button': {
+      '-webkit-app-region': 'no-drag',
+    },
   },
   appBarLogo: {
     height: theme.spacing(3),
@@ -83,6 +90,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const handleAppBarDoubleClick = () => {
+  // Since on the mac desktop app we hide the native titlebar, we implement maximize behavior here
+  if (isClientDesktop() && isMacPlaform()) {
+    toggleMaximizeWindow();
+  }
+};
+
 const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   const userPhotoURL = useSelector(selectUserPhotoURL);
   const dashboardDataIsInSync = useSelector(selectIsDataInSync);
@@ -103,7 +117,13 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   };
 
   return (
-    <AppBar position="fixed" color="secondary" className={classes.appBar} elevation={2}>
+    <AppBar
+      position="fixed"
+      color="secondary"
+      className={classes.appBar}
+      elevation={2}
+      onDoubleClick={handleAppBarDoubleClick}
+    >
       <Toolbar className={classes.appBarToolbar} disableGutters>
         <Hidden smUp>
           <Box justifyContent="flex-start">
