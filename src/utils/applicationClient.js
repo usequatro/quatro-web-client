@@ -20,3 +20,14 @@ export function isClientDesktop() {
 export function getClientDesktopVersion() {
   return window.quatro.desktopClientVersion || (window.todesktop && window.todesktop.version);
 }
+/**
+ * @see https://docs.todesktop.com/javascript-api/window
+ * @returns {Promise}
+ */
+export function toggleMaximizeWindow() {
+  return window.todesktop.window
+    .isMaximized()
+    .then((maximized) =>
+      maximized ? window.todesktop.window.unmaximize() : window.todesktop.window.maximize(),
+    );
+}
