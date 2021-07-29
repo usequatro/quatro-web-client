@@ -18,6 +18,9 @@ import TextWithLinks from '../../ui/TextWithLinks';
 const useStyles = makeStyles((theme) => ({
   subtaskList: {
     marginBottom: theme.spacing(0.5),
+    '& a': {
+      wordBreak: 'break-all',
+    },
   },
   subtaskListItemIcon: {
     minWidth: 0,
