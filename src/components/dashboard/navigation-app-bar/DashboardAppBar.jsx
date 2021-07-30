@@ -25,7 +25,11 @@ import useDelayedState from '../../hooks/useDelayedState';
 import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import UserIcon from '../../icons/UserIcon';
 import AppLogoPlain from '../../icons/AppLogoPlain';
-import { isClientDesktop, toggleMaximizeWindow } from '../../../utils/applicationClient';
+import {
+  isClientDesktop,
+  isClientWeb,
+  toggleMaximizeWindow,
+} from '../../../utils/applicationClient';
 import { isMacPlaform } from '../../hooks/useIsMacPlatform';
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
@@ -153,6 +157,17 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
 
           <Hidden smDown>
             <Box mx={2} display="flex" flexDirection="row">
+              {isClientWeb() && (
+                <Button
+                  className={classes.appBarButtons}
+                  variant="outlined"
+                  color="inherit"
+                  href="https://dl.todesktop.com/210720bke7ubhqt"
+                  target="_blank"
+                >
+                  Download Desktop App
+                </Button>
+              )}
               <Button
                 className={classes.appBarButtons}
                 variant="text"
