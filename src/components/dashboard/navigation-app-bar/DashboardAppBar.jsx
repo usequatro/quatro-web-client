@@ -165,7 +165,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                   href="https://dl.todesktop.com/210720bke7ubhqt"
                   target="_blank"
                 >
-                  Donwload Desktop App
+                  Download Desktop App
                 </Button>
               )}
               <Button
