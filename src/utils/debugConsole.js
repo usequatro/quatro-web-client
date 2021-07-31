@@ -4,6 +4,7 @@ const colorByPrefix = {
   'google api': 'background: #fff; color: #000',
   dnd: 'background: #18a669; color: #fff',
   fallback: 'background: #2196f3; color: #000',
+  link: 'background: #111; color: #2196f3',
   redux: 'background: #764abc; color: #fff',
   message: 'background: gray; color: black',
 };

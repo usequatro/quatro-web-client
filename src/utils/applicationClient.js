@@ -39,6 +39,14 @@ export function getDesktopClientVersion() {
   return window.quatro.desktopClientVersion || (window.todesktop && window.todesktop.version);
 }
 /**
+ * Forces a link to open in browser. Useful when the link is another subdomain of usequatro.com
+ * @link {https://docs.todesktop.com/javascript-api/navigation#open-a-url-in-the-users-default-browser}
+ * @param {string} url
+ */
+export function openUrlInBrowserFromDesktopClient(url) {
+  return window.todesktop.contents.openUrlInBrowser(url);
+}
+/**
  * @see https://docs.todesktop.com/javascript-api/window
  * @returns {Promise}
  */

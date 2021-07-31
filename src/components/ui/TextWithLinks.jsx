@@ -1,7 +1,10 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import truncate from 'lodash/truncate';
-import Link from '@material-ui/core/Link';
+import MuiLink from '@material-ui/core/Link';
+import withSubdomainsAsDesktopExternalHref from '../../utils/withSubdomainsAsDesktopExternalHref';
+
+const SameHostnameMuiLink = withSubdomainsAsDesktopExternalHref(MuiLink);
 
 const TextWithLinks = ({ text, maxLength }) => {
   const tmp = '|+|-|+|';
@@ -23,7 +26,7 @@ const TextWithLinks = ({ text, maxLength }) => {
 
       /* eslint-disable react/no-array-index-key */
       return isLink ? (
-        <Link
+        <SameHostnameMuiLink
           href={piece}
           key={index}
           target="_blank"
@@ -31,7 +34,7 @@ const TextWithLinks = ({ text, maxLength }) => {
           onClick={(e) => e.stopPropagation()}
         >
           {truncatedPiece}
-        </Link>
+        </SameHostnameMuiLink>
       ) : (
         <React.Fragment key={index}>{truncatedPiece}</React.Fragment>
       );
