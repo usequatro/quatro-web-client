@@ -33,8 +33,12 @@ import {
   toggleMaximizeWindow,
 } from '../../../utils/applicationClient';
 import { firebaseGetAuthIdToken } from '../../../firebase';
+import withSubdomainsAsDesktopExternalHref from '../../../utils/withSubdomainsAsDesktopExternalHref';
 
 const DESKTOP_CLIENT_DOWNLOAD_URL = process.env.REACT_APP_DESKTOP_CLIENT_DOWNLOAD_URL;
+
+const SameHostnameButton = withSubdomainsAsDesktopExternalHref(Button);
+const SameHostnameMuiLink = withSubdomainsAsDesktopExternalHref(MuiLink);
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
 
@@ -195,7 +199,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                 Contact us
               </Button>
 
-              <Button
+              <SameHostnameButton
                 className={classes.appBarButtons}
                 variant="text"
                 color="inherit"
@@ -203,7 +207,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                 target="_blank"
               >
                 FAQ
-              </Button>
+              </SameHostnameButton>
             </Box>
           </Hidden>
 
@@ -255,7 +259,11 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
               <MenuItem component={MuiLink} target="_blank" href="mailto:contact@usequatro.com">
                 Contact us
               </MenuItem>
-              <MenuItem component={MuiLink} target="_blank" href="https://usequatro.com/faq">
+              <MenuItem
+                component={SameHostnameMuiLink}
+                target="_blank"
+                href="https://usequatro.com/faq"
+              >
                 FAQ
               </MenuItem>
             </Hidden>
