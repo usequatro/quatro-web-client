@@ -13,7 +13,7 @@ import {
   GOOGLE_ACCOUNT_LINKED,
 } from '../../constants/mixpanelEvents';
 import { useMixpanel } from '../tracking/MixpanelContext';
-import { isClientDesktop } from '../../utils/applicationClient';
+import { isDesktopClient } from '../../utils/applicationClient';
 import { CALENDARS } from '../../constants/paths';
 
 /**
@@ -93,7 +93,7 @@ export default function useGoogleApiSignIn() {
       throw new Error("This function shouldn't be called when account is already connected");
     }
 
-    const clientIsDesktop = isClientDesktop();
+    const clientIsDesktop = isDesktopClient();
 
     const authInstance = await gapiGetAuthInstance();
 
@@ -126,7 +126,7 @@ export default function useGoogleApiSignIn() {
       throw new Error("This function shouldn't be called when google account isn't connected");
     }
 
-    const clientIsDesktop = isClientDesktop();
+    const clientIsDesktop = isDesktopClient();
 
     const authInstance = await gapiGetAuthInstance();
     return (

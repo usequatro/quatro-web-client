@@ -26,8 +26,7 @@ import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
 import createOnboardingTasks from '../../utils/createOnboardingTasks';
 import { getBrowserDetectedTimeZone } from '../../utils/timeZoneUtils';
 import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
-import { isClientDesktop, toggleMaximizeWindow } from '../../utils/applicationClient';
-import { isMacPlaform } from '../hooks/useIsMacPlatform';
+import { isDesktopClient, isMacPlaform, toggleMaximizeWindow } from '../../utils/applicationClient';
 
 export const LOG_IN = 'logIn';
 export const SIGN_UP = 'signUp';
@@ -107,7 +106,7 @@ const handleStoppingPropagation = (event) => {
 
 const handleContainerDoubleClick = () => {
   // Since on the mac desktop app we hide the native titlebar, we implement maximize behavior here
-  if (isClientDesktop() && isMacPlaform()) {
+  if (isDesktopClient() && isMacPlaform()) {
     toggleMaximizeWindow();
   }
 };
@@ -208,7 +207,7 @@ const Registration = ({ mode }) => {
     }
     gapiGetAuthInstance()
       .then((authInstance) => {
-        const clientIsDesktop = isClientDesktop();
+        const clientIsDesktop = isDesktopClient();
 
         // On desktop client, we must sign up via redirect for it to work.
         // Leaving popup mode for the rest of cases, as it works more reliably on mobile.
