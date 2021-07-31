@@ -36,10 +36,12 @@ import RunawayIcon from '../../icons/RunawayIcon';
 
 const emptyArray = [];
 
-const withMapIds = (fn) => (...args) => {
-  const tasks = fn(...args);
-  return tasks.map(([id]) => id);
-};
+const withMapIds =
+  (fn) =>
+  (...args) => {
+    const tasks = fn(...args);
+    return tasks.map(([id]) => id);
+  };
 
 const selectorFunctionByPathname = {
   [dashboardTabs.NOW]: withMapIds(selectNowTasks),
@@ -147,7 +149,6 @@ const TaskList = ({ tab }) => {
                     position={showPosition ? index + 1 + positionOffset : undefined}
                     // For performance, we indicate if the task should load blockers from the top
                     showBlockers={tab === dashboardTabs.BLOCKED || tab === dashboardTabs.SCHEDULED}
-                    editable
                     parentContainerWidth={listWidth}
                   />
                 )}
