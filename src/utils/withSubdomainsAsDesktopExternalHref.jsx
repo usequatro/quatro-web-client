@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { isDesktopClient, openUrlInBrowserFromDesktopClient } from './applicationClient';
@@ -11,7 +11,7 @@ import debugConsole from './debugConsole';
  * @returns
  */
 export default function withSubdomainsAsDesktopExternalHref(Component) {
-  const WrappedComponent = ({ onClick, href, ...props }) => {
+  const WrappedComponent = forwardRef(({ onClick, href, ...props }, ref) => {
     const { hostname } = useLocation();
     const handleClick = (event) => {
       if (onClick) {
@@ -44,8 +44,8 @@ export default function withSubdomainsAsDesktopExternalHref(Component) {
       openUrlInBrowserFromDesktopClient(href);
       event.preventDefault();
     };
-    return <Component {...props} href={href} onClick={handleClick} />;
-  };
+    return <Component {...props} href={href} onClick={handleClick} ref={ref} />;
+  });
 
   WrappedComponent.propTypes = {
     href: PropTypes.string,
