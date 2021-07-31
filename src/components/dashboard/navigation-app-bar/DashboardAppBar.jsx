@@ -26,11 +26,11 @@ import useGoogleApiSignIn from '../../hooks/useGoogleApiSignIn';
 import UserIcon from '../../icons/UserIcon';
 import AppLogoPlain from '../../icons/AppLogoPlain';
 import {
-  isClientDesktop,
-  isClientWeb,
+  isDesktopClient,
+  isMobileDeviceUserAgent,
+  isMacPlaform,
   toggleMaximizeWindow,
 } from '../../../utils/applicationClient';
-import { isMacPlaform } from '../../hooks/useIsMacPlatform';
 import { firebaseGetAuthIdToken } from '../../../firebase';
 
 const DESKTOP_CLIENT_DOWNLOAD_URL = process.env.REACT_APP_DESKTOP_CLIENT_DOWNLOAD_URL;
@@ -99,7 +99,7 @@ const useStyles = makeStyles((theme) => ({
 
 const handleAppBarDoubleClick = () => {
   // Since on the mac desktop app we hide the native titlebar, we implement maximize behavior here
-  if (isClientDesktop() && isMacPlaform()) {
+  if (isDesktopClient() && isMacPlaform()) {
     toggleMaximizeWindow();
   }
 };
@@ -169,7 +169,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
 
           <Hidden smDown>
             <Box mx={2} display="flex" flexDirection="row">
-              {isClientWeb() && (
+              {!isDesktopClient() && !isMobileDeviceUserAgent() && (
                 <Button
                   className={classes.appBarButtons}
                   variant="outlined"

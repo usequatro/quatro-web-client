@@ -51,7 +51,7 @@ import {
   selectUserExternalConfigIsFetching,
 } from '../../../modules/userExternalConfig';
 import { fetchUpdateUserExternalConfig } from '../../../utils/apiClient';
-import { getClientDesktopVersion } from '../../../utils/applicationClient';
+import { getDesktopClientVersion } from '../../../utils/applicationClient';
 import {
   getBrowserDetectedTimeZone,
   hasBrowserTimeZoneSupport,
@@ -282,7 +282,7 @@ const AccountSettings = () => {
     photoURL !== savedPhotoURL ||
     emailDailyDigestEnabled !== savedEmailDailyDigestEnabled;
 
-  const desktopClientVersion = getClientDesktopVersion();
+  const desktopClientVersion = getDesktopClientVersion();
 
   return (
     <Box

@@ -19,7 +19,7 @@ import {
 import { useNotification } from './Notification';
 import createOnboardingTasks from '../utils/createOnboardingTasks';
 import { getBrowserDetectedTimeZone } from '../utils/timeZoneUtils';
-import { getClientDesktopVersion } from '../utils/applicationClient';
+import { getDesktopClientVersion } from '../utils/applicationClient';
 import { fetchUpdateUserExternalConfig } from '../utils/apiClient';
 
 // const AUTH_IFRAME_LOAD_ERROR = 'idpiframe_initialization_failed';
@@ -135,7 +135,7 @@ const AuthManager = () => {
           mixpanel.identify(user.uid);
 
           // Not very elegant to get the desktop client version from window. But oh well.
-          const desktopClientVersion = getClientDesktopVersion();
+          const desktopClientVersion = getDesktopClientVersion();
           if (desktopClientVersion) {
             debugConsole.info(`identify() with desktopClientVersion ${desktopClientVersion}`);
           }

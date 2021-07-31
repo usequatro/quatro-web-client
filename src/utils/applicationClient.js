@@ -1,15 +1,33 @@
 /**
- * @todo remove window.quatro.desktopClientVersion
- * @returns {bool} - true if using from a web browser
+ * @returns {bool}
  */
-export function isClientWeb() {
-  return window.quatro.desktopClientVersion === undefined && window.todesktop === undefined;
+export function isMobileDeviceUserAgent() {
+  return (
+    'navigator' in window &&
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone+/i.test(
+      window.navigator.userAgent,
+    )
+  );
+}
+/**
+ * @returns {bool}
+ */
+export function isMacPlaform() {
+  return 'navigator' in window && typeof window.navigator.platform === 'string'
+    ? window.navigator.platform.toUpperCase().indexOf('MAC') >= 0
+    : false;
+}
+/**
+ * @returns {bool}
+ */
+export function isTouchEnabledScreen() {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 }
 /**
  * @todo remove window.quatro.desktopClientVersion
  * @returns {bool} - true if using from the Quatro desktop client
  */
-export function isClientDesktop() {
+export function isDesktopClient() {
   return window.quatro.desktopClientVersion !== undefined || window.todesktop !== undefined;
 }
 /**
@@ -17,7 +35,7 @@ export function isClientDesktop() {
  * @see https://docs.todesktop.com/javascript-api/info
  * @returns {string|undefined} - string with version if using from the Quatro desktop client
  */
-export function getClientDesktopVersion() {
+export function getDesktopClientVersion() {
   return window.quatro.desktopClientVersion || (window.todesktop && window.todesktop.version);
 }
 /**

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -87,7 +87,6 @@ import getUserFacingRecurringText from '../../../utils/getUserFacingRecurringTex
 import formatDateTime from '../../../utils/formatDateTime';
 import { IMPACT_LABELS, IMPACT_SLIDER_MARKS } from '../../../constants/impact';
 import { EFFORT_LABELS, EFFORT_SLIDER_MARKS } from '../../../constants/effort';
-import useIsTouchEnabledScreen from '../../hooks/useIsTouchEnabledScreen';
 import ScheduledIcon from '../../icons/ScheduledIcon';
 import BlockedIcon from '../../icons/BlockedIcon';
 import useMobileViewportSize from '../../hooks/useMobileViewportSize';
@@ -95,9 +94,9 @@ import { PATHS_TO_DASHBOARD_TABS } from '../../../constants/paths';
 import { SECTION_TITLES_BY_TAB } from '../../../constants/dashboardTabs';
 import { selectDashboardActiveTab } from '../../../modules/dashboard';
 import getApproximatedEffortToCalendarBlockDuration from '../../../utils/getApproximatedEffortToCalendarBlockDuration';
-import useIsMacPlaform from '../../hooks/useIsMacPlatform';
 import usePrevious from '../../hooks/usePrevious';
 import debugConsole from '../../../utils/debugConsole';
+import { isMacPlaform, isTouchEnabledScreen } from '../../../utils/applicationClient';
 
 const DASHBOARD_TABS_TO_PATHS = invert(PATHS_TO_DASHBOARD_TABS);
 
@@ -345,8 +344,8 @@ const TaskDialogForm = ({ onClose }) => {
   });
 
   const mobile = useMobileViewportSize();
-  const touchEnabledScreen = useIsTouchEnabledScreen();
-  const macPlatform = useIsMacPlaform();
+  const touchEnabledScreen = useMemo(isTouchEnabledScreen, []);
+  const macPlatform = useMemo(isMacPlaform, []);
 
   const descriptionWasHidden = usePrevious(showFormDescription, true);
   const descriptionJustBecameVisible = !descriptionWasHidden && showFormDescription;
