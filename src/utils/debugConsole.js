@@ -7,6 +7,7 @@ const colorByPrefix = {
   link: 'background: #111; color: #2196f3',
   redux: 'background: #764abc; color: #fff',
   message: 'background: gray; color: black',
+  notification: 'background: #888; color: black',
 };
 
 export default {

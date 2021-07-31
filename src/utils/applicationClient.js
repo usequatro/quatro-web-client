@@ -57,3 +57,10 @@ export function toggleMaximizeWindow() {
       maximized ? window.todesktop.window.unmaximize() : window.todesktop.window.maximize(),
     );
 }
+/**
+ * @link {https://docs.todesktop.com/javascript-api/app-icon-badging-bouncing-and-progress-bar}
+ * @returns {Promise}
+ */
+export function removeDockBadge() {
+  return window.todesktop.app.setBadgeCount(0);
+}
