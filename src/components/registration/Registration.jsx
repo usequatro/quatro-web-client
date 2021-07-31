@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appName: {
     color: theme.palette.secondary.main,
-    marginBottom: theme.spacing(7),
+    marginBottom: theme.spacing(2),
   },
   viewName: {
     color: theme.palette.secondary.main,
@@ -233,7 +233,7 @@ const Registration = ({ mode }) => {
   return (
     <div className={classes.container} onDoubleClick={handleContainerDoubleClick}>
       <Paper className={classes.paper} onDoubleClick={handleStoppingPropagation}>
-        <Box display="flex" alignItems="center" flexDirection="column">
+        <Box display="flex" alignItems="center" flexDirection="column" mb={5}>
           <SvgIcon
             component={LogoArrowsFull}
             viewBox="0 0 76.87 68.04"
@@ -402,6 +402,14 @@ const Registration = ({ mode }) => {
           </div>
         </Fade>
       </Paper>
+
+      {process.env.REACT_APP_DEVELOPMENT && (
+        <Box mt={1}>
+          <Typography style={{ fontStyle: 'italic', color: 'white', opacity: 0.2 }}>
+            Staging Environment
+          </Typography>
+        </Box>
+      )}
     </div>
   );
 };
