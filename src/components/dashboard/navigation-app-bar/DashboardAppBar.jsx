@@ -7,6 +7,7 @@ import Hidden from '@material-ui/core/Hidden';
 import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -55,10 +56,6 @@ const useStyles = makeStyles((theme) => ({
     minHeight: getTopBarHeight(theme),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-  },
-  appBarCenter: {
-    flexGrow: 1,
-    display: 'flex',
   },
   appBarButtons: {
     whiteSpace: 'nowrap',
@@ -154,9 +151,17 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
           </Box>
         </Hidden>
 
-        <div className={classes.appBarCenter}>
+        <Box display="flex" flexGrow={1} alignItems="center">
           <AppLogoPlain className={classes.appBarLogo} title="Quatro logo" />
-        </div>
+
+          {process.env.REACT_APP_DEVELOPMENT && (
+            <Box ml={2}>
+              <Typography style={{ fontStyle: 'italic', color: 'white', opacity: 0.2 }}>
+                Staging Environment
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         <Box className={classes.appBarEdge} justifyContent="flex-end">
           {showSpinner && (
