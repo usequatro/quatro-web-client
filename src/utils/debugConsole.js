@@ -6,6 +6,7 @@ const colorByPrefix = {
   fallback: 'background: #2196f3; color: #000',
   redux: 'background: #764abc; color: #fff',
   message: 'background: gray; color: black',
+  notification: 'background: #888; color: black',
 };
 
 export default {

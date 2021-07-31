@@ -8,6 +8,8 @@ import {
   selectCalendarEventSummary,
   selectCalendarEventStartTimestamp,
 } from '../../../modules/calendarEvents';
+import { isDesktopClient, removeDockBadge } from '../../../utils/applicationClient';
+import debugConsole from '../../../utils/debugConsole';
 
 const CalendarNotification = ({ calendarEventId }) => {
   const notificationRef = useRef();
@@ -19,6 +21,7 @@ const CalendarNotification = ({ calendarEventId }) => {
   const closeNotification = useCallback(() => {
     if (notificationRef.current) {
       notificationRef.current.close();
+      debugConsole.log('notification', 'Notification closed');
     }
   }, []);
 
@@ -28,6 +31,17 @@ const CalendarNotification = ({ calendarEventId }) => {
       body: `At ${format(startTimestamp, 'h:mm a')}, in ${minutesLeft} min`,
       icon: '/images/logo_arrows_full_square.png',
       requireInteraction: true,
+    });
+    debugConsole.log('notification', 'Notification created');
+
+    // When a notification shows, if the uses closes it, the badge stays on the icon by default
+    // We don't want that, so clearing it when the notification closes here.
+    notificationRef.current.addEventListener('close', () => {
+      debugConsole.log('notification', 'Notification was closed');
+      if (isDesktopClient()) {
+        removeDockBadge();
+        debugConsole.log('notification', 'Dock badge removed');
+      }
     });
   }
 
