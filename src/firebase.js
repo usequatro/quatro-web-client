@@ -107,3 +107,9 @@ export const firebaseUnlinkProvider = (providerId) => {
   debugConsole.info('Firebase', `Unlinking provider ${providerId}`);
   return firebase.auth().currentUser.unlink(providerId);
 };
+
+/**
+ * Returns a promise with the ID token used to identify the user with HTTP Firebase Functions
+ * @returns {Promise<string>}
+ */
+export const firebaseGetAuthIdToken = () => firebase.auth().currentUser.getIdToken();

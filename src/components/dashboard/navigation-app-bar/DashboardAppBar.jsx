@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -31,6 +31,9 @@ import {
   toggleMaximizeWindow,
 } from '../../../utils/applicationClient';
 import { isMacPlaform } from '../../hooks/useIsMacPlatform';
+import { firebaseGetAuthIdToken } from '../../../firebase';
+
+const DESKTOP_CLIENT_DOWNLOAD_URL = process.env.REACT_APP_DESKTOP_CLIENT_DOWNLOAD_URL;
 
 export const getTopBarHeight = (theme) => theme.spacing(6);
 
@@ -120,6 +123,15 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
     signOut();
   };
 
+  // Append the user's ID token to the URL so we can track them
+  const [desktopClientUrl, setDesktopClientUrl] = useState(DESKTOP_CLIENT_DOWNLOAD_URL);
+  useEffect(() => {
+    firebaseGetAuthIdToken().then((idToken) => {
+      const authenticatedDesktopClientUrl = `${DESKTOP_CLIENT_DOWNLOAD_URL}?id_token=${idToken}`;
+      setDesktopClientUrl(authenticatedDesktopClientUrl);
+    });
+  }, []);
+
   return (
     <AppBar
       position="fixed"
@@ -162,8 +174,8 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                   className={classes.appBarButtons}
                   variant="outlined"
                   color="inherit"
-                  href="https://dl.todesktop.com/210720bke7ubhqt"
-                  target="_blank"
+                  href={desktopClientUrl}
+                  disabled={!desktopClientUrl} // defensive programming
                 >
                   Download Desktop App
                 </Button>
