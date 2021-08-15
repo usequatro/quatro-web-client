@@ -22,12 +22,6 @@ const ONBOARDING_TASKS = [
     impact: 1,
   },
   {
-    title: 'Add Quatro as a bookmark on your desktop',
-    description: '',
-    effort: 0,
-    impact: 0,
-  },
-  {
     title: 'Add Quatro to your phone’s home screen',
     description:
       'For some helpful Quatro content, like how to create a native mobile app experience, check out our FAQ at https://usequatro.com/faq',
