@@ -33,6 +33,7 @@ import {
   toggleMaximizeWindow,
 } from '../../../utils/applicationClient';
 import { firebaseGetAuthIdToken } from '../../../firebase';
+import EmailVerificationBehavior from '../../email-verification/EmailVerificationBehavior';
 
 const DESKTOP_CLIENT_DOWNLOAD_URL = process.env.REACT_APP_DESKTOP_CLIENT_DOWNLOAD_URL;
 
@@ -62,6 +63,9 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       backgroundColor: `${theme.palette.action.contrastHover} !important`,
     },
+    '&.MuiButton-outlined': {
+      marginRight: theme.spacing(1),
+    },
   },
   appBarEdge: {
     width: '6rem',
@@ -71,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
-  saveLoader: {
+  appBarSpinner: {
     color: theme.palette.common.white,
   },
   accountMenuButton: {
@@ -167,13 +171,35 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
           {showSpinner && (
             <Box flexGrow={1} display="flex" justifyContent="flex-end" pr={2}>
               <Tooltip title="Saving..." arrow>
-                <CircularProgress thickness={3} size="1.5rem" className={classes.saveLoader} />
+                <CircularProgress thickness={3} size="1.5rem" className={classes.appBarSpinner} />
               </Tooltip>
             </Box>
           )}
 
           <Hidden smDown>
             <Box mx={2} display="flex" flexDirection="row">
+              <EmailVerificationBehavior
+                render={(onSendVerificationEmail, submittingVerification, sentVerification) => (
+                  <Button
+                    className={classes.appBarButtons}
+                    variant="outlined"
+                    color="inherit"
+                    onClick={onSendVerificationEmail}
+                    endIcon={
+                      submittingVerification ? (
+                        <CircularProgress
+                          thickness={3}
+                          size="1.5rem"
+                          className={classes.appBarSpinner}
+                        />
+                      ) : null
+                    }
+                  >
+                    {sentVerification ? 'Verification email sent' : 'Send Verification Email'}
+                  </Button>
+                )}
+              />
+
               {!isDesktopClient() && !isMobileDeviceUserAgent() && (
                 <Button
                   className={classes.appBarButtons}
