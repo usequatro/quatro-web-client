@@ -201,6 +201,7 @@ const CompletedTaskList = () => {
           }
           prioritizedAheadOf={undefined}
           showBlockers={false}
+          editable={false}
           hasRecurringConfig={false}
           completed={bufferedCompletedValue}
           showCompletedAnimation={false}

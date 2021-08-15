@@ -218,8 +218,8 @@ const TaskView = ({
             <SubtaskList
               subtasks={subtasks}
               onSubtaskStatusChange={onSubtaskStatusChange}
-              enableStatusChange={!completed}
-              showProgressBar={!completed}
+              enableStatusChange={editable}
+              showProgressBar={editable}
             />
           )}
 
@@ -322,6 +322,7 @@ TaskView.propTypes = {
   onSubtaskStatusChange: PropTypes.func.isRequired,
   onMarkTaskIncomplete: PropTypes.func.isRequired,
   hasRecurringConfig: PropTypes.bool.isRequired,
+  editable: PropTypes.bool.isRequired,
   score: PropTypes.number,
   scheduledStart: PropTypes.number,
   snoozedUntil: PropTypes.number,
@@ -332,7 +333,6 @@ TaskView.propTypes = {
   showCompletedAnimation: PropTypes.bool,
   onClick: PropTypes.func,
   highlighted: PropTypes.bool,
-  editable: PropTypes.bool,
   parentContainerWidth: PropTypes.number,
 };
 
@@ -347,7 +347,6 @@ TaskView.defaultProps = {
   completed: undefined,
   showCompletedAnimation: false,
   highlighted: undefined,
-  editable: false,
   parentContainerWidth: 700, // some arbitrary value in case upper measurements fail
   onClick: () => {},
 };

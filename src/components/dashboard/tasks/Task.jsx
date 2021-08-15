@@ -23,15 +23,7 @@ import { selectRecurringConfigIdByMostRecentTaskId } from '../../../modules/recu
 import useEditTaskDialogRouterControl from '../../hooks/useEditTaskDialogRouterControl';
 import { useNotification } from '../../Notification';
 
-const Task = ({
-  id,
-  position,
-  component,
-  highlighted,
-  showBlockers,
-  editable,
-  parentContainerWidth,
-}) => {
+const Task = ({ id, position, component, highlighted, showBlockers, parentContainerWidth }) => {
   const dispatch = useDispatch();
   const { notifyInfo } = useNotification();
 
@@ -77,7 +69,7 @@ const Task = ({
       position={position}
       component={component}
       highlighted={highlighted}
-      editable={editable}
+      editable
       title={title}
       description={description}
       subtasks={subtasks}
@@ -92,7 +84,7 @@ const Task = ({
       prioritizedAheadOf={prioritizedAheadOf}
       hasRecurringConfig={hasRecurringConfig}
       showBlockers={showBlockers}
-      onClick={editable ? handleClick : undefined}
+      onClick={handleClick}
       onCompleteTask={onCompleteTask}
       onSubtaskStatusChange={onSubtaskStatusChange}
       onMarkTaskIncomplete={onMarkTaskIncomplete}
@@ -107,7 +99,6 @@ Task.propTypes = {
   position: PropTypes.number,
   component: PropTypes.elementType,
   highlighted: PropTypes.bool,
-  editable: PropTypes.bool,
   parentContainerWidth: PropTypes.number,
 };
 
@@ -115,7 +106,6 @@ Task.defaultProps = {
   position: undefined,
   component: undefined,
   highlighted: undefined,
-  editable: false,
   parentContainerWidth: undefined,
 };
 
