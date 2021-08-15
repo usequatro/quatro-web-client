@@ -23,7 +23,7 @@ import { gapiGetAuthInstance } from '../../googleApi';
 import * as paths from '../../constants/paths';
 import { selectRegistrationEmail, setRegistrationEmail } from '../../modules/registration';
 import { ReactComponent as LogoArrowsFull } from './logo-arrows-full.svg';
-import createOnboardingTasks from '../../utils/createOnboardingTasks';
+import createUserOnboardingEntities from '../../utils/createUserOnboardingEntities';
 import { getBrowserDetectedTimeZone } from '../../utils/timeZoneUtils';
 import { fetchUpdateUserExternalConfig } from '../../utils/apiClient';
 import { isDesktopClient, isMacPlaform, toggleMaximizeWindow } from '../../utils/applicationClient';
@@ -162,7 +162,7 @@ const Registration = ({ mode }) => {
     firebase
       .auth()
       .createUserWithEmailAndPassword(emailAddress, password)
-      .then((userCredential) => createOnboardingTasks(userCredential.user.uid))
+      .then((userCredential) => createUserOnboardingEntities(userCredential.user.uid))
       .then(() => {
         const userTimeZone = getBrowserDetectedTimeZone();
         if (userTimeZone) {

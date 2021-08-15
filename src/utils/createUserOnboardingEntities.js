@@ -33,7 +33,7 @@ const ONBOARDING_TASKS = [
 /**
  * @param {string} userId
  */
-export default function createOnboardingTasks(userId) {
+export default function createUserOnboardingEntities(userId) {
   debugConsole.log('Firestore', 'Creating onboarding tasks');
   ONBOARDING_TASKS.forEach((onboardingTask) => {
     fetchCreateTask(userId, onboardingTask).catch((error) => {
