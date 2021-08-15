@@ -195,7 +195,7 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
                       ) : null
                     }
                   >
-                    {sentVerification ? 'Verification email sent' : 'Verify your email'}
+                    {sentVerification ? 'Verification email sent' : 'Verify Your Email'}
                   </Button>
                 )}
               />

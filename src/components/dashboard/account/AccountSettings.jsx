@@ -362,7 +362,7 @@ const AccountSettings = () => {
 
             <PasswordTextField
               fullWidth
-              label="Change password"
+              label="Change Password"
               autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
@@ -426,8 +426,8 @@ const AccountSettings = () => {
           <Box my={4}>
             <Typography gutterBottom>
               {emailVerified
-                ? `Email preferences`
-                : `Email preferences (requires email to be verified)`}
+                ? `Email Preferences`
+                : `Email Preferences (requires email to be verified)`}
             </Typography>
 
             <FormControlLabel
