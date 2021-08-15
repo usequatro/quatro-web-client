@@ -58,6 +58,7 @@ import { getTaskPath } from '../../../constants/paths';
 import * as RESPONSE_STATUS from '../../../constants/responseStatus';
 import { PUBLIC, getEventVisibilityLabel } from '../../../constants/eventVisibilities';
 import { useNotification } from '../../Notification';
+import CalendarEventConferenceEntryPoints from './CalendarEventConferenceEntryPoints';
 
 const useStyles = makeStyles((theme) => ({
   eventPopoverPaper: {
@@ -108,17 +109,25 @@ AttendeeStatusIcon.propTypes = {
   ]).isRequired,
 };
 
-const InformativeIcon = ({ Icon, title }) => (
-  <Box mr={2} display="flex">
-    <Tooltip title={title}>
-      <Icon color="action" fontSize="small" />
-    </Tooltip>
+const LayoutRow = ({ Icon, iconTooltip, content, BoxProps = {} }) => (
+  <Box mb={2} display="flex" {...BoxProps}>
+    <Box mr={2} display="flex">
+      <Tooltip title={iconTooltip} arrow>
+        {React.isValidElement(Icon) ? Icon : <Icon color="action" fontSize="small" />}
+      </Tooltip>
+    </Box>
+
+    <Box>{content}</Box>
   </Box>
 );
-
-InformativeIcon.propTypes = {
-  Icon: PropTypes.elementType.isRequired,
-  title: PropTypes.string.isRequired,
+LayoutRow.propTypes = {
+  Icon: PropTypes.oneOfType([PropTypes.elementType, PropTypes.element]).isRequired,
+  iconTooltip: PropTypes.string.isRequired,
+  content: PropTypes.node.isRequired,
+  BoxProps: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+};
+LayoutRow.defaultProps = {
+  BoxProps: {},
 };
 
 const ATTENDEE_RENDER_LIMIT = 15;
@@ -213,132 +222,152 @@ const CalendarEventPopover = ({ id, anchorEl, open, onClose }) => {
       />
 
       <DialogContent>
-        <Box display="flex" mb={2}>
-          <InformativeIcon title="Time" Icon={QueryBuilderRoundedIcon} />
-          <Typography variant="body2">
-            {allDay
-              ? 'All Day'
-              : `${format(startTimestamp, timeFormat)} - ${format(endTimestamp, timeFormat)}`}
-          </Typography>
-        </Box>
+        <LayoutRow
+          Icon={QueryBuilderRoundedIcon}
+          iconTooltip="Time"
+          content={
+            <Typography variant="body2">
+              {allDay
+                ? 'All Day'
+                : `${format(startTimestamp, timeFormat)} - ${format(endTimestamp, timeFormat)}`}
+            </Typography>
+          }
+        />
 
         {eventLocation && (
-          <Box display="flex" mb={2}>
-            <InformativeIcon title="Location" Icon={RoomRoundedIcon} />
-            <Typography variant="body2">
-              <TextWithLinks text={eventLocation} />
-            </Typography>
-          </Box>
+          <LayoutRow
+            Icon={RoomRoundedIcon}
+            iconTooltip="Location"
+            content={
+              <Typography variant="body2">
+                <TextWithLinks text={eventLocation} />
+              </Typography>
+            }
+          />
         )}
 
-        {description && (
-          <Box mb={3} display="flex">
-            <InformativeIcon title="Description" Icon={NotesIcon} />
+        <CalendarEventConferenceEntryPoints
+          id={id}
+          render={({ Icon, iconTooltip, content }) => (
+            <LayoutRow Icon={Icon} iconTooltip={iconTooltip} content={content} />
+          )}
+        />
 
-            <Typography
-              variant="body2"
-              component="div"
-              className={classes.eventPopoverDescription}
-              dangerouslySetInnerHTML={{
-                __html: parseHtml(description),
-              }}
-            />
-          </Box>
+        {description && (
+          <LayoutRow
+            Icon={NotesIcon}
+            iconTooltip="Description"
+            BoxProps={{ mb: 3 }}
+            content={
+              <Typography
+                variant="body2"
+                component="div"
+                className={classes.eventPopoverDescription}
+                dangerouslySetInnerHTML={{
+                  __html: parseHtml(description),
+                }}
+              />
+            }
+          />
         )}
 
         {attendeesRenderSubset && attendeesRenderSubset.length > 0 && (
           <>
-            <Box mb={2} display="flex">
-              <InformativeIcon title="Attendees" Icon={GroupRoundedIcon} />
+            <LayoutRow
+              iconTooltip="Attendees"
+              Icon={GroupRoundedIcon}
+              content={
+                <Box component="ul" m={0} pl={2}>
+                  {attendeesRenderSubset.map((attendee, index) => (
+                    <Box component="li" key={attendee.id || attendee.email || index}>
+                      <Typography
+                        variant="body2"
+                        style={{ display: 'flex', alignItems: 'center' }}
+                        color={
+                          attendee.responseStatus === 'declined' ? 'textSecondary' : 'textPrimary'
+                        }
+                      >
+                        {attendee.displayName || attendee.email}{' '}
+                        {attendee.organizer && (
+                          <Typography component="span" variant="caption">
+                            {' '}
+                            &nbsp;(Organizer){' '}
+                          </Typography>
+                        )}
+                        <AttendeeStatusIcon responseStatus={attendee.responseStatus} />
+                      </Typography>
+                    </Box>
+                  ))}
 
-              <Box component="ul" m={0} pl={2}>
-                {attendeesRenderSubset.map((attendee, index) => (
-                  <Box component="li" key={attendee.id || attendee.email || index}>
-                    <Typography
-                      variant="body2"
-                      style={{ display: 'flex', alignItems: 'center' }}
-                      color={
-                        attendee.responseStatus === 'declined' ? 'textSecondary' : 'textPrimary'
-                      }
-                    >
-                      {attendee.displayName || attendee.email}{' '}
-                      {attendee.organizer && (
-                        <Typography component="span" variant="caption">
-                          {' '}
-                          &nbsp;(Organizer){' '}
-                        </Typography>
-                      )}
-                      <AttendeeStatusIcon responseStatus={attendee.responseStatus} />
-                    </Typography>
-                  </Box>
-                ))}
+                  {attendeesRenderSubset.length < attendees.length && <Box component="li">...</Box>}
+                </Box>
+              }
+            />
 
-                {attendeesRenderSubset.length < attendees.length && <Box component="li">...</Box>}
-              </Box>
-            </Box>
+            <LayoutRow
+              iconTooltip="Attendance"
+              Icon={HowToRegIcon}
+              BoxProps={{ mb: 3 }}
+              content={
+                <Box minWidth={120}>
+                  <InputLabel shrink id="attendance-select-label">
+                    Going?
+                  </InputLabel>
+                  <Select
+                    onChange={handleSelectChange}
+                    value={calendarEventResponseStatus}
+                    fullWidth
+                    labelId="attendance-select-label"
+                    disabled={isUpdating}
+                  >
+                    {calendarEventResponseStatus === RESPONSE_STATUS.NEEDS_ACTION && (
+                      <MenuItem value={RESPONSE_STATUS.NEEDS_ACTION} disabled>
+                        Not replied
+                      </MenuItem>
+                    )}
 
-            <Box mb={3} display="flex">
-              <InformativeIcon title="Attendance" Icon={HowToRegIcon} />
+                    <MenuItem value={RESPONSE_STATUS.ACCEPTED}>Yes</MenuItem>
 
-              <Box minWidth={120}>
-                <InputLabel shrink id="attendance-select-label">
-                  Going?
-                </InputLabel>
-                <Select
-                  onChange={handleSelectChange}
-                  value={calendarEventResponseStatus}
-                  fullWidth
-                  labelId="attendance-select-label"
-                  disabled={isUpdating}
-                >
-                  {calendarEventResponseStatus === RESPONSE_STATUS.NEEDS_ACTION && (
-                    <MenuItem value={RESPONSE_STATUS.NEEDS_ACTION} disabled>
-                      Not replied
-                    </MenuItem>
-                  )}
+                    <MenuItem value={RESPONSE_STATUS.DECLINED}>No</MenuItem>
 
-                  <MenuItem value={RESPONSE_STATUS.ACCEPTED}>Yes</MenuItem>
-
-                  <MenuItem value={RESPONSE_STATUS.DECLINED}>No</MenuItem>
-
-                  <MenuItem value={RESPONSE_STATUS.TENTATIVE}>Maybe</MenuItem>
-                </Select>
-              </Box>
-            </Box>
+                    <MenuItem value={RESPONSE_STATUS.TENTATIVE}>Maybe</MenuItem>
+                  </Select>
+                </Box>
+              }
+            />
           </>
         )}
 
         {/* visibility is missing on GCal quite often */}
         {visibility && (
-          <Box display="flex" mb={2}>
-            <InformativeIcon
-              title="Visibility"
-              Icon={visibility === PUBLIC ? LockOpenRoundedIcon : LockRoundedIcon}
-            />
-            <Typography variant="body2">
-              <TextWithLinks text={getEventVisibilityLabel(visibility)} />
-            </Typography>
-          </Box>
+          <LayoutRow
+            Icon={visibility === PUBLIC ? LockOpenRoundedIcon : LockRoundedIcon}
+            iconTooltip="Visibility"
+            content={
+              <Typography variant="body2">
+                <TextWithLinks text={getEventVisibilityLabel(visibility)} />
+              </Typography>
+            }
+          />
         )}
 
-        <Box display="flex" alignItems="center">
-          <Box mr={2} ml={-1.5} display="flex">
-            <Tooltip title="Open in Google Calendar" enterDelay={1000} arrow>
-              <IconButton
-                edge="end"
-                color="default"
-                href={htmlLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="open in calendar app"
-              >
-                <LaunchRoundedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-
-          <Typography variant="body2">{`${providerCalendarId} `}</Typography>
-        </Box>
+        <LayoutRow
+          Icon={
+            <IconButton
+              edge="end"
+              color="default"
+              href={htmlLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="open in calendar app"
+            >
+              <LaunchRoundedIcon fontSize="small" />
+            </IconButton>
+          }
+          BoxProps={{ mr: 2, ml: -1.5, alignItems: 'center' }}
+          iconTooltip="Open in Google Calendar"
+          content={<Typography variant="body2">{`${providerCalendarId} `}</Typography>}
+        />
 
         {taskId && (
           <DialogActions>
