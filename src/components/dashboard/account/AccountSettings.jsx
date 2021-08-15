@@ -337,7 +337,7 @@ const AccountSettings = () => {
 
             <EmailVerificationBehavior
               render={(onSendVerificationEmail, submittingVerification, sentVerification) => (
-                <Alert severity="info">
+                <Alert severity="info" variant="outlined">
                   Please verify your email address:
                   <br />
                   {sentVerification ? (
