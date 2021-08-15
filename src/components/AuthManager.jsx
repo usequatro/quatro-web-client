@@ -17,7 +17,7 @@ import {
   DESKTOP_CLIENT_VERSION,
 } from '../constants/mixpanelUserProperties';
 import { useNotification } from './Notification';
-import createOnboardingTasks from '../utils/createOnboardingTasks';
+import createUserOnboardingEntities from '../utils/createUserOnboardingEntities';
 import { getBrowserDetectedTimeZone } from '../utils/timeZoneUtils';
 import { getDesktopClientVersion } from '../utils/applicationClient';
 import { fetchUpdateUserExternalConfig } from '../utils/apiClient';
@@ -55,7 +55,7 @@ const AuthManager = () => {
         .then((userCredential) => {
           debugConsole.log('firebase', 'signInWithCredential', userCredential);
           if (userCredential.additionalUserInfo.isNewUser) {
-            createOnboardingTasks(userCredential.user.uid);
+            createUserOnboardingEntities(userCredential.user.uid);
 
             const userTimeZone = getBrowserDetectedTimeZone();
             if (userTimeZone) {

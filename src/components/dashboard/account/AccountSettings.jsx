@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import cond from 'lodash/cond';
 
 import Box from '@material-ui/core/Box';
@@ -14,12 +13,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import Alert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
 
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
 import firebase, {
-  firebaseSendEmailVerification,
   firebaseUpdateUserProfile,
   firebaseUpdateUserEmail,
   firebaseUpdateUserPassword,
@@ -57,6 +56,7 @@ import {
   hasBrowserTimeZoneSupport,
   isValidTimeZone,
 } from '../../../utils/timeZoneUtils';
+import EmailVerificationBehavior from '../../email-verification/EmailVerificationBehavior';
 
 const ERROR_TOO_MANY_REQUESTS = 'auth/too-many-requests';
 const ERROR_LIST_REQUIRES_RECENT_LOGIN = [
@@ -87,48 +87,6 @@ const useStyles = makeStyles(() => ({
     backgroundSize: 'cover',
   },
 }));
-
-const EmailVerificationText = ({ verified }) => {
-  const { notifyError, notifySuccess } = useNotification();
-  const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const onSend = (event) => {
-    event.preventDefault();
-    setSubmitting(true);
-    firebaseSendEmailVerification()
-      .then(() => {
-        notifySuccess('Verification email sent');
-        setSubmitting(false);
-        setSent(true);
-      })
-      .catch((error) => {
-        console.error(error); // eslint-disable-line no-console
-        notifyError(userFacingErrors[error.code] || 'Error sending verification email');
-        setSubmitting(false);
-      });
-  };
-  return verified ? (
-    'Email verified'
-  ) : (
-    <>
-      Your email needs to be verified&nbsp;
-      <MuiLink
-        component="button"
-        type="button"
-        variant="inherit"
-        disabled={sent || submitting}
-        onClick={onSend}
-      >
-        Send {submitting ? <CircularProgress thickness={4} size="1rem" /> : null}
-      </MuiLink>
-    </>
-  );
-};
-
-EmailVerificationText.propTypes = {
-  verified: PropTypes.bool.isRequired,
-};
 
 // Making google's profile URL larger, as by default it might be 96
 const resizeGoogleProfileUrl = (profileUrl, size = 200) =>
@@ -374,11 +332,39 @@ const AccountSettings = () => {
               onChange={(event) => setEmail(event.target.value)}
               type="email"
               margin="normal"
-              helperText={<EmailVerificationText verified={emailVerified} />}
+              helperText={emailVerified ? 'Email verified' : undefined}
             />
+
+            <EmailVerificationBehavior
+              render={(onSendVerificationEmail, submittingVerification, sentVerification) => (
+                <Alert
+                  severity="info"
+                  variant="outlined"
+                  action={
+                    !sentVerification && (
+                      <Button
+                        variant="text"
+                        color="primary"
+                        onClick={onSendVerificationEmail}
+                        endIcon={
+                          submittingVerification && <CircularProgress thickness={4} size="1rem" />
+                        }
+                      >
+                        Send verification email
+                      </Button>
+                    )
+                  }
+                >
+                  {sentVerification
+                    ? 'Sent. Check out your inbox.'
+                    : 'Please verify your email address'}
+                </Alert>
+              )}
+            />
+
             <PasswordTextField
               fullWidth
-              label="Change password"
+              label="Change Password"
               autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
@@ -440,8 +426,14 @@ const AccountSettings = () => {
 
         {userExternalConfigLoaded && (
           <Box my={4}>
-            <Typography gutterBottom>Email preferences</Typography>
+            <Typography gutterBottom>
+              {emailVerified
+                ? `Email Preferences`
+                : `Email Preferences (requires email to be verified)`}
+            </Typography>
+
             <FormControlLabel
+              disabled={!emailVerified}
               control={
                 <Checkbox
                   color="primary"

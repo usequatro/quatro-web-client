@@ -1,4 +1,4 @@
-import { fetchCreateTask } from './apiClient';
+import { fetchCreateTask, fetchUpdateUserExternalConfig } from './apiClient';
 import debugConsole from './debugConsole';
 
 const ONBOARDING_TASKS = [
@@ -33,11 +33,14 @@ const ONBOARDING_TASKS = [
 /**
  * @param {string} userId
  */
-export default function createOnboardingTasks(userId) {
+export default function createUserOnboardingEntities(userId) {
   debugConsole.log('Firestore', 'Creating onboarding tasks');
   ONBOARDING_TASKS.forEach((onboardingTask) => {
     fetchCreateTask(userId, onboardingTask).catch((error) => {
       console.error(error); // eslint-disable-line no-console
     });
   });
+
+  debugConsole.log('Firestore', 'Enabling daily digests');
+  fetchUpdateUserExternalConfig({ emailDailyDigestEnabled: true });
 }
