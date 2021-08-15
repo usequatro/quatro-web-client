@@ -143,6 +143,22 @@ const formatCalendarAPIFormat = (item, providerCalendarId) => {
       }
       return 0;
     }),
+    conferenceData: item.conferenceData
+      ? {
+          solutionIconUri: item.conferenceData.conferenceSolution.iconUri,
+          solutionName: item.conferenceData.conferenceSolution.name,
+          entryPoints: (item.conferenceData.entryPoints || []).map((entryPoint) => ({
+            type: entryPoint.entryPointType,
+            label: entryPoint.label,
+            uri: entryPoint.uri,
+            meetingCode: entryPoint.meetingCode,
+            passcode: entryPoint.passcode,
+            password: entryPoint.password,
+            pin: entryPoint.pin,
+            regionCode: entryPoint.regionCode,
+          })),
+        }
+      : null,
     allDay,
     responseStatus,
     taskId: get(item, 'extendedProperties.private.taskId', null),

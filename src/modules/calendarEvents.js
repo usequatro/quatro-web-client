@@ -32,6 +32,25 @@ const calendarEventSchema = Joi.object({
   status: Joi.valid('cancelled', 'confirmed', 'tentative'),
   description: Joi.string(),
   location: Joi.string(),
+  conferenceData: Joi.object({
+    // here's the useful information subset of the calendar API conference data
+    solutionIconUri: Joi.string(),
+    solutionName: Joi.string(),
+    entryPoints: Joi.array().items(
+      Joi.object({
+        type: Joi.string(),
+        label: Joi.string(),
+        uri: Joi.string(),
+        meetingCode: Joi.string(),
+        passcode: Joi.string(),
+        password: Joi.string(),
+        pin: Joi.string(),
+        regionCode: Joi.string(),
+      }),
+    ),
+  })
+    .allow(null)
+    .default(null),
   start: Joi.object({
     dateTime: Joi.string(),
     timestamp: timestampSchema,
@@ -42,6 +61,7 @@ const calendarEventSchema = Joi.object({
     timestamp: timestampSchema,
     timeZone: Joi.string(),
   }).default({}),
+  responseStatus: Joi.string(),
   attendees: Joi.array()
     .items(
       Joi.object({
@@ -85,6 +105,9 @@ export const selectCalendarEventEndDateTime = (state, id) =>
   get(state[name].byId[id], 'end.dateTime');
 export const selectCalendarEventEndTimestamp = (state, id) =>
   get(state[name].byId[id], 'end.timestamp');
+/** @returns {Array<Object>} */
+export const selectCalendarEventConferenceData = (state, id) =>
+  get(state[name].byId[id], 'conferenceData', []);
 export const selectCalendarEventAllDay = (state, id) => get(state[name].byId[id], 'allDay');
 /** @returns {string|undefined} */
 export const selectCalendarEventVisibility = (state, id) => get(state[name].byId[id], 'visibility');
@@ -346,14 +369,25 @@ const slice = createSlice({
     },
 
     updateEvents: (state, { payload: { calendarId, events, date } }) => {
+      const validatedEvents = events
+        .map((event) => {
+          const { error, value } = calendarEventSchema.validate(event);
+          if (error) {
+            console.error(error); // eslint-disable-line no-console
+            return null;
+          }
+          return value;
+        })
+        .filter(Boolean);
+
       const dateKey = formatDate(date);
       const isEventRemoved = (event) =>
         event.status === 'cancelled' || event.responseStatus === RESPONSE_STATUS.DECLINED;
-      const eventsUpdated = events.filter((event) => !isEventRemoved(event));
-      const eventIdsRemoved = events.filter(isEventRemoved).map((event) => event.id);
+      const eventsUpdated = validatedEvents.filter((event) => !isEventRemoved(event));
+      const eventIdsRemoved = validatedEvents.filter(isEventRemoved).map((event) => event.id);
 
       // Remove placeholders that already got a real event
-      const newEventByTaskIds = events
+      const newEventByTaskIds = validatedEvents
         .filter((event) => event.taskId)
         .reduce(
           (memo, event) => ({
