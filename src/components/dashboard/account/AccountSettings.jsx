@@ -332,7 +332,7 @@ const AccountSettings = () => {
               onChange={(event) => setEmail(event.target.value)}
               type="email"
               margin="normal"
-              helperText={emailVerified ? 'Email verified' : ''}
+              helperText={emailVerified ? 'Email verified' : undefined}
             />
 
             <EmailVerificationBehavior

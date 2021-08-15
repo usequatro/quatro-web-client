@@ -54,6 +54,7 @@ const EmailVerificationBehavior = ({ render }) => {
   // When the email is changed, we reset the throttle
   useEffect(() => {
     initUserReloadPolling.cancel();
+    setSent(false);
   }, [userEmail]);
 
   const onSendVerificationEmail = useCallback(
