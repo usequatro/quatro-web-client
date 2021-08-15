@@ -128,6 +128,12 @@ const Registration = ({ mode }) => {
     setPassword('');
   }, [mode]);
 
+  useEffect(() => {
+    if (mode === SIGN_UP && emailAddress) {
+      setShowEmailPasswordSignInForm(true);
+    }
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const redirectLoggedInUserToDashboard = () => {
     // Clear the email on the login/signup form
     if (emailAddress) {
