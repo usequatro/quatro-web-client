@@ -337,25 +337,27 @@ const AccountSettings = () => {
 
             <EmailVerificationBehavior
               render={(onSendVerificationEmail, submittingVerification, sentVerification) => (
-                <Alert severity="info" variant="outlined">
-                  Please verify your email address:
-                  <br />
-                  {sentVerification ? (
-                    'Sent'
-                  ) : (
-                    <MuiLink
-                      component="button"
-                      type="button"
-                      variant="body2"
-                      disabled={Boolean(sentVerification || submittingVerification)}
-                      onClick={onSendVerificationEmail}
-                    >
-                      Send verification email{' '}
-                      {submittingVerification ? (
-                        <CircularProgress thickness={4} size="1rem" />
-                      ) : null}
-                    </MuiLink>
-                  )}
+                <Alert
+                  severity="info"
+                  variant="outlined"
+                  action={
+                    !sentVerification && (
+                      <Button
+                        variant="text"
+                        color="primary"
+                        onClick={onSendVerificationEmail}
+                        endIcon={
+                          submittingVerification && <CircularProgress thickness={4} size="1rem" />
+                        }
+                      >
+                        Send verification email
+                      </Button>
+                    )
+                  }
+                >
+                  {sentVerification
+                    ? 'Sent. Check out your inbox.'
+                    : 'Please verify your email address'}
                 </Alert>
               )}
             />

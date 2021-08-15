@@ -37,6 +37,16 @@ export const firebaseSendEmailVerification = async () => {
   return user.sendEmailVerification();
 };
 
+/**
+ * @link https://firebase.google.com/docs/reference/js/firebase.User#reload
+ * @returns {Promise<Object>}
+ */
+export const firebaseReloadUser = () =>
+  firebase
+    .auth()
+    .currentUser.reload()
+    .then(() => firebase.auth().currentUser);
+
 export const firebaseUpdateUserProfile = async ({ displayName, photoURL }) =>
   Promise.resolve(firebase.auth().currentUser).then((user) => {
     if (!user) {
