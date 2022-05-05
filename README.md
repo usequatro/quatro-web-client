@@ -64,9 +64,3 @@ First, make sure you have an `.env` file. This file contains production environm
 ```sh
 npm run build-and-deploy
 ```
-
-## Project documentation
-
-The high level technical documentation is hosted outside this repository, as it includes information related to other repositories and integrations.
-
-[Quatro Technical Documentation](https://docs.google.com/document/d/1z9uK2gFBZeuiMLmsh08kf9RSmdj7RKzR1OC20U-m_cI/edit?usp=sharing)
