@@ -4,11 +4,15 @@
 ![Dev CI badge](https://github.com/usequatro/quatro-web-client/workflows/Dev%20Continuous%20Deployment/badge.svg)
 ![Production Deployment badge](https://github.com/usequatro/quatro-web-client/workflows/Production%20Deployment/badge.svg)
 
-[![Project Status: Inactive – The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
-
 https://app.usequatro.com
 
 📄 General technical documentation: https://github.com/usequatro/quatro-docs
+
+## Project status
+
+[![Project Status: Inactive – The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
+
+In 2022, Quatro's team decided to stop the project. Check out this blog post to learn more: [What a B2B PM Learned About Building Consumer Products.](https://jonsaft.com/2022/02/04/what-a-b2b-pm-learned-about-building-consumer-products/)
 
 ## Technologies
 
