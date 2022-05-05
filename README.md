@@ -51,6 +51,8 @@ Continuous deployment is wired with GitHub Actions:
 
 For more details, see the [workflows folder](.github/workflows).
 
+The `FIREBASE_TOKEN` is a refresh token generated with the Firebase CLI, via `firebase login:ci`, and stored as a GitHub secret to Actions can use it. Renewing it will be necessary sometimes.
+
 There's a slack integration configured (see [notifyDeploy.sh](./script/notifyDeploy.sh)) to notify the Quatro #deploys channel in Slack.
 
 ### Releases
