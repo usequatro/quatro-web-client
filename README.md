@@ -8,6 +8,8 @@
 
 https://app.usequatro.com
 
+📄 General technical documentation: https://github.com/usequatro/quatro-docs
+
 ## Technologies
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`/src`](./src).
