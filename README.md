@@ -4,32 +4,26 @@
 ![Dev CI badge](https://github.com/usequatro/quatro-web-client/workflows/Dev%20Continuous%20Deployment/badge.svg)
 ![Production Deployment badge](https://github.com/usequatro/quatro-web-client/workflows/Production%20Deployment/badge.svg)
 
-## Environments
+[![Project Status: Inactive – The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 
-### Dev (Default)
+https://app.usequatro.com
 
-* [https://dev.usequatro.com](https://dev.usequatro.com)
-* [Firebase project: quatro-dev-88030](https://console.firebase.google.com/u/0/project/quatro-dev-88030/overview)
-* [Google API Dashboard: quatro-dev-88030](https://console.developers.google.com/apis/dashboard?project=quatro-dev-88030)
+## Technologies
 
-### Prod
-
-* [https://app.usequatro.com](https://app.usequatro.com)
-* [Firebase project: tasket-project](https://console.firebase.google.com/u/0/project/tasket-project/overview)
-* [Google API Dashboard: tasket-project](https://console.developers.google.com/apis/dashboard?project=tasket-project)
-
-## Libraries
-
-This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`src`](./src).
+This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). All code can be found in [`/src`](./src).
 
 Libraries used:
 
-* React.
-* Redux for global state management (imeplement with [Redux Toolkit](https://redux-toolkit.js.org/))
-* [Material-UI](https://material-ui.com/) for UI components and styling.
-* Firebase Firestore for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
-* [React Router](https://reactrouter.com/) for navigation.
-* [Date-fns](https://date-fns.org/) for date and time manipulation.
+- React.
+- Redux for global state management (imeplement with [Redux Toolkit](https://redux-toolkit.js.org/))
+- [Material-UI](https://material-ui.com/) for UI components and styling.
+- Firebase Firestore for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
+- [React Router](https://reactrouter.com/) for navigation.
+- [Date-fns](https://date-fns.org/) for date and time manipulation.
+
+Integrations of the frontend:
+
+- Google Calendar API
 
 ## Local development
 
@@ -38,21 +32,16 @@ Libraries used:
 1. Run `npm install`
 1. Run `npm run start`. For HTTPS run `HTTPS=true npm run start`
 
-Libraries for development:
-
-- ESLint. Recommended to use VSCode with ESLint's plugin.
-- Prettier. Recommended to use VSCode with Prettier's plugin and enable _Editor: Format On Save_.
-
 For linting and formatting, make sure you have ESLint and Prettier enabled on your code editor.
 
-For Firebase, use its CLI to toggle between them with `firebase use [env]`. Check active environment with `firebase use`.
+To work with your Firebase instance, use its CLI to toggle between them with `firebase use [env]`. Check active environment with `firebase use`.
 
-## Deployment
+## Deployment (Only core contributors)
 
 Continuous deployment is wired with GitHub Actions:
 
-* Merging into `main` or `release/*` branches will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
-* Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables. Use GitHub Releases to produce the tag and release documentation.
+- Merging into `main` or `release/*` branches will trigger a deploy to https://dev.usequatro.com with `.env.development` variables.
+- Tagging with `vX.X.X` will trigger a deploy to https://app.usequatro.com with `.env` variables. Use GitHub Releases to produce the tag and release documentation.
 
 For more details, see the [workflows folder](.github/workflows).
 
