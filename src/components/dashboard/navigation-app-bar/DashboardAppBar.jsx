@@ -66,6 +66,11 @@ const useStyles = makeStyles((theme) => ({
     '&.MuiButton-outlined': {
       marginRight: theme.spacing(1),
     },
+    '&[disabled]': {
+      color: theme.palette.primary.contrastText,
+      borderColor: theme.palette.primary.contrastText,
+      opacity: theme.palette.action.disabledOpacity,
+    },
   },
   appBarEdge: {
     width: '6rem',
@@ -127,10 +132,12 @@ const DashboardAppBar = ({ setNavigationOpen, navigationOpen }) => {
   // Append the user's ID token to the URL so we can track them
   const [desktopClientUrl, setDesktopClientUrl] = useState(DESKTOP_CLIENT_DOWNLOAD_URL);
   useEffect(() => {
-    firebaseGetAuthIdToken().then((idToken) => {
-      const authenticatedDesktopClientUrl = `${DESKTOP_CLIENT_DOWNLOAD_URL}?id_token=${idToken}`;
-      setDesktopClientUrl(authenticatedDesktopClientUrl);
-    });
+    if (DESKTOP_CLIENT_DOWNLOAD_URL) {
+      firebaseGetAuthIdToken().then((idToken) => {
+        const authenticatedDesktopClientUrl = `${DESKTOP_CLIENT_DOWNLOAD_URL}?id_token=${idToken}`;
+        setDesktopClientUrl(authenticatedDesktopClientUrl);
+      });
+    }
   }, []);
 
   return (
