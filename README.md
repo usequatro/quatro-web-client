@@ -50,6 +50,10 @@ For linting and formatting, make sure you have ESLint and Prettier enabled on yo
 
 To work with your Firebase instance, use its CLI to toggle between them with `firebase use [env]`. Check active environment with `firebase use`.
 
+### Connecting Google Calendar in local development
+
+On Google Cloud Platform, the Quatro dev project isn't verified, according to Google's policy, because it's for testing purposes. That means that to connect Quatro to Google Calendar, we need to add your email address to the list of Test Users within the Google Cloud Platform project. Feel free to open an issue asking for it, or hit me directly [via social networks](http://guillermodlpa.com/). If there's a way around this that we don't know, please let us know!
+
 ## Deployment (Only core contributors)
 
 Continuous deployment is wired with GitHub Actions:
