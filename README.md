@@ -25,7 +25,11 @@ Libraries used:
 - React.
 - Redux for global state management (imeplement with [Redux Toolkit](https://redux-toolkit.js.org/))
 - [Material-UI](https://material-ui.com/) for UI components and styling.
-- Firebase Firestore for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
+- Firebase
+  - Firestore for listening and persisting updates in realtime. [Watch this tutorial](https://firebase.google.com/docs/firestore/query-data/listen).
+  - Hosting for serving the web client and its build assets.
+  - Functions for serverless backend functionality. [See the functions repository.](https://github.com/usequatro/quatro-functions)
+  - Storage for profile pictures.
 - [React Router](https://reactrouter.com/) for navigation.
 - [Date-fns](https://date-fns.org/) for date and time manipulation.
 
@@ -35,10 +39,12 @@ Integrations of the frontend:
 
 ## Local development
 
+While the dev Firebase project is still up and running, anybody should be able to clone this repository and play with it in their localhost. You can also create your own Firebase project with the services mentioned above, and configuring your `.env.local` variables.
+
 1. Clone the repo.
 1. Clone the file `.env.development` into `.env.local` and adapt it as needed, e.g., remove the Mixpanel ID to disable tracking.
 1. Run `npm install`
-1. Run `npm run start`. For HTTPS run `HTTPS=true npm run start`
+1. Run `npm run start`. (For HTTPS, needed in some edge cases, run `HTTPS=true npm run start`)
 
 For linting and formatting, make sure you have ESLint and Prettier enabled on your code editor.
 
